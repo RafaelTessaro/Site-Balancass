@@ -524,9 +524,13 @@ ul[role="list"], ol[role="list"], .list-reset { list-style: none; padding: 0; ma
 }
 .fab__btn:hover { transform: translateY(-2px) scale(1.04); }
 .fab__btn .i { width: 28px; height: 28px; }
-.fab__wa { background: var(--green); color: var(--ink); }
+/* Anel branco + sombra: o botão se destaca até sobre os blocos verdes (ex.: "Ainda no SAT?") */
+.fab__wa {
+  background: var(--green); color: var(--ink);
+  box-shadow: 0 0 0 3px #fff, 0 14px 30px -10px rgba(13, 18, 16, .55), 0 3px 10px rgba(13, 18, 16, .22);
+}
 .fab__wa::before {
-  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 50%;
+  content: ""; position: absolute; inset: -3px; z-index: -1; border-radius: 50%;
   background: rgba(1, 159, 66, .35); opacity: 0; pointer-events: none;
 }
 @media (prefers-reduced-motion: no-preference) {

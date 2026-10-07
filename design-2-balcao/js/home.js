@@ -73,14 +73,12 @@
     // Equipe
     var el = doc.querySelector("[data-equipe]");
     if (el && E.equipe && E.equipe.length) {
-      el.innerHTML = E.equipe.map(function (p, i) {
+      el.innerHTML = E.equipe.map(function (p) {
         var ini = String(p.nome || "").split(/\s+/).filter(Boolean);
         ini = (ini[0] ? ini[0].charAt(0) : "") + (ini.length > 1 ? ini[ini.length - 1].charAt(0) : "");
-        // mesmo texto da pessoa anterior (mesma função): não repete
-        var rep = i > 0 && p.texto === E.equipe[i - 1].texto;
         return '<li class="person" data-reveal><span class="person__mono" aria-hidden="true">' + esc(ini.toUpperCase()) + "</span>" +
           '<b class="person__name">' + esc(p.nome) + '</b><span class="person__role">' + esc(p.cargo) + "</span>" +
-          (rep ? "" : "<p>" + esc(p.texto) + "</p>") + "</li>";
+          (p.texto ? "<p>" + esc(p.texto) + "</p>" : "") + "</li>";
       }).join("");
     }
   }

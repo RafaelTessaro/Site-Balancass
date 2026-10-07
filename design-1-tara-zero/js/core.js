@@ -103,10 +103,25 @@
   // Grade de horários usada para o selo "Aberto agora". Mantenha igual a EMPRESA.horarios.
   var GRADE = { 0: [], 1: [[8, 11], [13, 18]], 2: [[8, 11], [13, 18]], 3: [[8, 11], [13, 18]], 4: [[8, 11], [13, 18]], 5: [[8, 11], [13, 18]], 6: [[8, 12]] };
   var DIAS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
-  // Feriados nacionais fixos (MM-DD). Confirmar com a loja quais ela segue,
-  // incluindo os municipais de Rio Claro, e acrescentar aqui.
+  // FERIADOS — nesses dias o selo mostra "Feriado · abre …" em vez de "Aberto agora".
+  //
+  // 1) Nacionais fixos (formato "MM-DD"): Confraternização (01-01), Tiradentes (04-21),
+  //    Dia do Trabalho (05-01), Independência (09-07), N. Sra. Aparecida (10-12),
+  //    Finados (11-02), Proclamação da República (11-15), Consciência Negra (11-20) e Natal (12-25).
   var FERIADOS = ["01-01", "04-21", "05-01", "09-07", "10-12", "11-02", "11-15", "11-20", "12-25"];
-  // Feriados móveis calculados pela Páscoa: Carnaval (seg e ter), Sexta-Feira Santa e Corpus Christi.
+  //
+  // 2) COMO ACRESCENTAR OS FERIADOS MUNICIPAIS DE RIO CLARO (ou qualquer data em que a loja feche):
+  //    - Confirme com a loja quais datas ela realmente fecha (o calendário oficial sai por
+  //      decreto da Prefeitura de Rio Claro todo ano).
+  //    - Data que se repete todo ano no mesmo dia → coloque "MM-DD" na lista abaixo.
+  //      Exemplo (só depois de confirmar): "06-24" para o aniversário da cidade.
+  //    - Data que só vale num ano (ponte, ponto facultativo, recesso) → use "AAAA-MM-DD",
+  //      ex.: "2026-12-24". Datas de anos passados podem ser apagadas sem problema.
+  //    - Mantenha as aspas e as vírgulas; a lista pode ficar vazia ([]).
+  var FERIADOS_LOCAIS = [];
+  //
+  // 3) Nacionais móveis, calculados pela Páscoa (não precisa mexer): Carnaval (seg e ter),
+  //    Sexta-Feira Santa e Corpus Christi.
   function pascoa(y) {
     var a = y % 19, b = Math.floor(y / 100), c = y % 100, dd = Math.floor(b / 4), e = b % 4,
       f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - dd - g + 15) % 30,
@@ -119,6 +134,7 @@
   function feriado(t) {
     var x = new Date(t), md = mmdd(t);
     if (FERIADOS.indexOf(md) !== -1) return true;
+    if (FERIADOS_LOCAIS.indexOf(md) !== -1 || FERIADOS_LOCAIS.indexOf(x.getUTCFullYear() + "-" + md) !== -1) return true;
     var p = pascoa(x.getUTCFullYear());
     return [p - 48 * DAY, p - 47 * DAY, p - 2 * DAY, p + 60 * DAY].some(function (q) { return mmdd(q) === md; });
   }

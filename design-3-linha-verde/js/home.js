@@ -146,10 +146,19 @@
       var dist = function () { return Math.max(0, track.scrollWidth - document.documentElement.clientWidth); };
       var tween = gsap.to(track, { x: function () { return -dist(); }, ease: "none" });
       var rl = $$(".roller");
-      var beltST = ScrollTrigger.create({
-        trigger: pin, animation: tween, pin: true, scrub: 0.7, anticipatePin: 1,
+      // Pausa no início: a seção fixa com a 1ª ficha inteira e alinhada à margem;
+      // só depois desse trecho a esteira começa a correr.
+      var hold = function () { return Math.round(Math.min(240, window.innerHeight * 0.24)); };
+      var pinST = ScrollTrigger.create({
+        trigger: pin, pin: true, anticipatePin: 1,
         start: function () { return "top top+=" + LV.hdr(); },
-        end: function () { return "+=" + dist(); },
+        end: function () { return "+=" + (dist() + hold()); },
+        invalidateOnRefresh: true, refreshPriority: 2
+      });
+      var beltST = ScrollTrigger.create({
+        trigger: pin, animation: tween, scrub: 0.7,
+        start: function () { return pinST.start + hold(); },
+        end: function () { return pinST.start + hold() + dist(); },
         invalidateOnRefresh: true, refreshPriority: 1,
         onUpdate: function (self) {
           setCount(Math.min(destaques.length, Math.floor(self.progress * destaques.length) + 1));

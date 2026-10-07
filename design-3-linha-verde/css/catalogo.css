@@ -166,6 +166,36 @@
 .grid__cta-t { font: 900 clamp(36px, 3vw, 46px)/.98 var(--f-display); text-transform: uppercase; }
 .grid__cta-go { display: inline-flex; align-items: center; gap: 10px; font: 600 14px/1 var(--f-text); text-transform: uppercase; letter-spacing: .04em; }
 .grid__cta-go .i { width: 22px; height: 22px; }
+
+/* Celular: 2 colunas compactas (imagem, marca, nome, selo e ações).
+   A ficha completa continua a um toque, no botão Detalhes. */
+@media (max-width: 639px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .grid__i--cta { grid-column: 1 / -1; }
+  .grid__cta { min-height: 0; padding: 22px 20px; gap: 14px; }
+  .grid__cta-t { font-size: 32px; }
+  .grid .spec__head, .grid .spec__sub, .grid .spec__table { display: none; }
+  .grid .spec__price:not(.has-preco) { display: none; }
+  .grid .spec__tab {
+    padding: 5px 8px 4px calc(8px + 16px * var(--tan)); font-size: 9px; letter-spacing: .04em;
+    clip-path: polygon(calc(14px * var(--tan)) 0, 100% 0, 100% 100%, 0 100%);
+  }
+  .grid .spec__fig { margin: 24px 8px 0; aspect-ratio: 4 / 3; }
+  .grid .spec__fig::before, .grid .spec__fig::after { width: 8px; height: 8px; }
+  .grid .spec__fig img { width: 88%; height: 86%; }
+  .grid .spec__body { padding: 10px 10px 0; }
+  .grid .spec__brand { font-size: 9.5px; }
+  .grid .spec__model { margin-top: 5px; font-size: clamp(20px, 5.6vw, 26px); line-height: 1; }
+  .grid .spec__badges { padding-top: 10px; }
+  .grid .badge { font-size: 9.5px; line-height: 1.2; letter-spacing: .02em; padding: 5px 6px 4px; gap: 5px; }
+  .grid .badge::before { width: 6px; height: 6px; flex: none; }
+  .grid .spec__foot { grid-template-columns: minmax(0, 1fr) 48px; gap: 8px 4px; margin-top: 10px; padding: 10px 8px; }
+  .grid .spec__price b { font-size: 20px; }
+  .grid .spec__foot .btn { font-size: 11px; letter-spacing: .03em; padding-inline: calc(5px + 44px * var(--tan) / 2); }
+  .grid .spec__foot .btn--green { padding: 0; }
+  .grid .spec__foot .btn--green .st { display: none; }   /* nome acessível vem do aria-label */
+  .grid .spec__foot .btn--green .i { width: 20px; height: 20px; }
+}
 .cat__noscript { padding: 32px 0; font-size: 18px; }
 
 .empty { padding: clamp(40px, 6vw, 80px) 0 20px; display: grid; gap: 16px; justify-items: start; max-width: 760px; }

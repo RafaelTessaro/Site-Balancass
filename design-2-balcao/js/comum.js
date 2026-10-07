@@ -69,6 +69,8 @@
       var k = el.getAttribute("data-bc");
       var v = map[k];
       if (v === undefined || v === null || v === "") return;
+      // O CEP nunca quebra no meio ("CEP | 13500-120")
+      if (k === "endereco") { el.innerHTML = esc(String(v)).replace(/CEP\s+([\d.\-]+)/, '<span class="nw">CEP $1</span>'); return; }
       el.textContent = String(v);
       if (el.hasAttribute("data-count-to")) el.setAttribute("data-count-to", String(v));
     });
@@ -236,15 +238,28 @@
   var fab = doc.querySelector("[data-fab]");
   var fabHide = fab && doc.querySelector(".hero, .ast-hero, .cat-hero");
 
+  /* Navegação por âncora: o cabeçalho fica visível durante a rolagem
+     automática (e o scroll-padding-top já deixa o título livre dele). */
+  var hdrLockUntil = 0;
+  D2.lockHeader = function (ms) {
+    hdrLockUntil = Date.now() + (ms || 0);
+    if (!hdr) return;
+    hdr.classList.remove("is-hidden");
+    doc.body.classList.add("hdr-visible");
+  };
+
   function initHeader() {
     if (!hdr) return;
     var lastY = window.scrollY, ticking = false;
+    // Chegou por link com #âncora (vindo de outra página): mantém o cabeçalho
+    if (location.hash.length > 1 && location.hash.indexOf("=") === -1) D2.lockHeader(1500);
     function onScroll() {
       var y = window.scrollY;
       hdr.classList.toggle("is-scrolled", y > 8);
       var menuOpen = hdr.classList.contains("is-open");
-      if (!menuOpen && y > 640 && y > lastY + 4) hdr.classList.add("is-hidden");
-      else if (y < lastY - 4 || y < 640) hdr.classList.remove("is-hidden");
+      var locked = Date.now() < hdrLockUntil;
+      if (!menuOpen && !locked && y > 640 && y > lastY + 4) hdr.classList.add("is-hidden");
+      else if (locked || y < lastY - 4 || y < 640) hdr.classList.remove("is-hidden");
       if (fabHide) fab.classList.toggle("is-away", y < window.innerHeight * 0.45);
       doc.body.classList.toggle("hdr-visible", !hdr.classList.contains("is-hidden"));
       lastY = y; ticking = false;
@@ -358,9 +373,15 @@
       if (!target) return;
       e.preventDefault();
       if (D2.closeMenu) D2.closeMenu();
+      // Cabeçalho visível do início ao fim da rolagem até a seção
+      D2.lockHeader(reduce ? 600 : 2400);
+      var solta = function () { D2.lockHeader(300); };
       // O Lenis já desconta o scroll-padding-top do <html>
-      if (D2.lenis) D2.lenis.scrollTo(target, { offset: 0, duration: 1.2 });
-      else window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY + hdrOffset(), behavior: reduce ? "auto" : "smooth" });
+      if (D2.lenis) D2.lenis.scrollTo(target, { offset: 0, duration: 1.2, onComplete: solta });
+      else {
+        window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY + hdrOffset(), behavior: reduce ? "auto" : "smooth" });
+        if ("onscrollend" in window) window.addEventListener("scrollend", solta, { once: true });
+      }
       if (history.pushState) history.pushState(null, "", "#" + id);
       if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
       target.focus({ preventScroll: true });

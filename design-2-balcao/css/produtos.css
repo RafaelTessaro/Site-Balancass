@@ -263,8 +263,17 @@ body.hdr-visible .toolbar { top: calc(var(--hdr-h) + 8px); }
 .cta-tile--dark img { position: absolute; right: -6%; bottom: -10%; width: 46%; filter: drop-shadow(0 30px 30px rgba(0, 0, 0, .55)); opacity: .95; }
 @media (max-width: 860px) {
   .cat-cta__grid { grid-template-columns: 1fr; }
-  .cta-tile--dark { padding-bottom: 180px; }
-  .cta-tile--dark img { width: 62%; right: -4%; bottom: -16%; }
+  /* Tablet: a balança inteira no canto, ao lado do texto */
+  .cta-tile--dark img { width: 40%; right: 4%; bottom: 8%; height: auto; object-fit: contain; }
+}
+@media (max-width: 600px) {
+  /* No celular a balança entra no fluxo, inteira, abaixo do botão */
+  .cta-tile--dark img {
+    position: relative; right: auto; bottom: auto; z-index: 1;
+    justify-self: end; width: min(78%, 320px); height: auto; aspect-ratio: 900 / 527;
+    object-fit: contain; margin: 4px -6px -8px 0;
+    filter: drop-shadow(0 22px 22px rgba(0, 0, 0, .5));
+  }
 }
 
 /* ---------- Painel de detalhes ---------- */

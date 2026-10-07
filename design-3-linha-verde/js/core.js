@@ -58,8 +58,12 @@
     setText("[data-tel-text]", E.telefone);
     setText("[data-email-text]", E.email);
     setText("[data-endereco]", BC.enderecoTexto());
-    // "CEP 13500-120" nunca quebra (nem no espaço, nem no hífen)
-    $$("[data-endereco]").forEach(function (el) { el.innerHTML = LV.esc(el.textContent).replace(/CEP\s*([\d.\-]+)/, '<span class="nobr">CEP $1</span>'); });
+    // "CEP 13500-120" e "Rio Claro/SP" nunca quebram (nem no espaço, nem no hífen)
+    $$("[data-endereco]").forEach(function (el) {
+      el.innerHTML = LV.esc(el.textContent)
+        .replace(/CEP\s*([\d.\-]+)/, '<span class="nobr">CEP $1</span>')
+        .replace(/Rio Claro([\/\-]SP)?/, '<span class="nobr">$&</span>');
+    });
     setText("[data-referencia]", BC.referenciaEndereco ? BC.referenciaEndereco() : "");
     setText("[data-ipem]", E.ipem);
     setText("[data-cnpj]", E.cnpj);
@@ -89,7 +93,10 @@
       if (!E.clientes || !E.clientes.length) return;
       if (ul.children.length === E.clientes.length) return;   // o HTML já traz os logos com width/height
       ul.innerHTML = E.clientes.map(function (c) {
-        return '<li><img src="' + BC.img("clientes/" + c.logo) + '" alt="' + LV.esc(c.nome) + '" loading="lazy" decoding="async"></li>';
+        // logos quadrados ganham mais altura na ficha; o Mercado Qualidade usa a versão recortada desta pasta
+        var src = c.logo === "qualidade.webp" ? "img/clientes/qualidade.webp" : BC.img("clientes/" + c.logo);
+        var sq = /brasil-frios|camargo/.test(c.logo) ? " clients__i--sq" : "";
+        return '<li class="clients__i' + sq + '"><img src="' + src + '" alt="' + LV.esc(c.nome) + '" loading="lazy" decoding="async"></li>';
       }).join("");
     });
     // Depoimentos
@@ -149,10 +156,10 @@
   // Só entra no srcset o que existe nesta lista [largura da variante, largura do original];
   // produto novo sem variante usa só o original.
   var P480 = {"r/2098.webp":[480,900],"r/8217.webp":[480,882],"r/9094plus.webp":[480,785],"r/allmidia.webp":[480,900],"r/argox.webp":[480,609],"r/balmak-one.webp":[480,900],"r/balmak-orion2.webp":[480,900],"r/balmak.webp":[480,900],"r/bck30.webp":[480,886],"r/bematech-sat.webp":[480,836],"r/centrium-pc.webp":[480,900],"r/el4200.webp":[480,685],"r/elgin-i9.webp":[480,805],"r/elgin-smart.webp":[480,873],"r/epson-t20.webp":[480,755],"r/fatiador.webp":[480,900],"r/gavetabema.webp":[480,900],"r/gertec504.webp":[480,732],"r/l42pro.webp":[480,865],"r/menno.webp":[480,900],"r/mit.webp":[480,900],"r/mt720.webp":[480,882],"r/nobreak-apc.webp":[480,598],"r/one-pesadora.webp":[480,900],"r/prix3fit.webp":[480,900],"r/prix3plus.webp":[480,900],"r/prix4due.webp":[480,809],"r/prix4uno.webp":[480,900],"r/prix5.webp":[480,900],"r/sat-custom.webp":[480,891],"r/sat-jetway.webp":[480,874],"r/sat-tanca.webp":[480,718],"r/sko44.webp":[480,886],"r/tanca.webp":[480,742],"r/tec44.webp":[480,900],"r/tl120.webp":[480,599],"r/tl900.webp":[480,631],"r/uni350.webp":[480,809],"r/w300.webp":[480,900],"r/zebra.webp":[480,785],"f/2098.webp":[480,900],"f/8217.webp":[480,882],"f/9094plus.webp":[480,785],"f/allmidia.webp":[480,900],"f/argox.webp":[480,609],"f/balmak-one.webp":[480,900],"f/balmak-orion2.webp":[480,900],"f/balmak.webp":[480,900],"f/bck30.webp":[480,886],"f/bematech-sat.webp":[480,836],"f/centrium-pc.webp":[480,900],"f/el4200.webp":[480,685],"f/elgin-i9.webp":[480,805],"f/elgin-smart.webp":[480,873],"f/epson-t20.webp":[480,755],"f/fatiador.webp":[480,900],"f/gavetabema.webp":[480,900],"f/gertec504.webp":[480,732],"f/l42pro.webp":[480,865],"f/menno.webp":[480,900],"f/mit.webp":[480,900],"f/mt720.webp":[480,882],"f/nobreak-apc.webp":[480,598],"f/one-pesadora.webp":[480,900],"f/prix3fit.webp":[480,900],"f/prix3plus.webp":[480,900],"f/prix4due.webp":[480,809],"f/prix4uno.webp":[480,900],"f/prix5.webp":[480,900],"f/sat-custom.webp":[480,891],"f/sat-jetway.webp":[480,874],"f/sat-tanca.webp":[480,718],"f/sko44.webp":[480,886],"f/tanca.webp":[480,742],"f/tec44.webp":[480,900],"f/tl120.webp":[480,599],"f/tl900.webp":[480,631],"f/uni350.webp":[480,809],"f/w300.webp":[480,900],"f/zebra.webp":[480,785]};
-  LV.imgTag = function (p, eager) {
+  LV.imgTag = function (p, eager, sizes) {
     var src = BC.imgProduto(p, true), file = src.split("/").pop(), rec = BC.temRecorte(p);
     var key = (rec ? "r/" : "f/") + file, v = P480[key];
-    var set = v ? ' srcset="img/p480/' + key + " " + v[0] + "w, " + src + " " + v[1] + 'w" sizes="(max-width: 700px) 86vw, 340px"' : "";
+    var set = v ? ' srcset="img/p480/' + key + " " + v[0] + "w, " + src + " " + v[1] + 'w" sizes="' + (sizes || "(max-width: 700px) 86vw, 340px") + '"' : "";
     return '<img src="' + src + '"' + set + ' alt="' + LV.esc(p.marca + " " + p.nome) + '" width="900" height="600"' +
       (eager ? "" : ' loading="lazy"') + ' decoding="async">';
   };
@@ -168,7 +175,7 @@
       '<span class="spec__tab">' + esc(LV.catCurto(p.categoria)) + "</span>" +
       '<div class="spec__head"><span>Nº ' + LV.pad(n) + "</span></div>" +
       '<figure class="spec__fig' + (rec ? "" : " spec__fig--photo") + '">' +
-        LV.imgTag(p, opts.eager) +
+        LV.imgTag(p, opts.eager, opts.sizes) +
       "</figure>" +
       '<div class="spec__body">' +
         '<p class="spec__brand">' + esc(p.marca) + "</p>" +
@@ -181,7 +188,7 @@
           (semi ? '<span class="badge badge--semi">Seminovo</span>' : "") + "</div>" +
       "</div>" +
       '<div class="spec__foot">' +
-        '<p class="spec__price"><span>Preço</span>' + (p.preco ? "<b>" + esc(p.preco) + "</b>" : "<b>Consulte</b>") + "</p>" +
+        '<p class="spec__price' + (p.preco ? " has-preco" : "") + '"><span>Preço</span>' + (p.preco ? "<b>" + esc(p.preco) + "</b>" : "<b>Consulte</b>") + "</p>" +
         '<a class="btn btn--line btn--sm" href="' + href + '" data-detail="' + esc(p.id) + '" aria-label="Detalhes: ' + esc(p.marca + " " + p.nome) + '"><span class="st" data-t="Detalhes">Detalhes</span></a>' +
         '<a class="btn btn--green btn--sm" href="' + BC.whatsProduto(p) + '" target="_blank" rel="noopener" aria-label="Pedir orçamento de ' + esc(p.marca + " " + p.nome) + ' pelo WhatsApp (abre em nova aba)">' +
           '<svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a>' +
@@ -202,7 +209,8 @@
   }
   window.addEventListener("scroll", onScrollBasic, { passive: true });
 
-  // Flutuante sai de cena quando o contato, o rodapé ou a faixa final (que já têm WhatsApp) aparecem
+  // Flutuante sai de cena quando os botões do hero, o contato, o rodapé ou a faixa final
+  // (que já têm WhatsApp) aparecem — assim ele nunca cobre a frase e os CTAs do topo no celular
   function floatOff() {
     if (!floatBox || !("IntersectionObserver" in window)) return;
     var vis = new Set();
@@ -210,7 +218,7 @@
       en.forEach(function (e) { if (e.isIntersecting) vis.add(e.target); else vis.delete(e.target); });
       floatBox.classList.toggle("is-off", vis.size > 0);
     }, { rootMargin: "0px 0px -12% 0px" });
-    $$(".contact, .ftr, .ask").forEach(function (el) { io.observe(el); });
+    $$(".hero__ctas, .contact, .ftr, .ask").forEach(function (el) { io.observe(el); });
   }
 
   function activeNav() {

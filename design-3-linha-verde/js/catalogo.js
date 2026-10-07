@@ -125,7 +125,7 @@
   /* ---------- Grade: todas as fichas renderizadas uma vez ---------- */
   var items = {};
   grid.innerHTML = BC.produtos.map(function (p, i) {
-    return '<li class="grid__i" data-id="' + esc(p.id) + '">' + LV.card(p, i + 1, { h: "h3" }) + "</li>";
+    return '<li class="grid__i" data-id="' + esc(p.id) + '">' + LV.card(p, i + 1, { h: "h3", sizes: "(max-width: 639px) 46vw, (max-width: 700px) 86vw, 340px" }) + "</li>";
   }).join("") +
     '<li class="grid__i grid__i--cta" data-cta><a class="grid__cta" data-wa="Olá! Vim pelo catálogo do site e procuro um equipamento que não encontrei na lista." href="' + BC.whatsLink("Olá! Vim pelo catálogo do site e procuro um equipamento que não encontrei na lista.") + '" target="_blank" rel="noopener">' +
       '<span class="mono">Outros modelos</span><span class="grid__cta-t">Procurando outro modelo?</span>' +

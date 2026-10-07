@@ -20,6 +20,13 @@
 .c-a3 { left: 3.6%; top: calc(498 / 520 * 100%); transform: translateY(18%); }
 .c-dim { top: calc(470 / 520 * 100%); }
 .c-kg { top: calc(80 / 520 * 100%); }
+/* Telas estreitas: as duas etiquetas de cima não podem se encostar */
+@media (max-width: 400px) {
+  .stage--assist .callout { font-size: 9px; letter-spacing: 0; gap: 4px; padding-inline: 5px; }
+  .c-a1 { left: 2%; }
+  .c-a2 { right: 2%; }
+  .stage--assist .c-kg { display: none; }   /* "300 kg" já está na etiqueta ao lado */
+}
 
 /* ---------- 01 Fluxo (linha de produção do conserto) ---------- */
 .flow {
