@@ -112,7 +112,7 @@ body.hdr-visible .toolbar { top: calc(var(--hdr-h) + 8px); }
   font: 500 16px/1 var(--font-text); color: var(--ink); outline: none;
   -webkit-appearance: none; appearance: none;
 }
-.search input::placeholder { color: #7A847F; font-weight: 400; }
+.search input::placeholder { color: #687370; font-weight: 400; }
 .search input::-webkit-search-cancel-button { display: none; }
 .search__clear { position: absolute; right: 6px; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; color: var(--ink); }
 .search__clear:hover { background: var(--line); }
@@ -283,10 +283,11 @@ body.hdr-visible .toolbar { top: calc(var(--hdr-h) + 8px); }
 .dw-sec h3 { font: 700 15px/1.2 var(--font-display); color: var(--ink); margin-bottom: 10px; letter-spacing: -.01em; }
 .dw-sec p { font-size: 15.5px; line-height: 1.65; }
 .specs { display: grid; margin: 0; }
-.specs div { display: grid; grid-template-columns: minmax(110px, 38%) 1fr; gap: 12px; padding: 10px 0; border-top: 1px dashed var(--line-2); font-size: 15px; }
+.specs div { display: grid; grid-template-columns: minmax(96px, 36%) minmax(0, 1fr); gap: 12px; padding: 10px 0; border-top: 1px dashed var(--line-2); font-size: 15px; }
 .specs div:first-child { border-top: 0; padding-top: 2px; }
 .specs dt { color: var(--muted); }
-.specs dd { margin: 0; color: var(--ink); font-weight: 550; }
+.specs dt, .specs dd { min-width: 0; overflow-wrap: anywhere; }
+.specs dd { margin: 0; color: var(--ink); font-weight: 550; line-height: 1.5; }
 .dw-service { display: flex; gap: 12px; align-items: flex-start; margin-top: 12px; padding: 16px; border-radius: 16px; background: var(--mint); color: var(--ink); font-size: 14.5px; line-height: 1.5; }
 .dw-service .i { flex: none; color: var(--green-deep); margin-top: 1px; }
 .dw-service a { font-weight: 650; color: var(--green-deep); text-decoration: underline; text-underline-offset: 3px; }
@@ -313,6 +314,12 @@ body.hdr-visible .toolbar { top: calc(var(--hdr-h) + 8px); }
   .dw-main { padding: 18px 6px 4px; }
   .drawer__foot { padding: 10px 10px calc(10px + env(safe-area-inset-bottom)); }
   .drawer__foot .btn--ghost { padding: 0 14px; }
+}
+@media (max-width: 420px) {
+  .drawer__foot { gap: 6px; }
+  .drawer__foot .btn--wa { padding: 0 12px; font-size: 15px; }
+  .drawer__foot .btn--ghost { width: 50px; padding: 0; flex: none; }
+  .dw-tel-txt { display: none; }
   .dw-rel__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dw-rel__list .rel:nth-child(3) { display: none; }
 }

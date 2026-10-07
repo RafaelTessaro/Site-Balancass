@@ -30,6 +30,16 @@
       $all(".pcard", grid).forEach(function (c) { c.setAttribute("data-reveal", ""); });
     }
 
+    // Exemplos de modelo nos kits (nome atualizado a partir do catálogo)
+    $all("[data-ex-id]").forEach(function (li) {
+      var p = BC.porId(li.getAttribute("data-ex-id"));
+      var ex = li.querySelector(".eq__ex");
+      if (p && ex) {
+        var nome = p.nome.indexOf(p.marca) === 0 ? p.nome : p.marca + " " + p.nome;
+        ex.textContent = "ex.: " + nome.replace(/^(\S+) (Gaveta|Fatiador|Teclado|Mídia Digital|Busca Preço|Terminal|Microterminal) /, "$1 ");
+      }
+    });
+
     // Marcas
     var ml = doc.querySelector("[data-marcas]");
     if (ml && E.marcas && E.marcas.length) {
@@ -484,6 +494,23 @@
      ================================================================== */
   function initExtras() {
     if (!anim || !window.ScrollTrigger) return;
+    // Ordem de serviço (página de assistência): passos vão sendo concluídos
+    var os = doc.querySelector("[data-os]");
+    if (os) {
+      var steps = $all("li", os);
+      steps.forEach(function (li) { li.classList.remove("is-done"); });
+      window.ScrollTrigger.create({
+        trigger: os, start: "top 85%", once: true,
+        onEnter: function () {
+          steps.forEach(function (li, i) {
+            gsap.delayedCall(0.5 + i * 0.55, function () {
+              li.classList.add("is-done", "is-pop");
+              gsap.delayedCall(0.35, function () { li.classList.remove("is-pop"); });
+            });
+          });
+        }
+      });
+    }
     // Imagem do BC System com paralaxe
     $all("[data-parallax]").forEach(function (img) {
       gsap.fromTo(img, { yPercent: 8 }, { yPercent: -8, ease: "none", scrollTrigger: { trigger: img.parentElement, start: "top bottom", end: "bottom top", scrub: true } });

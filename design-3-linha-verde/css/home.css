@@ -169,7 +169,7 @@
 }
 
 /* ------------------------------ 02 SERVIÇOS ------------------------------ */
-#servicos { overflow: clip; }
+#servicos { overflow-x: clip; }
 #servicos .giant { top: clamp(60px, 8vw, 120px); }
 .svc { border-top: 1px solid var(--line); counter-reset: svc; }
 .svc__row {
@@ -221,7 +221,7 @@
 }
 
 /* ------------------------------ 03 PRODUTOS (esteira) ------------------------------ */
-.conveyor { padding-bottom: clamp(72px, 8vw, 120px); }
+.conveyor { padding-bottom: clamp(72px, 8vw, 120px); overflow-x: clip; }
 .conveyor__pin { position: relative; }
 .conveyor__head { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: clamp(24px, 4vw, 72px); align-items: end; margin-bottom: clamp(18px, 2.6vh, 36px); }
 .conveyor__head .h2 { font-size: clamp(48px, min(5.4vw, 10.5vh), 96px); white-space: nowrap; }
@@ -275,7 +275,7 @@
 /* modo esteira (fixado e rolando na horizontal): ativado via JS no desktop */
 .is-belt .belt { overflow: visible; }
 .is-belt .belt__track { overflow: visible; scroll-snap-type: none; width: max-content; padding-right: calc(var(--gut) + 8vw); }
-.is-belt .conveyor__pin { height: calc(100vh - var(--hdr)); display: flex; flex-direction: column; justify-content: center; padding-block: 8px 4px; }
+.is-belt .conveyor__pin { overflow: clip; height: calc(100vh - var(--hdr)); display: flex; flex-direction: column; justify-content: center; padding-block: 8px 4px; }
 .is-belt .spec--belt .spec__fig { aspect-ratio: auto; height: clamp(120px, 19vh, 200px); }
 .is-belt .conveyor__side p { font-size: 16px; }
 
@@ -363,12 +363,12 @@
 }
 .sat::before { content: ""; position: absolute; top: 0; bottom: 0; right: -6%; width: 10%; background: var(--green); transform: skewX(var(--slash)); }
 .sat__tag { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; color: var(--grey); }
-.sat__delta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 22px; font: 900 clamp(48px, 7vw, 120px)/.9 var(--f-display); text-transform: uppercase; }
+.sat__delta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 22px; font: 900 clamp(48px, 7vw, 120px)/.9 var(--f-display); }
 .sat__from { position: relative; color: #6B6B66; }
 .sat__strike { position: absolute; left: -4%; right: -4%; top: 50%; height: .09em; background: var(--volt); transform-origin: 0 50%; transform: rotate(-12deg); }
 .sat__arrow .i { width: .62em; height: .62em; color: var(--green); }
 .sat__to { color: var(--green); }
-.sat__copy { position: relative; display: grid; gap: 16px; justify-items: start; }
+.sat__copy { position: relative; display: grid; gap: 16px; justify-items: start; padding-right: 7%; }
 .sat__copy p { color: #CFCFC9; }
 .sat__note { font-size: 14.5px; padding-left: 14px; border-left: 2px solid var(--green); }
 .sat__copy .btn { margin-left: -6px; margin-top: 6px; }
@@ -379,7 +379,7 @@
 }
 
 /* ------------------------------ 06 IPEM ------------------------------ */
-.ipem { overflow: clip; }
+.ipem { overflow-x: clip; }
 .ipem .sec__intro { color: #062A14; }
 .ipem .sec__tab b { color: var(--ink); }
 .ipem .h2 { max-width: 9em; }
@@ -466,7 +466,7 @@
 }
 
 /* ------------------------------ 08 SOBRE ------------------------------ */
-#sobre { overflow: clip; }
+#sobre { overflow-x: clip; }
 #sobre .giant { top: 42%; }
 .sobre__txt { display: grid; gap: 14px; font-size: clamp(16px, 1.25vw, 19px); color: #CFCFC9; max-width: 36em; }
 .deltas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); }

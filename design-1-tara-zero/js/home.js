@@ -110,10 +110,21 @@
 
   var tareBtn = $("[data-tare]");
   if (tareBtn) tareBtn.addEventListener("click", function () {
+    if (segSr) segSr.setAttribute("aria-live", "polite");
     itemAtual = (itemAtual + 1) % ITENS.length;
     weigh(ITENS[itemAtual]);
   });
   paintTicket(ITENS[0]);
+
+  // Legenda e alt do produto do hero vindos do catálogo (nome atualizado automaticamente)
+  (function () {
+    var p = BC.porId("balmak-orion-1-plus");
+    var cap = $(".hero__spec"), img = $(".hero__product-img");
+    if (!p) return;
+    var capSpec = (p.especificacoes || []).filter(function (s) { return /^capacidade/i.test(s[0]); })[0];
+    if (cap) cap.innerHTML = "FIG. 01 · <b>" + esc((p.marca + " " + p.nome).toUpperCase()) + "</b><br>" + esc(p.subcategoria.toUpperCase()) + (capSpec ? " · " + esc(TZ.specVal(capSpec[1], capSpec[0]).toUpperCase()) : "");
+    if (img) img.alt = "Balança " + p.marca + " " + p.nome + " (" + p.subcategoria.toLowerCase() + ")";
+  })();
 
   /* Intro do hero (depois do preloader) */
   function heroIntro() {
@@ -257,7 +268,7 @@
     { id: "padaria", nome: "Padaria", titulo: "Padaria e confeitaria", texto: "Pão francês, frios e doces pesados e etiquetados no balcão. No caixa, é só passar o código de barras da etiqueta — com NFC-e.",
       kit: [["toledo-prix-4-uno", "Balança com etiqueta para o balcão"], ["toledo-uni-350-ga", "Fatiador para frios"], ["elgin-el4200", "Leitor que lê a etiqueta no caixa"], ["elgin-i9", "Impressora de cupom"], ["sys", "Frente de caixa com NFC-e"]] },
     { id: "acougue", nome: "Açougue", titulo: "Açougue e casa de carnes", texto: "Etiqueta com peso, preço e código de barras: a carne sai do balcão e passa no caixa sem erro de digitação.",
-      kit: [["toledo-prix-4-due", "Balança com etiqueta, 30 kg"], ["balmak-orion-1-plus", "Alternativa com ótimo custo-benefício"], ["tanca-tl-900", "Leitor fixo para o checkout"], ["sys", "Estoque e vendas integrados à balança"]] },
+      kit: [["toledo-prix-4-due", "Balança com etiqueta para alto volume"], ["balmak-orion-1-plus", "Opção Balmak com etiqueta"], ["tanca-tl-900", "Leitor fixo para o checkout"], ["sys", "Estoque e vendas integrados à balança"]] },
     { id: "hortifruti", nome: "Hortifrúti", titulo: "Hortifrúti e sacolão", texto: "Pesagem direto no caixa, integrada ao sistema: o cliente passa e o preço já sai certo.",
       kit: [["toledo-8217", "Balança embutida no checkout"], ["toledo-prix-3-fit", "Balança computadora para as bancas"], ["centrium-mini-pc", "Computador compacto para o caixa"], ["sys", "PDV integrado à balança"]] },
     { id: "mercado", nome: "Mercado", titulo: "Mercado e supermercado", texto: "Checkout completo, etiquetas na seção de frios e terminal para o cliente conferir o preço.",
@@ -409,16 +420,37 @@
     }
   }
 
+  /* =========================================================
+     9. Menu: destaca a seção visível
+     ========================================================= */
+  function initSpy() {
+    if (!window.ScrollTrigger) return;
+    var links = $$(".nav a");
+    var map = [["#topo", ".hero"], ["#servicos", "#servicos"], ["#sistema", "#sistema"], ["#sobre", "#sobre"], ["#contato", "#contato"]];
+    var cur = "#topo";
+    function set(h) { cur = h; links.forEach(function (a) { a.classList.toggle("is-active", a.getAttribute("href") === h); }); }
+    map.forEach(function (m) {
+      var el = $(m[1]); if (!el) return;
+      ScrollTrigger.create({
+        trigger: el, start: "top 45%", end: "bottom 45%",
+        onToggle: function (st) { if (st.isActive) set(m[0]); else if (cur === m[0]) set(null); }
+      });
+    });
+  }
+
   /* ---------------- Boot ---------------- */
   renderRail();
   renderSegments();
   TZ.marquee();
   renderProof();
   TZ.fill(d);
+  // classes de layout dos pins antes do SplitText medir as linhas
+  if (motion && window.ScrollTrigger && window.matchMedia("(min-width: 1024px) and (min-height: 640px)").matches) html.classList.add("is-pinmorph", "is-railpin");
   TZ.faq();
   initForm();
   TZ.boot();
   initDecor();
   initMorph();
   initRail();
+  initSpy();
 })();

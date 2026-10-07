@@ -175,11 +175,11 @@
 .drawer__scrim { position: absolute; inset: 0; background: rgba(10,10,10,.72); }
 .drawer__panel {
   position: absolute; top: 0; right: 0; bottom: 0; width: min(640px, 100%);
-  background: var(--paper); color: var(--ink); overflow: hidden auto; overscroll-behavior: contain;
+  background: linear-gradient(var(--green), var(--green)) 0 0 / 8px 100% no-repeat, var(--paper);
+  color: var(--ink); overflow: hidden auto; overscroll-behavior: contain;
   outline: none; display: flex; flex-direction: column;
   box-shadow: -30px 0 60px -20px rgba(0,0,0,.6);
 }
-.drawer__panel::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 8px; background: var(--green); z-index: 2; }
 .drawer__wipe {
   position: fixed; top: 0; bottom: 0; right: 0; width: min(760px, 120%); z-index: 5; pointer-events: none;
   background: var(--green); transform: translateX(110%) skewX(var(--slash)); visibility: hidden;
@@ -193,7 +193,7 @@
 .drawer__x span, .drawer__x span::before { position: absolute; left: 12px; right: 12px; top: 50%; height: 2px; background: currentColor; transform: rotate(45deg); }
 .drawer__x span::before { content: ""; left: 0; right: 0; transform: rotate(-90deg); }
 .drawer__x:hover { color: var(--green); }
-.drawer__body { padding: 26px clamp(22px, 4vw, 44px) 40px clamp(30px, 4.6vw, 52px); display: grid; gap: 18px; }
+.drawer__body { padding: 26px clamp(22px, 4vw, 44px) 40px clamp(30px, 4.6vw, 52px); display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
 .dw__crumb { color: var(--muted); }
 .dw__fig {
   position: relative; aspect-ratio: 16 / 10; display: grid; place-items: center; overflow: hidden;
@@ -213,8 +213,9 @@
 .dw__badges { display: flex; flex-wrap: wrap; gap: 6px; }
 .dw__table { border-top: 2px solid var(--ink); }
 .dw__table div { display: grid; grid-template-columns: minmax(120px, .8fr) minmax(0, 1.2fr); gap: 16px; padding: 11px 0 10px; border-bottom: 1px dashed #BDBDB6; }
-.dw__table dt { font: 500 10.5px/1.5 var(--f-mono); letter-spacing: .03em; text-transform: uppercase; color: var(--muted); }
-.dw__table dd { font-size: 15.5px; }
+.dw__table dt { font: 500 10.5px/1.5 var(--f-mono); letter-spacing: .03em; text-transform: uppercase; color: var(--muted); overflow-wrap: anywhere; }
+.dw__table dd { font-size: 15.5px; line-height: 1.45; overflow-wrap: anywhere; min-width: 0; }
+@media (max-width: 440px) { .dw__table div { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
 .dw__price { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--ink); }
 .dw__price span { font: 400 11px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .dw__price b { font: 900 34px/1 var(--f-display); text-transform: uppercase; }

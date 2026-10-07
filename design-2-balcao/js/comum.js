@@ -55,6 +55,7 @@
       desde: E.desde,
       anos: BC.anosDesde(),
       ipem: E.ipem ? lowerFirst(E.ipem) : "",
+      "ipem-titulo": E.ipem || "",
       "google-nota": E.google && E.google.nota,
       "google-avaliacoes": E.google && E.google.avaliacoes,
       "marcas-qtd": (E.marcas || []).length || ""
@@ -157,6 +158,18 @@
   /* ------------------------------------------------------------------
      3. Card de produto (home e catálogo)
      ------------------------------------------------------------------ */
+  /* Encurta especificações longas para os chips do card:
+     "32 kg (2 g até 6 kg / ...)" → "32 kg"; "Capacidade / Divisão" → "Capacidade" */
+  function shortSpec(label, value) {
+    var l = String(label || "").split(" / ")[0].split(" (")[0].trim();
+    var v = String(value || "").split(" (")[0].split(";")[0].trim();
+    if (v.length > 26) {
+      v = v.slice(0, 26).replace(/\s+\S*$/, "").replace(/[\s,;:–-]+$/, "").replace(/\s+(e|de|da|do|com|ou|para)$/i, "") + "…";
+    }
+    return { l: l, v: v };
+  }
+  D2.shortSpec = shortSpec;
+
   D2.card = function (p, opt) {
     opt = opt || {};
     var esc = D2.esc;
@@ -167,7 +180,8 @@
     var cond = p.condicao === "seminovo" ? BC.condicao(p) : "";
     var nome = p.marca + " " + p.nome;
     var specs = (p.especificacoes || []).slice(0, 2).map(function (s) {
-      return '<li title="' + esc(s[0] + ": " + s[1]) + '"><span>' + esc(s[0]) + ":</span> " + esc(s[1]) + "</li>";
+      var k = shortSpec(s[0], s[1]);
+      return '<li title="' + esc(s[0] + ": " + s[1]) + '"><span>' + esc(k.l) + ":</span> " + esc(k.v) + "</li>";
     }).join("");
     return '<article class="pcard" data-id="' + esc(p.id) + '">' +
       '<div class="pcard__media' + (cut ? "" : " is-flat") + '">' +

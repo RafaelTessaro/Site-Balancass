@@ -103,10 +103,26 @@
   var CAT_CURTO = { balancas: "Balanças", automacao: "Automação", informatica: "Informática" };
   LV.catCurto = function (id) { return CAT_CURTO[id] || BC.categoriaNome(id); };
 
+  // Valores curtos para a ficha: só o trecho antes de " (" ou ";" e no máximo ~30 caracteres
+  function corta(v, max, seps) {
+    v = String(v == null ? "" : v).split(" (")[0].split(";")[0].trim();
+    for (var i = 0; i < seps.length && v.length > max; i++) v = v.split(seps[i])[0].trim();
+    if (v.length <= max) return v;
+    var c = v.slice(0, max), sp = c.lastIndexOf(" ");
+    return (sp > max * 0.3 ? c.slice(0, sp) : c).replace(/[,\s/–:-]+$/, "") + "…";
+  }
+  LV.curto = function (v) { return corta(v, 24, [" ou ", ", ", " e ", " com "]); };
+  LV.chaveCurta = function (k) { return corta(k, 26, [" / "]); };
+  LV.spec = function (p, chave) {
+    var s = (p.especificacoes || []).filter(function (r) { return String(r[0]).toLowerCase().indexOf(chave) === 0; })[0];
+    return s ? s[1] : "";
+  };
+
   LV.card = function (p, n, opts) {
     opts = opts || {};
     var esc = LV.esc, est = BC.estoque(p), rec = BC.temRecorte(p);
-    var rows = [["Linha", p.subcategoria]].concat(p.especificacoes || []).slice(0, opts.rows || 3);
+    var specs = (p.especificacoes || []).length ? p.especificacoes : [["Linha", p.subcategoria]];
+    var rows = specs.slice(0, opts.rows || 3).map(function (r) { return [LV.chaveCurta(r[0]), LV.curto(r[1])]; });
     var href = (opts.detailBase || "") + "#p=" + encodeURIComponent(p.id);
     var semi = p.condicao === "seminovo";
     return '<article class="spec' + (opts.cls ? " " + opts.cls : "") + '" data-cat="' + esc(p.categoria) + '" data-id="' + esc(p.id) + '">' +

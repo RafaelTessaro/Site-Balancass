@@ -112,6 +112,27 @@
     });
   }
 
+  /* ---------------- Especificações curtas para chips ---------------- */
+  // "32 kg (2 g até 6 kg / …)" → "32 kg"; "Capacidade / Divisão" → "Capacidade"
+  TZ.specKey = function (k) { return String(k).split(" / ")[0].split(" (")[0].trim(); };
+  function specClean(v, k) {
+    v = String(v).split(" (")[0].split(";")[0];
+    if (/^capacidade/i.test(k || "")) v = v.split(" ou ")[0];
+    return v.trim();
+  }
+  TZ.specVal = function (v, k, max) {
+    max = max || 30;
+    v = specClean(v, k);
+    if (v.length > max) v = v.slice(0, max - 2).replace(/[\s,.:\-–]+\S*$/, "") + "…";
+    return v;
+  };
+  // até 2 especificações curtas, na ordem do cadastro
+  TZ.specChips = function (p) {
+    var all = (p.especificacoes || []).filter(function (s) { return s && s[0] && s[1]; });
+    var short = all.filter(function (s) { return (TZ.specKey(s[0]) + " " + specClean(s[1], s[0])).length <= 30; });
+    return (short.length ? short : all).slice(0, 2);
+  };
+
   /* ---------------- Card de produto (vitrine e catálogo) ---------------- */
   TZ.card = function (p, o) {
     o = o || {};
@@ -119,8 +140,7 @@
     var est = BC.estoque(p);
     var href = (o.base || "") + "#p=" + encodeURIComponent(p.id);
     var cond = p.condicao === "seminovo" ? '<span class="badge badge--cond">Seminovo</span>' : "";
-    var chips = (p.especificacoes || []).filter(function (s) { return s && s[1] && String(s[1]).length <= 24 && String(s[0]).length <= 14; })
-      .slice(0, 2).map(function (s) { return "<li><span>" + e(s[0]) + "</span>" + e(s[1]) + "</li>"; }).join("");
+    var chips = TZ.specChips(p).map(function (s) { return '<li title="' + e(s[0] + ": " + s[1]) + '"><span>' + e(TZ.specKey(s[0])) + "</span> " + e(TZ.specVal(s[1], s[0])) + "</li>"; }).join("");
     var nomeCompleto = p.marca + " " + p.nome;
     return '<article class="pcard" data-id="' + e(p.id) + '" data-cursor="view">' +
       '<div class="pcard__in" data-tilt>' +

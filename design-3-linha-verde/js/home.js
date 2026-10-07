@@ -7,6 +7,14 @@
   if (!BC || !LV) return;
   var $ = LV.$, $$ = LV.$$;
 
+  /* ---------- Hero: rótulos técnicos vindos do catálogo ---------- */
+  var heroP = BC.porId("toledo-prix-4-uno");
+  if (heroP) {
+    var cap = LV.spec(heroP, "capacidade");
+    if (cap) $$("[data-hero-cap]").forEach(function (el) { el.textContent = cap.split(" (")[0].split(" x ")[0]; });
+    $$("[data-hero-name]").forEach(function (el) { el.textContent = heroP.marca + " " + heroP.nome; });
+  }
+
   /* ---------- Esteira: destaques do catálogo ---------- */
   var track = $("[data-belt-track]");
   var destaques = BC.destaques();
