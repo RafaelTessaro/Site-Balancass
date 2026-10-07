@@ -16,7 +16,7 @@ O site novo é **estático**: só arquivos HTML, CSS, JavaScript e imagens. Não
 
 ## Checklist antes de publicar
 
-- [x] Endereço confirmado: *Rua 13, 650 – entre as Avenidas 9 e 11 – Boa Morte*. Vale atualizar também o Google Meu Negócio e a página do BC Fichas, que ainda mostram endereços antigos/diferentes.
+- [x] Endereço confirmado: *Rua 13, 650 – entre as Avenidas 9 e 11 – Boa Morte*. Vale conferir o Google Meu Negócio (lá o bairro aparece como "Consolação") e atualizar o site do BC Fichas, que ainda mostra o endereço antigo (Av. 12, 1313).
 - [ ] Confirmar que o **(19) 3023-9050 está no WhatsApp Business** (o link `wa.me` só funciona com número registrado no WhatsApp).
 - [x] IPEM-SP: oficina autorizada (o site diz "Autorizada pelo IPEM-SP", sem número).
 - [ ] Instagram da empresa (se houver).
