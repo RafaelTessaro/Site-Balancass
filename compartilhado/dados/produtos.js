@@ -847,7 +847,7 @@ window.PRODUTOS = [
     categoria: "informatica",
     subcategoria: "Impressoras de cupom",
     resumo: "Impressora de cupom 300 mm/s com guilhotina e USB, Ethernet e Serial.",
-    descricao: "Impressora térmica de cupom para NFC-e/SAT e comprovantes, que imprime a até 300 mm/s para agilizar o atendimento no caixa. Reúne USB, Ethernet e Serial no mesmo equipamento, aceita bobinas de 57,5 mm ou 80 mm e tem guilhotina com corte parcial automático e vida útil de 2 milhões de cortes. A garantia é de 3 anos e inclui a cabeça térmica.",
+    descricao: "Impressora térmica de cupom para NFC-e e comprovantes, que imprime a até 300 mm/s para agilizar o atendimento no caixa. Reúne USB, Ethernet e Serial no mesmo equipamento, aceita bobinas de 57,5 mm ou 80 mm e tem guilhotina com corte parcial automático e vida útil de 2 milhões de cortes. A garantia é de 3 anos e inclui a cabeça térmica.",
     especificacoes: [
       ["Velocidade de impressão", "Até 300 mm/s"],
       ["Conectividade", "USB, Ethernet e Serial RS-232 (DB-9)"],

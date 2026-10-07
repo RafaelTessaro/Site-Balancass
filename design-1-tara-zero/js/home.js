@@ -542,6 +542,8 @@
   /* ---------------- Boot: conteúdo (na hora) ---------------- */
   renderRail();
   initRailNative();
+  // cada card da vitrine tem o próprio WhatsApp: a pilha flutuante sai da frente dos botões
+  TZ.fabAvoid($("#destaques .rail"), "rail", true);
   renderSegments();
   TZ.marquee();
   renderProof();

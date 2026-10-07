@@ -65,8 +65,12 @@
     $$("[data-bc]", root).forEach(function (el) {
       var k = el.getAttribute("data-bc"), v = txt[k];
       if (v !== undefined && v !== null && v !== "") {
-        // "· CEP 13500-120" nunca quebra no meio
-        if (k === "endereco") el.innerHTML = BC.escape(v).replace(/ · CEP (\S+)/, ' <span class="nw">· CEP&nbsp;$1</span>');
+        // "Rio Claro/SP" e "· CEP 13500-120" nunca quebram no meio
+        if (k === "endereco") {
+          var a = E.endereco || {}, cid = a.cidade && a.uf ? BC.escape(a.cidade + "/" + a.uf) : "";
+          var h = BC.escape(v).replace(/ · CEP (\S+)/, ' <span class="nw">· CEP&nbsp;$1</span>');
+          el.innerHTML = cid ? h.replace(cid, '<span class="nw">' + cid + "</span>") : h;
+        }
         else el.textContent = v;
       } else if (k === "referencia") el.hidden = true;
     });
@@ -230,16 +234,18 @@
   };
 
   /* ---------------- Cabeçalho, progresso e botão flutuante ---------------- */
-  var fab = null, fabState = {};
+  var fab = null, fabState = {}, fabAll = {};
   function fabSync() {
     if (!fab) return;
     var small = window.innerWidth < 768;
-    var off = small && Object.keys(fabState).some(function (k) { return fabState[k]; });
+    var off = Object.keys(fabState).some(function (k) { return fabState[k] && (small || fabAll[k]); });
     fab.classList.toggle("is-off", off);
   }
-  // Esconde a pilha flutuante (celular) enquanto um alvo com CTA próprio estiver na tela
-  TZ.fabAvoid = function (el, key) {
+  // Esconde a pilha flutuante enquanto um alvo com CTA próprio estiver na tela
+  // (só no celular, ou em qualquer largura com allSizes)
+  TZ.fabAvoid = function (el, key, allSizes) {
     if (!fab || !el || !("IntersectionObserver" in window)) return;
+    fabAll[key] = !!allSizes;
     new IntersectionObserver(function (es) {
       es.forEach(function (en) { fabState[key] = en.isIntersecting; });
       fabSync();
@@ -261,7 +267,8 @@
     window.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
     window.addEventListener("resize", function () { update(); fabSync(); });
     update();
-    ["#duvidas", "#contato", ".cta-band", ".site-footer"].forEach(function (s) { TZ.fabAvoid($(s), s); });
+    // no celular, a pilha flutuante sai da frente de blocos que já têm CTA próprio alinhado à direita
+    [".router", "#duvidas", "#contato", ".cta-band", ".site-footer"].forEach(function (s) { TZ.fabAvoid($(s), s); });
   }
 
   /* ---------------- Menu móvel ---------------- */
@@ -681,7 +688,7 @@
     var io = new IntersectionObserver(function (es) {
       es.forEach(function (e) { e.target.classList.toggle("is-off", !e.isIntersecting); });
     });
-    $$(".sys__orbit, .btn--glow").forEach(function (el) { io.observe(el); });
+    $$(".sys__orbit, .btn--glow, .hero__halo, .marquee").forEach(function (el) { io.observe(el); });
   }
 
   /* ---------------- Foco nunca cai em algo invisível ---------------- */

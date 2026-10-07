@@ -778,7 +778,8 @@ html.is-preloading body { overflow: hidden; }
 .sys__visual { grid-column: 1 / 8; position: relative; }
 .sys__visual img { position: relative; z-index: 2; width: 100%; filter: drop-shadow(0 40px 50px rgba(0,0,0,.6)); }
 .sys__orbit { position: absolute; z-index: 1; left: 50%; top: 53%; width: 76%; aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; }
-.sys__orbit.is-off g { animation-play-state: paused; }
+.sys__orbit > div { position: absolute; inset: 0; will-change: transform; }
+.sys__orbit.is-off > div { animation-play-state: paused; }
 .sys__orbit svg { width: 100%; height: 100%; overflow: visible; }
 .sys__orbit .o1 { transform-origin: 50% 50%; animation: tz-rot 40s linear infinite; }
 .sys__orbit .o2 { transform-origin: 50% 50%; animation: tz-rot 60s linear infinite reverse; }
@@ -913,8 +914,9 @@ html.is-preloading body { overflow: hidden; }
 }
 .client img { width: auto; height: auto; max-width: 70%; max-height: 58px; object-fit: contain; mix-blend-mode: multiply; transition: transform .6s var(--ease-out); }
 .client img[src*="brasil-frios"], .client img[src*="camargo"] { max-height: 76px; }
-.client img[src*="qualidade"], .client img[src*="quitandao"] { max-height: 70px; max-width: 78%; }
-.client img[src*="qualidade"] { filter: brightness(1.02); }
+.client img[src*="quitandao"] { max-height: 70px; max-width: 78%; }
+/* qualidade.webp é um quadrado com o logo numa faixa larga no meio: recorta só o fundo */
+.client img[src*="qualidade"] { max-width: none; max-height: none; width: 80%; height: 64px; object-fit: cover; filter: brightness(1.02); }
 .client:hover img { transform: scale(1.05); }
 
 .quotes { margin-top: clamp(56px, 7vw, 96px); }
@@ -1671,3 +1673,19 @@ main [tabindex="-1"]:focus { outline: none; }
    a lista de categorias só aparece quando cabe */
 .rail-end { container-type: size; overflow: hidden; }
 @container (max-height: 470px) { .rail-end__cats { display: none; } }
+
+/* Espaço reservado até o JS montar a grade e as abas (evita layout shift na carga) */
+.js .grid:not(.is-ready) { min-height: 100vh; }
+.cattabs { min-height: 52px; }
+@media (max-width: 767px) { .foot__bar { align-items: flex-start; } }
+
+/* mob-15: no celular o desenho técnico ganha largura e o "04 TECLADO" fica fora do corpo e dos círculos */
+@media (max-width: 767px) {
+  .svc-xl__fig { margin: 8px -14px 0; padding: 18px 10px 14px; }
+  .blueprint text { font-size: 17px; }
+  .blueprint .bp-04 { transform: translateX(6px); }
+}
+/* anim-10: animações contínuas pausam fora da tela */
+.hero__halo.is-off, .marquee.is-off .marquee__track { animation-play-state: paused; }
+.grid > noscript { grid-column: 1 / -1; }
+html:not(.js) .cattabs { display: none; }

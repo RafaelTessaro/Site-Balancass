@@ -329,17 +329,27 @@
      ------------------------------------------------------------------ */
   function setupAccordion() {
     $$("[data-acc]").forEach(function (acc) {
+      // Fecha as respostas JÁ, sem transição (o CSS desliga a transição enquanto falta .acc--ready),
+      // e força o layout agora: assim o ScrollTrigger, criado no DOMContentLoaded, mede a página com a
+      // altura final. A transição de abrir/fechar só passa a valer dois quadros depois.
       acc.classList.add("acc--js");
+      void acc.offsetHeight;
+      requestAnimationFrame(function () { requestAnimationFrame(function () { acc.classList.add("acc--ready"); }); });
       $$(".acc__b", acc).forEach(function (b) {
         var p = document.getElementById(b.getAttribute("aria-controls"));
         if (!p) return;
         p.inert = true;
+        var t;
+        var refresh = function () { clearTimeout(t); if (window.ScrollTrigger) ScrollTrigger.refresh(); };
+        // Recalcula os gatilhos quando a resposta termina de abrir/fechar (com folga caso o
+        // transitionend não venha, ex.: movimento reduzido ou aba em segundo plano).
+        p.addEventListener("transitionend", function (e) { if (e.target === p && e.propertyName === "grid-template-rows") refresh(); });
         b.addEventListener("click", function () {
           var open = b.getAttribute("aria-expanded") !== "true";
           b.setAttribute("aria-expanded", String(open));
           p.classList.toggle("is-open", open);
           p.inert = !open;
-          if (window.ScrollTrigger) setTimeout(function () { ScrollTrigger.refresh(); }, 600);
+          clearTimeout(t); t = setTimeout(refresh, 700);
         });
       });
     });

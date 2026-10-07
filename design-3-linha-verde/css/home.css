@@ -564,6 +564,10 @@
 .acc__p { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .55s var(--ease); }
 .acc:not(.acc--js) .acc__x { visibility: hidden; }   /* sem JS as respostas já ficam abertas */
 .acc--js .acc__p { grid-template-rows: 0fr; }
+/* Ao ativar o JS as respostas fecham de uma vez, sem transição: se a altura da página "deslizasse"
+   por 0,55 s, o ScrollTrigger mediria os gatilhos abaixo do FAQ no meio do caminho (contato invisível).
+   A transição só vale depois que o core.js marca .acc--ready. */
+.acc--js:not(.acc--ready) .acc__p { transition: none; }
 .acc--js .acc__p.is-open { grid-template-rows: 1fr; }
 .acc__in { overflow: hidden; }
 .acc__in p { padding: 0 46px 24px 108px; color: #2A2A28; font-size: 16px; max-width: 46em; }

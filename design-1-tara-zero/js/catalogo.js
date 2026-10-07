@@ -125,13 +125,18 @@
     readoutTween = gsap.to(o, { n: n, m: m, duration: .6, ease: "power2.out", onUpdate: function () { rN.textContent = Math.round(o.n); rM.textContent = Math.round(o.m); } });
   }
 
-  // Depois de filtrar, o começo da grade tem que estar à vista, logo abaixo da barra
+  // Depois de filtrar, o começo da grade tem que estar à vista, logo abaixo da barra.
+  // Espera um quadro: se a barra mudou de altura (chips), a ancoragem de rolagem do
+  // navegador já ajustou o scrollY e o Lenis já sincronizou.
   function revealGrid() {
-    var tbh = toolbar ? toolbar.offsetHeight : 0;
-    var top = grid.getBoundingClientRect().top;
-    if (top >= TZ.headerH() + tbh - 2 && top <= window.innerHeight - 120) return;
-    if (TZ.lenis) TZ.lenis.scrollTo(grid, { offset: 0, duration: 1 }); // o scroll-padding já inclui cabeçalho + barra
-    else window.scrollTo({ top: Math.max(0, window.scrollY + top - TZ.headerH() - tbh - 12), behavior: TZ.reduce ? "auto" : "smooth" });
+    requestAnimationFrame(function () {
+      var tbh = toolbar ? toolbar.offsetHeight : 0;
+      var top = grid.getBoundingClientRect().top;
+      if (top >= TZ.headerH() + tbh - 2 && top <= window.innerHeight - 120) return;
+      var y = Math.max(0, window.scrollY + top - TZ.headerH() - tbh - 12);
+      if (TZ.lenis) TZ.lenis.scrollTo(y, { duration: 1 });
+      else window.scrollTo({ top: y, behavior: TZ.reduce ? "auto" : "smooth" });
+    });
   }
 
   var first = true;
@@ -260,7 +265,7 @@
       '<h2 id="dw-title"><span class="sr-only">' + esc(p.marca) + " </span>" + esc(p.nome) + "</h2>" +
       '<p class="drawer__desc">' + esc(p.descricao || p.resumo) + "</p>" +
       '<div class="drawer__price"><span class="price"><span class="price__k">Preço</span><span class="price__v">' + (p.preco ? esc(p.preco) : "Consulte") + "</span></span><small>Preço e disponibilidade<br>direto pelo WhatsApp</small></div>" +
-      '<div class="drawer__actions"><a class="btn btn--primary btn--glow" href="' + esc(BC.whatsProduto(p)) + '" target="_blank" rel="noopener" data-dw-wa><svg aria-hidden="true"><use href="#i-wa"/></svg> Pedir orçamento<span class="dw-wa-x"> no WhatsApp</span></a>' +
+      '<div class="drawer__actions"><a class="btn btn--primary btn--glow" href="' + esc(BC.whatsProduto(p)) + '" target="_blank" rel="noopener" data-dw-wa><svg aria-hidden="true"><use href="#i-wa"/></svg><span>Pedir orçamento<span class="dw-wa-x"> no WhatsApp</span></span></a>' +
       '<a class="btn btn--ghost dw-tel" href="' + esc(BC.telLink()) + '" aria-label="Ligar para a Balanças.com"><svg aria-hidden="true"><use href="#i-phone"/></svg><span class="btn__txt">Ligar</span></a></div>' +
       (specs ? '<div class="specs"><h3>Especificações</h3><dl>' + specs + "</dl></div>" : "") +
       (rel ? '<div class="related"><h3>Veja também</h3><ul>' + rel + "</ul></div>" : "") +
@@ -404,6 +409,7 @@
   renderCards();
   renderTabs();
   apply();
+  grid.classList.add("is-ready");
   TZ.fill(d);
   initToolbarHide();
   // no celular, cada card tem o próprio WhatsApp: a pilha flutuante sai da frente da grade
