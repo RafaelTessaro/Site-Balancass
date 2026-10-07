@@ -20,7 +20,8 @@
   })();
 
   var ESTOQUE = {
-    disponivel: { rotulo: "Em estoque", classe: "disponivel", ordem: 0 },
+    disponivel: { rotulo: "Pronta entrega", classe: "disponivel", ordem: 0 },
+    consulte: { rotulo: "Consulte disponibilidade", classe: "consulte", ordem: 1 },
     encomenda: { rotulo: "Sob encomenda", classe: "encomenda", ordem: 1 },
     esgotado: { rotulo: "Esgotado", classe: "esgotado", ordem: 2 }
   };
@@ -62,8 +63,8 @@
 
   function ordenar(lista) {
     return lista.slice().sort(function (a, b) {
-      var ea = (ESTOQUE[a.estoque] || ESTOQUE.encomenda).ordem;
-      var eb = (ESTOQUE[b.estoque] || ESTOQUE.encomenda).ordem;
+      var ea = (ESTOQUE[a.estoque] || ESTOQUE.consulte).ordem;
+      var eb = (ESTOQUE[b.estoque] || ESTOQUE.consulte).ordem;
       if (ea !== eb) return ea - eb;
       if (!!b.destaque !== !!a.destaque) return b.destaque ? 1 : -1;
       return 0;
@@ -118,7 +119,10 @@
     contar: function (f) { return filtrar(f).length; },
     categoria: categoria,
     categoriaNome: categoriaNome,
-    estoque: function (p) { return ESTOQUE[p.estoque] || ESTOQUE.encomenda; },
+    estoque: function (p) { return ESTOQUE[p.estoque] || ESTOQUE.consulte; },
+    // true se algum produto estiver marcado como "disponivel" (pronta entrega).
+    // Use para esconder o filtro "Pronta entrega" quando não houver nenhum.
+    temProntaEntrega: function () { return TODOS.some(function (p) { return p.estoque === "disponivel"; }); },
     condicao: function (p) { return CONDICAO[p.condicao] || ""; },
 
     // Utilidades
@@ -126,6 +130,9 @@
     enderecoTexto: function () {
       var a = E.endereco || {};
       return a.rua + " – " + a.bairro + ", " + a.cidade + "/" + a.uf + (a.cep ? " · CEP " + a.cep : "");
+    },
+    referenciaEndereco: function () {
+      return (E.endereco && E.endereco.referencia) || "";
     },
     anosDesde: function () { return new Date().getFullYear() - (E.desde || 2010); },
     escape: function (s) {

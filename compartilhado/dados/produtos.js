@@ -15,14 +15,17 @@
      descricao     → texto maior que aparece nos detalhes
      especificacoes→ lista de ["Nome", "Valor"] (pode deixar [])
      imagem        → nome do arquivo em compartilhado/img/produtos/
-     estoque       → "disponivel" (Em estoque) | "encomenda" (Sob encomenda) | "esgotado"
+     estoque       → "consulte"   (Consulte disponibilidade — padrão)
+                     "disponivel" (Pronta entrega)
+                     "encomenda"  (Sob encomenda)
+                     "esgotado"   (Esgotado)
      condicao      → "novo" | "seminovo"
      preco         → "" para não mostrar preço, ou ex: "R$ 2.490,00 à vista"
      destaque      → true para aparecer na página inicial
      visivel       → (opcional) false esconde o produto sem apagar
 
-   IMPORTANTE: os status de estoque abaixo são EXEMPLOS para o design.
-   Ajuste conforme o estoque real da loja.
+   Todos os produtos começam como "consulte" (Consulte disponibilidade).
+   Se quiser destacar algo que está na loja, troque para "disponivel".
    ===================================================================== */
 
 window.CATEGORIAS = [
@@ -59,7 +62,7 @@ window.PRODUTOS = [
     descricao: "Pesa, calcula o preço e imprime etiquetas com código de barras lidas direto no caixa. Ideal para padarias, açougues, rotisserias e hortifrútis que querem agilidade no atendimento.",
     especificacoes: [["Capacidade", "15 kg"], ["Impressão", "Etiquetas térmicas com código de barras"], ["Indicada para", "Padarias, açougues e frios"]],
     imagem: "prix4uno.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: true
@@ -74,7 +77,7 @@ window.PRODUTOS = [
     descricao: "Balança computadora com impressora de etiquetas para setores de grande movimento, como açougues, padarias e seções de frios de supermercados.",
     especificacoes: [["Capacidade", "30 kg"], ["Impressão", "Etiquetas térmicas com código de barras"], ["Indicada para", "Supermercados e açougues"]],
     imagem: "prix4due.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -89,7 +92,7 @@ window.PRODUTOS = [
     descricao: "Modelo robusto da linha Prix com impressora de etiquetas, teclado amplo para cadastro rápido de produtos e display de fácil leitura para operador e cliente.",
     especificacoes: [["Capacidade", "30 kg"], ["Impressão", "Etiquetas térmicas com código de barras"], ["Indicada para", "Supermercados, padarias e frios"]],
     imagem: "prix5.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: true
@@ -104,7 +107,7 @@ window.PRODUTOS = [
     descricao: "Balança computadora com impressora de etiquetas da Balmak. Imprime etiquetas com código de barras para leitura direta no PDV, com teclado de produtos e display para operador e cliente.",
     especificacoes: [["Capacidade", "30 kg"], ["Impressão", "Etiquetas térmicas com código de barras"], ["Indicada para", "Padarias, açougues e hortifrútis"]],
     imagem: "balmak.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: true
@@ -119,7 +122,7 @@ window.PRODUTOS = [
     descricao: "Linha Orion 2 da Balmak, com impressora de etiquetas, disponível em versão de balcão e com torre de display elevado.",
     especificacoes: [["Capacidade", "30 kg"], ["Impressão", "Etiquetas térmicas com código de barras"]],
     imagem: "balmak-orion2.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -134,7 +137,7 @@ window.PRODUTOS = [
     descricao: "Balança computadora (pesa e calcula preço) da Toledo, ideal para feiras, hortifrútis, docerias e pequenos comércios.",
     especificacoes: [["Capacidade", "15 kg"], ["Função", "Pesa e calcula o preço"], ["Indicada para", "Hortifrútis e pequenos comércios"]],
     imagem: "prix3fit.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: true
@@ -149,8 +152,8 @@ window.PRODUTOS = [
     descricao: "Balança que pesa e calcula o preço, com displays para operador e cliente. Robusta, com prato em aço inox.",
     especificacoes: [["Função", "Pesa e calcula o preço"], ["Prato", "Aço inox"]],
     imagem: "prix3plus.webp",
-    estoque: "disponivel",
-    condicao: "seminovo",
+    estoque: "consulte",
+    condicao: "novo",
     preco: "",
     destaque: false
   },
@@ -164,7 +167,7 @@ window.PRODUTOS = [
     descricao: "Balança computadora da Balmak que pesa e calcula preço, com visual moderno e displays de fácil leitura.",
     especificacoes: [["Capacidade", "15 kg ou 30 kg"], ["Função", "Pesa e calcula o preço"]],
     imagem: "balmak-one.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -179,7 +182,7 @@ window.PRODUTOS = [
     descricao: "Balança pesadora Toledo para balcões e caixas, indicada para conferência de peso e integração com o sistema de vendas.",
     especificacoes: [["Função", "Pesadora"]],
     imagem: "9094plus.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -194,7 +197,7 @@ window.PRODUTOS = [
     descricao: "Versão pesadora da linha ONE da Balmak, ideal para balcões e conferência de mercadorias.",
     especificacoes: [["Função", "Pesadora"]],
     imagem: "one-pesadora.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -209,7 +212,7 @@ window.PRODUTOS = [
     descricao: "Balança para embutir no checkout, integrada ao PDV para pesagem direta no caixa.",
     especificacoes: [["Capacidade", "30 kg"], ["Instalação", "Embutida no checkout"]],
     imagem: "8217.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -224,7 +227,7 @@ window.PRODUTOS = [
     descricao: "Balança de checkout da Balmak para pesagem no caixa, integrada ao sistema de vendas.",
     especificacoes: [["Capacidade", "30 kg"], ["Instalação", "Checkout / caixa"]],
     imagem: "bck30.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -239,7 +242,7 @@ window.PRODUTOS = [
     descricao: "Linha de balanças de plataforma Toledo para recebimento de mercadorias, conferência e uso industrial.",
     especificacoes: [["Capacidade", "até 300 kg"], ["Uso", "Indústria, depósito e conferência"]],
     imagem: "2098.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: true
@@ -254,8 +257,8 @@ window.PRODUTOS = [
     descricao: "Balança de plataforma robusta para recebimento, expedição e conferência de mercadorias.",
     especificacoes: [["Capacidade", "300 kg"], ["Uso", "Indústria, depósito e conferência"]],
     imagem: "w300.webp",
-    estoque: "disponivel",
-    condicao: "seminovo",
+    estoque: "consulte",
+    condicao: "novo",
     preco: "",
     destaque: false
   },
@@ -269,7 +272,7 @@ window.PRODUTOS = [
     descricao: "Balança médica digital com coluna, para farmácias, clínicas, consultórios e hospitais.",
     especificacoes: [["Uso", "Farmácias, clínicas e hospitais"]],
     imagem: "hospitalar.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -284,7 +287,7 @@ window.PRODUTOS = [
     descricao: "Balança digital Balmak para farmácias, academias e clínicas, com capacidade de 200 kg.",
     especificacoes: [["Capacidade", "200 kg"], ["Uso", "Farmácias, academias e clínicas"]],
     imagem: "bk200f.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -301,7 +304,7 @@ window.PRODUTOS = [
     descricao: "Impressora de etiquetas de mesa para etiquetas de gôndola, produtos, códigos de barras e expedição.",
     especificacoes: [["Tipo", "Impressora de etiquetas de mesa"]],
     imagem: "l42pro.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: true
@@ -316,7 +319,7 @@ window.PRODUTOS = [
     descricao: "Impressora de etiquetas de mesa Argox, compacta e confiável para o dia a dia do comércio.",
     especificacoes: [["Tipo", "Impressora de etiquetas de mesa"]],
     imagem: "argox.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -331,7 +334,7 @@ window.PRODUTOS = [
     descricao: "Impressora industrial Zebra para produção de etiquetas em alto volume, ideal para indústrias e centros de distribuição.",
     especificacoes: [["Tipo", "Impressora de etiquetas industrial"]],
     imagem: "zebra.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -346,7 +349,7 @@ window.PRODUTOS = [
     descricao: "Leitor de código de barras de mão para caixas, estoque e conferência.",
     especificacoes: [["Tipo", "Leitor de mão"]],
     imagem: "tl120.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -361,7 +364,7 @@ window.PRODUTOS = [
     descricao: "Leitor de código de barras com suporte, para uso nas mãos ou apoiado no balcão do caixa.",
     especificacoes: [["Tipo", "Leitor de mão com suporte"]],
     imagem: "tl220.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -376,7 +379,7 @@ window.PRODUTOS = [
     descricao: "Leitor de código de barras com suporte de mesa, leitura rápida inclusive de códigos danificados.",
     especificacoes: [["Tipo", "Leitor de mão com suporte"]],
     imagem: "quickscan.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -391,7 +394,7 @@ window.PRODUTOS = [
     descricao: "Leitor de mesa para checkout: basta passar o produto em frente ao leitor, sem precisar posicionar o código.",
     especificacoes: [["Tipo", "Leitor fixo de checkout"]],
     imagem: "el4200.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: true
@@ -406,7 +409,7 @@ window.PRODUTOS = [
     descricao: "Leitor fixo de mesa para checkout, ideal para caixas com grande volume de vendas.",
     especificacoes: [["Tipo", "Leitor fixo de checkout"]],
     imagem: "tl900.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -421,7 +424,7 @@ window.PRODUTOS = [
     descricao: "Gaveta de dinheiro em aço, com abertura automática pela impressora ou semiautomática.",
     especificacoes: [["Abertura", "Automática ou semiautomática"]],
     imagem: "menno.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -436,7 +439,7 @@ window.PRODUTOS = [
     descricao: "Gaveta de dinheiro Bematech para PDV, com abertura automática pela impressora ou semiautomática.",
     especificacoes: [["Abertura", "Automática ou semiautomática"]],
     imagem: "gavetabema.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -451,7 +454,7 @@ window.PRODUTOS = [
     descricao: "Terminal de consulta de preços para instalar no salão da loja: o cliente passa o código de barras e vê o preço na hora.",
     especificacoes: [["Tipo", "Terminal de consulta de preço"]],
     imagem: "gertec504.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -466,7 +469,7 @@ window.PRODUTOS = [
     descricao: "Terminal compacto de consulta de preços para supermercados e lojas.",
     especificacoes: [["Tipo", "Terminal de consulta de preço"]],
     imagem: "gertecg2.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -481,7 +484,7 @@ window.PRODUTOS = [
     descricao: "Microterminal para lançamento de pedidos e comandas em bares, restaurantes e lanchonetes.",
     especificacoes: [["Tipo", "Microterminal"]],
     imagem: "mt720.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -496,7 +499,7 @@ window.PRODUTOS = [
     descricao: "Teclado programável com teclas configuráveis para atalhos e produtos, agilizando as vendas no PDV.",
     especificacoes: [["Teclas", "44 programáveis"]],
     imagem: "tec44.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -511,7 +514,7 @@ window.PRODUTOS = [
     descricao: "Teclado programável para PDV com teclas configuráveis.",
     especificacoes: [["Tipo", "Teclado programável"]],
     imagem: "sko44.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -526,7 +529,7 @@ window.PRODUTOS = [
     descricao: "Fatiador automático em aço inox para frios e embutidos, com alta produtividade e acabamento profissional.",
     especificacoes: [["Operação", "Automática"], ["Material", "Aço inox"]],
     imagem: "fatiador.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: true
@@ -541,8 +544,8 @@ window.PRODUTOS = [
     descricao: "Fatiador semiautomático para frios e embutidos, ideal para padarias, mercearias e açougues.",
     especificacoes: [["Operação", "Semiautomática"], ["Material", "Aço inox"]],
     imagem: "uni350.webp",
-    estoque: "disponivel",
-    condicao: "seminovo",
+    estoque: "consulte",
+    condicao: "novo",
     preco: "",
     destaque: false
   },
@@ -556,7 +559,7 @@ window.PRODUTOS = [
     descricao: "Solução de mídia digital para exibir tabela de preços, ofertas, publicidade e chamada de senhas em TVs.",
     especificacoes: [["Uso", "Preços, ofertas e senhas"]],
     imagem: "mit.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -571,7 +574,7 @@ window.PRODUTOS = [
     descricao: "Tabela digital para exibir preços, publicidade e ofertas em TVs na sua loja.",
     especificacoes: [["Uso", "Preços, ofertas e publicidade"]],
     imagem: "allmidia.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -588,7 +591,7 @@ window.PRODUTOS = [
     descricao: "Mini computador completo para frente de caixa: compacto, silencioso e eficiente para rodar o sistema de vendas.",
     especificacoes: [["Formato", "Mini PC"], ["Uso", "Frente de caixa"]],
     imagem: "centrium-pc.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: true
@@ -603,7 +606,7 @@ window.PRODUTOS = [
     descricao: "Impressora térmica não fiscal com guilhotina, para cupons, pedidos e comprovantes.",
     especificacoes: [["Tipo", "Térmica não fiscal"], ["Corte", "Guilhotina"], ["Conexão", "USB / Ethernet"]],
     imagem: "tanca.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -618,7 +621,7 @@ window.PRODUTOS = [
     descricao: "Impressora térmica não fiscal com guilhotina, muito usada em PDVs, restaurantes e lanchonetes.",
     especificacoes: [["Tipo", "Térmica não fiscal"], ["Corte", "Guilhotina"]],
     imagem: "elgin-i9.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: true
@@ -633,7 +636,7 @@ window.PRODUTOS = [
     descricao: "Impressora térmica não fiscal Epson, robusta e com guilhotina, para cupons e comprovantes.",
     especificacoes: [["Tipo", "Térmica não fiscal"], ["Corte", "Guilhotina"]],
     imagem: "epson-t20.webp",
-    estoque: "encomenda",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -648,7 +651,7 @@ window.PRODUTOS = [
     descricao: "Equipamento SAT (CF-e). Atenção: em SP o CF-e SAT está proibido desde 01/01/2026 — fale com a gente para migrar para NFC-e.",
     especificacoes: [["Documento", "CF-e SAT"]],
     imagem: "bematech-sat.webp",
-    estoque: "esgotado",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false,
@@ -664,7 +667,7 @@ window.PRODUTOS = [
     descricao: "Equipamento SAT (CF-e). Atenção: em SP o CF-e SAT está proibido desde 01/01/2026 — fale com a gente para migrar para NFC-e.",
     especificacoes: [["Documento", "CF-e SAT"]],
     imagem: "elgin-smart.webp",
-    estoque: "esgotado",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false,
@@ -680,7 +683,7 @@ window.PRODUTOS = [
     descricao: "Equipamento SAT (CF-e). Atenção: em SP o CF-e SAT está proibido desde 01/01/2026 — fale com a gente para migrar para NFC-e.",
     especificacoes: [["Documento", "CF-e SAT"]],
     imagem: "sat-tanca.webp",
-    estoque: "esgotado",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false,
@@ -696,7 +699,7 @@ window.PRODUTOS = [
     descricao: "Nobreak para proteger computador, impressora e balança contra quedas e oscilações de energia.",
     especificacoes: [["Potência", "400 VA"], ["Tensão", "Bivolt"]],
     imagem: "nobreak-apc.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false
@@ -711,7 +714,7 @@ window.PRODUTOS = [
     descricao: "Nobreak NHS para proteger os equipamentos do caixa contra quedas e oscilações de energia.",
     especificacoes: [["Potência", "400 VA"], ["Tensão", "Bivolt"]],
     imagem: "nobreak-nhs.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: false

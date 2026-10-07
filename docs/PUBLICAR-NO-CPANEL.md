@@ -16,12 +16,12 @@ O site novo é **estático**: só arquivos HTML, CSS, JavaScript e imagens. Não
 
 ## Checklist antes de publicar
 
-- [ ] Confirmar o **endereço atual** (Google e Receita mostram *Rua 13, 650 – Consolação*; o site antigo mostra *Av. 12, 1313 – Centro*).
+- [x] Endereço confirmado: *Rua 13, 650 – entre as Avenidas 9 e 11 – Boa Morte*. Vale atualizar também o Google Meu Negócio e a página do BC Fichas, que ainda mostram endereços antigos/diferentes.
 - [ ] Confirmar que o **(19) 3023-9050 está no WhatsApp Business** (o link `wa.me` só funciona com número registrado no WhatsApp).
-- [ ] Número da **autorização do IPEM-SP** (oficina permissionária) para exibir no site.
+- [x] IPEM-SP: oficina autorizada (o site diz "Autorizada pelo IPEM-SP", sem número).
 - [ ] Instagram da empresa (se houver).
 - [ ] Fotos reais: fachada, balcão, bancada técnica, equipe. Valem muito mais que fotos de banco de imagens.
-- [ ] Revisar o estoque de cada produto em `compartilhado/dados/produtos.js`.
+- [ ] Revisar a lista de produtos em `compartilhado/dados/produtos.js` (todos começam como "Consulte disponibilidade").
 
 ## Manutenção do dia a dia
 

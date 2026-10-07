@@ -10,6 +10,7 @@ window.EMPRESA = {
   nome: "Balanças.com",
   slogan: "Automação Comercial",
   frase: "A medida certa para o seu negócio",
+  ipem: "Oficina autorizada pelo IPEM-SP",
   razaoSocial: "Fabio de Godoy Lima Ltda",
   cnpj: "12.403.843/0001-18",
   desde: 2010,            // ano de abertura (CNPJ)
@@ -32,10 +33,10 @@ window.EMPRESA = {
 
   email: "balancas.com@gmail.com",
 
-  // CONFIRMAR: endereço do Google/Receita. O site antigo dizia "Av. 12, 1313 - Centro".
   endereco: {
     rua: "Rua 13, 650",
-    bairro: "Consolação",
+    referencia: "Entre as Avenidas 9 e 11",
+    bairro: "Boa Morte",
     cidade: "Rio Claro",
     uf: "SP",
     cep: "13500-120"

@@ -40,7 +40,7 @@ Não é preciso mexer no HTML nem no design. Basta editar esse arquivo e enviar 
     descricao: "Balança com tela sensível ao toque, impressora de etiquetas e integração com o PDV.",
     especificacoes: [["Capacidade", "15 kg"], ["Tela", "Touch"]],
     imagem: "toledo-prix-6.webp",
-    estoque: "disponivel",
+    estoque: "consulte",
     condicao: "novo",
     preco: "",
     destaque: true
@@ -60,18 +60,18 @@ Não é preciso mexer no HTML nem no design. Basta editar esse arquivo e enviar 
 | `descricao` | Texto maior (aparece ao abrir os detalhes). |
 | `especificacoes` | Lista de pares `["Nome", "Valor"]`. Pode deixar `[]` se não quiser. |
 | `imagem` | Nome exato do arquivo enviado no passo 2. |
-| `estoque` | `"disponivel"` (Em estoque), `"encomenda"` (Sob encomenda) ou `"esgotado"`. |
-| `condicao` | `"novo"` ou `"seminovo"`. |
+| `estoque` | `"consulte"` → **Consulte disponibilidade** (padrão, recomendado). Opcionais: `"disponivel"` → **Pronta entrega**, `"encomenda"` → **Sob encomenda**, `"esgotado"`. |
+| `condicao` | `"novo"` ou `"seminovo"` (o selo só aparece para seminovo). |
 | `preco` | `""` para mostrar "Consulte", ou um texto como `"R$ 2.490,00 à vista"`. |
 | `destaque` | `true` para aparecer também na página inicial; `false` só no catálogo. |
 | `visivel` | (opcional) `false` esconde o produto sem apagar. |
 
 ## 4. Tarefas do dia a dia
 
-- **Chegou mercadoria / acabou o estoque:** troque só o `estoque:` do produto (`"disponivel"` ↔ `"encomenda"` ↔ `"esgotado"`).
+- **Estoque:** por padrão todos os produtos mostram **"Consulte disponibilidade"**, e o cliente confirma pelo WhatsApp. Se quiser destacar algo que está na loja, troque o `estoque:` para `"disponivel"` (aparece **Pronta entrega** e o filtro de pronta entrega surge sozinho no catálogo).
 - **Tirar um produto do site por um tempo:** acrescente `visivel: false,` dentro do bloco.
 - **Apagar de vez:** apague o bloco inteiro, do `{` até o `},`.
-- **Mudar a ordem:** produtos **em estoque** aparecem primeiro automaticamente; dentro disso, os com `destaque: true` vêm antes.
+- **Mudar a ordem:** produtos de **pronta entrega** aparecem primeiro automaticamente; dentro disso, os com `destaque: true` vêm antes.
 - **Telefone, endereço, horários, clientes, depoimentos:** ficam em `compartilhado/dados/empresa.js`, editados do mesmo jeito.
 
 ## 5. Conferir
