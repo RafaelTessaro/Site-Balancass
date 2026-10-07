@@ -1,0 +1,61 @@
+# =====================================================================
+# .htaccess — Balanças.com (HostGator / cPanel)
+# Vai na raiz do site: public_html/.htaccess
+# Tudo está dentro de <IfModule>: se um módulo não existir, não dá erro 500.
+# =====================================================================
+DirectoryIndex index.html
+Options -Indexes
+ErrorDocument 404 /404.html
+AddDefaultCharset UTF-8
+AddType image/webp .webp
+AddType image/avif .avif
+AddType application/manifest+json .webmanifest
+
+# --- HTTPS + endereço único (sem www) em um só redirecionamento ----------
+# Ative DEPOIS que o certificado SSL (AutoSSL) estiver funcionando.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} !^/\.well-known/
+  RewriteCond %{HTTPS} !=on [OR]
+  RewriteCond %{HTTP_HOST} ^www\. [NC]
+  RewriteRule ^ https://balancass.com%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# --- Compressão -----------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json application/ld+json application/xml image/svg+xml application/manifest+json
+</IfModule>
+
+# --- Cache do navegador ---------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 1 hour"
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 month"
+  ExpiresByType image/avif "access plus 1 month"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType image/x-icon "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+# --- Segurança e catálogo sempre atualizado -------------------------------
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  # HTML e dados (produtos/empresa) nunca ficam presos no cache:
+  # o que você editar aparece na hora.
+  <FilesMatch "(\.html|produtos\.js|empresa\.js)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
+# --- Bloqueia arquivos que não devem ser baixados --------------------------
+<FilesMatch "(^\.ht|\.(bak|zip|sql|log|md|ini|sh)$)">
+  Require all denied
+</FilesMatch>

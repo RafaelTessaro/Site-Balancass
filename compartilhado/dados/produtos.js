@@ -645,13 +645,14 @@ window.PRODUTOS = [
     categoria: "informatica",
     subcategoria: "Emissores fiscais (SAT)",
     resumo: "Equipamento SAT para emissão de CF-e.",
-    descricao: "Equipamento SAT para emissão do Cupom Fiscal Eletrônico (CF-e SAT). Consulte-nos sobre a migração para NFC-e.",
+    descricao: "Equipamento SAT (CF-e). Atenção: em SP o CF-e SAT está proibido desde 01/01/2026 — fale com a gente para migrar para NFC-e.",
     especificacoes: [["Documento", "CF-e SAT"]],
     imagem: "bematech-sat.webp",
     estoque: "esgotado",
     condicao: "novo",
     preco: "",
-    destaque: false
+    destaque: false,
+    visivel: false   // SAT proibido em SP desde 01/01/2026
   },
   {
     id: "sat-elgin-smart",
@@ -660,13 +661,14 @@ window.PRODUTOS = [
     categoria: "informatica",
     subcategoria: "Emissores fiscais (SAT)",
     resumo: "Equipamento SAT para emissão de CF-e.",
-    descricao: "Equipamento SAT para emissão do Cupom Fiscal Eletrônico (CF-e SAT). Consulte-nos sobre a migração para NFC-e.",
+    descricao: "Equipamento SAT (CF-e). Atenção: em SP o CF-e SAT está proibido desde 01/01/2026 — fale com a gente para migrar para NFC-e.",
     especificacoes: [["Documento", "CF-e SAT"]],
     imagem: "elgin-smart.webp",
     estoque: "esgotado",
     condicao: "novo",
     preco: "",
-    destaque: false
+    destaque: false,
+    visivel: false   // SAT proibido em SP desde 01/01/2026
   },
   {
     id: "sat-tanca-ts1000",
@@ -675,13 +677,14 @@ window.PRODUTOS = [
     categoria: "informatica",
     subcategoria: "Emissores fiscais (SAT)",
     resumo: "Equipamento SAT para emissão de CF-e.",
-    descricao: "Equipamento SAT para emissão do Cupom Fiscal Eletrônico (CF-e SAT). Consulte-nos sobre a migração para NFC-e.",
+    descricao: "Equipamento SAT (CF-e). Atenção: em SP o CF-e SAT está proibido desde 01/01/2026 — fale com a gente para migrar para NFC-e.",
     especificacoes: [["Documento", "CF-e SAT"]],
     imagem: "sat-tanca.webp",
     estoque: "esgotado",
     condicao: "novo",
     preco: "",
-    destaque: false
+    destaque: false,
+    visivel: false   // SAT proibido em SP desde 01/01/2026
   },
   {
     id: "nobreak-apc",

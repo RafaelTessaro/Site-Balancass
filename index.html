@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Propostas de design · Balanças.com</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="compartilhado/img/logo/balancas-icone.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0b0d0c; --card:#141816; --line:#26302b; --txt:#eef2ef; --mut:#9aa39e; --g:#019F42; --g2:#1FE07A; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--txt); font:500 16px/1.6 "Plus Jakarta Sans", system-ui, sans-serif; }
+    .wrap { max-width:1240px; margin:0 auto; padding:56px 20px 80px; }
+    header { display:flex; align-items:center; gap:16px; margin-bottom:12px; }
+    header img { width:52px; height:52px; }
+    .marca b { display:block; font-size:22px; letter-spacing:.02em; }
+    .marca span { color:var(--g2); font-size:12px; letter-spacing:.24em; font-weight:700; }
+    h1 { font-size:clamp(30px,5vw,54px); line-height:1.1; margin:40px 0 12px; letter-spacing:-.02em; }
+    h1 em { font-style:normal; color:var(--g2); }
+    .lead { color:var(--mut); max-width:720px; margin:0 0 44px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:22px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:22px; overflow:hidden; display:flex; flex-direction:column; transition:transform .35s cubic-bezier(.2,.8,.2,1), border-color .35s; }
+    .card:hover { transform:translateY(-6px); border-color:var(--g); }
+    .thumb { aspect-ratio:16/10; background:#0f1211 center top/cover no-repeat; border-bottom:1px solid var(--line); }
+    .body { padding:22px 22px 24px; display:flex; flex-direction:column; gap:10px; flex:1; }
+    .num { font-size:12px; letter-spacing:.2em; color:var(--g2); font-weight:700; }
+    h2 { margin:0; font-size:26px; letter-spacing:-.01em; }
+    .body p { margin:0; color:var(--mut); font-size:15px; }
+    .acoes { display:flex; gap:10px; flex-wrap:wrap; margin-top:auto; padding-top:12px; }
+    .btn { display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:10px 18px; border-radius:999px; font-weight:700; font-size:14px; text-decoration:none; }
+    .btn.pri { background:var(--g); color:#04140a; }
+    .btn.pri:hover { background:var(--g2); }
+    .btn.sec { border:1px solid var(--line); color:var(--txt); }
+    .btn.sec:hover { border-color:var(--mut); }
+    .rodape { margin-top:56px; padding-top:24px; border-top:1px solid var(--line); color:var(--mut); font-size:14px; display:flex; flex-wrap:wrap; gap:8px 24px; }
+    .rodape a { color:var(--txt); }
+    @media (prefers-reduced-motion: reduce) { .card { transition:none; } .card:hover { transform:none; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img src="compartilhado/img/logo/balancas-icone-claro.svg" alt="" width="52" height="52">
+      <div class="marca"><b>BALANÇAS.COM</b><span>AUTOMAÇÃO COMERCIAL</span></div>
+    </header>
+
+    <h1>Três propostas para o <em>novo site</em></h1>
+    <p class="lead">Todas usam o mesmo conteúdo e o mesmo catálogo de produtos. O que muda é o estilo visual, as animações e a forma de apresentar a empresa. Abra cada uma, navegue no celular e no computador, e escolha a direção. Também dá para misturar: o hero de uma com o catálogo de outra.</p>
+
+    <div class="grid">
+      <article class="card">
+        <div class="thumb" style="background-image:url('docs/capas/design-1.webp')"></div>
+        <div class="body">
+          <span class="num">PROPOSTA 01</span>
+          <h2>Tara Zero</h2>
+          <p>Escuro e premium, com cara de tecnologia de ponta. O visor da balança "pesa" na abertura com dígitos de LCD verde, os produtos flutuam em palco iluminado e a rolagem é suave e cinematográfica.</p>
+          <div class="acoes">
+            <a class="btn pri" href="design-1-tara-zero/index.html">Ver o site</a>
+            <a class="btn sec" href="design-1-tara-zero/produtos.html">Catálogo</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="thumb" style="background-image:url('docs/capas/design-2.webp')"></div>
+        <div class="body">
+          <span class="num">PROPOSTA 02</span>
+          <h2>Balcão</h2>
+          <p>Claro, limpo e organizado como uma loja bem montada. Blocos em mosaico, seletor por tipo de comércio (padaria, açougue, mercado…) que monta o kit ideal e leva direto ao WhatsApp.</p>
+          <div class="acoes">
+            <a class="btn pri" href="design-2-balcao/index.html">Ver o site</a>
+            <a class="btn sec" href="design-2-balcao/produtos.html">Catálogo</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="thumb" style="background-image:url('docs/capas/design-3.webp')"></div>
+        <div class="body">
+          <span class="num">PROPOSTA 03</span>
+          <h2>Linha Verde</h2>
+          <p>Industrial e ousado, com tipografia gigante e a faixa diagonal verde dos banners atuais transformada em identidade. Linhas técnicas, fichas de especificação e esteira de produtos.</p>
+          <div class="acoes">
+            <a class="btn pri" href="design-3-linha-verde/index.html">Ver o site</a>
+            <a class="btn sec" href="design-3-linha-verde/produtos.html">Catálogo</a>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="rodape">
+      <span>Guias:</span>
+      <a href="docs/COMO-ADICIONAR-PRODUTOS.md">Como adicionar produtos</a>
+      <a href="docs/PUBLICAR-NO-CPANEL.md">Como publicar no cPanel</a>
+    </div>
+  </div>
+</body>
+</html>

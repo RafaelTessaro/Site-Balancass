@@ -26,6 +26,15 @@
   };
   var CONDICAO = { novo: "Novo", seminovo: "Seminovo" };
 
+  // Fotos que já têm versão recortada (fundo transparente) em img/produtos-recorte/.
+  // Produto novo sem recorte usa automaticamente a foto normal.
+  // Se você criar um recorte para um produto novo, informe no produto:  recorte: "arquivo.png",
+  var RECORTES = ["2098.webp","8217.webp","9094plus.webp","allmidia.webp","argox.webp","balmak-one.webp","balmak-orion2.webp","balmak.webp","bck30.webp","bematech-sat.webp","bk200f.webp","centrium-pc.webp","el4200.webp","elgin-i9.webp","elgin-smart.webp","epson-t20.webp","fatiador.webp","gavetabema.webp","gertec504.webp","gertecg2.webp","hospitalar.webp","l42pro.webp","menno.webp","mit.webp","mt720.webp","nobreak-apc.webp","nobreak-nhs.webp","one-pesadora.webp","prix3fit.webp","prix3plus.webp","prix4due.webp","prix4uno.webp","prix5.webp","quickscan.webp","sat-custom.webp","sat-jetway.webp","sat-tanca.webp","sko44.webp","tanca.webp","tec44.webp","tl120.webp","tl220.webp","tl900.webp","uni350.webp","w300.webp","zebra.webp"];
+
+  function temRecorte(p) {
+    return !!(p && (p.recorte || RECORTES.indexOf(p.imagem) !== -1));
+  }
+
   function normaliza(s) {
     return (s == null ? "" : String(s))
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -95,7 +104,11 @@
     emailLink: function (assunto) { return "mailto:" + E.email + (assunto ? "?subject=" + encodeURIComponent(assunto) : ""); },
 
     // Imagens: recorte = fundo transparente (bom para fundos escuros/coloridos)
-    imgProduto: function (p, recorte) { return base + "img/" + (recorte ? "produtos-recorte/" : "produtos/") + p.imagem; },
+    imgProduto: function (p, recorte) {
+      if (recorte && temRecorte(p)) return base + "img/produtos-recorte/" + (p.recorte || p.imagem);
+      return base + "img/produtos/" + p.imagem;
+    },
+    temRecorte: temRecorte,
     img: function (caminho) { return base + "img/" + caminho; },
 
     // Produtos
