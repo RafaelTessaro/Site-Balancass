@@ -68,6 +68,10 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 
 :focus-visible { outline: 2px solid var(--volt); outline-offset: 3px; }
 .on-paper :focus-visible, .on-green :focus-visible { outline-color: var(--ink); }
+/* Tema escuro aninhado em fundo claro e faixas pretas: anel volt de novo */
+.on-paper .on-dark :focus-visible, .ticker--brands :focus-visible { outline-color: var(--volt); }
+/* Alvos de âncora (seções, painel) recebem foco por script: sem anel */
+[tabindex="-1"]:focus { outline: none; }
 
 .sr-only {
   position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -81,6 +85,7 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 }
 .skip:focus { transform: none; }
 .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.nobr { white-space: nowrap; }
 
 .i { width: 1.15em; height: 1.15em; flex: none; fill: currentColor; }
 
@@ -114,7 +119,7 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
   font-family: var(--f-display);
   font-weight: 900;
   font-size: clamp(52px, 7.6vw, 132px);
-  line-height: .88;
+  line-height: .98;
   letter-spacing: -.005em;
   text-transform: uppercase;
   text-wrap: balance;
@@ -122,7 +127,8 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .h2--md { font-size: clamp(48px, 6.2vw, 104px); }
 .h3 {
   font-family: var(--f-display); font-weight: 800;
-  font-size: clamp(30px, 3.2vw, 48px); line-height: .95; text-transform: uppercase;
+  font-size: clamp(30px, 3.2vw, 48px); line-height: 1.02; text-transform: uppercase;
+  text-wrap: balance;
 }
 
 /* Rótulos/etiquetas */
@@ -156,7 +162,7 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .crop::after  { width: 1px; height: 100%; }
 .crop--tl { top: calc(var(--hdr) + 16px); left: 16px; }
 .crop--tl::before { top: 0; left: 0; } .crop--tl::after { top: 0; left: 0; }
-.crop--br { bottom: 16px; right: 16px; }
+.crop--br { bottom: calc(49px + 16px); right: 16px; }
 .crop--br::before { bottom: 0; right: 0; } .crop--br::after { bottom: 0; right: 0; }
 
 /* ---------- Botões: pontas cortadas em −12° ---------- */
@@ -185,7 +191,10 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .btn:hover::after, .btn:focus-visible::after { transform: skewX(var(--slash)) scaleX(1); transform-origin: 0 50%; }
 .btn:hover, .btn:focus-visible { color: var(--b-hfg); }
 .btn:focus-visible { outline-offset: 4px; }
-@media (max-width: 420px) { .btn { white-space: normal; text-align: center; padding-inline: calc(18px + var(--bh) * var(--tan) / 2); } }
+@media (max-width: 420px) {
+  .btn { white-space: normal; text-align: center; padding-inline: calc(18px + var(--bh) * var(--tan) / 2); }
+  .btn .st::before { white-space: normal; }
+}
 .btn .i { width: 20px; height: 20px; }
 .btn--sm { --bh: 44px; font-size: 12.5px; padding-inline: calc(18px + var(--bh) * var(--tan) / 2); gap: 9px; }
 .btn--sm .i { width: 17px; height: 17px; }
@@ -195,14 +204,20 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .btn--ink   { --b-bg: var(--ink); --b-fg: var(--paper); --b-hv: var(--green); --b-hfg: var(--ink); }
 .btn--line  { --b-bg: transparent; --b-bd: currentColor; --b-fg: var(--paper); --b-hv: var(--paper); --b-hfg: var(--ink); }
 .on-paper .btn--line { --b-fg: var(--ink); --b-hv: var(--ink); --b-hfg: var(--paper); }
+.on-paper .on-dark .btn--line { --b-fg: var(--paper); --b-hv: var(--paper); --b-hfg: var(--ink); }
+.on-paper .on-dark .btn--green { --b-hv: var(--paper); --b-hfg: var(--ink); }
 
 .link-u {
+  display: inline-flex; align-items: center; gap: .35em; min-height: 44px;
   font: 600 14px/1.2 var(--f-text); letter-spacing: .04em; text-transform: uppercase; text-decoration: none;
-  background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1.5px no-repeat;
-  padding-bottom: 4px; transition: background-size .45s var(--ease);
+  background: linear-gradient(currentColor, currentColor) 0 calc(50% + .95em) / 100% 1.5px no-repeat;
+  transition: background-size .45s var(--ease);
 }
 .link-u:hover { background-size: 30% 1.5px; }
-.link-out { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 2px; }
+.link-out {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) 0 calc(50% + 1em) / 100% 1px no-repeat;
+}
 .link-out .i { width: 13px; height: 13px; }
 .on-paper .link-out { color: var(--green-deep); }
 
@@ -213,7 +228,8 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
   padding: 7px 9px 6px; border: 1px solid var(--line); color: inherit;
 }
 .on-paper .chips li { border-color: #B9B9B2; }
-.chips--dark li { border-color: var(--line); color: var(--paper); }
+.chips--dark li { border-color: var(--line); color: var(--paper); background: var(--ink); }
+.on-paper .on-dark .chips li { border-color: var(--line); }
 
 /* =====================================================================
    CABEÇALHO
@@ -289,7 +305,7 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
   overflow: hidden auto; overscroll-behavior: contain;
 }
 .menu__band {
-  position: absolute; top: -10%; bottom: -10%; right: -22%; width: 36%;
+  position: absolute; top: 0; bottom: 0; right: -22%; width: 36%;
   background: var(--green); transform: skewX(var(--slash)); pointer-events: none;
 }
 .menu__nav, .menu__foot { position: relative; }
@@ -306,7 +322,8 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 /* =====================================================================
    SEÇÕES: aba com número e corte em −12° na emenda
    ===================================================================== */
-.sec { position: relative; padding-block: var(--sec-pad); scroll-margin-top: var(--hdr); }
+.sec { position: relative; padding-block: var(--sec-pad); scroll-margin-top: calc(var(--hdr) + var(--tab)); }
+.sec--first { scroll-margin-top: var(--hdr); }
 .sec__tab {
   position: absolute; left: 0; top: calc(var(--tab) * -1 + 1px); height: var(--tab); z-index: 3;
   display: flex; align-items: center; gap: 10px;
@@ -325,6 +342,9 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .sec__intro { font-size: clamp(17px, 1.35vw, 20px); line-height: 1.5; max-width: 34em; }
 .on-dark .sec__intro { color: #CFCFC9; }
 .on-paper .sec__intro { color: #2A2A28; }
+@media (min-width: 1600px) {
+  .sec__head--split { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+}
 @media (max-width: 860px) {
   .sec__head--split { grid-template-columns: minmax(0, 1fr); align-items: start; }
 }
@@ -413,16 +433,17 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .spec__fig::before { top: 6px; left: 6px; border-top-width: 1px; border-left-width: 1px; }
 .spec__fig::after { bottom: 6px; right: 6px; border-bottom-width: 1px; border-right-width: 1px; }
 .spec__fig img {
+  position: absolute; inset: 0; margin: auto;
   width: 82%; height: 84%; object-fit: contain;
   transition: transform .8s var(--ease-out);
 }
-.spec__fig--photo img { width: auto; height: 80%; max-width: 86%; background: #fff; padding: 6px; box-shadow: 0 0 0 1px #D2D2CB; object-fit: contain; }
+.spec__fig--photo img { width: auto; height: auto; max-width: 86%; max-height: 80%; background: #fff; padding: 6px; box-shadow: 0 0 0 1px #D2D2CB; object-fit: contain; }
 .spec:hover .spec__fig img { transform: scale(1.05) rotate(-1.5deg); }
 .spec__body { display: flex; flex-direction: column; flex: 1; padding: 16px 16px 0; }
 .spec__brand { font: 500 10.5px/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--green-deep); }
 .spec__model {
   margin-top: 8px;
-  font: 900 clamp(34px, 2.9vw, 46px)/.88 var(--f-display); text-transform: uppercase; letter-spacing: 0;
+  font: 900 clamp(34px, 2.9vw, 46px)/.98 var(--f-display); text-transform: uppercase; letter-spacing: 0;
   overflow-wrap: anywhere;
 }
 .spec__sub { margin-top: 8px; font-size: 14px; line-height: 1.45; color: #34342F; }
@@ -434,7 +455,7 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 }
 .spec__table dt { color: var(--muted); }
 .spec__table dd { color: var(--ink); text-align: right; overflow-wrap: anywhere; }
-.spec__badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.spec__badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 14px; }
 .badge {
   display: inline-flex; align-items: center; gap: 7px; padding: 6px 9px 5px;
   font: 500 10px/1 var(--f-mono); letter-spacing: .04em; text-transform: uppercase;
@@ -456,13 +477,16 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
   font: 400 10px/1.2 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted);
 }
 .spec__price b { font: 900 24px/1 var(--f-display); letter-spacing: .01em; color: var(--ink); text-transform: uppercase; }
-.spec__foot .btn { --bh: 42px; font-size: 11.5px; padding-inline: calc(8px + 42px * var(--tan) / 2); gap: 7px; width: 100%; }
+.spec__foot .btn { --bh: 44px; font-size: 11.5px; padding-inline: calc(8px + 44px * var(--tan) / 2); gap: 7px; width: 100%; }
 .spec__foot .btn .i { width: 15px; height: 15px; }
 .spec__body { flex: 1 1 auto; }
 .spec--belt .spec__fig { aspect-ratio: 16 / 9.4; }
 .spec--belt .spec__model { font-size: clamp(32px, 2.5vw, 42px); }
 .spec[data-cat="automacao"] { --cat: var(--volt); }
 .spec[data-cat="informatica"] { --cat: #D9D9D2; }
+@media (max-width: 760px) {
+  .spec__table div, .badge, .spec__tab { font-size: 11.5px; }
+}
 
 /* =====================================================================
    RODAPÉ
@@ -472,16 +496,23 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
   content: ""; position: absolute; top: 0; left: -5%; width: 34%; height: 6px; background: var(--green);
   transform: skewX(var(--slash));
 }
+.ftr > .wrap { container-type: inline-size; }
 .ftr__giant {
   font: 900 clamp(58px, 15.4vw, 236px)/.8 var(--f-display); text-transform: uppercase; letter-spacing: -.005em;
   white-space: nowrap; margin-bottom: clamp(40px, 5vw, 72px); color: var(--paper);
+}
+@supports (font-size: 1cqw) {
+  .ftr__giant { font-size: 17.4cqw; }
 }
 .ftr__giant span { color: var(--green); }
 .ftr__grid { display: grid; grid-template-columns: 1.3fr 1fr 1.3fr 1.2fr; gap: 40px; padding-top: 40px; border-top: 1px solid var(--line); }
 .ftr__phrase { margin-top: 18px; color: var(--grey); max-width: 18em; }
 .ftr__h { color: var(--grey); margin-bottom: 14px; }
 .ftr__col ul { display: grid; gap: 8px; }
-.ftr__col a { text-decoration: none; color: #D7D7D2; font-size: 15px; }
+.ftr__col ul:not(.hours) { gap: 0; }
+/* alvo de toque ≥ 44px; bloco ajustado ao texto (o endereço quebra em duas linhas) */
+.ftr__col a { display: block; width: fit-content; max-width: 100%; padding-block: 11px; line-height: 1.5; text-decoration: none; color: #D7D7D2; font-size: 15px; }
+.ftr__ref { color: var(--grey); }
 .ftr__col a:hover { color: var(--green); }
 .ftr__legal {
   display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 32px;
@@ -502,7 +533,12 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
   display: flex; flex-direction: column; gap: 10px; align-items: flex-end;
   transition: transform .6s var(--ease), opacity .4s;
 }
-.float.is-hidden { transform: translateY(140%); opacity: 0; pointer-events: none; }
+/* No mouse, aparece depois do primeiro scroll; no toque, desde o topo (o WhatsApp
+   é o canal principal). Perto do contato e do rodapé some em qualquer ponteiro. */
+@media (hover: hover) and (pointer: fine) {
+  .js .float.is-hidden { transform: translateY(140%); opacity: 0; pointer-events: none; }
+}
+.float.is-off { transform: translateY(140%); opacity: 0; pointer-events: none; }
 .float__b {
   position: relative; isolation: isolate; width: 58px; height: 58px; display: grid; place-items: center;
   color: var(--ink); text-decoration: none;
@@ -511,6 +547,7 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
   content: ""; position: absolute; inset: 0 6px; z-index: -1; background: var(--green); transform: skewX(var(--slash));
   box-shadow: 0 10px 30px -8px rgba(0,0,0,.55); transition: background .3s;
 }
+.float__b--wa::before { box-shadow: 0 0 0 2px var(--ink), 0 10px 30px -8px rgba(0,0,0,.55); }
 .float__b:hover::before { background: var(--volt); }
 .float__b .i { width: 26px; height: 26px; }
 .float__b--tel { width: 50px; height: 50px; color: var(--paper); }
@@ -543,7 +580,27 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 /* Estado inicial das animações de entrada (só com JS e sem "reduzir movimento") */
 @media (prefers-reduced-motion: no-preference) {
   .is-loading [data-intro] { opacity: 0; }
+  /* O visual do hero já nasce no estado inicial da abertura (sem "flash" pronto → some → reaparece).
+     O gancho tira is-loading na mesma tarefa em que os from() renderizam; o timeout do <head> é a rede. */
+  .is-loading .hero__band, .is-loading .chero__band { transform: skewX(-12deg) scaleY(0); transform-origin: 50% 0; }
+  .is-loading .stage__img, .is-loading .stage__shadow, .is-loading .stage__svg,
+  .is-loading .callouts, .is-loading .hero__vref, .is-loading .chero__count, .is-loading .chero__prod { opacity: 0; }
+  /* Chegando por transição entre páginas: o destino já aparece pronto */
+  .via-vt.is-loading [data-intro], .via-vt.is-loading .stage__img, .via-vt.is-loading .stage__shadow,
+  .via-vt.is-loading .stage__svg, .via-vt.is-loading .callouts, .via-vt.is-loading .hero__vref,
+  .via-vt.is-loading .chero__count, .via-vt.is-loading .chero__prod { opacity: 1; }
+  .via-vt.is-loading .hero__band, .via-vt.is-loading .chero__band { transform: skewX(-12deg); }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* =====================================================================
+   Lenis 1.3.26 (lenis.css embutido: evita uma folha externa bloqueando a pintura)
+   ===================================================================== */
+html.lenis, html.lenis body { height: auto; }
+.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
+.lenis [data-lenis-prevent], .lenis [data-lenis-prevent-wheel], .lenis [data-lenis-prevent-touch],
+.lenis [data-lenis-prevent-vertical], .lenis [data-lenis-prevent-horizontal] { overscroll-behavior: contain; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
+.lenis.lenis-autoToggle { transition-property: overflow; transition-duration: 1ms; transition-behavior: allow-discrete; }

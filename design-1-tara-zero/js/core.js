@@ -2,6 +2,14 @@
    Tara Zero — núcleo compartilhado (todas as páginas)
    Dados da empresa, cabeçalho, menu, preloader, cursor, Lenis + GSAP,
    revelações ao rolar e o card de produto.
+
+   Carregamento em duas fases:
+   1) CONTEÚDO — este arquivo e o script da página são <script> clássicos
+      no fim do <body>, ANTES das bibliotecas do CDN. Renderizam tudo e
+      ligam menu, FAQ, filtros e formulário na hora, mesmo sem CDN.
+   2) MOVIMENTO — TZ.startMotion roda no DOMContentLoaded, depois que os
+      scripts "defer" do CDN (GSAP, ScrollTrigger, Lenis…) chegaram.
+      Sem CDN, o site continua funcionando, só que sem animação.
    ===================================================================== */
 (function () {
   "use strict";
@@ -10,26 +18,39 @@
   var html = d.documentElement;
   var BC = window.BC || null;
   var E = (BC && BC.empresa) || {};
-  var hasG = !!window.gsap;
   var mqReduce = window.matchMedia("(prefers-reduced-motion: reduce)");
   var mqFine = window.matchMedia("(hover: hover) and (pointer: fine)");
 
   var TZ = window.TZ = {
     reduce: mqReduce.matches,
     fine: mqFine.matches,
-    hasG: hasG,
+    hasG: false,      // GSAP disponível (definido em startMotion)
+    motion: false,    // GSAP disponível e sem "reduzir movimento"
+    late: false,      // a intro do <head> já tinha expirado quando o GSAP chegou
+    painted: false,   // o conteúdo já foi pintado antes do movimento começar
     lenis: null,
     mm: null,
     _ready: [],
-    _isReady: false
+    _isReady: false,
+    _pre: [],
+    _post: []
   };
+  // Se um quadro for pintado antes do movimento começar, o conteúdo já foi visto:
+  // não escondemos de novo o que está na tela só para animar a entrada.
+  if (window.requestAnimationFrame) requestAnimationFrame(function () { TZ.painted = true; });
 
   function $(s, r) { return (r || d).querySelector(s); }
   function $$(s, r) { return Array.prototype.slice.call((r || d).querySelectorAll(s)); }
   TZ.$ = $; TZ.$$ = $$;
 
-  function headerH() { return $(".hdr") ? $(".hdr").offsetHeight : 72; }
+  function headerH() { var h = $(".hdr"); return h ? h.offsetHeight : 72; }
   TZ.headerH = headerH;
+
+  // Ganchos das páginas: _pre roda antes das revelações (classes de layout),
+  // _post depois (timelines, pins…). Só rodam se o GSAP carregar.
+  TZ.onPre = function (fn) { TZ._pre.push(fn); };
+  TZ.onMotion = function (fn) { TZ._post.push(fn); };
+  function runAll(list) { list.forEach(function (fn) { try { fn(); } catch (e) { if (window.console) console.warn(e); } }); }
 
   /* ---------------- Dados da empresa nos elementos ---------------- */
   TZ.fill = function (root) {
@@ -42,9 +63,12 @@
       frase: E.frase, ipem: E.ipem, anos: E.anosExperiencia
     };
     $$("[data-bc]", root).forEach(function (el) {
-      var v = txt[el.getAttribute("data-bc")];
-      if (v !== undefined && v !== null && v !== "") el.textContent = v;
-      else if (el.getAttribute("data-bc") === "referencia") el.hidden = true;
+      var k = el.getAttribute("data-bc"), v = txt[k];
+      if (v !== undefined && v !== null && v !== "") {
+        // "· CEP 13500-120" nunca quebra no meio
+        if (k === "endereco") el.innerHTML = BC.escape(v).replace(/ · CEP (\S+)/, ' <span class="nw">· CEP&nbsp;$1</span>');
+        else el.textContent = v;
+      } else if (k === "referencia") el.hidden = true;
     });
     var hrefs = { tel: BC.telLink(), email: BC.emailLink(), mapa: E.mapa, google: g.link, facebook: E.redes && E.redes.facebook };
     $$("[data-bc-href]", root).forEach(function (el) {
@@ -75,31 +99,51 @@
   // Grade de horários usada para o selo "Aberto agora". Mantenha igual a EMPRESA.horarios.
   var GRADE = { 0: [], 1: [[8, 11], [13, 18]], 2: [[8, 11], [13, 18]], 3: [[8, 11], [13, 18]], 4: [[8, 11], [13, 18]], 5: [[8, 11], [13, 18]], 6: [[8, 12]] };
   var DIAS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+  // Feriados nacionais fixos (MM-DD). Confirmar com a loja quais ela segue,
+  // incluindo os municipais de Rio Claro, e acrescentar aqui.
+  var FERIADOS = ["01-01", "04-21", "05-01", "09-07", "10-12", "11-02", "11-15", "11-20", "12-25"];
+  // Feriados móveis calculados pela Páscoa: Carnaval (seg e ter), Sexta-Feira Santa e Corpus Christi.
+  function pascoa(y) {
+    var a = y % 19, b = Math.floor(y / 100), c = y % 100, dd = Math.floor(b / 4), e = b % 4,
+      f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - dd - g + 15) % 30,
+      i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451),
+      mes = Math.floor((h + l - 7 * m + 114) / 31), dia = ((h + l - 7 * m + 114) % 31) + 1;
+    return Date.UTC(y, mes - 1, dia, 12);
+  }
+  var DAY = 864e5;
+  function mmdd(t) { var x = new Date(t); return ("0" + (x.getUTCMonth() + 1)).slice(-2) + "-" + ("0" + x.getUTCDate()).slice(-2); }
+  function feriado(t) {
+    var x = new Date(t), md = mmdd(t);
+    if (FERIADOS.indexOf(md) !== -1) return true;
+    var p = pascoa(x.getUTCFullYear());
+    return [p - 48 * DAY, p - 47 * DAY, p - 2 * DAY, p + 60 * DAY].some(function (q) { return mmdd(q) === md; });
+  }
   function agoraSP() {
     try {
-      var parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/Sao_Paulo", weekday: "short", hour: "numeric", minute: "numeric", hourCycle: "h23" }).formatToParts(new Date());
+      var parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/Sao_Paulo", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", hourCycle: "h23" }).formatToParts(new Date());
       var o = {};
       parts.forEach(function (p) { o[p.type] = p.value; });
-      var wd = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[o.weekday];
       var h = parseInt(o.hour, 10) % 24, m = parseInt(o.minute, 10);
-      return { dia: wd, t: h + m / 60 };
+      var t = Date.UTC(+o.year, +o.month - 1, +o.day, 12); // meio-dia UTC da data de São Paulo
+      return { t: t, dia: new Date(t).getUTCDay(), h: h + m / 60 };
     } catch (e) {
-      var n = new Date(); return { dia: n.getDay(), t: n.getHours() + n.getMinutes() / 60 };
+      var n = new Date();
+      return { t: Date.UTC(n.getFullYear(), n.getMonth(), n.getDate(), 12), dia: n.getDay(), h: n.getHours() + n.getMinutes() / 60 };
     }
   }
+  function slotsDe(t) { return feriado(t) ? [] : (GRADE[new Date(t).getUTCDay()] || []); }
   TZ.status = function () {
-    var a = agoraSP(), slots = GRADE[a.dia] || [], i;
-    for (i = 0; i < slots.length; i++) {
-      if (a.t >= slots[i][0] && a.t < slots[i][1]) return { aberto: true, txt: "Aberto agora · até " + slots[i][1] + "h" };
+    var a = agoraSP(), hoje = slotsDe(a.t), i;
+    for (i = 0; i < hoje.length; i++) {
+      if (a.h >= hoje[i][0] && a.h < hoje[i][1]) return { aberto: true, txt: "Aberto agora · até " + hoje[i][1] + "h" };
     }
-    for (i = 0; i < slots.length; i++) {
-      if (a.t < slots[i][0]) return { aberto: false, txt: (i > 0 ? "Pausa para almoço · volta às " : "Fechado · abre hoje às ") + slots[i][0] + "h" };
+    for (i = 0; i < hoje.length; i++) {
+      if (a.h < hoje[i][0]) return { aberto: false, txt: (i > 0 ? "Pausa para almoço · volta às " : "Fechado · abre hoje às ") + hoje[i][0] + "h" };
     }
-    for (var k = 1; k <= 7; k++) {
-      var dd = (a.dia + k) % 7;
-      if (GRADE[dd] && GRADE[dd].length) {
-        return { aberto: false, txt: "Fechado · abre " + (k === 1 ? "amanhã" : DIAS[dd]) + " às " + GRADE[dd][0][0] + "h" };
-      }
+    var pre = feriado(a.t) && GRADE[a.dia] && GRADE[a.dia].length ? "Feriado" : "Fechado";
+    for (var k = 1; k <= 14; k++) {
+      var t = a.t + k * DAY, s = slotsDe(t);
+      if (s.length) return { aberto: false, txt: pre + " · abre " + (k === 1 ? "amanhã" : DIAS[new Date(t).getUTCDay()]) + " às " + s[0][0] + "h" };
     }
     return { aberto: false, txt: "Fechado" };
   };
@@ -113,12 +157,19 @@
   }
 
   /* ---------------- Especificações curtas para chips ---------------- */
-  // "32 kg (2 g até 6 kg / …)" → "32 kg"; "Capacidade / Divisão" → "Capacidade"
+  // "Capacidade" vira a maior capacidade do texto ("até 32 kg"); o resto perde os parênteses.
   TZ.specKey = function (k) { return String(k).split(" / ")[0].split(" (")[0].trim(); };
   function specClean(v, k) {
-    v = String(v).split(" (")[0].split(";")[0];
-    if (/^capacidade/i.test(k || "")) v = v.split(" ou ")[0];
-    return v.trim();
+    v = String(v);
+    if (/^capacidade/i.test(k || "")) {
+      var m = v.match(/\d{1,3}(?:\.\d{3})*(?:,\d+)?(?=\s*kg)/g);
+      if (m) {
+        var mx = Math.max.apply(null, m.map(function (x) { return parseFloat(x.replace(/\./g, "").replace(",", ".")); }));
+        return "até " + String(mx).replace(".", ",") + " kg";
+      }
+    }
+    v = v.replace(/\s*varreduras \(scans\) por segundo/i, " scans/s");
+    return v.split(" (")[0].split(";")[0].trim();
   }
   TZ.specVal = function (v, k, max) {
     max = max || 30;
@@ -126,11 +177,17 @@
     if (v.length > max) v = v.slice(0, max - 2).replace(/[\s,.:\-–]+\S*$/, "") + "…";
     return v;
   };
+  // Um chip não pode esconder alternativas: "Coluna articulada (…) ou indicador remoto" fica de fora.
+  function chipOk(s) {
+    if (/^capacidade/i.test(s[0])) return true;
+    return !(/ ou /.test(s[1]) && !/ ou /.test(specClean(s[1], s[0])));
+  }
   // até 2 especificações curtas, na ordem do cadastro
   TZ.specChips = function (p) {
     var all = (p.especificacoes || []).filter(function (s) { return s && s[0] && s[1]; });
-    var short = all.filter(function (s) { return (TZ.specKey(s[0]) + " " + specClean(s[1], s[0])).length <= 30; });
-    return (short.length ? short : all).slice(0, 2);
+    var good = all.filter(chipOk);
+    var short = good.filter(function (s) { return (TZ.specKey(s[0]) + " " + specClean(s[1], s[0])).length <= 30; });
+    return (short.length ? short : good).slice(0, 2);
   };
 
   /* ---------------- Card de produto (vitrine e catálogo) ---------------- */
@@ -149,7 +206,8 @@
         '<div class="pcard__badges"><span class="badge badge--' + e(est.classe) + '">' + e(est.rotulo) + "</span>" + cond + "</div>" +
         '<div class="pcard__body">' +
           '<p class="pcard__meta"><b>' + e(p.marca) + "</b> · " + e(p.subcategoria) + "</p>" +
-          '<h3 class="pcard__name"><a href="' + href + '" data-detail="' + e(p.id) + '">' + e(p.nome) + "</a></h3>" +
+          // o nome cobre o card inteiro para o clique; no teclado, a parada é o botão "Detalhes"
+          '<h3 class="pcard__name"><a href="' + href + '" data-detail="' + e(p.id) + '" tabindex="-1"><span class="sr-only">' + e(p.marca) + " </span>" + e(p.nome) + "</a></h3>" +
           '<p class="pcard__sum">' + e(p.resumo) + "</p>" +
           (chips ? '<ul class="chips">' + chips + "</ul>" : "") +
           '<p class="pcard__price"><span>Preço</span><b>' + (p.preco ? e(p.preco) : "Consulte") + "</b></p>" +
@@ -162,9 +220,35 @@
     "</article>";
   };
 
+  // Fotos em pé (ou composições) ganham menos respiro no palco
+  TZ.tallImgs = function (root) {
+    $$(".pcard__stage img", root).forEach(function (img) {
+      if (img._tall) return; img._tall = true;
+      var f = function () { if (img.naturalHeight > img.naturalWidth * 1.15) img.parentNode.classList.add("is-tall"); };
+      if (img.complete && img.naturalWidth) f(); else img.addEventListener("load", f, { once: true });
+    });
+  };
+
   /* ---------------- Cabeçalho, progresso e botão flutuante ---------------- */
+  var fab = null, fabState = {};
+  function fabSync() {
+    if (!fab) return;
+    var small = window.innerWidth < 768;
+    var off = small && Object.keys(fabState).some(function (k) { return fabState[k]; });
+    fab.classList.toggle("is-off", off);
+  }
+  // Esconde a pilha flutuante (celular) enquanto um alvo com CTA próprio estiver na tela
+  TZ.fabAvoid = function (el, key) {
+    if (!fab || !el || !("IntersectionObserver" in window)) return;
+    new IntersectionObserver(function (es) {
+      es.forEach(function (en) { fabState[key] = en.isIntersecting; });
+      fabSync();
+    }).observe(el);
+  };
   function initHeader() {
-    var hdr = $(".hdr"), bar = $(".hdr__progress"), fab = $("[data-fab]"), hero = $(".hero");
+    var hdr = $(".hdr"), bar = $(".hdr__progress");
+    var top = $(".hero") || $(".ahero") || $(".cat-hero");
+    fab = $("[data-fab]");
     var ticking = false;
     function update() {
       ticking = false;
@@ -172,11 +256,12 @@
       var max = Math.max(1, d.documentElement.scrollHeight - window.innerHeight);
       if (hdr) hdr.classList.toggle("is-scrolled", y > 12);
       if (bar) bar.style.transform = "scaleX(" + Math.min(1, y / max).toFixed(4) + ")";
-      if (fab && hero) fab.classList.toggle("is-hidden", y < window.innerHeight * 0.55);
+      if (fab && top) fab.classList.toggle("is-hidden", y < window.innerHeight * 0.55);
     }
     window.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
-    window.addEventListener("resize", update);
+    window.addEventListener("resize", function () { update(); fabSync(); });
     update();
+    ["#duvidas", "#contato", ".cta-band", ".site-footer"].forEach(function (s) { TZ.fabAvoid($(s), s); });
   }
 
   /* ---------------- Menu móvel ---------------- */
@@ -184,38 +269,51 @@
     var btn = $(".burger"), menu = $("#mmenu");
     if (!btn || !menu) return;
     var lastFocus = null;
-    function focusables() { return $$('a[href], button:not([disabled])', menu).concat([btn]); }
+    // o botão vem antes do menu no DOM: ele é a 1ª parada do ciclo
+    function focusables() { return [btn].concat($$("a[href], button:not([disabled])", menu)); }
+    function inert(on) {
+      $$("main, .site-footer, .fab, .skip-link").forEach(function (el) {
+        if (on) el.setAttribute("inert", ""); else el.removeAttribute("inert");
+      });
+    }
+    function onKey(ev) {
+      if (ev.key === "Escape") { ev.preventDefault(); close(); return; }
+      if (ev.key !== "Tab") return;
+      var f = focusables(), first = f[0], last = f[f.length - 1], a = d.activeElement;
+      if (f.indexOf(a) === -1) { ev.preventDefault(); (ev.shiftKey ? last : first).focus(); return; }
+      if (ev.shiftKey && a === first) { ev.preventDefault(); last.focus(); }
+      else if (!ev.shiftKey && a === last) { ev.preventDefault(); first.focus(); }
+    }
     function open() {
       lastFocus = d.activeElement;
       menu.hidden = false;
+      menu.scrollTop = 0;
       btn.setAttribute("aria-expanded", "true");
       btn.setAttribute("aria-label", "Fechar menu");
       $(".hdr").classList.add("is-solid");
       if (TZ.lenis) TZ.lenis.stop();
       d.body.style.overflow = "hidden";
-      if (hasG && !TZ.reduce) {
-        gsap.fromTo($$(".mmenu__list li, .mmenu__foot > *", menu), { y: 28, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .6, ease: "expo.out", stagger: .045 });
+      inert(true);
+      d.addEventListener("keydown", onKey);
+      if (TZ.motion) {
+        gsap.fromTo($$(".mmenu__list li, .mmenu__foot > *", menu), { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: .6, ease: "expo.out", stagger: .045 });
       }
-      var f = $("a", menu); if (f) f.focus();
+      var f = $("a", menu); if (f) f.focus({ preventScroll: true });
     }
     function close(noFocus) {
+      if (menu.hidden) return;
       menu.hidden = true;
       btn.setAttribute("aria-expanded", "false");
       btn.setAttribute("aria-label", "Abrir menu");
       $(".hdr").classList.remove("is-solid");
       d.body.style.overflow = "";
+      inert(false);
+      d.removeEventListener("keydown", onKey);
       if (TZ.lenis) TZ.lenis.start();
-      if (!noFocus && lastFocus) lastFocus.focus();
+      if (!noFocus) (lastFocus && lastFocus.focus ? lastFocus : btn).focus({ preventScroll: true });
     }
+    TZ.menuOpen = function () { return !menu.hidden; };
     btn.addEventListener("click", function () { menu.hidden ? open() : close(); });
-    menu.addEventListener("keydown", function (ev) {
-      if (ev.key === "Escape") { close(); return; }
-      if (ev.key !== "Tab") return;
-      var f = focusables(), first = f[0], last = f[f.length - 1];
-      if (ev.shiftKey && d.activeElement === first) { ev.preventDefault(); last.focus(); }
-      else if (!ev.shiftKey && d.activeElement === last) { ev.preventDefault(); first.focus(); }
-    });
-    btn.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && !menu.hidden) close(); });
     $$("a", menu).forEach(function (a) {
       a.addEventListener("click", function (ev) {
         var h = a.getAttribute("href") || "";
@@ -223,28 +321,34 @@
         if (h.charAt(0) === "#") {
           ev.preventDefault();
           TZ.scrollTo(h);
+          if (history.replaceState && h !== "#topo") history.replaceState(null, "", h);
         }
       });
     });
     window.addEventListener("resize", function () { if (window.innerWidth >= 1024 && !menu.hidden) close(true); });
   }
 
-  /* ---------------- Rolagem suave até âncoras ---------------- */
-  TZ.scrollTo = function (hash) {
+  /* ---------------- Rolagem até âncoras ---------------- */
+  // O scroll-padding-top do <html> é a fonte única do desconto do cabeçalho:
+  // o Lenis já o considera; no ramo nativo descontamos à mão.
+  TZ.scrollTo = function (hash, imm) {
     var target = null;
     if (hash === "#topo" || hash === "#") target = 0;
     else { try { target = d.querySelector(hash); } catch (e) { target = null; } }
-    if (target === null) return;
-    if (TZ.lenis) TZ.lenis.scrollTo(target, { offset: target === 0 ? 0 : -(headerH() + 12), duration: 1.4 });
-    else if (target === 0) window.scrollTo({ top: 0, behavior: TZ.reduce ? "auto" : "smooth" });
-    else {
-      var y = target.getBoundingClientRect().top + window.scrollY - headerH() - 12;
-      window.scrollTo({ top: y, behavior: TZ.reduce ? "auto" : "smooth" });
+    if (target === null) return false;
+    if (TZ.lenis) {
+      TZ.lenis.resize();
+      TZ.lenis.scrollTo(target, { offset: 0, duration: 1.4, immediate: !!imm, force: true });
+    } else {
+      var pad = parseFloat(getComputedStyle(html).scrollPaddingTop) || (headerH() + 20);
+      var y = target === 0 ? 0 : target.getBoundingClientRect().top + window.scrollY - pad;
+      window.scrollTo({ top: Math.max(0, y), behavior: (TZ.reduce || imm) ? "auto" : "smooth" });
     }
-    if (target && target.focus && target !== 0) {
-      if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+    if (target !== 0 && target.focus) {
+      if (!target.hasAttribute("tabindex") && !/^(A|BUTTON|INPUT|SELECT|TEXTAREA)$/.test(target.tagName)) target.setAttribute("tabindex", "-1");
       target.focus({ preventScroll: true });
     }
+    return true;
   };
   function initAnchors() {
     d.addEventListener("click", function (ev) {
@@ -261,9 +365,31 @@
     });
   }
 
+  // Âncora vinda de outra página (ex.: index.html#contato): espera o layout final
+  // (imagens, fontes, pin-spacers do ScrollTrigger) antes de rolar.
+  function deepLink() {
+    var h = location.hash;
+    if (!h || !/^#[A-Za-z][\w-]*$/.test(h) || h === "#topo") return;
+    var moved = false;
+    var mark = function () { moved = true; };
+    ["wheel", "touchstart", "keydown"].forEach(function (t) { window.addEventListener(t, mark, { once: true, passive: true }); });
+    var go = function () {
+      if (moved) return;
+      if (window.ScrollTrigger) ScrollTrigger.refresh();
+      if (TZ.lenis) TZ.lenis.resize();
+      TZ.scrollTo(h, true);
+    };
+    var later = function () {
+      var f = d.fonts && d.fonts.ready;
+      (f ? f : Promise.resolve()).then(function () { requestAnimationFrame(go); });
+    };
+    if (d.readyState === "complete") setTimeout(later, 0);
+    else window.addEventListener("load", later, { once: true });
+  }
+
   /* ---------------- Logo animado ---------------- */
   TZ.logoIn = function (svg, opts) {
-    if (!hasG || !svg) return null;
+    if (!window.gsap || !svg) return null;
     opts = opts || {};
     var ring = $(".logo-ring", svg), b = $(".logo-b", svg), q = $(".logo-q", svg);
     var tl = gsap.timeline({ delay: opts.delay || 0 });
@@ -286,22 +412,25 @@
   }
   TZ.whenReady = function (fn) { if (TZ._isReady) fn(); else TZ._ready.push(fn); };
 
+  // Curto (≈0,5 s): o logo monta e a cortina sobe. Até o GSAP chegar, a caixa fica invisível.
   function initPreloader() {
     var pre = $(".preloader");
-    if (!html.classList.contains("is-preloading") || !pre || !hasG || TZ.reduce) {
+    if (!html.classList.contains("is-preloading") || !pre || !TZ.motion) {
       html.classList.remove("is-preloading");
       finishReady();
       return;
     }
+    if (window.__tzPre) clearTimeout(window.__tzPre);
     try { sessionStorage.setItem("tz-pre", "1"); } catch (e) {}
     var read = $(".preloader__read", pre);
     var o = { v: 0 };
-    var tl = gsap.timeline({ onComplete: function () { pre.style.display = "none"; finishReady(); } });
-    tl.add(TZ.logoIn($(".preloader__mark", pre), { ring: .55, bq: .5 }), 0)
-      .to(o, { v: 1, duration: .6, ease: "power2.out", onUpdate: function () { if (read) read.textContent = ((1 - o.v) * (1 - o.v) * Math.random() * 9.999).toFixed(3); }, onComplete: function () { if (read) read.textContent = "0.000"; } }, .05)
-      .from($$(".preloader__read, .preloader__lbl", pre), { autoAlpha: 0, y: 8, duration: .4, stagger: .06, ease: "power2.out" }, .15)
-      .to(pre, { yPercent: -100, duration: .5, ease: "power3.inOut" }, .62)
-      .add(function () { finishReady(); }, .7);
+    var tl = gsap.timeline({ onComplete: function () { pre.style.display = "none"; html.classList.remove("is-preloading"); finishReady(); } });
+    tl.set(".preloader__box", { opacity: 1 }, 0)
+      .add(TZ.logoIn($(".preloader__mark", pre), { ring: .34, bq: .28 }), 0)
+      .to(o, { v: 1, duration: .26, ease: "power2.out", onUpdate: function () { if (read) read.textContent = ((1 - o.v) * (1 - o.v) * Math.random() * 9.999).toFixed(3); }, onComplete: function () { if (read) read.textContent = "0.000"; } }, 0)
+      .from($$(".preloader__read, .preloader__lbl", pre), { opacity: 0, y: 6, duration: .22, stagger: .04, ease: "power2.out" }, .02)
+      .to(pre, { yPercent: -100, duration: .28, ease: "power3.inOut" }, .22)
+      .add(function () { finishReady(); }, .24);
     function skip() { tl.progress(1); }
     pre.addEventListener("click", skip);
     d.addEventListener("keydown", function k() { skip(); d.removeEventListener("keydown", k); });
@@ -321,7 +450,7 @@
   TZ.initSpot = initSpot;
 
   TZ.bindTilt = function (root) {
-    if (!hasG || TZ.reduce || !mqFine.matches) return;
+    if (!TZ.motion || !mqFine.matches) return;
     $$("[data-tilt]", root).forEach(function (el) {
       if (el._tilt) return; el._tilt = true;
       gsap.set(el, { transformPerspective: 900 });
@@ -340,7 +469,7 @@
 
   function initCursor() {
     var c = $(".cursor");
-    if (!c || !hasG || TZ.reduce || !mqFine.matches) return;
+    if (!c || !TZ.motion || !mqFine.matches) return;
     html.classList.add("has-cursor");
     var ring = $(".cursor__ring", c);
     var xTo = gsap.quickTo(c, "x", { duration: .45, ease: "power3.out" });
@@ -366,7 +495,7 @@
   }
 
   function initMagnetic() {
-    if (!hasG || TZ.reduce || !mqFine.matches) return;
+    if (!TZ.motion || !mqFine.matches) return;
     $$("[data-magnetic]").forEach(function (el) {
       var xTo = gsap.quickTo(el, "x", { duration: .6, ease: "elastic.out(1, .5)" });
       var yTo = gsap.quickTo(el, "y", { duration: .6, ease: "elastic.out(1, .5)" });
@@ -397,11 +526,22 @@
     });
   }
 
+  // Já está na tela e já foi visto? Então não escondemos para animar a entrada.
+  function seen(el) {
+    if (!TZ.painted && !TZ.late) return false;
+    if (html.classList.contains("is-intro") && el.closest(".hero, .cat-hero, .ahero, .toolbar, .catalog")) return false;
+    var r = el.getBoundingClientRect();
+    return r.top < window.innerHeight && r.bottom > 0;
+  }
+  TZ.seen = seen;
+
+  // Revelações animam só opacidade/posição: o conteúdo continua na ordem do Tab e na árvore de acessibilidade.
   TZ.reveal = function (root) {
-    if (!hasG || TZ.reduce || !window.ScrollTrigger) return;
+    if (!TZ.motion || !window.ScrollTrigger) return;
     root = root || d;
     $$("[data-split]", root).forEach(function (el) {
       if (el._split || !window.SplitText) return; el._split = true;
+      if (seen(el)) return;
       SplitText.create(el, {
         type: "lines", mask: "lines", linesClass: "ln", autoSplit: true,
         onSplit: function (self) {
@@ -414,14 +554,16 @@
     });
     $$("[data-fade]", root).forEach(function (el) {
       if (el._fade) return; el._fade = true;
-      gsap.from(el, { y: 32, autoAlpha: 0, duration: 1.1, ease: "power3.out", scrollTrigger: { trigger: el, start: "top 90%", once: true } });
+      if (seen(el)) return;
+      gsap.from(el, { y: 32, opacity: 0, duration: 1.1, ease: "power3.out", scrollTrigger: { trigger: el, start: "top 90%", once: true } });
     });
     $$("[data-stagger]", root).forEach(function (el) {
       if (el._stag) return;
       var kids = Array.prototype.slice.call(el.children).filter(function (k) { return k.tagName !== "NOSCRIPT"; });
       if (!kids.length) return;
       el._stag = true;
-      gsap.from(kids, { y: 44, autoAlpha: 0, duration: 1, ease: "power3.out", stagger: .08, scrollTrigger: { trigger: el, start: "top 88%", once: true } });
+      if (seen(el)) return;
+      gsap.from(kids, { y: 44, opacity: 0, duration: 1, ease: "power3.out", stagger: .08, scrollTrigger: { trigger: el, start: "top 88%", once: true } });
     });
     $$("[data-scramble]", root).forEach(scrambleLabel);
     $$("[data-parallax]", root).forEach(function (el) {
@@ -436,7 +578,7 @@
     var from = parseFloat(el.getAttribute("data-count-from") || "0");
     var dec = parseInt(el.getAttribute("data-decimals") || "0", 10);
     var fmt = opts.format || function (v) { return v.toFixed(dec); };
-    if (!hasG || TZ.reduce || !window.ScrollTrigger) { el.textContent = fmt(to); return; }
+    if (!TZ.motion || !window.ScrollTrigger || isNaN(to)) { if (!isNaN(to)) el.textContent = fmt(to); return; }
     var o = { v: from };
     gsap.to(o, {
       v: to, duration: opts.duration || 1.6, ease: "power2.out",
@@ -448,7 +590,6 @@
   };
 
   function initMotion() {
-    if (!hasG) return;
     if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
     if (window.SplitText) gsap.registerPlugin(SplitText);
     if (window.ScrambleTextPlugin) gsap.registerPlugin(ScrambleTextPlugin);
@@ -460,6 +601,8 @@
         if (window.ScrollTrigger) lenis.on("scroll", ScrollTrigger.update);
         var raf = function (t) { lenis.raf(t * 1000); };
         gsap.ticker.add(raf);
+        // menu ou painel já abertos antes do movimento começar: a página atrás não rola
+        if ((TZ.menuOpen && TZ.menuOpen()) || d.body.style.overflow === "hidden") lenis.stop();
         // mantém o lagSmoothing padrão: se a página travar no carregamento, as animações pausam em vez de pular
         return function () { gsap.ticker.remove(raf); lenis.destroy(); TZ.lenis = null; };
       }
@@ -469,9 +612,9 @@
   /* ---------------- Marcas (marquee) e FAQ ---------------- */
   TZ.marquee = function () {
     var ul = $("[data-brands]"), track = $("[data-marquee-track]");
-    if (!ul || !track) return;
+    if (!ul || !track || track._done) return;
+    track._done = true;
     var marcas = E.marcas || [];
-    var motion = hasG && !TZ.reduce;
     var esc = BC.escape;
     if (marcas.length) ul.innerHTML = marcas.map(function (m) { return '<li><span class="marquee__item">' + esc(m) + "</span></li>"; }).join("");
     var clone = ul.cloneNode(true);
@@ -484,16 +627,19 @@
       btn.innerHTML = '<svg aria-hidden="true"><use href="#i-' + (paused ? "play" : "pause") + '"/></svg><span>' + (paused ? "CONTINUAR" : "PAUSAR") + "</span>";
     });
     if (TZ.reduce && btn) btn.hidden = true;
-    if (motion && window.ScrollTrigger) {
-      var skew = $(".marquee__skew");
-      var to = gsap.quickTo(skew, "skewX", { duration: .5, ease: "power3.out" });
-      ScrollTrigger.create({
-        trigger: ".brands", start: "top bottom", end: "bottom top",
-        onUpdate: function (s) { to(gsap.utils.clamp(-8, 8, s.getVelocity() / -260)); },
-        onLeave: function () { to(0); }, onLeaveBack: function () { to(0); }
-      });
-    }
   };
+  // Inclinação da faixa conforme a velocidade da rolagem; volta a zero quando a rolagem para.
+  function marqueeMotion() {
+    var skew = $(".marquee__skew");
+    if (!skew || !TZ.motion || !window.ScrollTrigger) return;
+    var to = gsap.quickTo(skew, "skewX", { duration: .5, ease: "power3.out" });
+    ScrollTrigger.create({
+      trigger: ".brands", start: "top bottom", end: "bottom top",
+      onUpdate: function (s) { to(gsap.utils.clamp(-8, 8, s.getVelocity() / -260)); },
+      onLeave: function () { to(0); }, onLeaveBack: function () { to(0); }
+    });
+    ScrollTrigger.addEventListener("scrollEnd", function () { to(0); });
+  }
 
   /* =========================================================
      6. FAQ (acordeão acessível)
@@ -502,15 +648,15 @@
     var refreshT = null;
     $$("[data-faq] .qa").forEach(function (qa, i) {
       var btn = $(".qa__btn", qa), panel = $(".qa__panel", qa);
+      if (!btn || !panel || btn._faq) return; btn._faq = true;
       var id = "faq-" + (i + 1);
       btn.id = id + "-btn"; panel.id = id;
       btn.setAttribute("aria-controls", id);
-      panel.setAttribute("aria-labelledby", btn.id);
       btn.addEventListener("click", function () {
         var open = btn.getAttribute("aria-expanded") !== "true";
         btn.setAttribute("aria-expanded", open);
         qa.classList.toggle("is-open", open);
-        if (window.ScrollTrigger) { clearTimeout(refreshT); refreshT = setTimeout(function () { ScrollTrigger.refresh(); }, 560); }
+        if (window.ScrollTrigger && TZ.hasG) { clearTimeout(refreshT); refreshT = setTimeout(function () { ScrollTrigger.refresh(); }, 560); }
       });
     });
   };
@@ -518,7 +664,7 @@
   /* ---------------- Contador da multa (IPEM) ---------------- */
   function initFine() {
     var fine = $("[data-fine]");
-    if (!fine || !hasG || TZ.reduce || !window.ScrollTrigger) return;
+    if (!fine || !TZ.motion || !window.ScrollTrigger) return;
     var fmt = function (v) { return Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); };
     var o = { v: 100 };
     gsap.to(o, {
@@ -529,39 +675,74 @@
     });
   }
 
+  /* ---------------- Animações contínuas pausam fora da tela ---------------- */
+  function initOffscreen() {
+    if (!("IntersectionObserver" in window)) return;
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { e.target.classList.toggle("is-off", !e.isIntersecting); });
+    });
+    $$(".sys__orbit, .btn--glow").forEach(function (el) { io.observe(el); });
+  }
+
+  /* ---------------- Foco nunca cai em algo invisível ---------------- */
+  function initFocusGuard() {
+    d.addEventListener("focusin", function (e) {
+      var t = e.target.closest && e.target.closest("[data-fade], [data-stagger] > *, .pcard, .rail-end");
+      if (!t || !window.gsap) return;
+      if (+getComputedStyle(t).opacity < 1) { gsap.killTweensOf(t); gsap.set(t, { opacity: 1, y: 0 }); }
+    });
+  }
+
   /* ---------------- Boot ---------------- */
+  // Fase de conteúdo (chamada pelo script da página depois de renderizar)
   TZ.boot = function () {
     initSpot(d);
+  };
+
+  // Fase de movimento: o GSAP (se chegou) já está disponível
+  TZ.startMotion = function () {
+    if (TZ._started) return;
+    TZ._started = true;
+    TZ.hasG = !!window.gsap;
+    TZ.motion = TZ.hasG && !TZ.reduce;
+    TZ.late = !html.classList.contains("is-intro");
+    TZ.paintedAtStart = TZ.painted; // diagnóstico
+    if (!TZ.hasG) {
+      html.classList.remove("is-preloading", "is-intro");
+      finishReady();
+      deepLink();
+      return;
+    }
+    initMotion();
+    runAll(TZ._pre);
+    initCursor();
+    initMagnetic();
     TZ.bindTilt(d);
     TZ.reveal(d);
     initFine();
-    if (!$(".hero")) html.classList.remove("is-intro");
     $$("[data-count]").forEach(function (el) { TZ.count(el); });
+    marqueeMotion();
+    runAll(TZ._post);
+    if (!$(".hero")) html.classList.remove("is-intro");
+    initPreloader();
     if (window.ScrollTrigger) {
       // reposiciona gatilhos depois que imagens e fontes chegam
-      window.addEventListener("load", function () { ScrollTrigger.refresh(); });
+      if (d.readyState !== "complete") window.addEventListener("load", function () { ScrollTrigger.refresh(); }, { once: true });
       if (d.fonts && d.fonts.ready) d.fonts.ready.then(function () { ScrollTrigger.refresh(); });
     }
-    // âncora vinda de outra página (ex.: index.html#contato)
-    var h = location.hash;
-    if (h && /^#[A-Za-z][\w-]*$/.test(h) && h !== "#topo") {
-      setTimeout(function () { TZ.scrollTo(h); }, 350);
-    }
+    deepLink();
   };
 
-  // Início imediato (scripts com defer já rodam com o DOM pronto)
+  // Início imediato: conteúdo e interações não dependem do CDN
   TZ.fill(d);
   paintStatus();
   setInterval(paintStatus, 60000);
   initHeader();
   initMenu();
   initAnchors();
-  initMotion();
-  initCursor();
-  initMagnetic();
-  initPreloader();
+  initOffscreen();
+  initFocusGuard();
 
-  if (!hasG) {
-    html.classList.remove("is-preloading", "is-intro");
-  }
+  if (d.readyState === "loading") d.addEventListener("DOMContentLoaded", TZ.startMotion);
+  else setTimeout(TZ.startMotion, 0);
 })();

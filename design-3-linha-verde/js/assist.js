@@ -20,7 +20,8 @@
 
     // HERO: mesmos cortes diagonais da home
     var band = $(".hero__band");
-    var tl = gsap.timeline({ defaults: { ease: "expo.out" }, delay: 0.1 });
+    var viaVT = document.documentElement.classList.contains("via-vt");   // chegou por transição: sem replay
+    var tl = gsap.timeline({ defaults: { ease: "expo.out" }, delay: viaVT ? 0 : 0.1 });
     gsap.set(band, { skewX: -12 });
     tl.from(band, { scaleY: 0, transformOrigin: "50% 0%", duration: 1.2, ease: "expo.inOut" }, 0);
     $$(".hero__line").forEach(function (line, i) {
@@ -39,7 +40,8 @@
     tl.from(".dot", { scale: 0, transformOrigin: "50% 50%", stagger: 0.1, duration: 0.5, ease: "back.out(3)" }, 1.45)
       .from(".callout", { autoAlpha: 0, y: 8, stagger: 0.08, duration: 0.6 }, 1.6)
       .from(".hero__vref", { autoAlpha: 0, duration: 1 }, 1.6)
-      .from([".crumbs", ".hero__lead", ".hero__ctas", ".hero__trust"], { autoAlpha: 0, y: 26, stagger: 0.09, duration: 1.1 }, 0.85);
+      .from([".crumbs", ".hero__lead", ".hero__ctas", ".hero__trust"], { opacity: 0, y: 26, stagger: 0.09, duration: 1.1 }, 0.85);
+    if (viaVT) tl.progress(1);
 
     gsap.timeline({ scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } })
       .to(".hero__line:nth-child(1)", { xPercent: -6, ease: "none" }, 0)
@@ -59,7 +61,8 @@
       }
     }
 
-    // FLUXO: a linha se desenha com a rolagem e cada estação acende
+    // FLUXO: a linha e os marcadores acompanham a rolagem; o texto de cada estação
+    // aparece com gatilho próprio (quem para de rolar não fica com colunas vazias)
     var flow = $("[data-flow]");
     if (flow) {
       var st = $$(".flow__st", flow);
@@ -68,14 +71,17 @@
       ftl.to(flow, { "--fill": 1, ease: "none", duration: 1 }, 0);
       st.forEach(function (s, i) {
         var at = i / Math.max(1, st.length - 1) * 0.9;
-        ftl.from($(".flow__mk", s), { scale: 0, duration: 0.08, ease: "none" }, at)
-           .from([$(".flow__n", s), $(".flow__t", s), $("p", s)], { autoAlpha: 0, y: 24, stagger: 0.02, duration: 0.12, ease: "none" }, at);
+        ftl.from($(".flow__mk", s), { scale: 0, duration: 0.08, ease: "none" }, at);
+        gsap.from(s.querySelectorAll(".flow__n, .flow__t, p"), {
+          opacity: 0, y: 24, stagger: 0.05, duration: 0.8, ease: "expo.out", delay: i * 0.08,
+          scrollTrigger: LV.st(s, "top 85%")
+        });
       });
     }
 
     // Antes → depois: a seta empurra o "depois"
     $$(".ba__row").forEach(function (row) {
-      gsap.from([$(".ba__ar", row), $(".ba__to", row)], { x: -24, autoAlpha: 0, stagger: 0.1, duration: 0.9, ease: "expo.out", scrollTrigger: LV.st(row, "top 88%") });
+      gsap.from([$(".ba__ar", row), $(".ba__to", row)], { x: -24, opacity: 0, stagger: 0.1, duration: 0.9, ease: "expo.out", scrollTrigger: LV.st(row, "top 88%") });
     });
 
     var stamp = $("[data-stamp]");

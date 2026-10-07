@@ -9,9 +9,11 @@
   var doc = document;
   var BC = window.BC;
   var D2 = window.D2 || {};
-  var gsap = window.gsap;
-  var Flip = window.Flip;
-  var anim = !!D2.anim;
+  // GSAP/Flip chegam depois (CDN, js/movimento.js); até lá tudo funciona sem animação
+  var gsap = null;
+  var Flip = null;
+  var anim = false;
+  function sync() { gsap = window.gsap || null; Flip = window.Flip || null; anim = !!D2.anim; }
   var $all = D2.$all || function (s, c) { return Array.prototype.slice.call((c || doc).querySelectorAll(s)); };
   var esc = D2.esc || function (s) { return String(s); };
   var E = BC && BC.empresa;
@@ -36,7 +38,8 @@
       var ex = li.querySelector(".eq__ex");
       if (p && ex) {
         var nome = p.nome.indexOf(p.marca) === 0 ? p.nome : p.marca + " " + p.nome;
-        ex.textContent = "ex.: " + nome.replace(/^(\S+) (Gaveta|Fatiador|Teclado|Mídia Digital|Busca Preço|Terminal|Microterminal) /, "$1 ");
+        ex.textContent = "ex.: " + nome.replace(/^(\S+) (Gaveta|Fatiador|Teclado|Mídia Digital|Busca Preço|Terminal|Microterminal) /, "$1 ")
+          .replace(/ para PDV$/, "").replace(/ Checkout$/, "");
       }
     });
 
@@ -46,11 +49,13 @@
       ml.innerHTML = E.marcas.map(function (m) { return "<li>" + esc(m) + "</li>"; }).join("");
     }
 
-    // Clientes
+    // Clientes (com largura/altura para não pular o layout)
     var cl = doc.querySelector("[data-clientes]");
     if (cl && E.clientes && E.clientes.length) {
+      var DIM = { "brasil-frios.webp": [480, 480], "camargo.webp": [225, 225], "enxuto.webp": [190, 50], "examine.webp": [480, 155], "qualidade.webp": [200, 200], "quitandao.webp": [321, 113] };
       cl.innerHTML = E.clientes.map(function (c) {
-        return '<li data-reveal><img src="' + esc(BC.img("clientes/" + c.logo)) + '" alt="' + esc(c.nome) + '" loading="lazy" decoding="async"></li>';
+        var d = DIM[c.logo] || [240, 120];
+        return '<li data-reveal><img src="' + esc(BC.img("clientes/" + c.logo)) + '" alt="' + esc(c.nome) + '" width="' + d[0] + '" height="' + d[1] + '" loading="lazy" decoding="async"></li>';
       }).join("");
     }
 
@@ -68,12 +73,14 @@
     // Equipe
     var el = doc.querySelector("[data-equipe]");
     if (el && E.equipe && E.equipe.length) {
-      el.innerHTML = E.equipe.map(function (p) {
+      el.innerHTML = E.equipe.map(function (p, i) {
         var ini = String(p.nome || "").split(/\s+/).filter(Boolean);
         ini = (ini[0] ? ini[0].charAt(0) : "") + (ini.length > 1 ? ini[ini.length - 1].charAt(0) : "");
+        // mesmo texto da pessoa anterior (mesma função): não repete
+        var rep = i > 0 && p.texto === E.equipe[i - 1].texto;
         return '<li class="person" data-reveal><span class="person__mono" aria-hidden="true">' + esc(ini.toUpperCase()) + "</span>" +
           '<b class="person__name">' + esc(p.nome) + '</b><span class="person__role">' + esc(p.cargo) + "</span>" +
-          "<p>" + esc(p.texto) + "</p></li>";
+          (rep ? "" : "<p>" + esc(p.texto) + "</p>") + "</li>";
       }).join("");
     }
   }
@@ -231,18 +238,24 @@
     return tl;
   }
 
-  function initHero() {
+  // Parte que não depende do GSAP: referências e botão "Pesar outro produto"
+  var heroOk = false;
+  function heroBase() {
     var bento = doc.querySelector("[data-hero-bento]");
-    if (!bento || !BC || !heroRefs()) { doc.documentElement.classList.remove("intro"); return; }
-    var html = doc.documentElement;
-    var intro = html.classList.contains("intro");
-
-    if (H.replay) {
+    heroOk = !!(bento && BC && heroRefs());
+    if (heroOk && H.replay) {
       H.replay.addEventListener("click", function () {
         idx = (idx + 1) % ITENS.length;
         pesar(true);
       });
     }
+  }
+
+  function initHero() {
+    var bento = doc.querySelector("[data-hero-bento]");
+    var html = doc.documentElement;
+    if (!heroOk) { html.classList.remove("intro"); return; }
+    var intro = html.classList.contains("intro");
 
     if (!anim || !intro) {
       html.classList.remove("intro");
@@ -258,7 +271,7 @@
     var lines = [title];
     var split = null;
     if (window.SplitText) {
-      split = window.SplitText.create(title, { type: "lines", mask: "lines", linesClass: "hl-line" });
+      split = window.SplitText.create(title, { type: "lines", mask: "lines", linesClass: "hl-line", reduceWhiteSpace: false, prepareText: D2.prepText });
       (split.masks || []).forEach(function (m) { m.style.paddingBottom = ".12em"; m.style.marginBottom = "-.12em"; });
       lines = split.lines;
     }
@@ -271,20 +284,27 @@
     gsap.set(H.bars, { scaleY: 0, transformOrigin: "50% 100%" });
     gsap.set(H.toast, { opacity: 0, y: 18 });
     gsap.set(H.label, { yPercent: -104 });
+    gsap.set(H.ro.stable, { opacity: 0.12 });
     var s0 = { v: 0 };
     H.sysTotal.textContent = brl(0);
     setReadout(0, ITENS[0]);
+    // a transição de CSS do cabeçalho brigaria com o GSAP
+    if (hdr) gsap.set(hdr, { transition: "none", y: 0, yPercent: -100 });
     html.classList.remove("intro");
 
     var tl = gsap.timeline({ defaults: { ease: "expo.out" } });
-    if (hdr) tl.from(hdr, { yPercent: -100, duration: 1, clearProps: "transform" }, 0);
+    if (hdr) tl.to(hdr, { yPercent: 0, duration: 1, clearProps: "transform,transition" }, 0);
     tl.to(intros[0], { opacity: 1, y: 0, duration: 1 }, 0.1)
       .to(lines, { yPercent: 0, duration: 1.25, stagger: 0.1 }, 0.15)
       .to(intros.slice(1), { opacity: 1, y: 0, duration: 1.1, stagger: 0.09 }, 0.5)
       .to(tiles, { opacity: 1, y: 0, scale: 1, rotate: 0, duration: 1.5, stagger: 0.12, ease: "expo.out", clearProps: "scale,rotate" }, 0.3)
       .to(H.bars, { scaleY: 1, duration: 0.9, stagger: 0.05, ease: "power3.out" }, 0.9)
-      .to(s0, { v: vendas, duration: 1.6, ease: "power3.out", onUpdate: function () { H.sysTotal.textContent = brl(s0.v); } }, 0.9)
-      .add(function () { pesar(true); }, 0.95);
+      .to(s0, { v: vendas, duration: 1.6, ease: "power3.out", onUpdate: function () { H.sysTotal.textContent = brl(s0.v); } }, 0.9);
+
+    // A pesagem só começa com a balança na tela (no celular o bento fica abaixo da dobra)
+    var abaixo = bento.getBoundingClientRect().top > window.innerHeight * 0.6;
+    if (!abaixo || !window.ScrollTrigger) tl.add(function () { pesar(true); }, 0.95);
+    else window.ScrollTrigger.create({ trigger: bento, start: "top 70%", once: true, onEnter: function () { pesar(true); } });
 
     // linha de leitura do "laser" passando pelo título
     var scan = doc.createElement("span");
@@ -302,6 +322,8 @@
         onComplete: function () { scan.remove(); }
       });
     }, 1.05);
+    // Desfaz a divisão em linhas no fim: o título volta a quebrar sozinho ao girar a tela
+    tl.add(function () { if (split) { split.revert(); split = null; } });
 
     // Paralaxe com o ponteiro (só mouse/trackpad)
     if (D2.fine) {
@@ -481,8 +503,11 @@
       }
       err.hidden = true;
       var texto = "Olá! Meu nome é " + nome + ".\n*Assunto:* " + assunto + "\n\n" + msg;
-      var w = window.open(BC.whatsLink(texto), "_blank", "noopener");
-      if (!w) location.href = BC.whatsLink(texto);
+      // window.open com "noopener" sempre devolve null: abrimos sem ele e cortamos o opener
+      var url = BC.whatsLink(texto);
+      var w = window.open(url, "_blank");
+      if (w) { try { w.opener = null; } catch (err) { /* ignore */ } }
+      else location.href = url;
     });
     ["nome", "mensagem"].forEach(function (n) {
       f[n].addEventListener("input", function () { if (f[n].value.trim()) f[n].removeAttribute("aria-invalid"); });
@@ -536,15 +561,22 @@
   initMarquee();
   initSegments();
   initForm();
-  function boot() {
-    initHero();
-    initExtras();
-  }
-  // Espera as fontes (para quebrar as linhas do título certo), sem travar
-  var started = false;
-  function go() { if (!started) { started = true; boot(); } }
-  if (doc.fonts && doc.fonts.ready && anim) {
-    doc.fonts.ready.then(go);
-    setTimeout(go, 900);
-  } else go();
+  heroBase();
+
+  // Movimento: roda depois do CDN (js/movimento.js). Se o CDN travar, a página
+  // continua completa e o .intro sai pelo timer do <head>.
+  (D2.onMovimento = D2.onMovimento || []).push(function () {
+    sync();
+    function boot() {
+      initHero();
+      initExtras();
+    }
+    // Espera as fontes (para quebrar as linhas do título certo), sem travar
+    var started = false;
+    function go() { if (!started) { started = true; boot(); } }
+    if (doc.fonts && doc.fonts.ready && anim) {
+      doc.fonts.ready.then(go);
+      setTimeout(go, 900);
+    } else go();
+  });
 })();

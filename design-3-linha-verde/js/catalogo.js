@@ -9,7 +9,8 @@
   var $ = LV.$, $$ = LV.$$, esc = LV.esc;
   var doc = document.documentElement;
 
-  var grid = $("[data-grid]"), tabsBox = $("[data-tabs]"), subsBox = $("[data-subs]");
+  var grid = $("[data-grid]"), panelBox = $("#grade"), tabsBox = $("[data-tabs]"), subsBox = $("[data-subs]");
+  var satNote = $("[data-sat-note]"), jump = $("[data-jump]");
   var qIn = $("[data-q]"), qClear = $("[data-q-clear]"), stock = $("[data-stock]"), stockWrap = $("[data-stock-wrap]");
   var countEl = $("[data-results]"), empty = $("[data-empty]"), fbar = $("[data-fbar]");
   if (!grid) return;
@@ -50,7 +51,7 @@
         ' aria-selected="' + sel + '" aria-controls="grade" tabindex="' + (sel ? "0" : "-1") + '" title="' + esc(c.nome) + '">' +
         '<span class="st" data-t="' + esc(nome) + '">' + esc(nome) + '</span><span class="tab__n">' + LV.pad(n) + "</span></button>";
     }).join("");
-    grid.setAttribute("aria-labelledby", "tab-" + state.cat);
+    (panelBox || grid).setAttribute("aria-labelledby", "tab-" + state.cat);
   }
   tabsBox.addEventListener("click", function (e) {
     var b = e.target.closest(".tab"); if (!b) return;
@@ -76,7 +77,7 @@
       var on = t.getAttribute("data-cat") === id;
       t.setAttribute("aria-selected", String(on)); t.tabIndex = on ? 0 : -1;
     });
-    grid.setAttribute("aria-labelledby", "tab-" + id);
+    (panelBox || grid).setAttribute("aria-labelledby", "tab-" + id);
     renderSubs(); apply(true);
   }
 
@@ -118,6 +119,7 @@
   $("[data-reset]").addEventListener("click", function () {
     state.q = ""; qIn.value = ""; qClear.hidden = true; state.sub = ""; state.estoque = false; if (stock) stock.checked = false;
     if (state.cat !== "todos") setCat("todos"); else { renderSubs(); apply(true); }
+    qIn.focus();
   });
 
   /* ---------- Grade: todas as fichas renderizadas uma vez ---------- */
@@ -126,8 +128,9 @@
     return '<li class="grid__i" data-id="' + esc(p.id) + '">' + LV.card(p, i + 1, { h: "h3" }) + "</li>";
   }).join("") +
     '<li class="grid__i grid__i--cta" data-cta><a class="grid__cta" data-wa="Olá! Vim pelo catálogo do site e procuro um equipamento que não encontrei na lista." href="' + BC.whatsLink("Olá! Vim pelo catálogo do site e procuro um equipamento que não encontrei na lista.") + '" target="_blank" rel="noopener">' +
-      '<span class="mono">Sob encomenda</span><span class="grid__cta-t">Procurando outro modelo?</span>' +
-      '<span class="grid__cta-go"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg>A gente consegue pra você</span></a></li>';
+      '<span class="mono">Outros modelos</span><span class="grid__cta-t">Procurando outro modelo?</span>' +
+      '<span class="grid__cta-go"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg>A gente consegue pra você</span>' +
+      '<span class="sr-only"> (abre em nova aba)</span></a></li>';
   $$(".grid__i", grid).forEach(function (li) { items[li.getAttribute("data-id")] = li; });
 
   function plural(n) { return n === 0 ? "Nenhum produto" : (n === 1 ? "<b>1</b> produto" : "<b>" + n + "</b> produtos"); }
@@ -144,13 +147,15 @@
     var wa = $("[data-wa-empty]");
     if (wa) wa.href = BC.whatsLink(state.q.trim()
       ? "Olá! Procurei por \"" + state.q.trim() + "\" no catálogo do site e não encontrei. Vocês conseguem?"
-      : "Olá! Procurei no catálogo do site e não encontrei o que preciso. Vocês conseguem?");
+      : "Olá! Procurei no catálogo do site e não encontrei o que procuro. Vocês conseguem?");
+    if (satNote) satNote.hidden = !/(^|\s)(cf-?e\s*)?sat(\s|$)/.test(BC.normaliza(state.q));
     writeURL();
+    if (animate && lista.length === 0) showEmpty();
     if (useFlip) {
       Flip.from(flipState, {
         duration: 0.6, ease: "power3.inOut", absolute: true, stagger: 0.012, nested: true,
-        onEnter: function (els) { return gsap.fromTo(els, { autoAlpha: 0, y: 30, skewX: -6 }, { autoAlpha: 1, y: 0, skewX: 0, duration: 0.6, stagger: 0.03, ease: "expo.out" }); },
-        onLeave: function (els) { return gsap.to(els, { autoAlpha: 0, scale: 0.94, duration: 0.3, ease: "power2.in" }); },
+        onEnter: function (els) { return gsap.fromTo(els, { opacity: 0, y: 30, skewX: -6 }, { opacity: 1, y: 0, skewX: 0, duration: 0.6, stagger: 0.03, ease: "expo.out" }); },
+        onLeave: function (els) { return gsap.to(els, { opacity: 0, scale: 0.94, duration: 0.3, ease: "power2.in" }); },
         onComplete: function () { if (window.ScrollTrigger) ScrollTrigger.refresh(); }
       });
     } else if (window.ScrollTrigger) {
@@ -158,10 +163,26 @@
     }
   }
 
+  // Sem resultado: traz o estado vazio (e o botão do WhatsApp) para a tela, sem tirar o foco da busca
+  function showEmpty() {
+    requestAnimationFrame(function () {
+      var r = empty.getBoundingClientRect(), wide = window.matchMedia("(min-width: 900px)").matches;
+      var top = LV.hdr() + (wide && fbar ? fbar.offsetHeight : 0) + 12;
+      if (r.bottom <= window.innerHeight && r.top >= top) return;
+      var dy = r.bottom > window.innerHeight ? Math.min(r.bottom - window.innerHeight + 24, r.top - top) : r.top - top;
+      if (!wide) dy = Math.min(dy, qIn.getBoundingClientRect().top - LV.hdr() - 8);   // o campo de busca continua à vista
+      if (dy <= 0) return;
+      var y = window.scrollY + dy;
+      if (LV.lenis) LV.lenis.scrollTo(y, { duration: 0.8 });
+      else window.scrollTo({ top: y, behavior: LV.motionOK() ? "smooth" : "auto" });
+    });
+  }
+
   /* ---------- Painel de detalhes (#p=ID) ---------- */
   var drawer = $("[data-drawer]"), panel = $(".drawer__panel", drawer), body = $("[data-dw-body]", drawer);
   var refEl = $("[data-dw-ref]", drawer), wipe = $(".drawer__wipe", drawer);
-  var lastFocus = null, openId = null;
+  var lastFocus = null, openId = null, closeTl = null, closing = false;
+  function depth() { return (history.state && history.state.lvDepth) || 0; }
 
   function pageURL(id) {
     var u = location.href.split("#")[0];
@@ -175,7 +196,7 @@
     if (rel.length < 3) rel = rel.concat(BC.produtos.filter(function (x) { return x.id !== p.id && x.categoria === p.categoria && rel.indexOf(x) === -1; }));
     rel = rel.slice(0, 3);
     return '<p class="mono dw__crumb">' + esc(BC.categoriaNome(p.categoria)) + " / " + esc(p.subcategoria) + "</p>" +
-      '<figure class="dw__fig' + (rec ? "" : " dw__fig--photo") + '"><img src="' + BC.imgProduto(p, true) + '" alt="' + esc(p.marca + " " + p.nome) + '" width="900" height="600"></figure>' +
+      '<figure class="dw__fig' + (rec ? "" : " dw__fig--photo") + '"><img src="' + BC.imgProduto(p, true) + '" alt="' + esc(p.marca + " " + p.nome) + '" width="900" height="600" decoding="async"></figure>' +
       '<p class="dw__brand">' + esc(p.marca) + "</p>" +
       '<h2 class="dw__model" id="dw-title">' + esc(p.nome) + "</h2>" +
       '<div class="dw__badges"><span class="badge badge--' + esc(est.classe) + '">' + esc(est.rotulo) + "</span>" +
@@ -184,7 +205,7 @@
       '<dl class="dw__table">' + rows.map(function (r) { return "<div><dt>" + esc(r[0]) + "</dt><dd>" + esc(r[1]) + "</dd></div>"; }).join("") + "</dl>" +
       '<p class="dw__price"><span>Preço</span><b>' + (p.preco ? esc(p.preco) : "Consulte") + "</b></p>" +
       '<div class="dw__ctas">' +
-        '<a class="btn btn--green btn--lg" href="' + BC.whatsProduto(p) + '" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Pedir orçamento no WhatsApp">Pedir orçamento no WhatsApp</span></a>' +
+        '<a class="btn btn--green btn--lg" href="' + BC.whatsProduto(p) + '" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Pedir orçamento no WhatsApp">Pedir orçamento no WhatsApp</span><span class="sr-only"> (abre em nova aba)</span></a>' +
         '<a class="btn btn--line" href="' + BC.telLink() + '"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg><span class="st" data-t="Ligar">Ligar</span></a>' +
         '<button class="btn btn--line dw__copy" type="button" data-copy><svg class="i" aria-hidden="true"><use href="#i-link"/></svg><span class="st" data-t="Copiar link">Copiar link</span></button>' +
       "</div>" +
@@ -200,15 +221,22 @@
   function openDetail(id, push) {
     var p = BC.porId(id);
     if (!p) return false;
-    if (push) { try { history.pushState({ p: id }, "", "#p=" + encodeURIComponent(id)); } catch (e) { location.hash = "p=" + encodeURIComponent(id); return true; } }
-    var already = !drawer.hidden;
-    if (!already) lastFocus = document.activeElement;
+    if (push) { try { history.pushState({ p: id, lvDepth: depth() + 1 }, "", "#p=" + encodeURIComponent(id)); } catch (e) { location.hash = "p=" + encodeURIComponent(id); return true; } }
+    // Reabrindo no meio do fechamento (Voltar + Avançar rápido): cancela o fechamento
+    if (closeTl) {
+      closeTl.kill(); closeTl = null;
+      gsap.set(panel, { xPercent: 0 }); gsap.set(".drawer__scrim", { opacity: 1, visibility: "inherit" });
+    }
+    var already = !drawer.hidden && !closing;
+    closing = false;
+    if (drawer.hidden) lastFocus = document.activeElement;
     openId = id;
     body.innerHTML = detailHTML(p);
     refEl.textContent = "Ref. " + LV.pad(BC.produtos.indexOf(p) + 1) + " · " + LV.catCurto(p.categoria);
     document.title = p.marca + " " + p.nome + " | Catálogo Balanças.com";
     drawer.hidden = false;
     panel.scrollTop = 0;
+    LV.inertBg(true, [".hdr"]);
     doc.style.overflow = "hidden"; if (LV.lenis) LV.lenis.stop();
     if (LV.motionOK()) {
       if (!already) {
@@ -218,9 +246,9 @@
           .fromTo(panel, { xPercent: 100 }, { xPercent: 0, duration: 0.8, ease: "expo.out" }, 0.12)
           .fromTo(wipe, { xPercent: 110 }, { xPercent: -130, duration: 1, ease: "expo.inOut" }, 0)
           .set(wipe, { visibility: "hidden" })
-          .from(body.children, { y: 22, autoAlpha: 0, stagger: 0.035, duration: 0.6, ease: "expo.out" }, 0.4);
+          .from(body.children, { y: 22, opacity: 0, stagger: 0.035, duration: 0.6, ease: "expo.out" }, 0.4);
       } else {
-        gsap.from(body.children, { y: 16, autoAlpha: 0, stagger: 0.03, duration: 0.5, ease: "expo.out" });
+        gsap.from(body.children, { y: 16, opacity: 0, stagger: 0.03, duration: 0.5, ease: "expo.out" });
       }
     }
     panel.focus({ preventScroll: true });
@@ -228,19 +256,31 @@
   }
   var baseTitle = document.title;
   function closeDetail(fromHistory) {
-    if (drawer.hidden) return;
-    openId = null;
+    if (drawer.hidden || closing) return;
+    // Aberto por clique (pushState): fechar = voltar no histórico, sem entrada duplicada.
+    // O popstate chama sync(), que fecha de fato.
+    if (!fromHistory && depth() > 0) { history.go(-depth()); return; }
+    var closedId = openId;
+    openId = null; closing = true;
     var done = function () {
+      closeTl = null; closing = false;
+      if (openId) return;                        // reaberto durante o fechamento
       drawer.hidden = true;
+      LV.inertBg(false, [".hdr"]);
       doc.style.overflow = ""; if (LV.lenis) LV.lenis.start();
       document.title = baseTitle;
-      if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
+      // Foco volta para quem abriu; aberto pelo endereço (#p=ID), vai para a ficha do produto ou para a busca
+      var card = closedId && grid.querySelector('a[data-detail="' + closedId.replace(/"/g, "") + '"]');
+      var tgt = (lastFocus && lastFocus !== document.body && document.contains(lastFocus) && lastFocus.offsetParent !== null) ? lastFocus
+        : (card && card.offsetParent !== null ? card : qIn);
+      tgt.focus({ preventScroll: tgt === lastFocus });
+      lastFocus = null;
     };
     if (!fromHistory && location.hash.indexOf("#p=") === 0) {
       try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { /* ok */ }
     }
     if (LV.motionOK()) {
-      gsap.timeline({ onComplete: done })
+      closeTl = gsap.timeline({ onComplete: done })
         .to(panel, { xPercent: 100, duration: 0.45, ease: "expo.in" }, 0)
         .to(".drawer__scrim", { autoAlpha: 0, duration: 0.35 }, 0.15);
     } else done();
@@ -279,39 +319,64 @@
   });
 
   /* ---------- Barra de filtros "grudada" ---------- */
-  function stuck() { if (fbar) fbar.classList.toggle("is-stuck", fbar.getBoundingClientRect().top <= LV.hdr() + 1); }
+  function stuck() {
+    if (!fbar) return;
+    var r = fbar.getBoundingClientRect();
+    fbar.classList.toggle("is-stuck", r.top <= LV.hdr() + 1);
+    // Celular (barra não fixa): atalho "Filtrar / buscar" aparece quando a barra sai da tela
+    if (jump) {
+      var gone = r.bottom < LV.hdr() && grid.getBoundingClientRect().bottom > window.innerHeight * 0.5;
+      jump.classList.toggle("is-on", gone);
+      jump.tabIndex = gone ? 0 : -1;
+    }
+  }
   window.addEventListener("scroll", stuck, { passive: true });
+  function scrollPad() {
+    var wide = window.matchMedia("(min-width: 900px)").matches;
+    doc.style.scrollPaddingTop = (LV.hdr() + (wide && fbar ? fbar.offsetHeight : 0) + 16) + "px";
+  }
+  scrollPad(); window.addEventListener("resize", scrollPad);
+  if (jump) jump.addEventListener("click", function (e) {
+    e.preventDefault();
+    var y = fbar.getBoundingClientRect().top + window.scrollY - LV.hdr();
+    if (LV.lenis) LV.lenis.scrollTo(y, { duration: 1 }); else window.scrollTo({ top: y, behavior: LV.motionOK() ? "smooth" : "auto" });
+    qIn.focus({ preventScroll: true });
+  });
 
   /* ---------- Início ---------- */
   readURL();
   qIn.value = state.q; qClear.hidden = !state.q;
   if (stock) stock.checked = state.estoque;
   renderTabs(); renderSubs(); apply(false);
+  stuck();
   sync();
 
   /* ---------- Animações do catálogo ---------- */
   LV.onMotion(function () {
     doc.classList.remove("is-loading");
+    var viaVT = doc.classList.contains("via-vt");   // chegou por transição entre páginas: sem replay
     var band = $(".chero__band"), bar = $(".chero .hero__bar"), w = $(".chero__w");
     gsap.set(band, { skewX: -12 });
     gsap.set(bar, { skewX: -12, scaleX: 0, transformOrigin: "0% 50%" });
     gsap.set(w, { autoAlpha: 0 });
-    gsap.timeline({ defaults: { ease: "expo.out" }, delay: 0.05 })
+    var tl = gsap.timeline({ defaults: { ease: "expo.out" }, delay: viaVT ? 0 : 0.05 })
       .from(band, { scaleY: 0, transformOrigin: "50% 0%", duration: 1.1, ease: "expo.inOut" }, 0)
+      .from(".chero__prod", { yPercent: 18, opacity: 0, duration: 1.3 }, 0.55)
       .from(".chero__count", { yPercent: 40, autoAlpha: 0, duration: 1 }, 0.7)
       .to(bar, { scaleX: 1, duration: 0.45, ease: "expo.in" }, 0.25)
       .set(w, { autoAlpha: 1 }, 0.7)
       .set(bar, { transformOrigin: "100% 50%" }, 0.7)
       .to(bar, { scaleX: 0, duration: 0.65 }, 0.72)
-      .from([".crumbs", ".chero__lead", ".chero__facts"], { autoAlpha: 0, y: 22, stagger: 0.08, duration: 1 }, 0.55)
-      .from(".fbar__in > *", { autoAlpha: 0, y: 16, stagger: 0.08, duration: 0.9 }, 0.8);
+      .from([".crumbs", ".chero__lead", ".chero__facts"], { opacity: 0, y: 22, stagger: 0.08, duration: 1 }, 0.55)
+      .from(".fbar__in > *", { opacity: 0, y: 16, stagger: 0.08, duration: 0.9 }, 0.8);
+    if (viaVT) tl.progress(1);
 
-    // Fichas entram em lotes conforme a rolagem
-    var cards = $$(".grid__i:not([hidden]) > .spec", grid);
-    gsap.set(cards, { autoAlpha: 0, y: 40 });
-    ScrollTrigger.batch(cards, {
-      start: "top 94%", end: "max", once: true,
-      onEnter: function (b) { gsap.to(b, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.06, ease: "expo.out", overwrite: true }); }
-    });
+    // Fichas entram em lotes conforme a rolagem. As que já estão na tela quando a animação
+    // assume (CDN lento) não somem e reaparecem.
+    var cards = $$(".grid__i:not([hidden]) > .spec", grid).filter(function (c) { return c.getBoundingClientRect().top > window.innerHeight; });
+    if (cards.length) {
+      gsap.set(cards, { opacity: 0, y: 40 });
+      ScrollTrigger.batch(cards, { start: "top 94%", end: "max", once: true, batchMax: 8, onEnter: function (b) { LV.reveal(b, 0.9); } });
+    }
   });
 })();

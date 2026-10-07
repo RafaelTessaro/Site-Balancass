@@ -4,22 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Catálogo de Balanças, PDV e Automação | Balanças.com Rio Claro</title>
-<meta name="description" content="Balanças Toledo e Balmak, impressoras de etiquetas, leitores, gavetas, terminais e computadores para PDV. Escolha no catálogo e peça orçamento pelo WhatsApp. Rio Claro-SP.">
+<meta name="description" content="Balanças Toledo e Balmak, etiquetadoras, leitores, gavetas e PDV. Veja o catálogo e peça orçamento pelo WhatsApp. Balanças.com, Rio Claro-SP.">
 <meta name="theme-color" content="#0A0A0A">
-<link rel="canonical" href="https://www.balancass.com/produtos.html">
+<link rel="canonical" href="https://balancass.com/produtos.html">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_BR">
 <meta property="og:site_name" content="Balanças.com">
-<meta property="og:title" content="Catálogo — Balanças.com">
+<meta property="og:title" content="Catálogo de balanças e automação comercial | Balanças.com">
 <meta property="og:description" content="Balanças, automação comercial e informática para o comércio. Peça orçamento pelo WhatsApp.">
-<meta property="og:url" content="https://www.balancass.com/produtos.html">
-<meta property="og:image" content="https://www.balancass.com/compartilhado/img/fotos/kit-pdv.webp">
+<meta property="og:url" content="https://balancass.com/produtos.html">
+<meta property="og:image" content="https://balancass.com/img/og-linha-verde.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Balança Toledo Prix 4 Uno sobre a faixa verde da Balanças.com, com o texto Pesa. Imprime. Vende.">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../compartilhado/img/logo/balancas-icone.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders:opsz,wght@10..72,700..900&family=Archivo:wdth,wght@62..125,400..800&family=Martian+Mono:wght@400..500&display=swap">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/catalogo.css">
 <script>
@@ -27,31 +31,35 @@
      o conteúdo enquanto o JS não assume. Se algo falhar, tudo reaparece. */
   document.documentElement.className += " js is-loading";
   setTimeout(function () { document.documentElement.classList.remove("is-loading"); }, 2600);
+  /* Chegou pela transição diagonal entre páginas: o destino aparece pronto, sem recomeçar a abertura */
+  addEventListener("pagereveal", function (e) { if (e.viewTransition) document.documentElement.classList.add("via-vt"); });
 </script>
+<noscript><style>.burger{display:none}@media(max-width:980px){.nav{display:block;position:absolute;top:100%;left:0;right:0;margin:0;background:#0A0A0A;border-bottom:1px solid #1E1E1D}.nav__list{overflow-x:auto;padding-inline:var(--gut)}.nav__list li{flex:none}main{padding-top:44px}}</style></noscript>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
   "name": "Catálogo de produtos — Balanças.com",
-  "url": "https://www.balancass.com/produtos.html",
-  "isPartOf": { "@type": "WebSite", "name": "Balanças.com", "url": "https://www.balancass.com/" },
-  "about": { "@id": "https://www.balancass.com/#loja" },
+  "url": "https://balancass.com/produtos.html",
+  "isPartOf": { "@type": "WebSite", "name": "Balanças.com", "url": "https://balancass.com/" },
+  "about": { "@type": "ElectronicsStore", "@id": "https://balancass.com/#loja", "name": "Balanças.com" },
   "breadcrumb": { "@type": "BreadcrumbList", "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "Início", "item": "https://www.balancass.com/" },
-    { "@type": "ListItem", "position": 2, "name": "Catálogo", "item": "https://www.balancass.com/produtos.html" }
+    { "@type": "ListItem", "position": 1, "name": "Início", "item": "https://balancass.com/" },
+    { "@type": "ListItem", "position": 2, "name": "Catálogo", "item": "https://balancass.com/produtos.html" }
   ] }
 }
 </script>
-<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/Flip.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
+<!-- Scripts locais primeiro: dados, fichas e links já funcionam enquanto o CDN carrega -->
 <script defer src="../compartilhado/dados/empresa.js"></script>
 <script defer src="../compartilhado/dados/produtos.js"></script>
 <script defer src="../compartilhado/js/balancas.js"></script>
 <script defer src="js/core.js"></script>
 <script defer src="js/catalogo.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/Flip.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
 </head>
 <body class="page-cat">
 
@@ -109,7 +117,7 @@
   <span class="hdr__progress" aria-hidden="true"></span>
 </header>
 
-<div class="menu" id="menu" data-menu hidden>
+<div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="Menu" data-menu hidden>
   <div class="menu__band" aria-hidden="true"></div>
   <nav class="menu__nav" aria-label="Menu">
     <ol class="menu__list">
@@ -132,16 +140,16 @@
 <section class="chero" aria-labelledby="chero-t">
   <div class="chero__grid" aria-hidden="true"></div>
   <div class="chero__band" aria-hidden="true">
+    <img class="chero__prod" src="../compartilhado/img/produtos-recorte/elgin-i9.webp" alt="" width="805" height="805" fetchpriority="high" decoding="async">
     <span class="chero__count" data-total-produtos>41</span>
     <span class="chero__count-l mono">Itens no catálogo</span>
   </div>
   <div class="wrap chero__in">
     <nav class="crumbs mono" aria-label="Você está em" data-intro><a href="index.html">Início</a><span aria-hidden="true">/</span><span aria-current="page">Catálogo</span></nav>
-    <h1 class="chero__t" id="chero-t"><span class="chero__w" data-intro>Catálogo</span><span class="hero__bar" aria-hidden="true"></span></h1>
+    <h1 class="chero__t" id="chero-t"><span class="chero__w" data-intro>Catálogo</span><span class="sr-only"> de balanças, automação comercial e PDV</span><span class="hero__bar" aria-hidden="true"></span></h1>
     <p class="chero__lead" data-intro><strong>Escolha, chame no WhatsApp e a gente orça.</strong> Balanças, automação comercial e informática para o comércio — com instalação, treinamento e assistência técnica de quem está perto.</p>
     <ul class="chero__facts mono" role="list" data-intro>
-      <li><b data-total-produtos>41</b> produtos</li>
-      <li><b>3</b> categorias</li>
+      <li><b data-total-categorias>3</b> categorias</li>
       <li><b>Sem carrinho</b> · orçamento pelo WhatsApp</li>
     </ul>
   </div>
@@ -149,7 +157,7 @@
 
 <section class="cat on-paper" aria-labelledby="cat-t">
   <h2 class="sr-only" id="cat-t">Produtos do catálogo</h2>
-  <div class="fbar" data-fbar>
+  <div class="fbar" id="filtros" data-fbar>
     <div class="wrap fbar__in">
       <div class="fbar__top">
         <div class="tabs" role="tablist" aria-label="Categorias" data-tabs></div>
@@ -174,15 +182,20 @@
     </div>
   </div>
 
+  <div class="cat__jump-wrap"><a class="btn btn--ink btn--sm cat__jump" href="#filtros" data-jump tabindex="-1"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><span class="st" data-t="Filtrar / buscar">Filtrar / buscar</span></a></div>
   <div class="wrap cat__body">
     <p class="cat__note mono"><span class="tag tag--ink">Aviso</span> Estoque sujeito à disponibilidade. Confirme pelo WhatsApp.</p>
-    <ul class="grid" id="grade" role="tabpanel" aria-labelledby="tab-todos" data-grid></ul>
+    <div class="cat__sat" data-sat-note role="note" hidden>
+      <p><strong>O CF-e SAT está proibido em SP desde 01/01/2026.</strong> Migre para NFC-e com o BC System.</p>
+      <a class="link-out mono" data-wa="Olá! Ainda uso SAT e quero migrar para NFC-e." href="https://wa.me/551930239050?text=Ol%C3%A1!%20Ainda%20uso%20SAT%20e%20quero%20migrar%20para%20NFC-e." target="_blank" rel="noopener">Falar sobre a migração <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    </div>
+    <div id="grade" role="tabpanel" aria-labelledby="tab-todos"><ul class="grid" role="list" data-grid></ul></div>
     <div class="empty" data-empty hidden>
       <p class="empty__big" aria-hidden="true">Nada na linha.</p>
       <h3 class="empty__t">Não achou? A gente consegue pra você.</h3>
       <p>Trabalhamos com várias marcas e modelos que nem sempre estão no site. Conte o que você procura.</p>
       <div class="empty__ctas">
-        <a class="btn btn--green" data-wa="Olá! Procurei no catálogo do site e não encontrei o que preciso. Vocês conseguem?" data-wa-empty href="https://wa.me/551930239050" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Pedir pelo WhatsApp">Pedir pelo WhatsApp</span></a>
+        <a class="btn btn--green" data-wa="Olá! Procurei no catálogo do site e não encontrei o que procuro. Vocês conseguem?" data-wa-empty href="https://wa.me/551930239050" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Pedir pelo WhatsApp">Pedir pelo WhatsApp</span></a>
         <button class="btn btn--line" type="button" data-reset><span class="st" data-t="Limpar filtros">Limpar filtros</span></button>
       </div>
     </div>
@@ -193,9 +206,9 @@
 <section class="ask on-green" aria-labelledby="ask-t">
   <div class="sec__tab" aria-hidden="true"><b>?</b><span>Sob medida</span></div>
   <div class="wrap ask__in">
-    <h2 class="ask__t" id="ask-t" data-split>Não achou? A gente consegue pra você.</h2>
+    <h2 class="ask__t" id="ask-t" data-split>Precisa de ajuda para escolher?</h2>
     <div class="ask__side">
-      <p>Conte o que o seu balcão precisa. A gente indica o equipamento certo, instala, treina a equipe e cuida da assistência técnica.</p>
+      <p>Conte do que o seu balcão precisa. A gente indica o equipamento certo, instala, treina a equipe e cuida da assistência técnica.</p>
       <div class="ask__btns">
         <a class="btn btn--ink btn--lg" data-wa="Olá! Vim pelo catálogo do site e quero ajuda para escolher um equipamento." href="https://wa.me/551930239050" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Falar no WhatsApp">Falar no WhatsApp</span></a>
         <a class="link-u" data-tel href="tel:+551930239050">Ligar <span data-tel-text>(19) 3023-9050</span></a>
@@ -228,7 +241,7 @@
         <ul role="list">
           <li><a data-wa="" href="https://wa.me/551930239050" target="_blank" rel="noopener">WhatsApp <span data-tel-text>(19) 3023-9050</span></a></li>
           <li><a data-email href="mailto:balancas.com@gmail.com" data-email-text>balancas.com@gmail.com</a></li>
-          <li><a data-mapa href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener"><span data-endereco>Rua 13, 650 – Boa Morte, Rio Claro/SP · CEP 13500-120</span></a></li>
+          <li><a data-mapa href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener"><span data-endereco>Rua 13, 650 – Boa Morte, Rio Claro/SP · <span class="nobr">CEP 13500-120</span></span><br><span class="ftr__ref" data-referencia>Entre as Avenidas 9 e 11</span></a></li>
           <li><a data-facebook href="https://www.facebook.com/balancas.comrc/" target="_blank" rel="noopener">Facebook</a></li>
         </ul>
       </div>
@@ -244,10 +257,10 @@
   </div>
 </footer>
 
-<div class="float" data-float>
+<aside class="float is-hidden" data-float aria-label="Atalhos de contato">
   <a class="float__b float__b--tel" data-tel href="tel:+551930239050" aria-label="Ligar para a Balanças.com"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg></a>
   <a class="float__b float__b--wa" data-wa="" href="https://wa.me/551930239050" target="_blank" rel="noopener" aria-label="Conversar no WhatsApp"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg></a>
-</div>
+</aside>
 
 
 <div class="drawer" data-drawer hidden>

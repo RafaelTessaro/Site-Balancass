@@ -3,19 +3,31 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <script>
+    /* Esconde o hero só enquanto a animação de entrada prepara (nunca sem JS).
+       Se o GSAP não chegar em 1,5 s, o conteúdo aparece direto. */
+    (function (d) {
+      d.documentElement.classList.add("js");
+      if (window.matchMedia && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        d.documentElement.classList.add("intro");
+        setTimeout(function () { d.documentElement.classList.remove("intro"); }, 1500);
+      }
+    })(document);
+  </script>
   <title>Balanças e Automação Comercial em Rio Claro-SP | Balanças.com</title>
   <meta name="description" content="Balanças, PDV, sistema com NFC-e e assistência técnica autorizada pelo IPEM-SP em Rio Claro. Nota 5,0 no Google. Fale com a gente pelo WhatsApp.">
   <meta name="theme-color" content="#F5F7F4">
-  <link rel="canonical" href="https://www.balancass.com/">
+  <link rel="canonical" href="https://balancass.com/">
   <link rel="icon" type="image/svg+xml" href="../compartilhado/img/logo/balancas-icone.svg">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="pt_BR">
   <meta property="og:site_name" content="Balanças.com">
   <meta property="og:title" content="Balanças.com — A medida certa para o seu negócio">
   <meta property="og:description" content="Balanças, frente de caixa, BC System com NFC-e e assistência técnica autorizada pelo IPEM-SP. Rio Claro-SP, desde 2010.">
-  <meta property="og:url" content="https://www.balancass.com/">
-  <meta property="og:image" content="https://www.balancass.com/img/og-balancas.jpg">
+  <meta property="og:url" content="https://balancass.com/">
+  <meta property="og:image" content="https://balancass.com/img/og-balancas.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
@@ -23,34 +35,25 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500..800&family=Inter:opsz,wght@14..32,400..700&display=swap">
-  <link rel="preload" as="image" href="../compartilhado/img/produtos-recorte/prix4uno.webp" fetchpriority="high">
-  <link rel="stylesheet" href="css/estilo.css?v=2026-10">
-  <link rel="stylesheet" href="css/home.css?v=2026-10">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500..800&family=Inter:wght@400..700&display=swap">
+  <link rel="preload" as="image" href="../compartilhado/img/produtos/prix4uno.webp" fetchpriority="high">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="https://cdn.jsdelivr.net/npm/dseg@0.46.0/fonts/DSEG7-Classic/DSEG7Classic-Bold.woff2">
+  <link rel="stylesheet" href="css/estilo.css?v=2026-10b">
+  <link rel="stylesheet" href="css/home.css?v=2026-10b">
 
-  <script>
-    /* Esconde o conteúdo do hero só enquanto a animação de entrada prepara (nunca sem JS). */
-    (function (d) {
-      d.documentElement.classList.add("js");
-      if (window.matchMedia && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        d.documentElement.classList.add("intro");
-        setTimeout(function () { d.documentElement.classList.remove("intro"); }, 2600);
-      }
-    })(document);
-  </script>
 
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "ElectronicsStore",
-    "@id": "https://www.balancass.com/#loja",
+    "@id": "https://balancass.com/#loja",
     "name": "Balanças.com",
     "alternateName": "Balanças.com Automação Comercial",
     "slogan": "A medida certa para o seu negócio",
     "description": "Balanças comerciais, industriais e com etiqueta, automação comercial, PDV, sistema BC System com NFC-e e assistência técnica de balanças autorizada pelo IPEM-SP em Rio Claro-SP.",
-    "url": "https://www.balancass.com/",
-    "logo": "https://www.balancass.com/compartilhado/img/logo/balancas-icone.svg",
-    "image": "https://www.balancass.com/img/og-balancas.jpg",
+    "url": "https://balancass.com/",
+    "logo": "https://balancass.com/compartilhado/img/logo/balancas-icone.svg",
+    "image": "https://balancass.com/img/og-balancas.jpg",
     "telephone": "+55-19-3023-9050",
     "email": "balancas.com@gmail.com",
     "foundingDate": "2010",
@@ -59,7 +62,7 @@
     "taxID": "12.403.843/0001-18",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "Rua 13, 650 (entre as Avenidas 9 e 11), Boa Morte",
+      "streetAddress": "Rua 13, 650 - Boa Morte",
       "addressLocality": "Rio Claro",
       "addressRegion": "SP",
       "postalCode": "13500-120",
@@ -72,7 +75,6 @@
       { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "08:00", "closes": "12:00" }
     ],
     "areaServed": ["Rio Claro", "Região de Rio Claro-SP"],
-    "aggregateRating": { "@type": "AggregateRating", "ratingValue": "5.0", "reviewCount": "56", "bestRating": "5" },
     "contactPoint": { "@type": "ContactPoint", "telephone": "+55-19-3023-9050", "contactType": "sales", "availableLanguage": "pt-BR" },
     "makesOffer": [
       { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Assistência técnica, conserto e manutenção de balanças" } },
@@ -81,6 +83,17 @@
       { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Suporte em informática para o comércio" } }
     ],
     "sameAs": ["https://www.facebook.com/balancas.comrc/", "https://maps.google.com/?cid=12422356528564941318"]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://balancass.com/#site",
+    "url": "https://balancass.com/",
+    "name": "Balanças.com",
+    "inLanguage": "pt-BR",
+    "publisher": { "@id": "https://balancass.com/#loja" }
   }
   </script>
   <script type="application/ld+json">
@@ -183,6 +196,7 @@
       <a class="btn btn--wa btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." data-wa target="_blank" rel="noopener">
         <svg class="i"><use href="#i-wa"/></svg><span class="hdr__wa-label">WhatsApp</span><span class="sr-only"> (abre o WhatsApp)</span>
       </a>
+      <a class="hdr__nojs" href="#rodape-nav">Menu</a>
       <button class="hdr__burger" type="button" aria-expanded="false" aria-controls="menu-mobile" aria-label="Abrir menu">
         <span class="burger" aria-hidden="true"><span></span><span></span><span></span></span>
       </button>
@@ -191,7 +205,7 @@
   <span class="hdr__progress" aria-hidden="true"></span>
 </header>
 
-<div class="mnav" id="menu-mobile" aria-label="Menu">
+<div class="mnav" id="menu-mobile" role="dialog" aria-modal="true" aria-label="Menu" data-lenis-prevent>
   <nav aria-label="Menu mobile">
     <ul class="mnav__list list-reset">
       <li><a href="#inicio">Início <svg class="i"><use href="#i-arrow"/></svg></a></li>
@@ -203,7 +217,7 @@
     </ul>
   </nav>
   <div class="mnav__foot">
-    <a class="btn btn--wa btn--block" href="https://wa.me/551930239050" data-wa target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Falar no WhatsApp</a>
+    <a class="btn btn--wa btn--block" href="https://wa.me/551930239050" data-wa target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Falar no WhatsApp<span class="sr-only"> (abre o WhatsApp)</span></a>
     <a class="btn btn--ghost btn--block" href="tel:+551930239050" data-tel><svg class="i"><use href="#i-phone"/></svg> Ligar <span data-bc="telefone">(19) 3023-9050</span></a>
     <div class="mnav__meta">
       <span class="open-status" data-open-status><i></i><span>Seg a sex 8h–11h e 13h–18h · Sáb 8h–12h</span></span>
@@ -224,8 +238,7 @@
       <p class="hero__lead" data-intro>Balanças, frente de caixa, sistema com NFC-e e assistência técnica autorizada pelo <span class="nw">IPEM-SP</span> — tudo num só lugar, com atendimento de perto aqui em Rio Claro.</p>
       <div class="hero__ctas" data-intro>
         <a class="btn btn--wa magnetic" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e gostaria de atendimento." target="_blank" rel="noopener">
-          <svg class="i"><use href="#i-wa"/></svg> Falar no WhatsApp
-        </a>
+          <svg class="i"><use href="#i-wa"/></svg> Falar no WhatsApp<span class="sr-only"> (abre o WhatsApp)</span></a>
         <a class="btn btn--ghost magnetic" href="produtos.html">Ver produtos <svg class="i btn__arrow"><use href="#i-arrow"/></svg></a>
       </div>
       <div class="trust" data-intro>
@@ -251,7 +264,7 @@
         </div>
         <div class="hb__stage">
           <span class="hb__disc" aria-hidden="true"></span>
-          <img class="hb__prod" src="../compartilhado/img/produtos-recorte/prix4uno.webp" alt="Balança Toledo Prix 4 Uno com impressora de etiquetas" width="900" height="574" fetchpriority="high" decoding="async">
+          <img class="hb__prod" src="../compartilhado/img/produtos/prix4uno.webp" alt="Balança Toledo Prix 4 Uno com impressora de etiquetas" width="900" height="534" fetchpriority="high" decoding="async">
         </div>
         <div class="ro" aria-hidden="true">
           <div class="ro__name" data-ro="nome">PÃO FRANCÊS</div>
@@ -262,28 +275,10 @@
           </div>
           <span class="ro__stable" data-ro="stable">Estável</span>
         </div>
-        <figcaption class="hb__cap"><span class="sr-only" data-ro-sr>Exemplo de pesagem: pão francês, 0,452 kg a R$ 15,99 o quilo, total R$ 7,23.</span>
+        <figcaption class="hb__cap"><span class="sr-only" data-ro-sr aria-live="polite">Exemplo de pesagem: pão francês, 0,452 kg a R$ 15,99 o quilo, total R$ 7,23.</span>
           <button class="hb__replay" type="button" data-replay><svg class="i i--sm" aria-hidden="true"><use href="#i-repeat"/></svg>Pesar outro produto</button>
         </figcaption>
       </figure>
-
-      <div class="hb__tile hb__sys on-dark" data-tile data-depth="1.6">
-        <div class="sys">
-          <div class="sys__top">
-            <span class="sys__app"><svg viewBox="-100 -100 200 200" aria-hidden="true"><circle r="100" fill="#fff" opacity=".12"/><path fill="#3CD47B" d="M -30 -91.2 L -30 0 A 30 30 0 0 0 26 15 L 26 56.3 A 62 62 0 0 1 -62 0 L -62 -73.3 A 96 96 0 0 1 -30 -91.2 Z M 30 91.2 L 30 0 A 30 30 0 0 0 -26 -15 L -26 -56.3 A 62 62 0 0 1 62 0 L 62 73.3 A 96 96 0 0 1 30 91.2 Z"/></svg>BC System</span>
-            <span class="hb__step hb__step--dark"><b>3</b> Vende</span>
-          </div>
-          <p class="sys__lbl">Vendas de hoje · Caixa 01</p>
-          <p class="sys__val tnum">R$&nbsp;<span data-sys-total>4.817,30</span></p>
-          <div class="sys__chart" aria-hidden="true">
-            <i style="--h:.32"></i><i style="--h:.5"></i><i style="--h:.42"></i><i style="--h:.7"></i><i style="--h:.58"></i><i style="--h:.86"></i><i style="--h:.64"></i><i style="--h:.78"></i><i style="--h:.95" class="is-now"></i>
-          </div>
-          <div class="sys__toast" data-sys-toast>
-            <span class="sys__ok" aria-hidden="true"><svg class="i"><use href="#i-check"/></svg></span>
-            <span class="sys__toast-txt"><b>NFC-e autorizada</b><small data-sys-last>R$ 7,23 · Pão francês</small></span>
-          </div>
-        </div>
-      </div>
 
       <div class="hb__tile hb__print" data-tile data-depth="2.2">
         <div class="hb__head">
@@ -307,13 +302,32 @@
         </div>
       </div>
 
+      <div class="hb__tile hb__sys on-dark" data-tile data-depth="1.6">
+        <span class="sr-only">Demonstração: a etiqueta sai com código de barras e a venda entra no BC System com NFC-e.</span>
+        <div class="sys" aria-hidden="true">
+          <div class="sys__top">
+            <span class="sys__app"><svg viewBox="-100 -100 200 200" aria-hidden="true"><circle r="100" fill="#fff" opacity=".12"/><path fill="#3CD47B" d="M -30 -91.2 L -30 0 A 30 30 0 0 0 26 15 L 26 56.3 A 62 62 0 0 1 -62 0 L -62 -73.3 A 96 96 0 0 1 -30 -91.2 Z M 30 91.2 L 30 0 A 30 30 0 0 0 -26 -15 L -26 -56.3 A 62 62 0 0 1 62 0 L 62 73.3 A 96 96 0 0 1 30 91.2 Z"/></svg>BC System</span>
+            <span class="hb__step hb__step--dark"><b>3</b> Vende</span>
+          </div>
+          <p class="sys__lbl">Vendas de hoje · Caixa 01</p>
+          <p class="sys__val tnum">R$&nbsp;<span data-sys-total>4.817,30</span></p>
+          <div class="sys__chart" aria-hidden="true">
+            <i style="--h:.32"></i><i style="--h:.5"></i><i style="--h:.42"></i><i style="--h:.7"></i><i style="--h:.58"></i><i style="--h:.86"></i><i style="--h:.64"></i><i style="--h:.78"></i><i style="--h:.95" class="is-now"></i>
+          </div>
+          <div class="sys__toast" data-sys-toast>
+            <span class="sys__ok" aria-hidden="true"><svg class="i"><use href="#i-check"/></svg></span>
+            <span class="sys__toast-txt"><b>NFC-e autorizada</b><small data-sys-last>R$ 7,23 · Pão francês</small></span>
+          </div>
+        </div>
+      </div>
+
       <a class="hb__tile hb__kit laser" href="#segmentos" data-tile data-depth="0.8">
         <span class="hb__kit-txt">
           <span class="hb__kicker">Monte seu PDV</span>
           <strong>Computador, impressora, leitor e gaveta prontos para vender.</strong>
           <span class="tlink">Ver kits por segmento <svg class="i i--sm"><use href="#i-arrow"/></svg></span>
         </span>
-        <span class="hb__kit-img"><img src="../compartilhado/img/fotos/kit-pdv.webp" alt="" width="1400" height="1151" decoding="async"></span>
+        <span class="hb__kit-img"><img src="img/kit-pdv-480.webp" alt="" width="480" height="395" loading="lazy" fetchpriority="low" decoding="async"></span>
       </a>
     </div>
   </div>
@@ -351,35 +365,31 @@
     <ul class="help__grid list-reset">
       <li data-reveal>
         <a class="help-card help-card--dark laser on-dark" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e preciso de conserto/manutenção na minha balança. Marca e modelo: " target="_blank" rel="noopener">
-          <span class="help-card__top"><span class="help-card__icon"><svg class="i i--lg"><use href="#i-wrench"/></svg></span><span class="help-card__num">01</span></span>
+          <span class="help-card__top"><span class="help-card__icon"><svg class="i i--lg"><use href="#i-wrench"/></svg></span><span class="help-card__num" aria-hidden="true">01</span></span>
           <span class="help-card__title">Consertar minha balança</span>
-          <span class="help-card__txt">Manutenção, conserto, troca de peças e regularização no <span class="nw">IPEM-SP</span>.</span>
-          <span class="help-card__cta"><svg class="i i--sm"><use href="#i-wa"/></svg> Chamar no WhatsApp <svg class="i i--sm help-card__arrow"><use href="#i-arrow"/></svg></span>
-        </a>
+          <span class="help-card__txt">Manutenção, conserto, troca de peças e regularização junto ao <span class="nw">IPEM-SP</span>.</span>
+          <span class="help-card__cta"><svg class="i i--sm"><use href="#i-wa"/></svg> Chamar no WhatsApp <svg class="i i--sm help-card__arrow"><use href="#i-arrow"/></svg></span><span class="sr-only"> (abre o WhatsApp)</span></a>
       </li>
       <li data-reveal>
         <a class="help-card laser" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e quero um orçamento de equipamento: " target="_blank" rel="noopener">
-          <span class="help-card__top"><span class="help-card__icon"><svg class="i i--lg"><use href="#i-cart"/></svg></span><span class="help-card__num">02</span></span>
+          <span class="help-card__top"><span class="help-card__icon"><svg class="i i--lg"><use href="#i-cart"/></svg></span><span class="help-card__num" aria-hidden="true">02</span></span>
           <span class="help-card__title">Comprar equipamento</span>
           <span class="help-card__txt">Balanças, impressoras, leitores, gavetas e computadores para o caixa.</span>
-          <span class="help-card__cta"><svg class="i i--sm"><use href="#i-wa"/></svg> Pedir orçamento <svg class="i i--sm help-card__arrow"><use href="#i-arrow"/></svg></span>
-        </a>
+          <span class="help-card__cta"><svg class="i i--sm"><use href="#i-wa"/></svg> Pedir orçamento <svg class="i i--sm help-card__arrow"><use href="#i-arrow"/></svg></span><span class="sr-only"> (abre o WhatsApp)</span></a>
       </li>
       <li data-reveal>
         <a class="help-card laser" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e quero saber mais sobre o BC System e a emissão de NFC-e." target="_blank" rel="noopener">
-          <span class="help-card__top"><span class="help-card__icon"><svg class="i i--lg"><use href="#i-receipt"/></svg></span><span class="help-card__num">03</span></span>
+          <span class="help-card__top"><span class="help-card__icon"><svg class="i i--lg"><use href="#i-receipt"/></svg></span><span class="help-card__num" aria-hidden="true">03</span></span>
           <span class="help-card__title">Sistema e NFC-e</span>
           <span class="help-card__txt">BC System: frente de caixa, estoque e nota fiscal, com suporte local.</span>
-          <span class="help-card__cta"><svg class="i i--sm"><use href="#i-wa"/></svg> Conhecer o sistema <svg class="i i--sm help-card__arrow"><use href="#i-arrow"/></svg></span>
-        </a>
+          <span class="help-card__cta"><svg class="i i--sm"><use href="#i-wa"/></svg> Conhecer o sistema <svg class="i i--sm help-card__arrow"><use href="#i-arrow"/></svg></span><span class="sr-only"> (abre o WhatsApp)</span></a>
       </li>
       <li data-reveal>
         <a class="help-card laser" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e quero alugar o BC Fichas para um evento. Data e local: " target="_blank" rel="noopener">
-          <span class="help-card__top"><span class="help-card__icon"><svg class="i i--lg"><use href="#i-ticket"/></svg></span><span class="help-card__num">04</span></span>
+          <span class="help-card__top"><span class="help-card__icon"><svg class="i i--lg"><use href="#i-ticket"/></svg></span><span class="help-card__num" aria-hidden="true">04</span></span>
           <span class="help-card__title">Alugar BC Fichas</span>
           <span class="help-card__txt">Terminais de fichas por diária para festas, quermesses e eventos.</span>
-          <span class="help-card__cta"><svg class="i i--sm"><use href="#i-wa"/></svg> Reservar data <svg class="i i--sm help-card__arrow"><use href="#i-arrow"/></svg></span>
-        </a>
+          <span class="help-card__cta"><svg class="i i--sm"><use href="#i-wa"/></svg> Reservar data <svg class="i i--sm help-card__arrow"><use href="#i-arrow"/></svg></span><span class="sr-only"> (abre o WhatsApp)</span></a>
       </li>
     </ul>
   </div>
@@ -391,7 +401,7 @@
     <header class="shead">
       <p class="eyebrow">Serviços</p>
       <h2 class="h2" id="serv-t" data-split>Do conserto da balança ao sistema do caixa.</h2>
-      <p class="lead" data-reveal>Uma empresa só para vender, instalar, consertar e dar suporte. Você fala com quem resolve.</p>
+      <p class="lead" data-reveal>Uma só empresa para vender, instalar, consertar e dar suporte. Você fala com quem resolve.</p>
     </header>
 
     <div class="bento">
@@ -406,13 +416,13 @@
             <li><svg class="i i--sm" aria-hidden="true"><use href="#i-check"/></svg><span>Lacre e regularização junto ao <span class="nw">IPEM-SP</span></span></li>
           </ul>
           <div class="tile__actions">
-            <a class="btn btn--dark btn--sm" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e preciso de assistência técnica para minha balança." target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Chamar a assistência</a>
+            <a class="btn btn--dark btn--sm" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e preciso de assistência técnica para minha balança." target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Chamar a assistência<span class="sr-only"> (abre o WhatsApp)</span></a>
             <a class="tlink" href="assistencia.html">Saiba mais <svg class="i i--sm"><use href="#i-arrow"/></svg></a>
           </div>
         </div>
         <div class="tile__visual tile__visual--repair" aria-hidden="true">
           <span class="disc"></span>
-          <img src="../compartilhado/img/produtos-recorte/prix3fit.webp" alt="" width="900" height="562" loading="lazy" decoding="async">
+          <img src="../compartilhado/img/produtos/prix3fit.webp" alt="" width="900" height="527" loading="lazy" decoding="async">
           <svg class="seal" viewBox="0 0 200 200" data-seal>
             <defs><path id="seal-c" d="M100,100 m-74,0 a74,74 0 1,1 148,0 a74,74 0 1,1 -148,0"/></defs>
             <circle cx="100" cy="100" r="98" fill="#0D1210"/>
@@ -431,15 +441,15 @@
           <a class="tlink" href="#bc-system">Conhecer o BC System <svg class="i i--sm"><use href="#i-arrow"/></svg></a>
         </div>
         <div class="tile__visual tile__visual--sys" aria-hidden="true">
-          <img src="../compartilhado/img/sistema/bc-system-tablet-celular.webp" alt="" width="1000" height="640" loading="lazy" decoding="async">
+          <img src="../compartilhado/img/sistema/bc-system-pdv-tablet.webp" alt="" width="1000" height="693" loading="lazy" decoding="async">
         </div>
       </article>
 
       <article class="tile tile--equip" data-reveal>
         <div class="tile__visual tile__visual--equip" aria-hidden="true">
-          <img class="eq1" src="../compartilhado/img/produtos-recorte/elgin-i9.webp" alt="" width="824" height="823" loading="lazy" decoding="async">
-          <img class="eq2" src="../compartilhado/img/produtos-recorte/tl220.webp" alt="" width="530" height="820" loading="lazy" decoding="async">
-          <img class="eq3" src="../compartilhado/img/produtos-recorte/menno.webp" alt="" width="900" height="514" loading="lazy" decoding="async">
+          <img class="eq1" src="../compartilhado/img/produtos/elgin-i9.webp" alt="" width="805" height="805" loading="lazy" decoding="async">
+          <img class="eq2" src="../compartilhado/img/produtos/tl220.webp" alt="" width="513" height="807" loading="lazy" decoding="async">
+          <img class="eq3" src="../compartilhado/img/produtos/menno.webp" alt="" width="900" height="511" loading="lazy" decoding="async">
         </div>
         <div class="tile__body">
           <p class="tile__kicker"><svg class="i i--sm" aria-hidden="true"><use href="#i-package"/></svg> Venda</p>
@@ -454,7 +464,7 @@
           <p class="tile__kicker"><svg class="i i--sm" aria-hidden="true"><use href="#i-headset"/></svg> Informática</p>
           <h3 class="h3 tile__title">Suporte em informática</h3>
           <p class="tile__txt">O computador do caixa travou? A impressora parou? A gente coloca o seu comércio de volta para vender.</p>
-          <a class="tlink" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e preciso de suporte em informática." target="_blank" rel="noopener">Pedir suporte <svg class="i i--sm"><use href="#i-arrow"/></svg></a>
+          <a class="tlink" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e preciso de suporte em informática." target="_blank" rel="noopener">Pedir suporte <svg class="i i--sm"><use href="#i-arrow"/></svg><span class="sr-only"> (abre o WhatsApp)</span></a>
         </div>
         <div class="it-term" aria-hidden="true">
           <span class="it-term__row"><i class="ok"></i>Impressora de cupom<b>online</b></span>
@@ -487,7 +497,7 @@
     <header class="shead shead--split">
       <div class="shead__main">
         <p class="eyebrow">Monte seu PDV</p>
-        <h2 class="h2" id="seg-t" data-split>Cada balcão tem seu kit. Escolha o seu.</h2>
+        <h2 class="h2" id="seg-t" data-split>Cada balcão tem seu&nbsp;kit. Escolha o seu.</h2>
       </div>
       <p class="lead shead__aside" data-reveal>Selecione o tipo do seu negócio e veja os equipamentos que a gente recomenda. Depois é só pedir o orçamento do kit pronto.</p>
     </header>
@@ -516,26 +526,26 @@
             <li>Balança com etiqueta</li><li>Computador para PDV</li><li>BC System</li><li>Impressora de cupom</li><li>Leitor de código de barras</li><li>Fatiador de frios</li>
           </ol>
         </div>
-        <a class="btn btn--wa btn--block" href="https://wa.me/551930239050" data-kit-wa target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Pedir este kit no WhatsApp</a>
+        <a class="btn btn--wa btn--block" href="https://wa.me/551930239050" data-kit-wa target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Pedir este kit no WhatsApp<span class="sr-only"> (abre o WhatsApp)</span></a>
         <p class="kit__note">A gente ajusta o kit ao tamanho do seu negócio.</p>
       </aside>
 
       <ul class="eqgrid list-reset" data-eqgrid>
-        <li class="eq is-kit" data-eq="etiqueta" data-ex-id="toledo-prix-4-uno"><a class="eq__a" href="produtos.html?cat=balancas&amp;sub=Com%20impressora%20de%20etiquetas"><span class="eq__n" aria-hidden="true">1</span><span class="eq__media"><img src="../compartilhado/img/produtos-recorte/prix4uno.webp" alt="" width="900" height="574" loading="lazy" decoding="async"></span><span class="eq__name">Balança com etiqueta</span><span class="eq__ex">ex.: Toledo Prix 4 Uno</span></a></li>
-        <li class="eq is-kit" data-eq="pdv" data-ex-id="centrium-mini-pc"><a class="eq__a" href="produtos.html?cat=informatica&amp;sub=Computadores"><span class="eq__n" aria-hidden="true">2</span><span class="eq__media"><img src="../compartilhado/img/produtos-recorte/centrium-pc.webp" alt="" width="900" height="771" loading="lazy" decoding="async"></span><span class="eq__name">Computador para PDV</span><span class="eq__ex">ex.: Mini PC Centrium</span></a></li>
+        <li class="eq is-kit" data-eq="etiqueta" data-ex-id="toledo-prix-4-uno"><a class="eq__a" href="produtos.html?cat=balancas&amp;sub=Com%20impressora%20de%20etiquetas"><span class="eq__n" aria-hidden="true">1</span><span class="eq__media"><img src="../compartilhado/img/produtos/prix4uno.webp" alt="" width="900" height="534" loading="lazy" decoding="async"></span><span class="eq__name">Balança com etiqueta</span><span class="eq__ex">ex.: Toledo Prix 4 Uno</span></a></li>
+        <li class="eq is-kit" data-eq="pdv" data-ex-id="centrium-mini-pc"><a class="eq__a" href="produtos.html?cat=informatica&amp;sub=Computadores"><span class="eq__n" aria-hidden="true">2</span><span class="eq__media"><img src="../compartilhado/img/produtos/centrium-pc.webp" alt="" width="900" height="772" loading="lazy" decoding="async"></span><span class="eq__name">Computador para PDV</span><span class="eq__ex">ex.: Mini PC Centrium</span></a></li>
         <li class="eq eq--sys is-kit on-dark" data-eq="bcsystem"><a class="eq__a" href="#bc-system"><span class="eq__n" aria-hidden="true">3</span><span class="eq__media"><span class="eq__sys"><svg viewBox="-100 -100 200 200" aria-hidden="true"><path fill="#3CD47B" d="M -30 -91.2 L -30 0 A 30 30 0 0 0 26 15 L 26 56.3 A 62 62 0 0 1 -62 0 L -62 -73.3 A 96 96 0 0 1 -30 -91.2 Z M 30 91.2 L 30 0 A 30 30 0 0 0 -26 -15 L -26 -56.3 A 62 62 0 0 1 62 0 L 62 73.3 A 96 96 0 0 1 30 91.2 Z"/></svg><b>NFC-e</b></span></span><span class="eq__name">BC System</span><span class="eq__ex">Caixa, estoque e nota fiscal</span></a></li>
-        <li class="eq is-kit" data-eq="cupom" data-ex-id="elgin-i9"><a class="eq__a" href="produtos.html?cat=informatica&amp;sub=Impressoras%20de%20cupom"><span class="eq__n" aria-hidden="true">4</span><span class="eq__media"><img src="../compartilhado/img/produtos-recorte/elgin-i9.webp" alt="" width="824" height="823" loading="lazy" decoding="async"></span><span class="eq__name">Impressora de cupom</span><span class="eq__ex">ex.: Elgin i9 Full</span></a></li>
-        <li class="eq is-kit" data-eq="leitor" data-ex-id="tanca-tl-220"><a class="eq__a" href="produtos.html?cat=automacao&amp;sub=Leitores%20de%20c%C3%B3digo%20de%20barras"><span class="eq__n" aria-hidden="true">5</span><span class="eq__media"><img src="../compartilhado/img/produtos-recorte/tl220.webp" alt="" width="530" height="820" loading="lazy" decoding="async"></span><span class="eq__name">Leitor de código de barras</span><span class="eq__ex">ex.: Tanca TL-220</span></a></li>
-        <li class="eq is-kit" data-eq="fatiador" data-ex-id="toledo-uni-350-ga"><a class="eq__a" href="produtos.html?cat=automacao&amp;sub=Fatiadores"><span class="eq__n" aria-hidden="true">6</span><span class="eq__media"><img src="../compartilhado/img/produtos-recorte/fatiador.webp" alt="" width="900" height="875" loading="lazy" decoding="async"></span><span class="eq__name">Fatiador de frios</span><span class="eq__ex">ex.: Toledo Prix Veloce 350A</span></a></li>
-        <li class="eq is-off" data-eq="gaveta" data-ex-id="gaveta-menno"><a class="eq__a" href="produtos.html?cat=automacao&amp;sub=Gavetas%20de%20dinheiro"><span class="eq__n" aria-hidden="true"></span><span class="eq__media"><img src="../compartilhado/img/produtos-recorte/menno.webp" alt="" width="900" height="514" loading="lazy" decoding="async"></span><span class="eq__name">Gaveta de dinheiro</span><span class="eq__ex">ex.: Menno MG 41</span></a></li>
-        <li class="eq is-off" data-eq="computadora" data-ex-id="toledo-prix-3-fit"><a class="eq__a" href="produtos.html?cat=balancas&amp;sub=Computadoras"><span class="eq__n" aria-hidden="true"></span><span class="eq__media"><img src="../compartilhado/img/produtos-recorte/prix3fit.webp" alt="" width="900" height="562" loading="lazy" decoding="async"></span><span class="eq__name">Balança computadora</span><span class="eq__ex">ex.: Toledo Prix 3 Fit</span></a></li>
-        <li class="eq is-off" data-eq="checkout" data-ex-id="balmak-bck30"><a class="eq__a" href="produtos.html?cat=balancas&amp;sub=Checkout"><span class="eq__n" aria-hidden="true"></span><span class="eq__media"><img src="../compartilhado/img/produtos-recorte/bck30.webp" alt="" width="899" height="695" loading="lazy" decoding="async"></span><span class="eq__name">Balança de checkout</span><span class="eq__ex">ex.: Balmak BCK-30</span></a></li>
-        <li class="eq is-off" data-eq="etiquetadora" data-ex-id="elgin-l42-pro"><a class="eq__a" href="produtos.html?cat=automacao&amp;sub=Impressoras%20de%20etiquetas"><span class="eq__n" aria-hidden="true"></span><span class="eq__media"><img src="../compartilhado/img/produtos-recorte/l42pro.webp" alt="" width="883" height="762" loading="lazy" decoding="async"></span><span class="eq__name">Impressora de etiquetas</span><span class="eq__ex">ex.: Elgin L42 Pro</span></a></li>
-        <li class="eq is-off" data-eq="plataforma" data-ex-id="balmak-w300"><a class="eq__a" href="produtos.html?cat=balancas&amp;sub=Industriais%20e%20confer%C3%AAncia"><span class="eq__n" aria-hidden="true"></span><span class="eq__media"><img src="../compartilhado/img/produtos-recorte/w300.webp" alt="" width="900" height="767" loading="lazy" decoding="async"></span><span class="eq__name">Balança de plataforma</span><span class="eq__ex">ex.: Balmak K-300</span></a></li>
-        <li class="eq is-off" data-eq="hospitalar" data-ex-id="balmak-bk200f"><a class="eq__a" href="produtos.html?cat=balancas&amp;sub=M%C3%A9dico-hospitalar"><span class="eq__n" aria-hidden="true"></span><span class="eq__media"><img src="../compartilhado/img/produtos-recorte/bk200f.webp" alt="" width="374" height="750" loading="lazy" decoding="async"></span><span class="eq__name">Balança antropométrica</span><span class="eq__ex">ex.: Balmak BK-200F</span></a></li>
+        <li class="eq is-kit" data-eq="cupom" data-ex-id="elgin-i9"><a class="eq__a" href="produtos.html?cat=informatica&amp;sub=Impressoras%20de%20cupom"><span class="eq__n" aria-hidden="true">4</span><span class="eq__media"><img src="../compartilhado/img/produtos/elgin-i9.webp" alt="" width="805" height="805" loading="lazy" decoding="async"></span><span class="eq__name">Impressora de cupom</span><span class="eq__ex">ex.: Elgin i9 Full</span></a></li>
+        <li class="eq is-kit" data-eq="leitor" data-ex-id="tanca-tl-220"><a class="eq__a" href="produtos.html?cat=automacao&amp;sub=Leitores%20de%20c%C3%B3digo%20de%20barras"><span class="eq__n" aria-hidden="true">5</span><span class="eq__media"><img src="../compartilhado/img/produtos/tl220.webp" alt="" width="513" height="807" loading="lazy" decoding="async"></span><span class="eq__name">Leitor de código de barras</span><span class="eq__ex">ex.: Tanca TL-220</span></a></li>
+        <li class="eq is-kit" data-eq="fatiador" data-ex-id="toledo-uni-350-ga"><a class="eq__a" href="produtos.html?cat=automacao&amp;sub=Fatiadores"><span class="eq__n" aria-hidden="true">6</span><span class="eq__media"><img src="../compartilhado/img/produtos/fatiador.webp" alt="" width="900" height="871" loading="lazy" decoding="async"></span><span class="eq__name">Fatiador de frios</span><span class="eq__ex">ex.: Toledo Prix Veloce 350A</span></a></li>
+        <li class="eq is-off" data-eq="gaveta" data-ex-id="gaveta-menno"><a class="eq__a" href="produtos.html?cat=automacao&amp;sub=Gavetas%20de%20dinheiro"><span class="eq__n" aria-hidden="true"></span><span class="eq__media"><img src="../compartilhado/img/produtos/menno.webp" alt="" width="900" height="511" loading="lazy" decoding="async"></span><span class="eq__name">Gaveta de dinheiro</span><span class="eq__ex">ex.: Menno MG 41</span></a></li>
+        <li class="eq is-off" data-eq="computadora" data-ex-id="toledo-prix-3-fit"><a class="eq__a" href="produtos.html?cat=balancas&amp;sub=Computadoras"><span class="eq__n" aria-hidden="true"></span><span class="eq__media"><img src="../compartilhado/img/produtos/prix3fit.webp" alt="" width="900" height="527" loading="lazy" decoding="async"></span><span class="eq__name">Balança computadora</span><span class="eq__ex">ex.: Toledo Prix 3 Fit</span></a></li>
+        <li class="eq is-off" data-eq="checkout" data-ex-id="balmak-bck30"><a class="eq__a" href="produtos.html?cat=balancas&amp;sub=Checkout"><span class="eq__n" aria-hidden="true"></span><span class="eq__media"><img src="../compartilhado/img/produtos/bck30.webp" alt="" width="886" height="684" loading="lazy" decoding="async"></span><span class="eq__name">Balança de checkout</span><span class="eq__ex">ex.: Balmak BCK-30</span></a></li>
+        <li class="eq is-off" data-eq="etiquetadora" data-ex-id="elgin-l42-pro"><a class="eq__a" href="produtos.html?cat=automacao&amp;sub=Impressoras%20de%20etiquetas"><span class="eq__n" aria-hidden="true"></span><span class="eq__media"><img src="../compartilhado/img/produtos/l42pro.webp" alt="" width="865" height="747" loading="lazy" decoding="async"></span><span class="eq__name">Impressora de etiquetas</span><span class="eq__ex">ex.: Elgin L42 Pro</span></a></li>
+        <li class="eq is-off" data-eq="plataforma" data-ex-id="balmak-w300"><a class="eq__a" href="produtos.html?cat=balancas&amp;sub=Industriais%20e%20confer%C3%AAncia"><span class="eq__n" aria-hidden="true"></span><span class="eq__media"><img src="../compartilhado/img/produtos/w300.webp" alt="" width="900" height="768" loading="lazy" decoding="async"></span><span class="eq__name">Balança de plataforma</span><span class="eq__ex">ex.: Balmak K-300</span></a></li>
+        <li class="eq is-off" data-eq="hospitalar" data-ex-id="balmak-bk200f"><a class="eq__a" href="produtos.html?cat=balancas&amp;sub=M%C3%A9dico-hospitalar"><span class="eq__n" aria-hidden="true"></span><span class="eq__media"><img src="../compartilhado/img/produtos/bk200f.webp" alt="" width="373" height="757" loading="lazy" decoding="async"></span><span class="eq__name">Balança antropométrica</span><span class="eq__ex">ex.: Balmak BK-200F</span></a></li>
       </ul>
     </div>
-    <p class="seg__more"><a class="tlink" href="produtos.html">Ver todos os equipamentos no catálogo <svg class="i i--sm"><use href="#i-arrow"/></svg></a></p>
+    <p class="seg__more"><a class="tlink" href="produtos.html">Ver catálogo completo <svg class="i i--sm"><use href="#i-arrow"/></svg></a></p>
   </div>
 </section>
 
@@ -569,7 +579,7 @@
       </div>
       <div class="shead__aside" data-reveal>
         <p class="lead">O BC System é o sistema de gestão e PDV da Balanças.com. Implantação, treinamento e suporte remoto, por telefone ou no local — com quem fala a sua língua.</p>
-        <a class="btn btn--wa" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e quero conhecer o BC System." target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Quero conhecer o BC System</a>
+        <a class="btn btn--wa" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e quero conhecer o BC System." target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Quero conhecer o BC System<span class="sr-only"> (abre o WhatsApp)</span></a>
       </div>
     </header>
 
@@ -608,7 +618,7 @@
           <p class="sat__txt">Em São Paulo, o CF-e SAT está proibido desde <strong>01/01/2026</strong>. Hoje é preciso emitir NFC-e ou NF-e. A gente migra o seu caixa para a NFC-e, com suporte local.</p>
         </div>
         <div class="sat__side">
-          <a class="btn btn--dark" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com. Ainda uso SAT e quero migrar para a NFC-e." target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Quero migrar para NFC-e</a>
+          <a class="btn btn--dark" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com. Ainda uso SAT e quero migrar para a NFC-e." target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Quero migrar para NFC-e<span class="sr-only"> (abre o WhatsApp)</span></a>
           <p class="sat__note">Reforma Tributária: acompanhamos as mudanças do IBS e da CBS de perto para manter seu sistema em dia.</p>
         </div>
         <div class="sat__receipt" aria-hidden="true">
@@ -636,7 +646,7 @@
         <p class="ipem__fine-lbl">Multas previstas na Lei 9.933/99</p>
         <p class="ipem__fine-val"><span>de</span> R$&nbsp;100 <span>a</span> R$&nbsp;<b data-count-to="1.5" data-count-dec="1">1,5</b>&nbsp;milhão</p>
         <p class="ipem__fine-txt">Balança irregular pode ser autuada, interditada ou apreendida. Manter em dia custa bem menos.</p>
-        <a class="btn btn--wa" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e quero deixar minha balança pronta para a verificação do IPEM." target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Agendar manutenção</a>
+        <a class="btn btn--wa" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e quero deixar minha balança pronta para a verificação do IPEM." target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Agendar manutenção<span class="sr-only"> (abre o WhatsApp)</span></a>
       </div>
       <ol class="ipem__facts list-reset">
         <li class="fact" data-reveal>
@@ -669,7 +679,7 @@
   <div class="container">
     <header class="shead shead--center">
       <p class="eyebrow">Clientes</p>
-      <h2 class="h2" id="proof-t" data-split>Quem trabalha com a gente, recomenda.</h2>
+      <h2 class="h2" id="proof-t" data-split>Quem trabalha com a gente recomenda.</h2>
     </header>
 
     <ul class="logos list-reset" data-clientes>
@@ -687,7 +697,7 @@
         <span class="gcard__score"><span data-bc="google-nota">5,0</span></span>
         <span class="gcard__head">
           <span class="gcard__stars" aria-hidden="true"><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg></span>
-          <span class="gcard__count"><b data-bc="google-avaliacoes">56</b> avaliações, <br>todas com 5 estrelas</span>
+          <span class="gcard__count"><b data-bc="google-avaliacoes">56</b> avaliações<span data-only-5>, <br>todas com 5 estrelas</span></span>
         </span>
         <span class="gcard__themes"><span>Os clientes destacam</span>
           <span class="gcard__chips"><i>agilidade</i><i>profissionalismo</i><i>equipe atenciosa</i><i>parceria de vários anos</i></span>
@@ -729,7 +739,7 @@
       <ul class="team__grid list-reset" data-equipe>
         <li class="person" data-reveal><span class="person__mono" aria-hidden="true">FG</span><b class="person__name">Fábio Godoy</b><span class="person__role">Fundador e diretor</span><p>Mais de 25 anos de experiência em balanças e automação comercial.</p></li>
         <li class="person" data-reveal><span class="person__mono" aria-hidden="true">AS</span><b class="person__name">Alexandre Silva</b><span class="person__role">Técnico de balanças</span><p>Departamento técnico de balanças comerciais e atendimento aos clientes.</p></li>
-        <li class="person" data-reveal><span class="person__mono" aria-hidden="true">VG</span><b class="person__name">Victor Gomes</b><span class="person__role">Técnico de balanças</span><p>Departamento técnico de balanças comerciais e atendimento aos clientes.</p></li>
+        <li class="person" data-reveal><span class="person__mono" aria-hidden="true">VG</span><b class="person__name">Victor Gomes</b><span class="person__role">Técnico de balanças</span></li>
         <li class="person" data-reveal><span class="person__mono" aria-hidden="true">TO</span><b class="person__name">Tamires Oliveira</b><span class="person__role">Administrativo e vendas</span><p>Responsável pelo administrativo, vendas e financeiro.</p></li>
         <li class="person" data-reveal><span class="person__mono" aria-hidden="true">RT</span><b class="person__name">Rafael Tessaro</b><span class="person__role">Sistemas e suporte</span><p>Suporte técnico em sistemas, implantação e treinamento aos clientes.</p></li>
       </ul>
@@ -745,7 +755,7 @@
       <h2 class="h2" id="faq-t" data-split>Perguntas que a gente ouve no balcão.</h2>
       <div class="faq__help" data-reveal>
         <p><b>Não achou sua dúvida?</b> Pergunte direto para quem entende.</p>
-        <a class="btn btn--wa btn--sm" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e tenho uma dúvida: " target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Perguntar no WhatsApp</a>
+        <a class="btn btn--wa btn--sm" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e tenho uma dúvida: " target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Perguntar no WhatsApp<span class="sr-only"> (abre o WhatsApp)</span></a>
       </div>
     </div>
     <div class="faq__list" data-reveal>
@@ -771,7 +781,7 @@
       </details>
       <details class="qa" name="faq">
         <summary>Comprei uma balança usada. Posso usar?<span class="qa__ic" aria-hidden="true"><svg class="i"><use href="#i-plus"/></svg></span></summary>
-        <div class="qa__a"><p>Antes de usar, peça para uma oficina autorizada avaliar. Confira o selo do Inmetro, a identificação do modelo aprovado (PAM) e os lacres.</p></div>
+        <div class="qa__a"><p>Antes de usar, peça a uma oficina autorizada que avalie a balança. Confira o selo do Inmetro, a identificação do modelo aprovado (PAM) e os lacres.</p></div>
       </details>
       <details class="qa" name="faq">
         <summary>Balança parada também é fiscalizada?<span class="qa__ic" aria-hidden="true"><svg class="i"><use href="#i-plus"/></svg></span></summary>
@@ -815,10 +825,10 @@
     <div class="cbento">
       <form class="cform" id="form-contato" novalidate data-reveal>
         <h3 class="h3">Mande sua mensagem</h3>
-        <p class="cform__sub">Preencha e o WhatsApp abre com tudo escrito. Não guardamos seus dados.</p>
+        <p class="cform__sub">Preencha e o WhatsApp abre com tudo escrito. Não guardamos seus dados. <span class="cform__req">* obrigatório</span></p>
         <div class="field">
-          <label for="f-nome">Seu nome</label>
-          <input id="f-nome" name="nome" type="text" autocomplete="name" required placeholder="Como podemos te chamar?">
+          <label for="f-nome">Seu nome <span aria-hidden="true">*</span></label>
+          <input id="f-nome" name="nome" type="text" autocomplete="name" required aria-describedby="f-err" placeholder="Como podemos te chamar?">
         </div>
         <div class="field">
           <label for="f-assunto">Assunto</label>
@@ -834,10 +844,10 @@
           </div>
         </div>
         <div class="field field--grow">
-          <label for="f-msg">Mensagem</label>
-          <textarea id="f-msg" name="mensagem" rows="4" required placeholder="Conte o que você precisa"></textarea>
+          <label for="f-msg">Mensagem <span aria-hidden="true">*</span></label>
+          <textarea id="f-msg" name="mensagem" rows="4" required aria-describedby="f-err" placeholder="Conte o que você precisa"></textarea>
         </div>
-        <p class="cform__err" role="alert" data-form-err hidden>Preencha seu nome e a mensagem, por favor.</p>
+        <p class="cform__err" id="f-err" role="alert" data-form-err hidden>Preencha seu nome e a mensagem, por favor.</p>
         <button class="btn btn--wa btn--block" type="submit"><svg class="i"><use href="#i-wa"/></svg> Enviar pelo WhatsApp</button>
       </form>
 
@@ -846,8 +856,7 @@
           <span class="ctile__ic"><svg class="i"><use href="#i-wa"/></svg></span>
           <span class="ctile__lbl">WhatsApp e telefone</span>
           <span class="ctile__val tnum" data-bc="telefone">(19) 3023-9050</span>
-          <span class="ctile__go"><svg class="i i--sm"><use href="#i-arrow-ur"/></svg></span>
-        </a>
+          <span class="ctile__go"><svg class="i i--sm"><use href="#i-arrow-ur"/></svg></span><span class="sr-only"> (abre o WhatsApp)</span></a>
         <a class="ctile" href="mailto:balancas.com@gmail.com" data-bc-href="email" data-reveal>
           <span class="ctile__ic"><svg class="i"><use href="#i-mail"/></svg></span>
           <span class="ctile__lbl">E-mail</span>
@@ -901,7 +910,7 @@
     <div class="ftr__cta">
       <p class="ftr__big">A medida certa para o <span>seu negócio.</span></p>
       <div class="ftr__cta-actions">
-        <a class="btn btn--wa" href="https://wa.me/551930239050" data-wa target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Falar no WhatsApp</a>
+        <a class="btn btn--wa" href="https://wa.me/551930239050" data-wa target="_blank" rel="noopener"><svg class="i"><use href="#i-wa"/></svg> Falar no WhatsApp<span class="sr-only"> (abre o WhatsApp)</span></a>
         <a class="btn btn--outline-dark" href="tel:+551930239050" data-tel><svg class="i"><use href="#i-phone"/></svg> <span data-bc="telefone">(19) 3023-9050</span></a>
       </div>
     </div>
@@ -922,7 +931,7 @@
         </a>
         <p>Balanças, automação comercial, BC System e assistência técnica autorizada pelo IPEM-SP. Rio Claro-SP, desde 2010.</p>
       </div>
-      <nav aria-label="Rodapé">
+      <nav id="rodape-nav" aria-label="Rodapé">
         <h3>Navegação</h3>
         <ul>
           <li><a href="#inicio">Início</a></li>
@@ -938,7 +947,7 @@
       <div>
         <h3>Contato</h3>
         <ul>
-          <li><a href="https://wa.me/551930239050" data-wa target="_blank" rel="noopener">WhatsApp <span data-bc="telefone">(19) 3023-9050</span></a></li>
+          <li><a href="https://wa.me/551930239050" data-wa target="_blank" rel="noopener">WhatsApp <span data-bc="telefone">(19) 3023-9050</span><span class="sr-only"> (abre o WhatsApp)</span></a></li>
           <li><a href="mailto:balancas.com@gmail.com" data-bc-href="email"><span data-bc="email">balancas.com@gmail.com</span></a></li>
           <li><a href="https://maps.google.com/?cid=12422356528564941318" data-bc-href="mapa" target="_blank" rel="noopener"><span data-bc="endereco">Rua 13, 650 – Boa Morte, Rio Claro/SP · CEP 13500-120</span></a><br><span data-bc="referencia">Entre as Avenidas 9 e 11</span></li>
         </ul>
@@ -965,15 +974,16 @@
   <a class="fab__btn fab__wa" href="https://wa.me/551930239050" data-wa target="_blank" rel="noopener" aria-label="Conversar no WhatsApp"><svg class="i"><use href="#i-wa"/></svg><span class="fab__tip" aria-hidden="true">Fale com a gente</span></a>
 </div>
 
+<script defer src="../compartilhado/dados/empresa.js"></script>
+<script defer src="../compartilhado/dados/produtos.js"></script>
+<script defer src="../compartilhado/js/balancas.js"></script>
+<script defer src="js/comum.js?v=2026-10b"></script>
+<script defer src="js/home.js?v=2026-10b"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/Flip.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
-<script defer src="../compartilhado/dados/empresa.js"></script>
-<script defer src="../compartilhado/dados/produtos.js"></script>
-<script defer src="../compartilhado/js/balancas.js"></script>
-<script defer src="js/comum.js?v=2026-10"></script>
-<script defer src="js/home.js?v=2026-10"></script>
+<script defer src="js/movimento.js?v=2026-10b"></script>
 </body>
 </html>

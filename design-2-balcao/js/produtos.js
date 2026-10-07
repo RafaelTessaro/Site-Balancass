@@ -10,9 +10,11 @@
   var doc = document;
   var BC = window.BC;
   var D2 = window.D2 || {};
-  var gsap = window.gsap;
-  var Flip = window.Flip;
-  var anim = !!D2.anim;
+  // GSAP/Flip chegam depois (CDN, js/movimento.js); até lá o catálogo funciona sem animação
+  var gsap = null;
+  var Flip = null;
+  var anim = false;
+  function sync() { gsap = window.gsap || null; Flip = window.Flip || null; anim = !!D2.anim; }
   var esc = D2.esc;
   var $all = D2.$all;
   if (!BC) return;
@@ -28,6 +30,7 @@
   var empty = doc.querySelector("[data-empty]");
   var emptyWa = doc.querySelector("[data-empty-wa]");
   var emptyTxt = doc.querySelector("[data-empty-txt]");
+  var emptyAll = doc.querySelector("[data-all]");
   var clearBtns = $all("[data-clear]");
   var toolbarClear = doc.querySelector(".toolbar__clear");
 
@@ -76,7 +79,7 @@
     var tabs = [{ id: "todos", nome: "Todos" }].concat(BC.categorias);
     tabsBox.innerHTML = tabs.map(function (c) {
       var n = BC.contar({ categoria: c.id });
-      return '<button class="tab" role="tab" type="button" aria-selected="false" tabindex="-1" aria-controls="grade" data-cat="' + esc(c.id) + '">' +
+      return '<button class="tab" type="button" aria-pressed="false" data-cat="' + esc(c.id) + '">' +
         esc(c.nome) + ' <span class="tab__n">' + n + "</span></button>";
     }).join("");
     $all("[data-cat-count]").forEach(function (el) { el.textContent = BC.contar({ categoria: el.getAttribute("data-cat-count") }); });
@@ -87,7 +90,7 @@
   /* ---------- Indicador das abas ---------- */
   var ind;
   function moveInd(instant) {
-    var sel = tabsBox.querySelector('[aria-selected="true"]');
+    var sel = tabsBox.querySelector('[aria-pressed="true"]');
     if (!sel || !ind) return;
     if (instant) ind.style.transition = "none";
     ind.style.width = sel.offsetWidth + "px";
@@ -95,17 +98,28 @@
     if (instant) { void ind.offsetWidth; ind.style.transition = ""; }
   }
 
+  /* Mantém a aba/o chip ativo visível nas faixas roláveis (celular e tablet) */
+  function centrar(box, el, instant) {
+    if (!box || !el || box.scrollWidth <= box.clientWidth) return;
+    var d = el.getBoundingClientRect().left - box.getBoundingClientRect().left - (box.clientWidth - el.offsetWidth) / 2;
+    box.scrollTo({ left: box.scrollLeft + d, behavior: (D2.reduce || instant) ? "auto" : "smooth" });
+  }
+  function centrarAtivos(instant) {
+    centrar(tabsBox, tabsBox.querySelector('[aria-pressed="true"]'), instant);
+    if (!subsBox.hidden) centrar(subsBox, subsBox.querySelector('[aria-pressed="true"]'), instant);
+  }
+
   function syncControls() {
     $all(".tab", tabsBox).forEach(function (t) {
-      var on = t.getAttribute("data-cat") === st.cat;
-      t.setAttribute("aria-selected", String(on));
-      t.tabIndex = on ? 0 : -1;
+      t.setAttribute("aria-pressed", String(t.getAttribute("data-cat") === st.cat));
     });
     moveInd();
     $all("[data-cat-tile]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-cat-tile") === st.cat)); });
 
     // chips de subcategoria (só as que têm produto)
     var cat = st.cat !== "todos" ? BC.categoria(st.cat) : null;
+    // Se o foco estava num chip, ele volta para o chip equivalente depois de redesenhar
+    var focoSub = subsBox.contains(doc.activeElement) ? (doc.activeElement.getAttribute("data-sub") || "") : null;
     if (!cat) { subsBox.hidden = true; subsBox.innerHTML = ""; }
     else {
       var subs = cat.subcategorias.filter(function (s) { return BC.contar({ categoria: cat.id, subcategoria: s }) > 0; });
@@ -115,10 +129,15 @@
             " <small>" + BC.contar({ categoria: cat.id, subcategoria: s }) + "</small></button>";
         }).join("");
       subsBox.hidden = false;
+      if (focoSub !== null) {
+        var alvo = $all(".chip", subsBox).filter(function (c) { return (c.getAttribute("data-sub") || "") === focoSub; })[0];
+        if (alvo) alvo.focus({ preventScroll: true });
+      }
     }
     if (search.value !== st.q) search.value = st.q;
     searchClear.hidden = !st.q;
     if (stockInput) stockInput.checked = st.estoque;
+    centrarAtivos();
   }
 
   /* ---------- Aplicar filtros ---------- */
@@ -154,12 +173,22 @@
     countEl.innerHTML = n ? "<b>" + plural(n, "produto", "produtos") + "</b>" + (ctx.length ? " <span>· " + esc(ctx.join(" · ")) + "</span>" : "")
       : "Nenhum produto encontrado";
     empty.hidden = n > 0;
+    var fora = 0;
     if (!n) {
       var procura = st.q || (st.sub || (st.cat !== "todos" ? catNome(st.cat) : ""));
-      emptyTxt.textContent = st.q ? "Não encontramos “" + st.q + "” no catálogo. Conte o que você procura e a gente busca com as marcas com que trabalhamos." :
-        "Nenhum produto com esses filtros agora. Conte o que você procura e a gente busca com as marcas com que trabalhamos.";
-      emptyWa.setAttribute("href", BC.whatsLink("Olá! Procurei" + (procura ? " por *" + procura + "*" : "") + " no catálogo do site da Balanças.com e não encontrei. Vocês conseguem para mim?"));
+      // A busca pode ter resultado fora da categoria/subcategoria escolhida
+      fora = (st.q && (st.cat !== "todos" || st.sub)) ? BC.contar({ texto: st.q, somenteEstoque: st.estoque }) : 0;
+      if (fora > 0) {
+        emptyTxt.textContent = "Nada em " + (st.sub || catNome(st.cat)) + " para “" + st.q + "”, mas encontramos " +
+          plural(fora, "resultado", "resultados") + " no catálogo todo.";
+        emptyWa.setAttribute("href", BC.whatsLink("Olá! Procurei por *" + st.q + "* no catálogo do site da Balanças.com. Vocês podem me ajudar?"));
+      } else {
+        emptyTxt.textContent = st.q ? "Não encontramos “" + st.q + "” no catálogo. Conte o que você procura e a gente busca com as marcas com que trabalhamos." :
+          "Nenhum produto com esses filtros agora. Conte o que você procura e a gente busca com as marcas com que trabalhamos.";
+        emptyWa.setAttribute("href", BC.whatsLink("Olá! Procurei" + (procura ? " por *" + procura + "*" : "") + " no catálogo do site da Balanças.com e não encontrei. Vocês conseguem para mim?"));
+      }
     }
+    if (emptyAll) emptyAll.hidden = !(fora > 0);
     var filtered = st.cat !== "todos" || st.sub || st.q || st.estoque;
     if (toolbarClear) toolbarClear.hidden = !filtered;
     writeURL();
@@ -174,7 +203,8 @@
     update(true);
     if (scroll) {
       var list = doc.getElementById("lista");
-      if (D2.lenis) D2.lenis.scrollTo(list, { offset: -((doc.querySelector(".hdr") || {}).offsetHeight || 72) - 8 });
+      // O Lenis já desconta o scroll-padding-top do <html>
+      if (D2.lenis) D2.lenis.scrollTo(list, { offset: 0 });
       else list.scrollIntoView({ behavior: D2.reduce ? "auto" : "smooth" });
     }
   }
@@ -192,7 +222,7 @@
       else if (e.key === "ArrowLeft") j = (i - 1 + tabs.length) % tabs.length;
       else if (e.key === "Home") j = 0;
       else if (e.key === "End") j = tabs.length - 1;
-      if (j !== null) { e.preventDefault(); setCat(tabs[j].getAttribute("data-cat")); tabsBox.querySelector('[data-cat="' + st.cat + '"]').focus(); }
+      if (j !== null) { e.preventDefault(); tabs[j].focus(); }
     });
     subsBox.addEventListener("click", function (e) {
       var c = e.target.closest(".chip"); if (!c) return;
@@ -216,8 +246,9 @@
     searchClear.addEventListener("click", function () { search.value = ""; st.q = ""; update(true); search.focus(); });
     if (stockInput) stockInput.addEventListener("change", function () { st.estoque = stockInput.checked; apply(true); });
     clearBtns.forEach(function (b) {
-      b.addEventListener("click", function () { st = { cat: "todos", sub: "", q: "", estoque: false }; update(true); });
+      b.addEventListener("click", function () { st = { cat: "todos", sub: "", q: "", estoque: false }; update(true); search.focus(); });
     });
+    if (emptyAll) emptyAll.addEventListener("click", function () { st.cat = "todos"; st.sub = ""; update(true); search.focus(); });
     window.addEventListener("resize", function () { moveInd(true); });
   }
 
@@ -261,7 +292,7 @@
       '<div class="dw-stage">' +
         '<span class="pcard__badges"><span class="badge badge--' + esc(est.classe) + '">' + esc(est.rotulo) + "</span>" + (cond ? '<span class="badge badge--cond">' + esc(cond) + "</span>" : "") + "</span>" +
         '<span class="dw-stage__disc" aria-hidden="true"></span>' +
-        '<img src="' + esc(BC.imgProduto(p, true)) + '" alt="' + esc(p.marca + " " + p.nome) + '" width="900" height="600">' +
+        '<img src="' + esc(BC.imgProduto(p, false)) + '" alt="' + esc(p.marca + " " + p.nome) + '" width="900" height="600">' +
       "</div>" +
       '<div class="dw-main">' +
         '<p class="dw-brand"><b>' + esc(p.marca) + "</b> · " + esc(p.subcategoria) + "</p>" +
@@ -274,7 +305,7 @@
       (specs ? '<section class="dw-sec"><h3>Especificações</h3><dl class="specs">' + specs + "</dl></section>" : "") +
       (p.categoria === "balancas" ? '<p class="dw-service"><svg class="i" aria-hidden="true"><use href="#i-shield"/></svg><span>Depois da compra, conte com a nossa assistência técnica: somos oficina autorizada pelo <span class="nw">IPEM-SP</span>. <a href="' + esc(BC.whatsLink("Olá! Vim pelo site da Balanças.com e preciso de manutenção na minha balança " + p.marca + " " + p.nome + ".")) + '" target="_blank" rel="noopener">Falar com a assistência</a></span></p>' : "") +
       (rel.length ? '<section class="dw-rel"><h3>Veja também</h3><div class="dw-rel__list">' + rel.map(function (r) {
-        return '<a class="rel" href="#p=' + encodeURIComponent(r.id) + '" data-rel="' + esc(r.id) + '"><span class="rel__img"><img src="' + esc(BC.imgProduto(r, true)) + '" alt="" loading="lazy"></span><span class="rel__n">' + esc(r.nome) + '</span><span class="rel__b">' + esc(r.marca) + "</span></a>";
+        return '<a class="rel" href="#p=' + encodeURIComponent(r.id) + '" data-rel="' + esc(r.id) + '"><span class="rel__img"><img src="' + esc(BC.imgProduto(r, false)) + '" alt="" width="900" height="600" loading="lazy" decoding="async"></span><span class="rel__n">' + esc(r.nome) + '</span><span class="rel__b">' + esc(r.marca) + "</span></a>";
       }).join("") + "</div></section>" : "");
     dwWa.setAttribute("href", waProduto(p));
     dwWa.setAttribute("aria-label", "Pedir " + p.marca + " " + p.nome + " no WhatsApp");
@@ -397,8 +428,9 @@
 
   /* ---------- Entrada ---------- */
   function intro() {
-    if (!anim) return;
+    if (!anim || D2.tarde) return;
     var vis = $all(".pcard:not(.is-hidden)", grid).slice(0, 12);
+    if (!vis.length) return;
     gsap.from(vis, { opacity: 0, translate: "0px 30px", duration: 1, ease: "expo.out", stagger: 0.05, delay: 0.25, clearProps: "opacity,translate" });
   }
 
@@ -411,10 +443,17 @@
   tabsBox.classList.add("has-ind");
   update(false);
   moveInd(true);
-  if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(function () { moveInd(true); });
+  centrarAtivos(true);
+  if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(function () { moveInd(true); centrarAtivos(true); });
   bind();
   bindDrawer();
-  intro();
   var first = hashId();
   if (first) openDrawer(first, false);
+
+  // Movimento: roda depois do CDN (js/movimento.js)
+  (D2.onMovimento = D2.onMovimento || []).push(function () {
+    sync();
+    if (first && !drawer.hidden && D2.lenis) D2.lenis.stop();
+    intro();
+  });
 })();

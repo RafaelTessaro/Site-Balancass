@@ -2,6 +2,7 @@
    Tara Zero — Assistência técnica
    Display de diagnóstico (Err → reparo → teste de segmentos → 0.000),
    linha do processo, tipos de balança (a partir do catálogo), marcas e FAQ.
+   Conteúdo roda na hora; o movimento entra por TZ.onMotion.
    ===================================================================== */
 (function () {
   "use strict";
@@ -10,14 +11,13 @@
   if (!TZ || !BC) return;
   var $ = TZ.$, $$ = TZ.$$, d = document;
   var esc = BC.escape;
-  var motion = TZ.hasG && !TZ.reduce;
 
   /* ---------------- Tipos de balança (imagens do catálogo) ---------------- */
   var TIPOS = [
     { id: "toledo-prix-3-fit", sub: "Computadoras", titulo: "Comerciais", texto: "Pesam e calculam o preço no balcão." },
     { id: "toledo-prix-4-uno", sub: "Com impressora de etiquetas", titulo: "Com etiqueta", texto: "Pesam e imprimem etiqueta com código de barras." },
     { id: "toledo-8217", sub: "Checkout", titulo: "Checkout", texto: "Integradas ao caixa do mercado." },
-    { id: "toledo-2098", sub: "Industriais e conferência", titulo: "Industriais", texto: "Plataformas para volumes e conferência." },
+    { id: "toledo-2098", sub: "Industriais e conferência", titulo: "Industriais", texto: "Bancadas e plataformas para volumes e conferência." },
     { id: "toledo-hospitalar", sub: "Médico-hospitalar", titulo: "Hospitalares", texto: "Para farmácias, clínicas e academias." }
   ];
   function renderTypes() {
@@ -48,7 +48,7 @@
   var diagTl = null;
   function runDiag(delay) {
     if (!seg) return;
-    if (!motion) { finalState(); return; }
+    if (!TZ.motion) { finalState(); return; }
     if (diagTl) diagTl.kill();
     gsap.set(seg, { autoAlpha: 1 });
     diagTl = gsap.timeline({ delay: delay || 0 })
@@ -78,7 +78,7 @@
   /* ---------------- Linha do processo ---------------- */
   function initSteps() {
     var box = $("[data-steps]");
-    if (!box || !motion || !window.ScrollTrigger || !TZ.mm) return;
+    if (!box || !TZ.motion || !window.ScrollTrigger || !TZ.mm) return;
     TZ.mm.add("(min-width: 1024px) and (prefers-reduced-motion: no-preference)", function () {
       var bar = d.createElement("span");
       bar.className = "steps__bar";
@@ -99,21 +99,28 @@
   }
 
   /* ---------------- Intro do topo ---------------- */
+  // A foto (maior elemento da 1ª tela) não fica invisível: entra só com movimento.
+  // Se o topo já estava na tela (CDN lento), só o display roda o diagnóstico.
   function intro() {
-    if (!motion) { finalState(); return; }
-    gsap.from(".ahero__product img", { autoAlpha: 0, yPercent: 8, scale: .95, duration: 1.5, ease: "expo.out", delay: .1 });
+    if (!TZ.motion) { finalState(); return; }
+    if (TZ.late) { runDiag(.3); return; }
+    gsap.from(".ahero__product img", { yPercent: 6, scale: .96, duration: 1.5, ease: "expo.out", delay: .1 });
     gsap.from(".ahero .hero__halo", { autoAlpha: 0, scale: .5, duration: 1.6, ease: "expo.out", delay: .2 });
-    gsap.from(".diag", { autoAlpha: 0, y: 40, duration: 1.2, ease: "expo.out", delay: .35 });
-    gsap.from(".ahero__chips li", { autoAlpha: 0, y: 14, duration: .8, ease: "power3.out", stagger: .06, delay: .6 });
+    gsap.from(".diag", { opacity: 0, y: 40, duration: 1.2, ease: "expo.out", delay: .35 });
+    gsap.from(".ahero__chips li", { opacity: 0, y: 14, duration: .8, ease: "power3.out", stagger: .06, delay: .6 });
     runDiag(1.1);
   }
 
-  /* ---------------- Boot ---------------- */
+  /* ---------------- Boot: conteúdo (na hora) ---------------- */
   renderTypes();
   TZ.marquee();
   TZ.faq();
   TZ.fill(d);
   TZ.boot();
-  initSteps();
-  intro();
+
+  /* ---------------- Boot: movimento (quando o GSAP chegar) ---------------- */
+  TZ.onMotion(function () {
+    initSteps();
+    intro();
+  });
 })();

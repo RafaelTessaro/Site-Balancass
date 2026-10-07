@@ -24,7 +24,7 @@
 .ab { position: relative; overflow: hidden; border-radius: var(--r-lg); background: #fff; box-shadow: var(--shadow-2), inset 0 0 0 1px var(--line); }
 .ab--scale { grid-area: scale; min-height: 460px; background: linear-gradient(165deg, #F1FAF4, #DCF1E4); }
 .ab__disc { position: absolute; left: 50%; top: 58%; width: 92%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, #fff 0%, rgba(255, 255, 255, .5) 50%, transparent 70%); }
-.ab--scale img { position: absolute; left: 50%; top: 60%; width: 112%; max-width: none; transform: translate(-50%, -50%); mix-blend-mode: multiply; filter: drop-shadow(0 26px 22px rgba(13, 18, 16, .22)); }
+.ab--scale img { position: absolute; left: 50%; top: 60%; width: 112%; max-width: none; transform: translate(-50%, -50%); mix-blend-mode: multiply; filter: none; }
 .ab--scale .seal { right: 16px; top: 16px; width: 116px; height: 116px; }
 .ab--os { grid-area: os; padding: 20px; }
 .os__k { font: 650 12.5px/1 var(--font-text); letter-spacing: .09em; text-transform: uppercase; color: var(--green-deep); margin-bottom: 14px; }
@@ -61,7 +61,7 @@
 }
 .type:hover { transform: translateY(-4px); box-shadow: var(--shadow-2), inset 0 0 0 1px var(--line); }
 .type__img { display: grid; place-items: center; aspect-ratio: 1 / .82; margin-bottom: 12px; border-radius: 14px; background: radial-gradient(circle at 50% 60%, #fff, var(--mint) 70%); overflow: hidden; }
-.type__img img { width: 78%; height: 78%; object-fit: contain; mix-blend-mode: multiply; filter: drop-shadow(0 12px 12px rgba(13, 18, 16, .16)); transition: transform .7s var(--ease-out); }
+.type__img img { width: 78%; height: 78%; object-fit: contain; mix-blend-mode: multiply; filter: none; transition: transform .7s var(--ease-out); }
 .type:hover .type__img img { transform: translateY(-5px) scale(1.04); }
 .type__img img[src*="bk200f"], .type__img img[src*="hospitalar"] { height: 96%; }
 .type b { padding: 0 8px; font: 750 18px/1.2 var(--font-display); letter-spacing: -.02em; color: var(--ink); }

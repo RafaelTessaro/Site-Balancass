@@ -7,7 +7,9 @@
   <meta name="description" content="Balanças, sistema PDV com NFC-e e assistência técnica autorizada pelo IPEM-SP em Rio Claro-SP. Desde 2010, nota 5,0 no Google. Fale pelo WhatsApp.">
   <meta name="theme-color" content="#07090A">
   <link rel="canonical" href="https://www.balancass.com/">
-  <link rel="icon" type="image/svg+xml" href="../compartilhado/img/logo/balancas-icone-claro.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="img/favicon-48.png">
+  <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="pt_BR">
@@ -15,23 +17,31 @@
   <meta property="og:title" content="Balanças.com — A medida certa para o seu negócio">
   <meta property="og:description" content="Balanças, PDV com NFC-e e assistência técnica autorizada pelo IPEM-SP em Rio Claro-SP.">
   <meta property="og:url" content="https://www.balancass.com/">
-  <meta property="og:image" content="../compartilhado/img/produtos/balmak.webp">
+  <!-- Imagens de prévia: URL absoluta do domínio final (ajustar se a pasta publicada mudar) -->
+  <meta property="og:image" content="https://www.balancass.com/img/og-balancas.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Balanças.com: balanças, PDV e assistência técnica em Rio Claro-SP">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://www.balancass.com/img/og-balancas.jpg">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="preload" href="https://cdn.jsdelivr.net/npm/dseg@0.46.0/fonts/DSEG7-Classic/DSEG7Classic-Bold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preload" href="../compartilhado/img/produtos-recorte/balmak.webp" as="image" fetchpriority="high">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400..600&display=swap">
   <link rel="stylesheet" href="css/tara.css">
 
   <script>
     (function () {
       var d = document.documentElement; d.classList.add("js");
+      // fonte do display: preload só por http(s) (em file:// o Chrome bloqueia o preload por CORS)
+      if(location.protocol!=="file:"){var l=document.createElement("link");l.rel="preload";l.as="font";l.type="font/woff2";l.crossOrigin="anonymous";l.href="fonts/DSEG7Classic-Bold.woff2";document.head.appendChild(l);}
       var rm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       var seen = false; try { seen = sessionStorage.getItem("tz-pre") === "1"; } catch (e) {}
-      if (!rm) { d.classList.add("is-intro"); setTimeout(function () { d.classList.remove("is-intro"); }, 3200); }
-      if (!rm && !seen) { d.classList.add("is-preloading"); setTimeout(function () { d.classList.remove("is-preloading"); }, 2600); }
+      // timeouts de segurança: se o CDN demorar, o conteúdo aparece mesmo assim
+      if (!rm) { d.classList.add("is-intro"); window.__tzIntro = setTimeout(function () { d.classList.remove("is-intro"); }, 2600); }
+      if (!rm && !seen) { d.classList.add("is-preloading"); window.__tzPre = setTimeout(function () { d.classList.remove("is-preloading"); }, 1000); }
     })();
   </script>
 
@@ -40,10 +50,13 @@
     "@context": "https://schema.org",
     "@type": "ElectronicsStore",
     "@id": "https://www.balancass.com/#loja",
-    "name": "Balanças.com — Automação Comercial",
+    "name": "Balanças.com",
+    "alternateName": "Balanças.com Automação Comercial",
     "slogan": "A medida certa para o seu negócio",
-    "description": "Venda de balanças e equipamentos de automação comercial, sistema PDV BC System com NFC-e e assistência técnica de balanças autorizada pelo IPEM-SP em Rio Claro-SP.",
+    "description": "Venda de balanças e equipamentos de automação comercial, sistema PDV BC System com NFC-e e assistência técnica de balanças autorizada pelo IPEM-SP em Rio Claro-SP. Rua 13, 650, entre as Avenidas 9 e 11, bairro da Boa Morte.",
     "url": "https://www.balancass.com/",
+    "image": "https://www.balancass.com/img/og-balancas.jpg",
+    "logo": "https://www.balancass.com/img/apple-touch-icon.png",
     "telephone": "+55-19-3023-9050",
     "email": "balancas.com@gmail.com",
     "foundingDate": "2010",
@@ -52,7 +65,7 @@
     "priceRange": "$$",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "Rua 13, 650 – Boa Morte (entre as Avenidas 9 e 11)",
+      "streetAddress": "Rua 13, 650 - Boa Morte",
       "addressLocality": "Rio Claro",
       "addressRegion": "SP",
       "postalCode": "13500-120",
@@ -168,7 +181,7 @@
           <li><a href="#contato">Contato</a></li>
         </ul>
       </nav>
-      <span class="status-pill" data-status aria-live="off"><i></i><span data-status-text>Seg–sex 8h–18h</span></span>
+      <span class="status-pill" data-status aria-live="off"><i></i><span data-status-text>Seg–sex 8h–11h e 13h–18h</span></span>
       <a class="btn btn--primary hdr__cta" href="https://wa.me/551930239050" data-wa="" target="_blank" rel="noopener">
         <svg aria-hidden="true"><use href="#i-wa"/></svg> WhatsApp
       </a>
@@ -177,21 +190,21 @@
     <div class="hdr__progress" aria-hidden="true"></div>
   </header>
 
-  <div class="mmenu" id="mmenu" hidden>
+  <div class="mmenu" id="mmenu" data-lenis-prevent hidden>
     <nav aria-label="Menu móvel">
       <ul class="mmenu__list">
-        <li><a href="#topo">Início <small>00</small></a></li>
-        <li><a href="#servicos">Serviços <small>02</small></a></li>
-        <li><a href="produtos.html">Produtos <small>↗</small></a></li>
-        <li><a href="#sistema">BC System <small>05</small></a></li>
-        <li><a href="#sobre">Sobre <small>08</small></a></li>
-        <li><a href="#contato">Contato <small>10</small></a></li>
+        <li><a href="#topo">Início <small aria-hidden="true">00</small></a></li>
+        <li><a href="#servicos">Serviços <small aria-hidden="true">02</small></a></li>
+        <li><a href="produtos.html">Produtos <small aria-hidden="true">↗</small></a></li>
+        <li><a href="#sistema">BC System <small aria-hidden="true">05</small></a></li>
+        <li><a href="#sobre">Sobre <small aria-hidden="true">08</small></a></li>
+        <li><a href="#contato">Contato <small aria-hidden="true">10</small></a></li>
       </ul>
     </nav>
     <div class="mmenu__foot">
       <a class="btn btn--primary btn--block" href="https://wa.me/551930239050" data-wa="" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg> Falar no WhatsApp</a>
       <a class="btn btn--ghost btn--block" href="tel:+551930239050" data-bc-href="tel"><svg aria-hidden="true"><use href="#i-phone"/></svg> Ligar <span data-bc="telefone">(19) 3023-9050</span></a>
-      <p><span data-bc="endereco">Rua 13, 650 – Boa Morte, Rio Claro/SP · CEP 13500-120</span></p>
+      <p><span data-bc="endereco">Rua 13, 650 – Boa Morte, Rio Claro/SP <span class="nw">· CEP&nbsp;13500-120</span></span></p>
     </div>
   </div>
 
@@ -202,9 +215,9 @@
       <div class="hero__bg" aria-hidden="true"></div>
       <div class="wrap hero__grid">
         <div class="hero__copy">
-          <p class="hero__eyebrow" data-hero="eyebrow"><i aria-hidden="true"></i><span>Balanças · PDV · Assistência técnica — Rio Claro-SP</span></p>
-          <h1 class="h1" id="hero-title" data-hero="title">Precisão <br>que vende<span class="dot">.</span></h1>
-          <p class="lead hero__lead" data-hero="lead"><strong>A medida certa para o seu negócio.</strong> Balanças, sistema PDV com NFC-e e assistência técnica autorizada pelo IPEM-SP — com atendimento de perto, em Rio Claro e região.</p>
+          <h1 class="hero__eyebrow" data-hero="eyebrow" id="hero-title"><i aria-hidden="true"></i><span>Balanças, PDV e assistência técnica em Rio Claro-SP</span></h1>
+          <p class="h1 hero__title" data-hero="title">Precisão <br>que vende<span class="dot">.</span></p>
+          <p class="lead hero__lead" data-hero="lead"><strong>A medida certa para o seu negócio.</strong> Balanças, sistema PDV com <span class="nw">NFC-e</span> e assistência técnica autorizada pelo <span class="nw">IPEM-SP</span> — com atendimento de perto, em Rio Claro e região.</p>
           <div class="hero__ctas" data-hero="ctas">
             <a class="btn btn--primary btn--glow" data-magnetic href="https://wa.me/551930239050" data-wa="" target="_blank" rel="noopener">
               <svg aria-hidden="true"><use href="#i-wa"/></svg> Falar no WhatsApp
@@ -263,8 +276,9 @@
                   <p class="sr-only" data-seg-sr>Simulação de pesagem: 1,250 kg de queijo prato a R$ 49,90 o quilo, total de R$ 62,38.</p>
                 </div>
                 <div class="readout__foot">
-                  <span class="readout__item">PLU <span data-seg="plu">014</span> · <b data-seg="item">QUEIJO PRATO</b><small>SIMULAÇÃO</small></span>
-                  <button class="tare" type="button" data-tare aria-label="Pesar outro item na simulação"><svg aria-hidden="true"><use href="#i-refresh"/></svg> TARA</button>
+                  <span class="readout__item">PLU <span data-seg="plu">014</span> · <b data-seg="item">QUEIJO PRATO</b> <small>SIMULAÇÃO</small></span>
+                  <span class="readout__item readout__item--b" aria-hidden="true"><span>OFICINA <b>AUTORIZADA IPEM-SP</b> · RIO CLARO-SP</span></span>
+                  <button class="tare" type="button" data-tare aria-label="Tara: pesar outro item na simulação"><svg aria-hidden="true"><use href="#i-refresh"/></svg> TARA</button>
                 </div>
               </div>
             </div>
@@ -274,14 +288,14 @@
 
       <div class="hero__caption" aria-hidden="true">
         <p>Desde 2010, a medida certa para o comércio de Rio Claro.</p>
-        <span>★ 5,0 · 56 avaliações no Google · todas 5 estrelas</span>
+        <span>Assistência · Equipamentos · BC System · BC Fichas</span>
       </div>
 
       <div class="wrap hero__trust">
         <ul class="trust" data-hero="trust">
           <li><svg aria-hidden="true"><use href="#i-star"/></svg><a href="https://maps.google.com/?cid=12422356528564941318" data-bc-href="google" target="_blank" rel="noopener"><b><span data-bc="nota">5,0</span> no Google</b> · <span data-bc="avaliacoes">56</span> avaliações</a></li>
           <li><svg aria-hidden="true"><use href="#i-clock"/></svg><span><b>Desde <span data-bc="desde">2010</span></b> em Rio Claro</span></li>
-          <li><svg aria-hidden="true"><use href="#i-shield"/></svg><span><b>Autorizada</b> pelo IPEM-SP</span></li>
+          <li><svg aria-hidden="true"><use href="#i-shield"/></svg><span><b>Autorizada</b> pelo <span class="nw">IPEM-SP</span></span></li>
           <li><svg aria-hidden="true"><use href="#i-pin"/></svg><span><b>Rio Claro-SP</b> e região</span></li>
         </ul>
       </div>
@@ -293,7 +307,7 @@
         <div class="stats__panel">
           <div class="stat"><p class="stat__lbl">Desde</p><p class="stat__val"><span data-count="2010" data-count-from="1990">2010</span></p><p class="stat__sub">Atendendo o comércio de Rio Claro</p></div>
           <div class="stat"><p class="stat__lbl">Experiência</p><p class="stat__val"><span data-count="25">25</span><sup>+</sup></p><p class="stat__sub">anos do fundador em balanças e automação</p></div>
-          <div class="stat"><p class="stat__lbl">Google</p><p class="stat__val"><span data-count="5.0" data-decimals="1">5.0</span><span class="star">★</span></p><p class="stat__sub">56 avaliações, todas 5 estrelas</p></div>
+          <div class="stat"><p class="stat__lbl">Google</p><p class="stat__val" aria-hidden="true"><span data-count="5.0" data-decimals="1" data-stat-nota>5.0</span><span class="star">★</span></p><p class="sr-only">Nota <span data-bc="nota">5,0</span> no Google</p><p class="stat__sub"><span data-bc="avaliacoes">56</span> avaliações de clientes</p></div>
         </div>
       </div>
     </section>
@@ -302,7 +316,7 @@
     <section class="sec" id="ajuda" aria-labelledby="ajuda-title">
       <div class="wrap">
         <header class="sec-head">
-          <p class="sec-label" data-scramble><span class="sl">//</span> <span class="num">01</span> Atendimento</p>
+          <p class="sec-label" data-scramble><span class="sl" aria-hidden="true">//</span> <span class="num">01</span> Atendimento</p>
           <div class="sec-title">
             <h2 class="h2" id="ajuda-title" data-split>Como podemos ajudar?</h2>
             <p class="lead" data-fade>Escolha o assunto e fale direto com a equipe certa no WhatsApp. A mensagem já vai pronta — é só enviar.</p>
@@ -313,7 +327,7 @@
           <a class="route" data-spot href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e preciso de conserto/manutenção na minha balança. Marca e modelo: " target="_blank" rel="noopener">
             <div class="route__top"><span class="icon-box"><svg aria-hidden="true"><use href="#i-wrench"/></svg></span><span class="route__idx">01</span></div>
             <h3 class="h3">Consertar minha balança</h3>
-            <p>Manutenção, conserto, troca de peças e lacre. Oficina autorizada pelo IPEM-SP.</p>
+            <p>Manutenção, conserto, troca de peças e lacre. Oficina autorizada pelo <span class="nw">IPEM-SP</span>.</p>
             <span class="route__go"><span>Chamar a assistência</span><span><svg aria-hidden="true"><use href="#i-arrow-ur"/></svg></span></span>
           </a>
           <a class="route" data-spot href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e quero um orçamento de equipamento para o meu comércio." target="_blank" rel="noopener">
@@ -324,8 +338,8 @@
           </a>
           <a class="route" data-spot href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e quero conhecer o BC System (PDV com NFC-e)." target="_blank" rel="noopener">
             <div class="route__top"><span class="icon-box"><svg aria-hidden="true"><use href="#i-monitor"/></svg></span><span class="route__idx">03</span></div>
-            <h3 class="h3">Sistema / NFC-e</h3>
-            <p>BC System: frente de caixa, NFC-e, estoque e financeiro, com suporte aqui da cidade.</p>
+            <h3 class="h3">Sistema / <span class="nw">NFC-e</span></h3>
+            <p>BC System: frente de caixa, <span class="nw">NFC-e</span>, estoque e financeiro, com suporte aqui da cidade.</p>
             <span class="route__go"><span>Conhecer o BC System</span><span><svg aria-hidden="true"><use href="#i-arrow-ur"/></svg></span></span>
           </a>
           <a class="route" data-spot href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e quero alugar o BC Fichas para um evento. Data do evento: " target="_blank" rel="noopener">
@@ -342,7 +356,7 @@
     <section class="sec" id="servicos" aria-labelledby="servicos-title">
       <div class="wrap">
         <header class="sec-head">
-          <p class="sec-label" data-scramble><span class="sl">//</span> <span class="num">02</span> Serviços</p>
+          <p class="sec-label" data-scramble><span class="sl" aria-hidden="true">//</span> <span class="num">02</span> Serviços</p>
           <div class="sec-title">
             <h2 class="h2" id="servicos-title" data-split>Tudo o que o seu balcão precisa, <em>num lugar só.</em></h2>
             <p class="lead" data-fade>Da balança ao caixa, da etiqueta à nota fiscal. Vendemos, instalamos, configuramos e damos suporte — com equipe própria aqui em Rio Claro.</p>
@@ -355,7 +369,7 @@
               <div class="svc-xl__copy">
                 <span class="icon-box"><svg aria-hidden="true"><use href="#i-wrench"/></svg></span>
                 <h3 class="h3">Assistência técnica de balanças</h3>
-                <p>Manutenção preventiva e corretiva, conserto, troca de peças, lacre e regularização junto ao IPEM-SP. Sua balança pronta para a verificação.</p>
+                <p>Manutenção preventiva e corretiva, conserto, troca de peças, lacre e regularização junto ao <span class="nw">IPEM-SP</span>. Sua balança pronta para a verificação.</p>
                 <ul class="ticks">
                   <li><svg aria-hidden="true"><use href="#i-check"/></svg>Comerciais e com impressora de etiquetas</li>
                   <li><svg aria-hidden="true"><use href="#i-check"/></svg>Balanças de checkout</li>
@@ -368,7 +382,7 @@
                 </div>
               </div>
               <figure class="svc-xl__fig">
-                <span class="tag"><svg aria-hidden="true"><use href="#i-shield"/></svg> Oficina autorizada pelo IPEM-SP</span>
+                <span class="tag"><svg aria-hidden="true"><use href="#i-shield"/></svg> Oficina autorizada pelo <span class="nw">IPEM-SP</span></span>
                 <svg class="blueprint" viewBox="0 0 480 350" role="img" aria-label="Desenho técnico de uma balança com indicação do prato inox, célula de carga, display, teclado e lacre">
                   <path class="bp-soft draw" pathLength="1" d="M20 286 H460"/>
                   <path class="bp-line draw" pathLength="1" d="M112 76 H328 L344 90 H96 Z"/>
@@ -385,9 +399,9 @@
                   <circle class="bp-line draw" pathLength="1" cx="346" cy="238" r="8"/>
                   <path class="bp-line draw" pathLength="1" d="M340 238 h12 M346 232 v12"/>
                   <path class="bp-lead draw" pathLength="1" d="M124 80 L96 38 H20"/><circle class="bp-dot" cx="124" cy="80" r="3"/>
-                  <text x="20" y="30">01 PRATO INOX</text>
+                  <text x="20" y="30">01 PRATO<tspan class="bp-long"> INOX</tspan></text>
                   <path class="bp-lead draw" pathLength="1" d="M250 116 L290 38 H476"/><circle class="bp-dot" cx="250" cy="116" r="3"/>
-                  <text x="476" y="30" text-anchor="end">02 CÉLULA DE CARGA</text>
+                  <text x="476" y="30" text-anchor="end">02 CÉLULA<tspan class="bp-long"> DE CARGA</tspan></text>
                   <path class="bp-lead draw" pathLength="1" d="M120 184 L84 316 H20"/><circle class="bp-dot" cx="120" cy="184" r="3"/>
                   <text x="20" y="336">03 DISPLAY</text>
                   <path class="bp-lead draw" pathLength="1" d="M350 190 L396 170 H476"/><circle class="bp-dot" cx="350" cy="190" r="3"/>
@@ -403,7 +417,7 @@
           <article class="card card--spot svc-card" data-spot>
             <span class="icon-box"><svg aria-hidden="true"><use href="#i-monitor"/></svg></span>
             <h3 class="h3">BC System</h3>
-            <p>Nosso sistema de gestão e PDV: frente de caixa, NFC-e e NF-e, estoque e financeiro.</p>
+            <p>Nosso sistema de gestão e PDV: frente de caixa, <span class="nw">NFC-e</span> e <span class="nw">NF-e</span>, estoque e financeiro.</p>
             <a class="link-arrow" href="#sistema">Conhecer o sistema <svg aria-hidden="true"><use href="#i-arrow-ur"/></svg></a>
           </article>
 
@@ -435,7 +449,7 @@
     <section class="sec feat" id="destaques" aria-labelledby="destaques-title">
       <div class="wrap">
         <header class="feat__head">
-          <p class="sec-label" data-scramble><span class="sl">//</span> <span class="num">03</span> Vitrine</p>
+          <p class="sec-label" data-scramble><span class="sl" aria-hidden="true">//</span> <span class="num">03</span> Vitrine</p>
           <div class="feat__title">
             <h2 class="h2" id="destaques-title" data-split>Em destaque na vitrine.</h2>
             <p class="lead" data-fade>Equipamentos que a gente instala e acompanha todos os dias. Preço e disponibilidade direto no WhatsApp.</p>
@@ -458,7 +472,7 @@
     <section class="sec" id="segmentos" aria-labelledby="segmentos-title">
       <div class="wrap">
         <header class="sec-head">
-          <p class="sec-label" data-scramble><span class="sl">//</span> <span class="num">04</span> Segmentos</p>
+          <p class="sec-label" data-scramble><span class="sl" aria-hidden="true">//</span> <span class="num">04</span> Segmentos</p>
           <div class="sec-title">
             <h2 class="h2" id="segmentos-title" data-split>O kit certo para cada <em>tipo de negócio.</em></h2>
             <p class="lead" data-fade>Cada balcão tem seu ritmo. Escolha o seu segmento e veja o que costumamos indicar — depois a gente ajusta ao seu espaço e ao seu bolso.</p>
@@ -479,7 +493,7 @@
     <section class="sec" id="sistema" aria-labelledby="sistema-title">
       <div class="wrap">
         <header class="sec-head">
-          <p class="sec-label" data-scramble><span class="sl">//</span> <span class="num">05</span> BC System</p>
+          <p class="sec-label" data-scramble><span class="sl" aria-hidden="true">//</span> <span class="num">05</span> BC System</p>
           <div class="sec-title">
             <h2 class="h2" id="sistema-title" data-split>O caixa que conversa <em>com a balança.</em></h2>
           </div>
@@ -497,7 +511,7 @@
             <img src="../compartilhado/img/sistema/bc-system-tablet-celular.webp" width="1000" height="640" loading="lazy" decoding="async" alt="Telas do BC System no tablet e no celular: frente de caixa e cadastro de produtos">
           </div>
           <div class="sys__copy">
-            <p class="lead" data-fade><strong>Sistema próprio de gestão e frente de caixa, feito para o comércio.</strong> Emite NFC-e e NF-e, lê a etiqueta da balança no caixa e organiza estoque e financeiro num lugar só.</p>
+            <p class="lead" data-fade><strong>Sistema próprio de gestão e frente de caixa, feito para o comércio.</strong> Emite <span class="nw">NFC-e</span> e <span class="nw">NF-e</span>, lê a etiqueta da balança no caixa e organiza estoque e financeiro num lugar só.</p>
             <ul class="ticks" data-stagger>
               <li><svg aria-hidden="true"><use href="#i-check"/></svg>Implantação e treinamento da sua equipe</li>
               <li><svg aria-hidden="true"><use href="#i-check"/></svg>Suporte remoto, por telefone ou no local</li>
@@ -508,13 +522,13 @@
         </div>
 
         <div class="feats" data-stagger>
-          <div class="feat-cell" data-spot><svg aria-hidden="true"><use href="#i-pos"/></svg><h3>Frente de caixa</h3><p>PDV rápido, com leitor de código de barras e atalhos.</p></div>
-          <div class="feat-cell" data-spot><svg aria-hidden="true"><use href="#i-receipt"/></svg><h3>NFC-e e NF-e</h3><p>Emissão das notas do varejo e do atacado.</p></div>
+          <div class="feat-cell" data-spot><svg aria-hidden="true"><use href="#i-pos"/></svg><h3>Frente de caixa</h3><p>Venda rápida no balcão, integrada à balança.</p></div>
+          <div class="feat-cell" data-spot><svg aria-hidden="true"><use href="#i-receipt"/></svg><h3><span class="nw">NFC-e</span> e <span class="nw">NF-e</span></h3><p>Emissão de <span class="nw">NFC-e</span> e <span class="nw">NF-e</span> direto do caixa.</p></div>
           <div class="feat-cell" data-spot><svg aria-hidden="true"><use href="#i-scale"/></svg><h3>Integração com balanças</h3><p>A etiqueta da balança é lida direto no caixa.</p></div>
           <div class="feat-cell" data-spot><svg aria-hidden="true"><use href="#i-layers"/></svg><h3>Controle de estoque</h3><p>Entradas, saídas e saldo sempre atualizados.</p></div>
-          <div class="feat-cell" data-spot><svg aria-hidden="true"><use href="#i-swap"/></svg><h3>Compras e vendas</h3><p>Pedidos, fornecedores e histórico de clientes.</p></div>
+          <div class="feat-cell" data-spot><svg aria-hidden="true"><use href="#i-swap"/></svg><h3>Compras e vendas</h3><p>Compras e vendas registradas num lugar só.</p></div>
           <div class="feat-cell" data-spot><svg aria-hidden="true"><use href="#i-wallet"/></svg><h3>Contas a pagar e receber</h3><p>O financeiro do dia a dia sem planilha.</p></div>
-          <div class="feat-cell" data-spot><svg aria-hidden="true"><use href="#i-chart"/></svg><h3>Relatórios</h3><p>Vendas por período, produto e forma de pagamento.</p></div>
+          <div class="feat-cell" data-spot><svg aria-hidden="true"><use href="#i-chart"/></svg><h3>Relatórios</h3><p>Relatórios de vendas para o fechamento e o controle financeiro.</p></div>
           <div class="feat-cell" data-spot><svg aria-hidden="true"><use href="#i-card"/></svg><h3>Carnê e consignação</h3><p>Venda no carnê e controle de peças consignadas.</p></div>
         </div>
 
@@ -522,14 +536,14 @@
           <div>
             <p class="sat__code"><i aria-hidden="true"></i>SAT proibido em SP desde 01/01/2026</p>
             <h3 class="h3">Ainda no SAT? Regularize já.</h3>
-            <p>Em São Paulo, o cupom fiscal SAT não é mais aceito. Hoje, toda venda no varejo precisa de <strong>NFC-e ou NF-e</strong>. A gente migra o seu caixa para a NFC-e e cuida da configuração, <strong>com suporte local</strong>.</p>
+            <p>Em São Paulo, o cupom fiscal SAT não é mais aceito. Hoje, toda venda no varejo precisa de <strong><span class="nw">NFC-e</span> ou <span class="nw">NF-e</span></strong>. A gente migra o seu caixa para a <span class="nw">NFC-e</span> e cuida da configuração, <strong>com suporte local</strong>.</p>
             <p>E acompanhamos a Reforma Tributária (IBS/CBS) de perto para manter o seu sistema em dia.</p>
             <a class="btn btn--primary" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com. Ainda uso SAT e quero migrar para NFC-e." target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg> Quero sair do SAT</a>
           </div>
           <div class="sat__lcd" aria-hidden="true">
             <div class="sat__line"><span class="from">CF-e SAT</span><b class="off">DESLIGADO</b></div>
-            <div class="sat__line"><span class="to">NFC-e · modelo 65</span><b>ATIVO</b></div>
-            <div class="sat__line"><span>Suporte</span><span class="to">Rio Claro-SP</span></div>
+            <div class="sat__line"><span class="to"><span class="nw">NFC-e</span> · modelo 65</span><b>ATIVO</b></div>
+            <div class="sat__line"><span>Suporte</span><span class="to"><span class="nw">Rio Claro-SP</span></span></div>
           </div>
         </div>
       </div>
@@ -541,9 +555,9 @@
         <div class="ipem">
           <div class="ipem__aside">
             <div class="ipem__sticky">
-              <p class="sec-label" data-scramble><span class="sl">//</span> <span class="num">06</span> Balança e IPEM</p>
+              <p class="sec-label" data-scramble><span class="sl" aria-hidden="true">//</span> <span class="num">06</span> Balança e IPEM</p>
               <h2 class="h2" id="ipem-title" data-split style="margin-top:24px">Balança em dia. <em>Fiscalização sem susto.</em></h2>
-              <p class="lead" data-fade style="margin-top:24px">O IPEM-SP verifica as balanças do comércio uma vez por ano, sem aviso. Somos <strong>oficina autorizada pelo IPEM-SP</strong> e deixamos a sua balança pronta para a verificação.</p>
+              <p class="lead" data-fade style="margin-top:24px">O <span class="nw">IPEM-SP</span> verifica as balanças do comércio uma vez por ano, sem aviso. Somos <strong>oficina autorizada pelo <span class="nw">IPEM-SP</span></strong> e deixamos a sua balança pronta para a verificação.</p>
               <div class="fine" data-fade>
                 <div class="fine__lbl"><span>MULTA MÁXIMA</span><span>LEI 9.933/99</span></div>
                 <div class="fine__val"><small>R$</small><span data-fine>1.500.000</span></div>
@@ -556,7 +570,7 @@
             </div>
           </div>
           <ol class="ipem__list" data-stagger>
-            <li class="fact"><span class="fact__n">01</span><div><h3 class="h3">Verificação anual, sem aviso</h3><p>O fiscal do IPEM-SP pode chegar em qualquer dia. Balança aprovada recebe lacre e selo com o ano seguinte. <strong>Até a balança parada no balcão é fiscalizada.</strong></p></div></li>
+            <li class="fact"><span class="fact__n">01</span><div><h3 class="h3">Verificação anual, sem aviso</h3><p>O fiscal do <span class="nw">IPEM-SP</span> pode chegar em qualquer dia. Balança aprovada recebe lacre e selo com o ano seguinte. <strong>Até a balança parada no balcão é fiscalizada.</strong></p></div></li>
             <li class="fact"><span class="fact__n">02</span><div><h3 class="h3">Lacre rompido é problema</h3><p>Balança com lacre rompido ou danificado fica sujeita a autuação. Só uma oficina autorizada pode abrir o equipamento e lacrar de novo.</p></div></li>
             <li class="fact"><span class="fact__n">03</span><div><h3 class="h3">Reprovou? Tem conserto.</h3><p>A balança precisa ser consertada por oficina autorizada. Ela sai lacrada, com a marca “Reparado”, e passa pela verificação após o reparo. <strong>A gente cuida disso para você.</strong></p></div></li>
             <li class="fact"><span class="fact__n">04</span><div><h3 class="h3">Multas de R$ 100 a R$ 1,5 milhão</h3><p>É o que prevê a Lei 9.933/99 — e, se o erro prejudicar o consumidor, a balança pode até ser interditada. Manutenção em dia evita dor de cabeça.</p></div></li>
@@ -568,7 +582,7 @@
     <!-- ============ MARCAS ============ -->
     <section class="brands" aria-labelledby="marcas-title">
       <div class="wrap brands__head">
-        <h2 class="kicker" id="marcas-title"><span style="color:var(--signal)">//</span> Trabalhamos com as marcas</h2>
+        <h2 class="kicker" id="marcas-title"><span style="color:var(--signal)" aria-hidden="true">//</span> Trabalhamos com as marcas</h2>
         <button class="pause-btn" type="button" data-marquee-toggle aria-pressed="false"><svg aria-hidden="true"><use href="#i-pause"/></svg><span>PAUSAR</span></button>
       </div>
       <div class="marquee" data-marquee>
@@ -586,9 +600,9 @@
     <section class="sec" id="clientes" aria-labelledby="clientes-title">
       <div class="wrap">
         <header class="sec-head">
-          <p class="sec-label" data-scramble><span class="sl">//</span> <span class="num">07</span> Clientes</p>
+          <p class="sec-label" data-scramble><span class="sl" aria-hidden="true">//</span> <span class="num">07</span> Clientes</p>
           <div class="sec-title">
-            <h2 class="h2" id="clientes-title" data-split>Quem pesa com a gente, <em>recomenda.</em></h2>
+            <h2 class="h2" id="clientes-title" data-split>Quem pesa com a gente <em>recomenda.</em></h2>
           </div>
         </header>
 
@@ -599,7 +613,7 @@
             <div class="gscore__stars" aria-hidden="true">
               <svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg>
             </div>
-            <p class="gscore__sub"><span data-bc="avaliacoes">56</span> avaliações <span>— todas com 5 estrelas.</span></p>
+            <p class="gscore__sub"><span data-bc="avaliacoes">56</span> avaliações <span>de clientes.</span></p>
             <ul class="themes" aria-label="Temas mais citados nas avaliações">
               <li>Agilidade</li><li>Profissionalismo</li><li>Equipe atenciosa</li><li>Parceria de anos</li>
             </ul>
@@ -608,7 +622,14 @@
           </div>
           <div class="clients">
             <p class="kicker">Alguns clientes</p>
-            <ul class="clients__grid" data-clients data-stagger></ul>
+            <ul class="clients__grid" data-clients data-stagger>
+              <li class="client"><img src="../compartilhado/img/clientes/brasil-frios.webp" alt="Brasil Frios Supermercados" width="240" height="120" loading="lazy" decoding="async"></li>
+              <li class="client"><img src="../compartilhado/img/clientes/camargo.webp" alt="Supermercados Camargo" width="240" height="120" loading="lazy" decoding="async"></li>
+              <li class="client"><img src="../compartilhado/img/clientes/enxuto.webp" alt="Enxuto" width="240" height="120" loading="lazy" decoding="async"></li>
+              <li class="client"><img src="../compartilhado/img/clientes/examine.webp" alt="Examine Supermercados" width="240" height="120" loading="lazy" decoding="async"></li>
+              <li class="client"><img src="../compartilhado/img/clientes/qualidade.webp" alt="Mercado Qualidade" width="240" height="120" loading="lazy" decoding="async"></li>
+              <li class="client"><img src="../compartilhado/img/clientes/quitandao.webp" alt="Quitandão Supermercados" width="240" height="120" loading="lazy" decoding="async"></li>
+            </ul>
           </div>
         </div>
 
@@ -617,7 +638,14 @@
             <h3 class="h3">O que dizem os clientes do BC System</h3>
             <p class="kicker">Depoimentos reais</p>
           </div>
-          <div class="quotes__grid" data-quotes data-stagger></div>
+          <div class="quotes__grid" data-quotes data-stagger>
+            <figure class="card card--spot quote" data-spot><svg class="quote__mark" aria-hidden="true"><use href="#i-quote"/></svg><blockquote><p>Sistema fácil de usar, isso ajuda muito. Suporte sempre que preciso, estão à disposição!</p></blockquote><figcaption><span class="mono-avatar" aria-hidden="true">W</span><span class="quote__who"><b>William</b><span>Padaria Padoka</span></span></figcaption></figure>
+            <figure class="card card--spot quote" data-spot><svg class="quote__mark" aria-hidden="true"><use href="#i-quote"/></svg><blockquote><p>Instalei na inauguração da minha empresa e fomos muito bem assessoradas. Atendimento nota 10. Excelente.</p></blockquote><figcaption><span class="mono-avatar" aria-hidden="true">L</span><span class="quote__who"><b>Lilian</b><span>Plus Pet Store</span></span></figcaption></figure>
+            <figure class="card card--spot quote" data-spot><svg class="quote__mark" aria-hidden="true"><use href="#i-quote"/></svg><blockquote><p>O sistema possui um completo relatório de vendas que facilita bastante o fechamento e o controle financeiro.</p></blockquote><figcaption><span class="mono-avatar" aria-hidden="true">J</span><span class="quote__who"><b>Juliana</b><span>Padaria Phenix</span></span></figcaption></figure>
+            <figure class="card card--spot quote" data-spot><svg class="quote__mark" aria-hidden="true"><use href="#i-quote"/></svg><blockquote><p>O sistema é bem simples de operar, o atendimento do suporte é ótimo, estou muito satisfeito, nota 10!</p></blockquote><figcaption><span class="mono-avatar" aria-hidden="true">A</span><span class="quote__who"><b>Alessandro</b><span>Peixaria 14</span></span></figcaption></figure>
+            <figure class="card card--spot quote" data-spot><svg class="quote__mark" aria-hidden="true"><use href="#i-quote"/></svg><blockquote><p>Até o momento fui atendida em todas as minhas necessidades, principalmente no recurso que eu mais precisava: o controle de consignação.</p></blockquote><figcaption><span class="mono-avatar" aria-hidden="true">T</span><span class="quote__who"><b>Tatiane</b><span>Cantinho da Mamãe</span></span></figcaption></figure>
+            <figure class="card card--spot quote" data-spot><svg class="quote__mark" aria-hidden="true"><use href="#i-quote"/></svg><blockquote><p>Sistema muito eficiente, prático para a geração de carnê e emissão de cupom fiscal.</p></blockquote><figcaption><span class="mono-avatar" aria-hidden="true">A</span><span class="quote__who"><b>Adenilza</b><span>Ideal Confecções</span></span></figcaption></figure>
+          </div>
         </div>
       </div>
     </section>
@@ -626,7 +654,7 @@
     <section class="sec" id="sobre" aria-labelledby="sobre-title">
       <div class="wrap">
         <header class="sec-head">
-          <p class="sec-label" data-scramble><span class="sl">//</span> <span class="num">08</span> Sobre</p>
+          <p class="sec-label" data-scramble><span class="sl" aria-hidden="true">//</span> <span class="num">08</span> Sobre</p>
           <div class="sec-title">
             <h2 class="h2" id="sobre-title" data-split>Desde 2010 medindo certo <em>em Rio Claro.</em></h2>
           </div>
@@ -637,12 +665,18 @@
             <p>Hoje, uma equipe enxuta e especializada cuida de assistência técnica, venda de equipamentos, sistema e suporte — com o atendimento próximo de quem conhece o comércio da cidade.</p>
           </div>
           <ul class="timeline" data-stagger>
-            <li><b>2010</b><span>Abertura da Balanças.com em Rio Claro-SP</span></li>
-            <li><b>25<sup>+</sup></b><span>Anos de experiência do fundador no ramo</span></li>
-            <li><b>5.0</b><span>Nota no Google, com 56 avaliações</span></li>
+            <li><b data-count-of="equipe">5</b><span>pessoas na equipe, do técnico ao suporte</span></li>
+            <li><b data-count-of="marcas">18</b><span>marcas com que trabalhamos</span></li>
+            <li><b data-count-of="produtosProprios">2</b><span>produtos próprios: BC System e BC Fichas</span></li>
           </ul>
         </div>
-        <div class="team" data-team data-stagger></div>
+        <div class="team" data-team data-stagger>
+          <article class="card card--spot member member--lead" data-spot><div class="member__ring" aria-hidden="true"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="38" fill="none" stroke="rgba(238,242,239,.14)"/><circle cx="40" cy="40" r="38" fill="none" stroke="#1FE07A" stroke-width="2" stroke-linecap="round" stroke-dasharray="40 240" transform="rotate(0 40 40)"/></svg><span>FG</span></div><h3>Fábio Godoy</h3><p class="member__role">Fundador e diretor</p><p>Mais de 25 anos de experiência em balanças e automação comercial.</p></article>
+          <article class="card card--spot member" data-spot><div class="member__ring" aria-hidden="true"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="38" fill="none" stroke="rgba(238,242,239,.14)"/><circle cx="40" cy="40" r="38" fill="none" stroke="#1FE07A" stroke-width="2" stroke-linecap="round" stroke-dasharray="54 240" transform="rotate(67 40 40)"/></svg><span>AS</span></div><h3>Alexandre Silva</h3><p class="member__role">Técnico de balanças</p><p>Departamento técnico de balanças comerciais e atendimento aos clientes.</p></article>
+          <article class="card card--spot member" data-spot><div class="member__ring" aria-hidden="true"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="38" fill="none" stroke="rgba(238,242,239,.14)"/><circle cx="40" cy="40" r="38" fill="none" stroke="#1FE07A" stroke-width="2" stroke-linecap="round" stroke-dasharray="68 240" transform="rotate(134 40 40)"/></svg><span>VG</span></div><h3>Victor Gomes</h3><p class="member__role">Técnico de balanças</p><p>Departamento técnico de balanças comerciais e atendimento aos clientes.</p></article>
+          <article class="card card--spot member" data-spot><div class="member__ring" aria-hidden="true"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="38" fill="none" stroke="rgba(238,242,239,.14)"/><circle cx="40" cy="40" r="38" fill="none" stroke="#1FE07A" stroke-width="2" stroke-linecap="round" stroke-dasharray="82 240" transform="rotate(201 40 40)"/></svg><span>TO</span></div><h3>Tamires Oliveira</h3><p class="member__role">Administrativo e vendas</p><p>Responsável pelo administrativo, vendas e financeiro.</p></article>
+          <article class="card card--spot member" data-spot><div class="member__ring" aria-hidden="true"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="38" fill="none" stroke="rgba(238,242,239,.14)"/><circle cx="40" cy="40" r="38" fill="none" stroke="#1FE07A" stroke-width="2" stroke-linecap="round" stroke-dasharray="96 240" transform="rotate(268 40 40)"/></svg><span>RT</span></div><h3>Rafael Tessaro</h3><p class="member__role">Sistemas e suporte</p><p>Suporte técnico em sistemas, implantação e treinamento aos clientes.</p></article>
+        </div>
       </div>
     </section>
 
@@ -651,25 +685,25 @@
       <div class="wrap faq">
         <div class="faq__aside">
           <div class="sticky">
-            <p class="sec-label" data-scramble><span class="sl">//</span> <span class="num">09</span> Dúvidas</p>
+            <p class="sec-label" data-scramble><span class="sl" aria-hidden="true">//</span> <span class="num">09</span> Dúvidas</p>
             <h2 class="h2" id="duvidas-title" data-split style="margin-top:24px">Perguntas frequentes.</h2>
-            <p class="lead">IPEM, NFC-e, SAT e o dia a dia do balcão — explicado sem complicação.</p>
+            <p class="lead">IPEM, <span class="nw">NFC-e</span>, SAT e o dia a dia do balcão — explicado sem complicação.</p>
             <a class="btn btn--ghost" href="https://wa.me/551930239050" data-wa="Olá! Vim pelo site da Balanças.com e tenho uma dúvida: " target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg> Não achou? Pergunte aqui</a>
           </div>
         </div>
         <div class="faq__list" data-faq>
-          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n">01</span><span>A balança precisa ser verificada todo ano?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel" role="region"><div><p>Sim. O IPEM-SP verifica as balanças do comércio uma vez por ano, sem aviso prévio. Se aprovada, a balança recebe lacre e selo com o ano seguinte, e a loja recebe a guia (GRU) da taxa.</p></div></div></div>
-          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n">02</span><span>E se a balança for reprovada?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel" role="region"><div><p>Ela precisa ser consertada por uma oficina autorizada e pode passar por nova verificação. Se o erro prejudicar o consumidor, pode ser interditada. As multas vão de R$ 100 a R$ 1,5 milhão (Lei 9.933/99). Somos oficina autorizada pelo IPEM-SP: fale com a gente.</p></div></div></div>
-          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n">03</span><span>O que é uma oficina autorizada (permissionária)?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel" role="region"><div><p>É a empresa autorizada pelo Inmetro/IPEM-SP a consertar balanças e romper lacres. A Balanças.com é oficina autorizada pelo IPEM-SP. A lista oficial fica em <a href="https://servicos.rbmlq.gov.br/Oficina" target="_blank" rel="noopener">servicos.rbmlq.gov.br/Oficina</a>.</p></div></div></div>
-          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n">04</span><span>Rompeu o lacre. E agora?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel" role="region"><div><p>Não use a balança assim: ela fica sujeita a autuação. Chame uma oficina autorizada para fazer o reparo e colocar o lacre novo.</p></div></div></div>
-          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n">05</span><span>Depois do conserto, já posso usar a balança?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel" role="region"><div><p>Em geral, sim. Ela sai lacrada, com a marca “Reparado”, e fica sujeita à verificação após o reparo. Se a balança foi interditada, siga o que diz o termo de interdição. Guarde a ordem de serviço e a nota fiscal.</p></div></div></div>
-          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n">06</span><span>Comprei uma balança usada. Posso usar?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel" role="region"><div><p>Antes de usar, peça a uma oficina autorizada que avalie o equipamento. Confira o selo do Inmetro, a PAM (portaria de aprovação do modelo) e os lacres.</p></div></div></div>
-          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n">07</span><span>Balança parada também é fiscalizada?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel" role="region"><div><p>Sim. Mesmo sem uso, a balança no estabelecimento é fiscalizada. Retire as que você não usa mais.</p></div></div></div>
-          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n">08</span><span>Ainda posso usar o SAT?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel" role="region"><div><p>Não. Em São Paulo, o CF-e SAT está proibido desde 01/01/2026. Hoje é preciso emitir NFC-e ou NF-e — e a gente ajuda na migração com o BC System.</p></div></div></div>
-          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n">09</span><span>O que preciso para emitir NFC-e?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel" role="region"><div><p>Certificado digital e-CNPJ, credenciamento na SEFAZ-SP, código CSC, internet e um sistema compatível, como o BC System. Se a internet cair, existe a emissão em contingência off-line.</p></div></div></div>
-          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n">10</span><span>O que muda com a Reforma Tributária?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel" role="region"><div><p>A NFC-e passa a trazer os novos tributos IBS e CBS: desde 03/08/2026 para empresas fora do Simples Nacional e a partir de 01/01/2027 para o Simples. Acompanhamos as mudanças de perto para manter o seu sistema em dia.</p></div></div></div>
-          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n">11</span><span>Vocês alugam máquinas de fichas?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel" role="region"><div><p>Sim. O BC Fichas é alugado por diária, com manual, bobinas e treinamento — ideal para festas, quermesses e eventos. Saiba mais em <a href="http://bcfichas.com.br" target="_blank" rel="noopener">bcfichas.com.br</a>.</p></div></div></div>
-          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n">12</span><span>Atendem fora de Rio Claro?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel" role="region"><div><p>Atendemos Rio Claro e região — consulte pelo WhatsApp.</p></div></div></div>
+          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n" aria-hidden="true">01</span><span>A balança precisa ser verificada todo ano?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel"><div><p>Sim. O <span class="nw">IPEM-SP</span> verifica as balanças do comércio uma vez por ano, sem aviso prévio. Se aprovada, a balança recebe lacre e selo com o ano seguinte, e a loja recebe a guia (GRU) da taxa.</p></div></div></div>
+          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n" aria-hidden="true">02</span><span>E se a balança for reprovada?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel"><div><p>Ela precisa ser consertada por uma oficina autorizada e pode passar por nova verificação. Se o erro prejudicar o consumidor, pode ser interditada. As multas vão de R$ 100 a R$ 1,5 milhão (Lei 9.933/99). Somos oficina autorizada pelo <span class="nw">IPEM-SP</span>: fale com a gente.</p></div></div></div>
+          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n" aria-hidden="true">03</span><span>O que é uma oficina autorizada (permissionária)?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel"><div><p>É a empresa autorizada pelo Inmetro/<span class="nw">IPEM-SP</span> a consertar balanças e romper lacres. A Balanças.com é oficina autorizada pelo <span class="nw">IPEM-SP</span>. A lista oficial fica em <a href="https://servicos.rbmlq.gov.br/Oficina" target="_blank" rel="noopener">servicos.rbmlq.gov.br/Oficina</a>.</p></div></div></div>
+          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n" aria-hidden="true">04</span><span>Rompeu o lacre. E agora?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel"><div><p>Não use a balança assim: ela fica sujeita a autuação. Chame uma oficina autorizada para fazer o reparo e colocar o lacre novo.</p></div></div></div>
+          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n" aria-hidden="true">05</span><span>Depois do conserto, já posso usar a balança?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel"><div><p>Em geral, sim. Ela sai lacrada, com a marca “Reparado”, e fica sujeita à verificação após o reparo. Se a balança foi interditada, siga o que diz o termo de interdição. Guarde a ordem de serviço e a nota fiscal.</p></div></div></div>
+          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n" aria-hidden="true">06</span><span>Comprei uma balança usada. Posso usar?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel"><div><p>Antes de usar, peça a uma oficina autorizada que avalie o equipamento. Confira o selo do Inmetro, a PAM (portaria de aprovação do modelo) e os lacres.</p></div></div></div>
+          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n" aria-hidden="true">07</span><span>Balança parada também é fiscalizada?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel"><div><p>Sim. Mesmo sem uso, a balança no estabelecimento é fiscalizada. Retire as que você não usa mais.</p></div></div></div>
+          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n" aria-hidden="true">08</span><span>Ainda posso usar o SAT?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel"><div><p>Não. Em São Paulo, o CF-e SAT está proibido desde 01/01/2026. Hoje é preciso emitir <span class="nw">NFC-e</span> ou <span class="nw">NF-e</span> — e a gente ajuda na migração com o BC System.</p></div></div></div>
+          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n" aria-hidden="true">09</span><span>O que preciso para emitir <span class="nw">NFC-e</span>?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel"><div><p>Certificado digital e-CNPJ, credenciamento na SEFAZ-SP, código CSC, internet e um sistema compatível, como o BC System. Se a internet cair, existe a emissão em contingência off-line.</p></div></div></div>
+          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n" aria-hidden="true">10</span><span>O que muda com a Reforma Tributária?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel"><div><p>A <span class="nw">NFC-e</span> passa a trazer os novos tributos IBS e CBS: desde 03/08/2026 para empresas fora do Simples Nacional e a partir de 01/01/2027 para o Simples. Acompanhamos as mudanças de perto para manter o seu sistema em dia.</p></div></div></div>
+          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n" aria-hidden="true">11</span><span>Vocês alugam máquinas de fichas?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel"><div><p>Sim. O BC Fichas é alugado por diária, com manual, bobinas e treinamento — ideal para festas, quermesses e eventos. Saiba mais em <a href="http://bcfichas.com.br" target="_blank" rel="noopener">bcfichas.com.br</a>.</p></div></div></div>
+          <div class="qa"><h3><button class="qa__btn" type="button" aria-expanded="false"><span class="qa__n" aria-hidden="true">12</span><span>Atendem fora de Rio Claro?</span><span class="qa__icon" aria-hidden="true"></span></button></h3><div class="qa__panel"><div><p>Atendemos Rio Claro e região — consulte pelo WhatsApp.</p></div></div></div>
         </div>
       </div>
     </section>
@@ -678,7 +712,7 @@
     <section class="sec" id="contato" aria-labelledby="contato-title">
       <div class="wrap contact">
         <div class="contact__info">
-          <p class="sec-label" data-scramble><span class="sl">//</span> <span class="num">10</span> Contato</p>
+          <p class="sec-label" data-scramble><span class="sl" aria-hidden="true">//</span> <span class="num">10</span> Contato</p>
           <h2 class="h2" id="contato-title" data-split style="margin-top:24px">Vamos conversar?</h2>
           <p class="lead" style="margin-top:20px">Resposta rápida pelo WhatsApp em horário comercial. Se preferir, ligue ou passe na loja.</p>
 
@@ -700,13 +734,13 @@
             </a>
             <a class="channel" href="https://maps.google.com/?cid=12422356528564941318" data-bc-href="mapa" target="_blank" rel="noopener">
               <span class="channel__ic"><svg aria-hidden="true"><use href="#i-pin"/></svg></span>
-              <span><span class="channel__k">Endereço · abrir no mapa</span><span class="channel__v" data-bc="endereco">Rua 13, 650 – Boa Morte, Rio Claro/SP · CEP 13500-120</span><span class="channel__ref" data-bc="referencia">Entre as Avenidas 9 e 11</span></span>
+              <span><span class="channel__k">Endereço · abrir no mapa</span><span class="channel__v" data-bc="endereco">Rua 13, 650 – Boa Morte, Rio Claro/SP <span class="nw">· CEP&nbsp;13500-120</span></span><span class="channel__ref" data-bc="referencia">Entre as Avenidas 9 e 11</span></span>
               <span class="channel__go"><svg aria-hidden="true"><use href="#i-arrow-ur"/></svg></span>
             </a>
           </div>
 
           <div class="hours">
-            <div class="hours__head"><span class="kicker">Horário de atendimento</span><span class="status-pill" data-status><i></i><span data-status-text>Consulte o horário</span></span></div>
+            <div class="hours__head"><span class="kicker">Horário de atendimento</span><span class="status-pill" data-status><i></i><span data-status-text>Seg–sex 8h–11h e 13h–18h</span></span></div>
             <dl data-hours>
               <dt>Segunda a sexta</dt><dd>8h às 11h · 13h às 18h</dd>
               <dt>Sábado</dt><dd>8h às 12h</dd>
@@ -720,12 +754,13 @@
           <p>Preencha e a gente abre o WhatsApp com tudo pronto.</p>
           <div class="field">
             <label for="f-nome">Seu nome</label>
-            <input id="f-nome" name="nome" type="text" autocomplete="name" placeholder="Como podemos te chamar?" required>
+            <input id="f-nome" name="nome" type="text" autocomplete="name" placeholder="Como podemos te chamar?" required aria-describedby="f-nome-err">
+            <p class="field__err" id="f-nome-err" hidden>Informe seu nome para continuar.</p>
           </div>
           <div class="field">
             <label for="f-assunto">Assunto</label>
             <select id="f-assunto" name="assunto">
-              <option>Conserto ou manutenção de balança</option>
+              <option>Conserto de balança</option>
               <option>Orçamento de equipamento</option>
               <option>BC System / NFC-e</option>
               <option>Aluguel do BC Fichas</option>
@@ -757,7 +792,7 @@
             <span class="brand__word"><span class="brand__name">BALANÇAS<span>.</span>COM</span><span class="brand__tag">AUTOMAÇÃO COMERCIAL</span></span>
           </a>
           <p class="phrase">A medida certa para o seu negócio.</p>
-          <p>Balanças, automação comercial, BC System e assistência técnica autorizada pelo IPEM-SP.</p>
+          <p>Balanças, automação comercial, BC System e assistência técnica autorizada pelo <span class="nw">IPEM-SP</span>.</p>
         </div>
         <div class="foot__col">
           <h2>Navegação</h2>
@@ -776,7 +811,7 @@
           <ul>
             <li><a href="https://wa.me/551930239050" data-wa="" target="_blank" rel="noopener">WhatsApp <span data-bc="telefone" style="margin-left:6px">(19) 3023-9050</span></a></li>
             <li><a href="mailto:balancas.com@gmail.com" data-bc-href="email" data-bc="email">balancas.com@gmail.com</a></li>
-            <li><a href="https://maps.google.com/?cid=12422356528564941318" data-bc-href="mapa" target="_blank" rel="noopener" data-bc="endereco">Rua 13, 650 – Boa Morte, Rio Claro/SP · CEP 13500-120</a><small data-bc="referencia">Entre as Avenidas 9 e 11</small></li>
+            <li><a href="https://maps.google.com/?cid=12422356528564941318" data-bc-href="mapa" target="_blank" rel="noopener" data-bc="endereco">Rua 13, 650 – Boa Morte, Rio Claro/SP <span class="nw">· CEP&nbsp;13500-120</span></a><small data-bc="referencia">Entre as Avenidas 9 e 11</small></li>
             <li><a href="https://www.facebook.com/balancas.comrc/" data-bc-href="facebook" target="_blank" rel="noopener"><svg aria-hidden="true" style="width:16px;height:16px;margin-right:8px"><use href="#i-facebook"/></svg>Facebook</a></li>
           </ul>
         </div>
@@ -807,12 +842,14 @@
   <script src="../compartilhado/dados/empresa.js"></script>
   <script src="../compartilhado/dados/produtos.js"></script>
   <script src="../compartilhado/js/balancas.js"></script>
+  <!-- conteúdo e interações (rodam na hora, sem depender do CDN) -->
+  <script src="js/core.js"></script>
+  <script src="js/home.js"></script>
+  <!-- movimento (chega depois; TZ.startMotion roda no DOMContentLoaded) -->
   <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrambleTextPlugin.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
-  <script defer src="js/core.js"></script>
-  <script defer src="js/home.js"></script>
 </body>
 </html>

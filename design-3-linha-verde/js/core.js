@@ -17,8 +17,8 @@
   LV.$ = $; LV.$$ = $$;
 
   var reduceMQ = window.matchMedia("(prefers-reduced-motion: reduce)");
-  var hasGSAP = !!(window.gsap && window.ScrollTrigger);
-  LV.motionOK = function () { return hasGSAP && !reduceMQ.matches; };
+  function hasGSAP() { return !!(window.gsap && window.ScrollTrigger); }
+  LV.motionOK = function () { return hasGSAP() && !reduceMQ.matches; };
   LV.onMotion = function (fn) { hooks.push(fn); };          // ganchos das páginas (rodam dentro do matchMedia)
   LV.hdr = function () { var h = $("[data-hdr]"); return h ? h.offsetHeight : 72; };
   LV.esc = function (s) { return BC ? BC.escape(s) : String(s == null ? "" : s); };
@@ -30,12 +30,24 @@
      1. Dados da empresa → HTML (o HTML já traz os mesmos dados p/ SEO)
      ------------------------------------------------------------------ */
   function setText(sel, val) { if (val == null || val === "") return; $$(sel).forEach(function (el) { el.textContent = val; }); }
+  // Leitor de tela: avisa que o link abre em outra aba (WCAG G201)
+  var NEW_TAB = " (abre em nova aba)";
+  function newTabHint(a) {
+    if (a._nt) return; a._nt = true;
+    var al = a.getAttribute("aria-label");
+    if (al) { if (al.indexOf(NEW_TAB.trim()) === -1) a.setAttribute("aria-label", al + NEW_TAB); return; }
+    var sr = document.createElement("span"); sr.className = "sr-only"; sr.textContent = NEW_TAB;
+    a.appendChild(sr);
+  }
+  LV.newTabHint = newTabHint;
   function fill() {
     $$("[data-wa]").forEach(function (a) {
       var msg = a.getAttribute("data-wa");
       a.href = BC.whatsLink(msg || undefined);
       a.target = "_blank"; a.rel = "noopener";
+      newTabHint(a);
     });
+    $$('a[target="_blank"]').forEach(newTabHint);
     $$("[data-tel]").forEach(function (a) { a.href = BC.telLink(); });
     $$("[data-email]").forEach(function (a) { a.href = BC.emailLink(a.getAttribute("data-email") || ""); });
     $$("[data-mapa]").forEach(function (a) { if (E.mapa) a.href = E.mapa; });
@@ -46,6 +58,8 @@
     setText("[data-tel-text]", E.telefone);
     setText("[data-email-text]", E.email);
     setText("[data-endereco]", BC.enderecoTexto());
+    // "CEP 13500-120" nunca quebra (nem no espaço, nem no hífen)
+    $$("[data-endereco]").forEach(function (el) { el.innerHTML = LV.esc(el.textContent).replace(/CEP\s*([\d.\-]+)/, '<span class="nobr">CEP $1</span>'); });
     setText("[data-referencia]", BC.referenciaEndereco ? BC.referenciaEndereco() : "");
     setText("[data-ipem]", E.ipem);
     setText("[data-cnpj]", E.cnpj);
@@ -56,6 +70,7 @@
     setText("[data-anos]", BC.anosDesde());
     if (E.google) { setText("[data-google-nota]", E.google.nota); setText("[data-google-qtd]", E.google.avaliacoes); }
     setText("[data-total-produtos]", BC.produtos.length);
+    setText("[data-total-categorias]", (BC.categorias || []).length);
 
     // Horários
     $$('[data-render="horarios"]').forEach(function (ul) {
@@ -72,6 +87,7 @@
     // Clientes
     $$('[data-render="clientes"]').forEach(function (ul) {
       if (!E.clientes || !E.clientes.length) return;
+      if (ul.children.length === E.clientes.length) return;   // o HTML já traz os logos com width/height
       ul.innerHTML = E.clientes.map(function (c) {
         return '<li><img src="' + BC.img("clientes/" + c.logo) + '" alt="' + LV.esc(c.nome) + '" loading="lazy" decoding="async"></li>';
       }).join("");
@@ -111,29 +127,52 @@
     var c = v.slice(0, max), sp = c.lastIndexOf(" ");
     return (sp > max * 0.3 ? c.slice(0, sp) : c).replace(/[,\s/–:-]+$/, "") + "…";
   }
-  LV.curto = function (v) { return corta(v, 24, [" ou ", ", ", " e ", " com "]); };
+  // Valor curto para a ficha. Não corta variantes (" ou ", ", "): na capacidade mostra "Até N kg";
+  // nos demais, reticências só se passar de 38 caracteres.
+  LV.curto = function (v, chave) {
+    v = String(v == null ? "" : v).replace(/\s*\([^)]*\)/g, "").split(";")[0].trim();
+    if (/^capacidade/i.test(chave || "")) {
+      var kg = (v.match(/\d+(?:,\d+)?(?=\s*kg)/g) || []).map(function (s) { return parseFloat(s.replace(",", ".")); });
+      if (kg.length > 1 && / ou |, /.test(v)) return "Até " + String(Math.max.apply(null, kg)).replace(".", ",") + " kg";
+    }
+    if (v.length <= 38) return v;
+    var c = v.slice(0, 38), sp = c.lastIndexOf(" ");
+    return (sp > 12 ? c.slice(0, sp) : c).replace(/[,\s/–:-]+$/, "") + "…";
+  };
   LV.chaveCurta = function (k) { return corta(k, 26, [" / "]); };
   LV.spec = function (p, chave) {
     var s = (p.especificacoes || []).filter(function (r) { return String(r[0]).toLowerCase().indexOf(chave) === 0; })[0];
     return s ? s[1] : "";
   };
 
+  // Imagem da ficha: variante de 480 px em img/p480/ (r = recorte, f = foto) para a moldura de ~300 px.
+  // Só entra no srcset o que existe nesta lista [largura da variante, largura do original];
+  // produto novo sem variante usa só o original.
+  var P480 = {"r/2098.webp":[480,900],"r/8217.webp":[480,882],"r/9094plus.webp":[480,785],"r/allmidia.webp":[480,900],"r/argox.webp":[480,609],"r/balmak-one.webp":[480,900],"r/balmak-orion2.webp":[480,900],"r/balmak.webp":[480,900],"r/bck30.webp":[480,886],"r/bematech-sat.webp":[480,836],"r/centrium-pc.webp":[480,900],"r/el4200.webp":[480,685],"r/elgin-i9.webp":[480,805],"r/elgin-smart.webp":[480,873],"r/epson-t20.webp":[480,755],"r/fatiador.webp":[480,900],"r/gavetabema.webp":[480,900],"r/gertec504.webp":[480,732],"r/l42pro.webp":[480,865],"r/menno.webp":[480,900],"r/mit.webp":[480,900],"r/mt720.webp":[480,882],"r/nobreak-apc.webp":[480,598],"r/one-pesadora.webp":[480,900],"r/prix3fit.webp":[480,900],"r/prix3plus.webp":[480,900],"r/prix4due.webp":[480,809],"r/prix4uno.webp":[480,900],"r/prix5.webp":[480,900],"r/sat-custom.webp":[480,891],"r/sat-jetway.webp":[480,874],"r/sat-tanca.webp":[480,718],"r/sko44.webp":[480,886],"r/tanca.webp":[480,742],"r/tec44.webp":[480,900],"r/tl120.webp":[480,599],"r/tl900.webp":[480,631],"r/uni350.webp":[480,809],"r/w300.webp":[480,900],"r/zebra.webp":[480,785],"f/2098.webp":[480,900],"f/8217.webp":[480,882],"f/9094plus.webp":[480,785],"f/allmidia.webp":[480,900],"f/argox.webp":[480,609],"f/balmak-one.webp":[480,900],"f/balmak-orion2.webp":[480,900],"f/balmak.webp":[480,900],"f/bck30.webp":[480,886],"f/bematech-sat.webp":[480,836],"f/centrium-pc.webp":[480,900],"f/el4200.webp":[480,685],"f/elgin-i9.webp":[480,805],"f/elgin-smart.webp":[480,873],"f/epson-t20.webp":[480,755],"f/fatiador.webp":[480,900],"f/gavetabema.webp":[480,900],"f/gertec504.webp":[480,732],"f/l42pro.webp":[480,865],"f/menno.webp":[480,900],"f/mit.webp":[480,900],"f/mt720.webp":[480,882],"f/nobreak-apc.webp":[480,598],"f/one-pesadora.webp":[480,900],"f/prix3fit.webp":[480,900],"f/prix3plus.webp":[480,900],"f/prix4due.webp":[480,809],"f/prix4uno.webp":[480,900],"f/prix5.webp":[480,900],"f/sat-custom.webp":[480,891],"f/sat-jetway.webp":[480,874],"f/sat-tanca.webp":[480,718],"f/sko44.webp":[480,886],"f/tanca.webp":[480,742],"f/tec44.webp":[480,900],"f/tl120.webp":[480,599],"f/tl900.webp":[480,631],"f/uni350.webp":[480,809],"f/w300.webp":[480,900],"f/zebra.webp":[480,785]};
+  LV.imgTag = function (p, eager) {
+    var src = BC.imgProduto(p, true), file = src.split("/").pop(), rec = BC.temRecorte(p);
+    var key = (rec ? "r/" : "f/") + file, v = P480[key];
+    var set = v ? ' srcset="img/p480/' + key + " " + v[0] + "w, " + src + " " + v[1] + 'w" sizes="(max-width: 700px) 86vw, 340px"' : "";
+    return '<img src="' + src + '"' + set + ' alt="' + LV.esc(p.marca + " " + p.nome) + '" width="900" height="600"' +
+      (eager ? "" : ' loading="lazy"') + ' decoding="async">';
+  };
+
   LV.card = function (p, n, opts) {
     opts = opts || {};
     var esc = LV.esc, est = BC.estoque(p), rec = BC.temRecorte(p);
     var specs = (p.especificacoes || []).length ? p.especificacoes : [["Linha", p.subcategoria]];
-    var rows = specs.slice(0, opts.rows || 3).map(function (r) { return [LV.chaveCurta(r[0]), LV.curto(r[1])]; });
+    var rows = specs.slice(0, opts.rows || 3).map(function (r) { return [LV.chaveCurta(r[0]), LV.curto(r[1], r[0])]; });
     var href = (opts.detailBase || "") + "#p=" + encodeURIComponent(p.id);
     var semi = p.condicao === "seminovo";
     return '<article class="spec' + (opts.cls ? " " + opts.cls : "") + '" data-cat="' + esc(p.categoria) + '" data-id="' + esc(p.id) + '">' +
       '<span class="spec__tab">' + esc(LV.catCurto(p.categoria)) + "</span>" +
       '<div class="spec__head"><span>Nº ' + LV.pad(n) + "</span></div>" +
       '<figure class="spec__fig' + (rec ? "" : " spec__fig--photo") + '">' +
-        '<img src="' + BC.imgProduto(p, true) + '" alt="' + esc(p.marca + " " + p.nome) + '" width="900" height="600" loading="lazy" decoding="async">' +
+        LV.imgTag(p, opts.eager) +
       "</figure>" +
       '<div class="spec__body">' +
         '<p class="spec__brand">' + esc(p.marca) + "</p>" +
-        "<" + (opts.h || "h3") + ' class="spec__model">' + esc(p.nome) + "</" + (opts.h || "h3") + ">" +
+        "<" + (opts.h || "h3") + ' class="spec__model"><span class="sr-only">' + esc(p.marca) + " </span>" + esc(p.nome) + "</" + (opts.h || "h3") + ">" +
         (opts.noSub ? "" : '<p class="spec__sub">' + esc(p.resumo) + "</p>") +
         '<dl class="spec__table">' + rows.map(function (r) {
           return "<div><dt>" + esc(r[0]) + "</dt><dd>" + esc(r[1]) + "</dd></div>";
@@ -144,7 +183,7 @@
       '<div class="spec__foot">' +
         '<p class="spec__price"><span>Preço</span>' + (p.preco ? "<b>" + esc(p.preco) + "</b>" : "<b>Consulte</b>") + "</p>" +
         '<a class="btn btn--line btn--sm" href="' + href + '" data-detail="' + esc(p.id) + '" aria-label="Detalhes: ' + esc(p.marca + " " + p.nome) + '"><span class="st" data-t="Detalhes">Detalhes</span></a>' +
-        '<a class="btn btn--green btn--sm" href="' + BC.whatsProduto(p) + '" target="_blank" rel="noopener" aria-label="Pedir orçamento de ' + esc(p.marca + " " + p.nome) + ' pelo WhatsApp">' +
+        '<a class="btn btn--green btn--sm" href="' + BC.whatsProduto(p) + '" target="_blank" rel="noopener" aria-label="Pedir orçamento de ' + esc(p.marca + " " + p.nome) + ' pelo WhatsApp (abre em nova aba)">' +
           '<svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a>' +
       "</div>" +
     "</article>";
@@ -163,20 +202,40 @@
   }
   window.addEventListener("scroll", onScrollBasic, { passive: true });
 
+  // Flutuante sai de cena quando o contato, o rodapé ou a faixa final (que já têm WhatsApp) aparecem
+  function floatOff() {
+    if (!floatBox || !("IntersectionObserver" in window)) return;
+    var vis = new Set();
+    var io = new IntersectionObserver(function (en) {
+      en.forEach(function (e) { if (e.isIntersecting) vis.add(e.target); else vis.delete(e.target); });
+      floatBox.classList.toggle("is-off", vis.size > 0);
+    }, { rootMargin: "0px 0px -12% 0px" });
+    $$(".contact, .ftr, .ask").forEach(function (el) { io.observe(el); });
+  }
+
   function activeNav() {
     var links = $$(".nav__a[href^='#']");
     if (!links.length || !("IntersectionObserver" in window)) return;
     var map = {};
-    links.forEach(function (a) { var id = a.getAttribute("href").slice(1); var s = document.getElementById(id); if (s) map[id] = a; });
+    links.forEach(function (a) { var id = a.getAttribute("href").slice(1); if (document.getElementById(id)) map[id] = a; });
+    var prod = $('.nav__a[href="produtos.html"]');
+    var all = links.concat(prod ? [prod] : []);
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         if (!en.isIntersecting) return;
-        links.forEach(function (a) { a.removeAttribute("aria-current"); });
-        var a = map[en.target.id]; if (a) a.setAttribute("aria-current", "true");
+        all.forEach(function (a) { a.removeAttribute("aria-current"); });
+        // Seção sem link próprio só limpa a marcação; "Produtos" marca o link do catálogo
+        var a = map[en.target.id] || (en.target.id === "produtos" ? prod : null);
+        if (a) a.setAttribute("aria-current", "true");
       });
     }, { rootMargin: "-45% 0px -50% 0px" });
-    Object.keys(map).forEach(function (id) { io.observe(document.getElementById(id)); });
+    $$("main > section[id]").forEach(function (s) { io.observe(s); });
   }
+
+  // Fundo inerte enquanto um diálogo (menu, painel) está aberto
+  LV.inertBg = function (on, extra) {
+    ["main", ".ftr", "[data-float]"].concat(extra || []).forEach(function (s) { var el = $(s); if (el) el.inert = !!on; });
+  };
 
   /* ------------------------------------------------------------------
      4. Menu mobile (foco preso, Esc fecha)
@@ -186,7 +245,7 @@
   function menuFocusables() { return [burger].concat($$("a, button", menu)); }
   function openMenu() {
     if (menuOpen) return; menuOpen = true;
-    menu.hidden = false; burger.setAttribute("aria-expanded", "true");
+    menu.hidden = false; burger.setAttribute("aria-expanded", "true"); LV.inertBg(true);
     if (burgerLabel) burgerLabel.textContent = "Fechar menu";
     doc.style.overflow = "hidden"; if (LV.lenis) LV.lenis.stop();
     if (LV.motionOK()) {
@@ -201,7 +260,7 @@
     burger.setAttribute("aria-expanded", "false");
     if (burgerLabel) burgerLabel.textContent = "Abrir menu";
     doc.style.overflow = ""; if (LV.lenis) LV.lenis.start();
-    menu.hidden = true;
+    menu.hidden = true; LV.inertBg(false);
     if (!noFocus) burger.focus();
   }
   if (menu && burger) {
@@ -231,12 +290,14 @@
     var t = document.getElementById(hash.slice(1));
     if (!t) return;
     e.preventDefault();
-    var tab = t.querySelector(":scope > .sec__tab");
-    var off = LV.hdr() + (tab && t.id !== "inicio" ? tab.offsetHeight : 0);
-    if (t.id === "inicio") off = 0;
-    if (LV.lenis) LV.lenis.scrollTo(t, { offset: -off, duration: 1.4 });
-    else window.scrollTo({ top: t.getBoundingClientRect().top + window.scrollY - off, behavior: reduceMQ.matches ? "auto" : "smooth" });
+    // A distância do cabeçalho (e da aba da seção) vem do scroll-margin-top no CSS
+    if (t.id === "inicio") { if (LV.lenis) LV.lenis.scrollTo(0, { duration: 1.4 }); else window.scrollTo({ top: 0, behavior: reduceMQ.matches ? "auto" : "smooth" }); }
+    else if (LV.lenis) LV.lenis.scrollTo(t, { duration: 1.4 });
+    else t.scrollIntoView({ behavior: reduceMQ.matches ? "auto" : "smooth" });
     try { history.pushState(null, "", hash); } catch (err) { /* file:// em alguns navegadores */ }
+    // Leva o foco junto (pular para o conteúdo, menu): o próximo Tab continua dali
+    if (!t.hasAttribute("tabindex")) t.setAttribute("tabindex", "-1");
+    t.focus({ preventScroll: true });
   });
 
   /* ------------------------------------------------------------------
@@ -312,8 +373,24 @@
      ------------------------------------------------------------------ */
   LV.st = function (trigger, start) { return { trigger: trigger, start: start || "top 88%", end: "max", once: true }; };
 
+  // Revela um lote. Num salto de rolagem (End, barra, Ctrl+F, voltar do WhatsApp) os blocos que já
+  // ficaram para trás aparecem direto; só os visíveis animam, com stagger curto.
+  LV.reveal = function (b, dur) {
+    var vis = b.filter(function (e) { return e.getBoundingClientRect().bottom > 0; });
+    var past = b.filter(function (e) { return vis.indexOf(e) < 0; });
+    if (past.length) gsap.set(past, { opacity: 1, y: 0, overwrite: true });
+    if (vis.length) gsap.to(vis, { opacity: 1, y: 0, duration: dur || 1, ease: "expo.out", stagger: Math.min(0.08, 0.4 / Math.max(1, vis.length)), overwrite: true });
+  };
+
+  // Rede de segurança: o que recebe foco por teclado aparece na hora, mesmo antes da animação
+  document.addEventListener("focusin", function (e) {
+    if (!window.gsap || !e.target.closest) return;
+    var el = e.target.closest("[data-rv], .router__a, .seg__row > *, .spec, .flow__st, .ba__row > *, .sat__copy, [data-intro]");
+    if (el && +getComputedStyle(el).opacity < 1) gsap.to(el, { opacity: 1, x: 0, y: 0, yPercent: 0, skewX: 0, duration: 0.3, overwrite: true });
+  });
+
   function motion() {
-    if (!hasGSAP) { doc.classList.remove("is-loading"); return; }
+    if (!hasGSAP()) { doc.classList.remove("is-loading"); return; }
     var plugins = [ScrollTrigger];
     if (window.SplitText) plugins.push(SplitText);
     if (window.DrawSVGPlugin) plugins.push(DrawSVGPlugin);
@@ -333,6 +410,7 @@
         lenis.on("scroll", ScrollTrigger.update);
         var raf = function (t) { lenis.raf(t * 1000); };
         gsap.ticker.add(raf); gsap.ticker.lagSmoothing(0);
+        if (doc.style.overflow === "hidden") lenis.stop();   // painel ou menu já aberto antes do CDN chegar
       }
 
       // Ganchos específicos de cada página (hero, esteira, catálogo…)
@@ -349,12 +427,17 @@
 
       // Títulos: linhas entram inclinadas a −12° e se endireitam
       if (window.SplitText) {
+        // Ao mudar a largura (girar a tela, redimensionar), o SplitText refaz as linhas ~200 ms depois
+        // e cada seção muda de altura: recalcula os gatilhos quando isso acontece.
+        var resplit;
         $$("[data-split]").forEach(function (el) {
           SplitText.create(el, {
             type: "lines", linesClass: "ln", autoSplit: true,
             onSplit: function (self) {
+              if (self._lvSplit) { clearTimeout(resplit); resplit = setTimeout(function () { ScrollTrigger.refresh(); }, 60); }
+              self._lvSplit = true;
               return gsap.from(self.lines, {
-                yPercent: 55, autoAlpha: 0, skewX: -12, transformOrigin: "0% 100%",
+                yPercent: 55, opacity: 0, skewX: -12, transformOrigin: "0% 100%",
                 duration: 1.1, stagger: 0.09, ease: "expo.out", scrollTrigger: LV.st(el, "top 90%")
               });
             }
@@ -365,11 +448,8 @@
       // Revelações genéricas
       var rv = $$("[data-rv]");
       if (rv.length) {
-        gsap.set(rv, { autoAlpha: 0, y: 40 });
-        ScrollTrigger.batch(rv, {
-          start: "top 92%", end: "max", once: true,
-          onEnter: function (b) { gsap.to(b, { autoAlpha: 1, y: 0, duration: 1, ease: "expo.out", stagger: 0.08, overwrite: true }); }
-        });
+        gsap.set(rv, { opacity: 0, y: 40 });
+        ScrollTrigger.batch(rv, { start: "top 92%", end: "max", once: true, batchMax: 8, onEnter: LV.reveal });
       }
 
       // Máscaras em paralelogramo: abrem a partir da barra diagonal
@@ -399,9 +479,9 @@
         var from = el.hasAttribute("data-count-from") ? parseFloat(el.getAttribute("data-count-from")) : 0;
         var o = { v: from };
         var fmt = function (v) { return dec ? v.toFixed(1).replace(".", ",") : String(Math.round(v)); };
-        el.textContent = fmt(from);
-        gsap.to(o, {
-          v: to, duration: 1.8, ease: "power3.out", scrollTrigger: LV.st(el, "top 90%"),
+        gsap.fromTo(o, { v: from }, {
+          v: to, duration: 1.8, ease: "power3.out", scrollTrigger: LV.st(el, "top 90%"), immediateRender: false,
+          onStart: function () { el.textContent = fmt(from); },
           onUpdate: function () { el.textContent = fmt(o.v); },
           onComplete: function () { el.textContent = fmt(to); }
         });
@@ -472,11 +552,13 @@
   setupAccordion();
   setupForm();
   activeNav();
+  floatOff();
   onScrollBasic();
-  // As páginas registram seus ganchos; a animação começa depois que todos os scripts rodaram.
+  // As páginas registram seus ganchos; a animação começa depois que todos os scripts rodaram
+  // (inclusive os do CDN, que vêm depois dos locais).
   document.addEventListener("DOMContentLoaded", function () {
     if (LV.beforeMotion) LV.beforeMotion();
     if (LV.motionOK()) motion();
-    else { doc.classList.remove("is-loading"); if (hasGSAP) motion(); }
+    else { doc.classList.remove("is-loading"); if (hasGSAP()) motion(); }
   });
 })();

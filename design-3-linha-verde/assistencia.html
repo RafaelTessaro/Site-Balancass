@@ -3,23 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Conserto de Balanças em Rio Claro | Oficina Autorizada IPEM-SP | Balanças.com</title>
+<title>Conserto de balanças em Rio Claro-SP | Balanças.com</title>
 <meta name="description" content="Assistência técnica de balanças em Rio Claro-SP: manutenção preventiva e corretiva, troca de peças, lacre e regularização. Oficina autorizada pelo IPEM-SP.">
 <meta name="theme-color" content="#0A0A0A">
-<link rel="canonical" href="https://www.balancass.com/assistencia.html">
+<link rel="canonical" href="https://balancass.com/assistencia.html">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_BR">
 <meta property="og:site_name" content="Balanças.com">
 <meta property="og:title" content="Conserto de balanças em Rio Claro — Balanças.com">
-<meta property="og:description" content="Assistência técnica de balanças, equipamentos de automação comercial e o BC System com NFC-e. Rio Claro-SP, desde 2010.">
-<meta property="og:url" content="https://www.balancass.com/assistencia.html">
-<meta property="og:image" content="https://www.balancass.com/compartilhado/img/fotos/kit-pdv.webp">
+<meta property="og:description" content="Conserto e manutenção de balanças em Rio Claro-SP. Oficina autorizada pelo IPEM-SP. Peça pelo WhatsApp.">
+<meta property="og:url" content="https://balancass.com/assistencia.html">
+<meta property="og:image" content="https://balancass.com/img/og-linha-verde.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Balança Toledo Prix 4 Uno sobre a faixa verde da Balanças.com, com o texto Pesa. Imprime. Vende.">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../compartilhado/img/logo/balancas-icone.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders:opsz,wght@10..72,700..900&family=Archivo:wdth,wght@62..125,400..800&family=Martian+Mono:wght@400..500&display=swap">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/home.css">
 <link rel="stylesheet" href="css/assist.css">
@@ -29,34 +33,38 @@
      o conteúdo enquanto o JS não assume. Se algo falhar, tudo reaparece. */
   document.documentElement.className += " js is-loading";
   setTimeout(function () { document.documentElement.classList.remove("is-loading"); }, 2600);
+  /* Chegou pela transição diagonal entre páginas: o destino aparece pronto, sem recomeçar a abertura */
+  addEventListener("pagereveal", function (e) { if (e.viewTransition) document.documentElement.classList.add("via-vt"); });
 </script>
+<noscript><style>.burger{display:none}@media(max-width:980px){.nav{display:block;position:absolute;top:100%;left:0;right:0;margin:0;background:#0A0A0A;border-bottom:1px solid #1E1E1D}.nav__list{overflow-x:auto;padding-inline:var(--gut)}.nav__list li{flex:none}main{padding-top:44px}}</style></noscript>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Service",
   "name": "Assistência técnica e conserto de balanças",
   "serviceType": "Manutenção, conserto, lacre e regularização de balanças",
-  "url": "https://www.balancass.com/assistencia.html",
+  "url": "https://balancass.com/assistencia.html",
   "areaServed": ["Rio Claro", "Região de Rio Claro-SP"],
   "provider": {
     "@type": "ElectronicsStore",
-    "@id": "https://www.balancass.com/#loja",
+    "@id": "https://balancass.com/#loja",
     "name": "Balanças.com — Automação Comercial",
     "telephone": "+55-19-3023-9050",
-    "address": { "@type": "PostalAddress", "streetAddress": "Rua 13, 650 (entre as Avenidas 9 e 11) – Boa Morte", "addressLocality": "Rio Claro", "addressRegion": "SP", "postalCode": "13500-120", "addressCountry": "BR" }
+    "address": { "@type": "PostalAddress", "streetAddress": "Rua 13, 650 - Boa Morte", "addressLocality": "Rio Claro", "addressRegion": "SP", "postalCode": "13500-120", "addressCountry": "BR" }
   }
 }
 </script>
-<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/DrawSVGPlugin.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
+<!-- Scripts locais primeiro: dados, fichas e links já funcionam enquanto o CDN carrega -->
 <script defer src="../compartilhado/dados/empresa.js"></script>
 <script defer src="../compartilhado/dados/produtos.js"></script>
 <script defer src="../compartilhado/js/balancas.js"></script>
 <script defer src="js/core.js"></script>
 <script defer src="js/assist.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/DrawSVGPlugin.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
 </head>
 <body class="page-assist">
 
@@ -112,7 +120,7 @@
   <span class="hdr__progress" aria-hidden="true"></span>
 </header>
 
-<div class="menu" id="menu" data-menu hidden>
+<div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="Menu" data-menu hidden>
   <div class="menu__band" aria-hidden="true"></div>
   <nav class="menu__nav" aria-label="Menu">
     <ol class="menu__list">
@@ -215,7 +223,7 @@
       <li class="flow__st"><span class="flow__mk" aria-hidden="true"></span><span class="flow__n">01</span><h3 class="flow__t">Chamado</h3><p>Chame no WhatsApp e conte o modelo, o defeito e se o lacre está inteiro.</p></li>
       <li class="flow__st"><span class="flow__mk" aria-hidden="true"></span><span class="flow__n">02</span><h3 class="flow__t">Diagnóstico</h3><p>Avaliamos a balança na bancada ou no seu estabelecimento e passamos o orçamento.</p></li>
       <li class="flow__st"><span class="flow__mk" aria-hidden="true"></span><span class="flow__n">03</span><h3 class="flow__t">Reparo</h3><p>Conserto, ajustes e troca de peças com os técnicos da casa.</p></li>
-      <li class="flow__st"><span class="flow__mk" aria-hidden="true"></span><span class="flow__n">04</span><h3 class="flow__t">Lacre</h3><p>Como oficina autorizada, lacramos a balança e registramos o serviço na ordem de serviço.</p></li>
+      <li class="flow__st"><span class="flow__mk" aria-hidden="true"></span><span class="flow__n">04</span><h3 class="flow__t">Lacre</h3><p>Como oficina autorizada, lacramos a balança e registramos tudo na ordem de serviço.</p></li>
       <li class="flow__st"><span class="flow__mk" aria-hidden="true"></span><span class="flow__n">05</span><h3 class="flow__t">De volta</h3><p>Sua balança volta ao balcão pronta para a verificação do IPEM.</p></li>
     </ol>
   </div>
@@ -234,7 +242,7 @@
     </header>
     <ul class="types" role="list">
       <li class="type" data-rv><span class="type__n mono">A</span><h3 class="type__t">Com impressora de etiquetas</h3><p>Balanças de açougue, padaria e frios que pesam, calculam e imprimem a etiqueta com código de barras.</p><a class="type__go mono" href="produtos.html?cat=balancas&amp;sub=Com+impressora+de+etiquetas">Ver modelos <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
-      <li class="type" data-rv><span class="type__n mono">B</span><h3 class="type__t">Computadoras e pesadoras</h3><p>As balanças do dia a dia do balcão, do hortifrúti ao pet shop.</p><a class="type__go mono" href="produtos.html?cat=balancas&amp;sub=Computadoras">Ver modelos <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+      <li class="type" data-rv><span class="type__n mono">B</span><h3 class="type__t">Computadoras e pesadoras</h3><p>As balanças do dia a dia do balcão, do hortifrúti ao pet shop.</p><span class="type__links"><a class="type__go mono" href="produtos.html?cat=balancas&amp;sub=Computadoras">Computadoras <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a><a class="type__go mono" href="produtos.html?cat=balancas&amp;sub=Pesadoras">Pesadoras <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></span></li>
       <li class="type" data-rv><span class="type__n mono">C</span><h3 class="type__t">De checkout</h3><p>Balanças embutidas no caixa e integradas ao PDV do supermercado.</p><a class="type__go mono" href="produtos.html?cat=balancas&amp;sub=Checkout">Ver modelos <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
       <li class="type" data-rv><span class="type__n mono">D</span><h3 class="type__t">Industriais e plataformas</h3><p>Recebimento, expedição e conferência em indústrias e depósitos.</p><a class="type__go mono" href="produtos.html?cat=balancas&amp;sub=Industriais+e+confer%C3%AAncia">Ver modelos <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
       <li class="type" data-rv><span class="type__n mono">E</span><h3 class="type__t">Médico-hospitalares</h3><p>Balanças de farmácias, clínicas, consultórios e academias.</p><a class="type__go mono" href="produtos.html?cat=balancas&amp;sub=M%C3%A9dico-hospitalar">Ver modelos <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
@@ -296,16 +304,25 @@
     </ol>
 
     <div class="ipem__cta" data-rv>
-      <p><strong data-ipem>Oficina autorizada pelo IPEM-SP.</strong> Fazemos a manutenção, o reparo e a regularização: deixamos sua balança pronta para a verificação do IPEM.</p>
+      <p><strong><span data-ipem>Oficina autorizada pelo IPEM-SP</span>.</strong> Fazemos a manutenção, o reparo e a regularização: deixamos sua balança pronta para a verificação do IPEM.</p>
       <div class="ipem__btns">
         <a class="btn btn--ink btn--lg" data-wa="Olá! Quero deixar minha balança em dia com o IPEM. Podem me ajudar?" href="https://wa.me/551930239050" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Agendar manutenção">Agendar manutenção</span></a>
       </div>
       <div class="stamp" aria-hidden="true" data-stamp>
-        <span class="stamp__ring">
-          <span class="stamp__top mono">Oficina autorizada</span>
-          <span class="stamp__mid">IPEM-SP</span>
-          <span class="stamp__bot mono">Rio Claro · Balanças.com</span>
-        </span>
+        <svg class="stamp__svg" viewBox="0 0 200 200" focusable="false">
+          <defs>
+            <path id="stamp-arc-top" d="M 34.2 138 A 76 76 0 1 1 165.8 138"/>
+            <path id="stamp-arc-bot" d="M 19.25 114.24 A 82 82 0 0 0 180.75 114.24"/>
+          </defs>
+          <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" stroke-width="5"/>
+          <circle cx="100" cy="100" r="86" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <text class="stamp__arc"><textPath href="#stamp-arc-top" startOffset="50%" text-anchor="middle">Oficina autorizada · IPEM-SP</textPath></text>
+          <text class="stamp__arc"><textPath href="#stamp-arc-bot" startOffset="50%" text-anchor="middle">Rio Claro-SP</textPath></text>
+          <circle cx="29" cy="134.6" r="3.2" fill="currentColor"/><circle cx="171" cy="134.6" r="3.2" fill="currentColor"/>
+          <line x1="40" y1="82" x2="160" y2="82" stroke="currentColor" stroke-width="3"/>
+          <line x1="40" y1="120" x2="160" y2="120" stroke="currentColor" stroke-width="3"/>
+          <text class="stamp__name" x="100" y="111.5" text-anchor="middle" textLength="112" lengthAdjust="spacingAndGlyphs">Balanças.com</text>
+        </svg>
       </div>
     </div>
   </div>
@@ -322,31 +339,31 @@
     </div>
     <div class="acc" data-acc>
       <div class="acc__i">
-        <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-1" id="faq-1-b"><span class="acc__tag mono">IPEM</span><span class="acc__q">A balança precisa ser verificada todo ano?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
+        <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-1" id="faq-1-b"><span class="acc__tag mono" aria-hidden="true">IPEM</span><span class="acc__q">A balança precisa ser verificada todo ano?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
         <div class="acc__p" id="faq-1" role="region" aria-labelledby="faq-1-b"><div class="acc__in"><p>Sim. O IPEM-SP verifica as balanças comerciais uma vez por ano, sem aviso prévio. Se aprovada, a balança recebe lacres e o selo com o ano seguinte, e a loja recebe a GRU para pagar a taxa. A gente deixa a sua balança pronta para essa verificação.</p></div></div>
       </div>
       <div class="acc__i">
-        <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-2" id="faq-2-b"><span class="acc__tag mono">IPEM</span><span class="acc__q">E se a balança for reprovada?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
+        <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-2" id="faq-2-b"><span class="acc__tag mono" aria-hidden="true">IPEM</span><span class="acc__q">E se a balança for reprovada?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
         <div class="acc__p" id="faq-2" role="region" aria-labelledby="faq-2-b"><div class="acc__in"><p>Ela precisa ser consertada por uma oficina autorizada e pode passar por nova verificação. Se o erro prejudicar o consumidor, pode ser interditada. As multas vão de R$ 100 a R$ 1,5 milhão (Lei 9.933/99).</p></div></div>
       </div>
       <div class="acc__i">
-        <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-3" id="faq-3-b"><span class="acc__tag mono">IPEM</span><span class="acc__q">O que é uma oficina permissionária?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
+        <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-3" id="faq-3-b"><span class="acc__tag mono" aria-hidden="true">IPEM</span><span class="acc__q">O que é uma oficina permissionária?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
         <div class="acc__p" id="faq-3" role="region" aria-labelledby="faq-3-b"><div class="acc__in"><p>É a empresa autorizada pelo Inmetro/IPEM-SP a consertar balanças e romper lacres. A Balanças.com é oficina autorizada pelo IPEM-SP. A lista oficial de oficinas fica em <a href="https://servicos.rbmlq.gov.br/Oficina" target="_blank" rel="noopener">servicos.rbmlq.gov.br/Oficina</a>.</p></div></div>
       </div>
       <div class="acc__i">
-        <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-4" id="faq-4-b"><span class="acc__tag mono">IPEM</span><span class="acc__q">Rompeu o lacre. E agora?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
+        <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-4" id="faq-4-b"><span class="acc__tag mono" aria-hidden="true">IPEM</span><span class="acc__q">Rompeu o lacre. E agora?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
         <div class="acc__p" id="faq-4" role="region" aria-labelledby="faq-4-b"><div class="acc__in"><p>Não use a balança assim: ela fica sujeita a autuação. Chame uma oficina autorizada para o reparo e a regularização — a gente resolve.</p></div></div>
       </div>
       <div class="acc__i">
-        <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-5" id="faq-5-b"><span class="acc__tag mono">IPEM</span><span class="acc__q">Depois do conserto, já posso usar a balança?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
+        <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-5" id="faq-5-b"><span class="acc__tag mono" aria-hidden="true">IPEM</span><span class="acc__q">Depois do conserto, já posso usar a balança?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
         <div class="acc__p" id="faq-5" role="region" aria-labelledby="faq-5-b"><div class="acc__in"><p>Em geral, sim. Ela sai lacrada, com a marca “Reparado”, e fica sujeita à verificação após reparo. Se foi interditada, siga o que diz o termo. Guarde a ordem de serviço e a nota fiscal.</p></div></div>
       </div>
       <div class="acc__i">
-        <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-6" id="faq-6-b"><span class="acc__tag mono">IPEM</span><span class="acc__q">Comprei uma balança usada. Posso usar?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
+        <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-6" id="faq-6-b"><span class="acc__tag mono" aria-hidden="true">IPEM</span><span class="acc__q">Comprei uma balança usada. Posso usar?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
         <div class="acc__p" id="faq-6" role="region" aria-labelledby="faq-6-b"><div class="acc__in"><p>Antes de usar, peça a uma oficina autorizada para avaliar. Confira o selo do Inmetro, a PAM e os lacres.</p></div></div>
       </div>
       <div class="acc__i">
-        <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-7" id="faq-7-b"><span class="acc__tag mono">IPEM</span><span class="acc__q">Balança parada também é fiscalizada?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
+        <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-7" id="faq-7-b"><span class="acc__tag mono" aria-hidden="true">IPEM</span><span class="acc__q">Balança parada também é fiscalizada?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
         <div class="acc__p" id="faq-7" role="region" aria-labelledby="faq-7-b"><div class="acc__in"><p>Sim. Mesmo sem uso, a balança que está na loja pode ser fiscalizada. Retire as que você não usa mais.</p></div></div>
       </div>
     </div>
@@ -391,7 +408,7 @@
         <ul role="list">
           <li><a data-wa="" href="https://wa.me/551930239050" target="_blank" rel="noopener">WhatsApp <span data-tel-text>(19) 3023-9050</span></a></li>
           <li><a data-email href="mailto:balancas.com@gmail.com" data-email-text>balancas.com@gmail.com</a></li>
-          <li><a data-mapa href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener"><span data-endereco>Rua 13, 650 – Boa Morte, Rio Claro/SP · CEP 13500-120</span></a></li>
+          <li><a data-mapa href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener"><span data-endereco>Rua 13, 650 – Boa Morte, Rio Claro/SP · <span class="nobr">CEP 13500-120</span></span><br><span class="ftr__ref" data-referencia>Entre as Avenidas 9 e 11</span></a></li>
           <li><a data-facebook href="https://www.facebook.com/balancas.comrc/" target="_blank" rel="noopener">Facebook</a></li>
         </ul>
       </div>
@@ -407,10 +424,10 @@
   </div>
 </footer>
 
-<div class="float" data-float>
+<aside class="float is-hidden" data-float aria-label="Atalhos de contato">
   <a class="float__b float__b--tel" data-tel href="tel:+551930239050" aria-label="Ligar para a Balanças.com"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg></a>
   <a class="float__b float__b--wa" data-wa="" href="https://wa.me/551930239050" target="_blank" rel="noopener" aria-label="Conversar no WhatsApp"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg></a>
-</div>
+</aside>
 
 </body>
 </html>
