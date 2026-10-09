@@ -2,6 +2,23 @@
 
 Propostas de design para o novo site da **Balanças.com** (Rio Claro-SP): balanças, PDV, sistema BC System e assistência técnica autorizada pelo IPEM-SP.
 
+## Rodada atual: Linha Verde em várias páginas
+
+A pasta **`linha-verde/`** traz o estilo escolhido (Linha Verde) com página inicial enxuta e abas dedicadas:
+
+| Página | Arquivo |
+|---|---|
+| Início · Variação 1 (Vitrine) | `linha-verde/index.html` |
+| Início · Variação 2 (Capítulos) | `linha-verde/index-2.html` |
+| Início · Variação 3 (Painel) ⭐ favorita do júri | `linha-verde/index-3.html` |
+| Assistência técnica | `linha-verde/assistencia.html` |
+| Produtos (catálogo) | `linha-verde/produtos.html` |
+| BC System | `linha-verde/sistema.html` |
+| Empresa | `linha-verde/empresa.html` |
+| Contato | `linha-verde/contato.html` |
+
+O seletor "Variação 1 · 2 · 3" (arquivo `linha-verde/js/preview.js`) existe só para a fase de escolha e sai na publicação.
+
 ## Como ver as propostas
 
 Baixe o projeto (botão **Code → Download ZIP** no GitHub), descompacte e abra o arquivo **`index.html`** no navegador. Ele leva às 3 propostas:
@@ -25,7 +42,8 @@ compartilhado/
   img/                     logo em SVG, fotos de produtos, clientes, telas do sistema
 design-1-tara-zero/        proposta 1
 design-2-balcao/           proposta 2
-design-3-linha-verde/      proposta 3
+design-3-linha-verde/      proposta 3 (primeira rodada)
+linha-verde/               Linha Verde em várias páginas (rodada atual)
 hospedagem/.htaccess       configuração para a HostGator (HTTPS, cache, segurança)
 docs/                      guias e avaliações
 ```
