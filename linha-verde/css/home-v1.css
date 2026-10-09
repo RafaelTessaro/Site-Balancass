@@ -1,15 +1,20 @@
 /* =====================================================================
    Balanças.com — "Linha Verde" — PÁGINA INICIAL · VARIAÇÃO 1 "VITRINE"
    css/home-v1.css (carregado depois de base.css e paginas.css)
-   Um resumo da empresa: hero em 100vh com a vitrine "Pesa · Imprime ·
-   Vende", faixa de marcas, quem somos em números, quatro caminhos para
-   as páginas, quatro produtos em destaque, prova social e chamada final.
+   Um resumo curto da empresa (≤ 5 telas no computador, ≤ 7 no celular):
+   hero em 100vh com a vitrine "Pesa · Imprime · Vende" + faixa de marcas,
+   01 três caminhos (oficina, loja, sistema) com WhatsApp por assunto,
+   02 quatro produtos em fichas limpas, 03 quem somos + nota do Google
+   (sempre fixa em 5,0) + logos de clientes, e a chamada final.
    Prefixo das classes próprias: .vit (vitrine do hero) e .vt- (seções).
    ===================================================================== */
 
-.pg-inicio { --vt-tk: clamp(54px, 4.6vw, 70px); --sec-pad: clamp(60px, 6vw, 100px); }
-.pg-inicio .sec--first { padding-top: clamp(72px, 7.2vw, 116px); }
-.pg-inicio .sec__head { margin-bottom: clamp(32px, 4vw, 64px); }
+.pg-inicio { --vt-tk: clamp(54px, 4.6vw, 70px); --sec-pad: clamp(52px, 4.7vw, 88px); }
+.pg-inicio .sec--first { padding-top: clamp(72px, 6.4vw, 108px); }
+.pg-inicio .sec__head { margin-bottom: clamp(24px, 2.6vw, 44px); }
+@media (max-width: 860px) { .pg-inicio .sec__head { gap: 14px; } }
+/* Títulos de seção um pouco menores que o padrão: a página é um resumo */
+.vt-head .h2, .vt-about__head .h2 { font-size: clamp(48px, 6vw, 108px); }
 /* Aba numerada: em telas largas o número acompanha a coluna do conteúdo (.wrap) */
 .pg-inicio .sec__tab { padding-left: max(var(--gut), calc((100% - var(--max)) / 2 + var(--gut))); }
 
@@ -132,232 +137,217 @@
 }
 
 /* =====================================================================
-   2. QUEM SOMOS — texto curto + quatro números
+   2. 01 · O QUE FAZEMOS — três blocos escuros sobre o papel, cada um
+   leva à sua página e tem o seu WhatsApp por assunto.
+   ≥ 861 px: três em pé (imagem no alto, sobre a faixa verde).
+   ≤ 860 px: em linha (texto à esquerda, imagem na faixa à direita).
    ===================================================================== */
-.vt-about__head { margin-bottom: clamp(36px, 4.4vw, 68px); }
-.vt-about__side { display: grid; gap: 18px; justify-items: start; }
-.vt-about__side .prose { max-width: 34em; }
-.vt-about__more { color: var(--ink); }
-.vt-about__more .i { width: 16px; height: 16px; transition: transform .5s var(--ease); }
-.vt-about__more:hover .i { transform: translateX(5px); }
-
-.vt-nums { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 2px solid var(--ink); }
-.vt-num { min-width: 0; display: grid; align-content: start; gap: 10px; padding: 24px clamp(14px, 1.8vw, 30px) 4px 0; }
-.vt-num + .vt-num { padding-left: clamp(14px, 1.8vw, 30px); border-left: 1px solid #C9C9C2; }
-.vt-num__k { color: var(--muted); }
-/* Linha de base comum: a unidade senta na base dos algarismos; o "+" fica no alto.
-   O respiro embaixo guarda a cauda da vírgula de "5,0" (line-height curto). */
-.vt-num__v {
-  display: flex; align-items: baseline; gap: .06em; min-width: 0;
-  font: 900 clamp(70px, 7.6vw, 140px)/.8 var(--f-display); letter-spacing: -.01em; color: var(--ink);
-  padding: .05em 0 .14em;
-}
-.vt-num__u { font: 500 clamp(11px, .9vw, 13px)/1 var(--f-mono); letter-spacing: .03em; text-transform: uppercase; color: var(--muted); padding-left: .35em; white-space: nowrap; }
-/* O "+" fica no alto e a unidade passa por baixo dele (margem negativa = largura do sinal) */
-.vt-num__plus { align-self: flex-start; font-size: .5em; line-height: 1; margin: 0 -.62em 0 -.02em; color: var(--green-deep); }
-.vt-num__star { align-self: center; width: .3em; height: .3em; color: var(--green-deep); margin-left: .06em; }
-.vt-num__s { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 14px; line-height: 1.4; color: var(--muted); }
-.vt-num__s .tag { min-height: 26px; }
-a.vt-num__a { text-decoration: none; }
-a.vt-num__a::before { transition: background .3s; }
-a.vt-num__a::after { content: ""; position: absolute; inset: -9px -4px; }   /* área de toque ≥ 44 px */
-a.vt-num__a:hover { color: var(--ink); }
-a.vt-num__a:hover::before { background: var(--green); }
-/* Contador sem pular o layout: o valor final (invisível) reserva a largura */
-.vt-cnt { display: inline-grid; }
-.vt-cnt > * { grid-area: 1 / 1; justify-self: end; }
-.vt-cnt__g { visibility: hidden; }
-
-/* =====================================================================
-   3. O QUE FAZEMOS — quatro blocos que levam às páginas
-   Padrão (861–1179 px): 2 × 2, texto à esquerda e imagem na faixa verde.
-   A partir de 1180 px e entre 600 e 860 px: blocos em pé, imagem no alto.
-   ===================================================================== */
-.vt-do { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(12px, 1.4vw, 20px); }
+.vt-do { --fig-h: clamp(156px, 12.2vw, 232px); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(12px, 1.4vw, 20px); }
 .vt-do__i { display: flex; min-width: 0; }
 .vt-do__c {
+  --pad: clamp(20px, 1.8vw, 30px);
   position: relative; isolation: isolate; overflow: hidden; flex: 1; min-width: 0;
-  display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr);
-  min-height: clamp(240px, 22vw, 300px);
-  background: var(--ink-3); box-shadow: inset 0 0 0 1px #2A2A29; color: var(--paper);
+  display: grid; grid-template: "fig" var(--fig-h) "txt" 1fr "go" auto / minmax(0, 1fr);
+  grid-template-areas: "fig" "txt" "go";
+  background: var(--ink); color: var(--paper);
   transition: color .45s var(--ease);
 }
+/* A faixa fica só no alto; no hover ela cresce para baixo e anda para a direita
+   (compensa a inclinação de −12°) até cobrir o bloco inteiro */
 .vt-do__band {
-  position: absolute; z-index: -1; top: 0; bottom: 0; right: -14%; width: 50%;
-  background: var(--green); transform: skewX(var(--slash)); transform-origin: 100% 50%;
-  transition: transform .75s var(--ease);
+  position: absolute; z-index: -1; top: 0; height: var(--fig-h); right: -10%; width: 66%;
+  background: var(--green); transform-origin: 100% 0;
+  transform: skewX(var(--slash)) translateX(0) scale(1, 1); transition: transform .75s var(--ease);
+}
+.vt-do__fig { grid-area: fig; position: relative; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; min-width: 0; min-height: 0; padding: 20px 18px 4px; }
+.vt-do__fig img {
+  width: 100%; height: 100%; object-fit: contain;
+  filter: drop-shadow(0 22px 20px rgba(0, 0, 0, .5)); transition: transform .9s var(--ease-out);
 }
 /* Sem position aqui: o ::after do link (inset: 0) cobre o bloco inteiro, imagem incluída */
-.vt-do__txt { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; padding: clamp(22px, 2.4vw, 38px); }
+.vt-do__txt { grid-area: txt; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; padding: 16px var(--pad) 0; }
 .vt-do__top { display: flex; align-items: baseline; gap: 12px; color: var(--grey); transition: color .45s; }
-.vt-do__n { font: 900 clamp(40px, 3.4vw, 56px)/.8 var(--f-display); letter-spacing: 0; color: var(--green); transition: color .45s; }
+.vt-do__n { font: 900 clamp(36px, 3vw, 50px)/.8 var(--f-display); letter-spacing: 0; color: var(--green); transition: color .45s; }
 .vt-do__t {
-  margin-top: auto; padding-top: clamp(22px, 2.6vw, 38px);
-  font: 900 clamp(38px, 3.4vw, 60px)/1.05 var(--f-display); text-transform: uppercase; letter-spacing: -.005em; text-wrap: balance;
+  padding-top: 14px;
+  font: 900 clamp(32px, 2.7vw, 44px)/1.02 var(--f-display); text-transform: uppercase; letter-spacing: -.005em; text-wrap: balance;
 }
 .vt-do__a { color: inherit; text-decoration: none; }
 .vt-do__a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
 /* Foco: o contorno vai no bloco inteiro (onde houver :has); senão, fica no link */
 @supports selector(:has(*)) {
   .vt-do__a:focus-visible { outline: none; }
-  .vt-do__c:has(.vt-do__a:focus-visible) { outline: 2px solid var(--volt); outline-offset: 4px; }
+  .vt-do__c:has(.vt-do__a:focus-visible) { outline: 2px solid var(--ink); outline-offset: 4px; }
 }
-.vt-do__p { margin-top: 10px; max-width: 25em; font-size: 16px; line-height: 1.45; color: var(--body-dark); transition: color .45s; }
-.vt-do__sat { position: relative; z-index: 2; margin-top: 12px; text-decoration: none; }
+.vt-do__p { margin-top: 8px; max-width: 27em; font-size: 15.5px; line-height: 1.45; color: var(--body-dark); transition: color .45s; }
+.vt-do__sat {
+  grid-area: fig; align-self: end; justify-self: start; position: relative; z-index: 2;
+  margin: 0 0 10px var(--pad); text-decoration: none; box-shadow: none;
+}
 .vt-do__sat::after { content: ""; position: absolute; inset: -12px -6px; }   /* área de toque ≥ 44 px */
 .vt-do__sat:hover::before { background: var(--paper); }
+/* Rodapé do bloco: "Ver …" (o bloco inteiro é o link) + WhatsApp do assunto */
 .vt-do__go {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 18px;
-  width: 100%; margin-top: 20px; padding-top: 14px; border-top: 1px solid currentColor;
+  grid-area: go; position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 14px;
+  margin-top: 18px; padding: 6px var(--pad) 10px; background: var(--ink); transition: background .3s;
 }
-.vt-do__go > span, .vt-do__go { gap: 8px; }
-.vt-do__go > span { display: inline-flex; align-items: center; }
+.vt-do__go::before { content: ""; position: absolute; top: 0; left: var(--pad); right: var(--pad); height: 1px; background: currentColor; opacity: .28; }
+.vt-do__more { display: inline-flex; align-items: center; gap: 8px; }
+.vt-do__more-s { display: none; }
 .vt-do__go .i { width: 14px; height: 14px; transition: transform .5s var(--ease); }
-.vt-do__sub {
-  position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-block: -12px;
-  color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px;
+.vt-do__wa {
+  position: relative; z-index: 2; isolation: isolate; display: inline-flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 0 16px; margin-right: -4px; color: var(--ink); text-decoration: none; white-space: nowrap;
+  transition: color .3s;
 }
-.vt-do__sub:hover { text-decoration-thickness: 2px; }
-.vt-do__fig { position: relative; display: grid; place-items: center; min-width: 0; padding: 22px 14px 22px 0; }
-.vt-do__fig img {
-  width: 100%; max-height: clamp(150px, 16vw, 240px); object-fit: contain;
-  filter: drop-shadow(0 22px 20px rgba(0, 0, 0, .5)); transition: transform .9s var(--ease-out);
+.vt-do__wa::before {
+  content: ""; position: absolute; inset: 6px 0; z-index: -1; background: var(--green);
+  transform: skewX(var(--slash)); transition: background .3s;
 }
-.vt-do__fig--wide img { width: 108%; max-width: 108%; }
-.vt-do__disc {
-  display: grid; place-items: center; width: min(66%, 168px); aspect-ratio: 1; border-radius: 50%;
-  background: var(--ink); box-shadow: 0 0 0 1px #2A2A29, 0 26px 40px -18px rgba(0, 0, 0, .7);
-  transition: transform .9s var(--ease);
-}
-.vt-do__logo { width: 70%; height: 70%; color: var(--paper); }
+.vt-do__wa .i { width: 16px; height: 16px; }
+.vt-do__wa:hover::before { background: var(--volt); }
 
 /* Passar o mouse / foco: a faixa verde toma o bloco inteiro */
-.vt-do__c:hover .vt-do__band, .vt-do__c:focus-within .vt-do__band { transform: skewX(var(--slash)) scaleX(2.9); }
+.vt-do__c:hover .vt-do__band, .vt-do__c:focus-within .vt-do__band { transform: skewX(var(--slash)) translateX(60%) scale(2.7, 4.6); }
 .vt-do__c:hover, .vt-do__c:focus-within { color: var(--ink); }
+.vt-do__c:hover .vt-do__go, .vt-do__c:focus-within .vt-do__go { background: transparent; }
 .vt-do__c:hover .vt-do__n, .vt-do__c:focus-within .vt-do__n,
 .vt-do__c:hover .vt-do__top, .vt-do__c:focus-within .vt-do__top,
 .vt-do__c:hover .vt-do__p, .vt-do__c:focus-within .vt-do__p { color: var(--ink); }
-.vt-do__c:hover .vt-do__go .i, .vt-do__c:focus-within .vt-do__go .i { transform: translateX(6px); }
+.vt-do__c:hover .vt-do__wa, .vt-do__c:focus-within .vt-do__wa { color: var(--paper); }
+.vt-do__c:hover .vt-do__wa::before, .vt-do__c:focus-within .vt-do__wa::before { background: var(--ink); }
+.vt-do__c:hover .vt-do__wa:hover::before { background: #2A2A28; }
+.vt-do__c:hover .vt-do__more .i, .vt-do__c:focus-within .vt-do__more .i { transform: translateX(6px); }
 .vt-do__c:hover .vt-do__fig img { transform: scale(1.05) rotate(-2deg); }
-.vt-do__c:hover .vt-do__disc { transform: rotate(180deg); }
 .vt-do__c :focus-visible { outline-color: var(--ink); }
 
-/* Blocos em pé: imagem no alto sobre a faixa, texto embaixo */
-@media (min-width: 1180px), (min-width: 600px) and (max-width: 860px) {
-  .vt-do { --fig-h: clamp(170px, 13vw, 220px); }
-  .vt-do__c { grid-template-columns: minmax(0, 1fr); grid-template-rows: var(--fig-h) 1fr; min-height: 0; }
-  .vt-do__fig { order: -1; height: var(--fig-h); padding: 20px 18px 6px; grid-template: minmax(0, 1fr) / minmax(0, 1fr); }
-  .vt-do__fig img { height: 100%; max-height: none; }
-  .vt-do__fig--wide img { width: 100%; max-width: 100%; }
-  .vt-do__fig--logo { justify-items: end; padding-right: 20%; }
-  .vt-do__disc { width: auto; height: 82%; }
-  /* A faixa fica só no alto; no hover ela cresce para baixo e anda para a direita
-     (compensa a inclinação de −12°) até cobrir o bloco inteiro */
-  .vt-do__band { bottom: auto; height: var(--fig-h); right: -10%; width: 66%; transform-origin: 100% 0; transform: skewX(var(--slash)) translateX(0) scale(1, 1); }
-  .vt-do__c:hover .vt-do__band, .vt-do__c:focus-within .vt-do__band { transform: skewX(var(--slash)) translateX(60%) scale(2.7, 4.2); }
-  .vt-do__txt { padding: 16px clamp(20px, 1.8vw, 28px) clamp(20px, 1.8vw, 26px); }
-  .vt-do__t { margin-top: 0; padding-top: 16px; font-size: clamp(32px, 2.5vw, 46px); }
-  .vt-do__p { font-size: 15px; }
-  .vt-do__p, .vt-do__sat { margin-bottom: 18px; }
-  .vt-do__go { margin-top: auto; }   /* o "Ver …" desce para a base: as quatro linhas alinham */
-}
-@media (min-width: 1180px) {
-  .vt-do { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+/* Cabeçalho do 01: o título numa linha só em telas largas, o texto à direita */
+@media (min-width: 1100px) {
+  .vt-do-sec .sec__head--split { grid-template-columns: auto minmax(0, 1fr); }
+  .vt-do-sec .sec__head .h2 { white-space: nowrap; }
+  .vt-do-sec .sec__intro { max-width: 24em; justify-self: end; }
 }
 
-/* Também fazemos: suporte em informática e BC Fichas */
+/* Também: suporte em informática e BC Fichas (com o WhatsApp do aluguel) */
 .vt-also {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 4px clamp(18px, 2.4vw, 36px);
-  margin-top: clamp(18px, 2vw, 26px); padding-top: 10px; border-top: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0 clamp(18px, 2.4vw, 36px);
+  margin-top: clamp(14px, 1.4vw, 20px); padding-top: 4px; border-top: 1px solid #C9C9C2;
 }
-.vt-also__k { color: var(--grey); }
-.vt-also__list { display: flex; flex-wrap: wrap; gap: 0 clamp(18px, 2.4vw, 36px); }
+.vt-also__k { color: var(--muted); }
+.vt-also__g { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0 14px; }
 .vt-also__a {
-  display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0 8px; min-height: 44px;
-  color: var(--paper); text-decoration: none; font-size: 15px; line-height: 1.35;
+  display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0 6px; min-height: 44px;
+  color: var(--ink); text-decoration: none; font-size: 15.5px; line-height: 1.35;
 }
-.vt-also__a b { font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: var(--green); }
-.vt-also__a span { color: var(--body-dark); }
-.vt-also__a .i { width: 14px; height: 14px; color: var(--green); transition: transform .5s var(--ease); }
+.vt-also__a b { font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: var(--green-deep); }
+.vt-also__a span { color: var(--body-paper); }
+.vt-also__a .i { width: 14px; height: 14px; margin-left: 2px; color: var(--green-deep); transition: transform .5s var(--ease); }
 .vt-also__a:hover b { text-decoration-thickness: 2px; }
 .vt-also__a:hover .i { transform: translateX(5px); }
+.vt-also__wa {
+  position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 14px;
+  font: 500 11px/1 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--ink); text-decoration: none;
+}
+.vt-also__wa::before { content: ""; position: absolute; inset: 8px 0; z-index: -1; background: var(--green); transform: skewX(var(--slash)); transition: background .3s; }
+.vt-also__wa:hover::before { background: var(--ink); }
+.vt-also__wa:hover { color: var(--paper); }
+.vt-also__wa .i { width: 15px; height: 15px; }
 
 /* =====================================================================
-   4. PRODUTOS EM DESTAQUE — fichas leves (variante "compacta")
+   3. 02 · NA VITRINE — fichas LIMPAS sobre o preto: foto, marca, nome,
+   uma linha do que é, selo pequeno e Detalhes + WhatsApp.
+   Sem tabela técnica, sem nº e sem "Preço: Consulte" em letra grande.
    ===================================================================== */
-.vt-feat__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-@media (max-width: 899px) { .vt-feat__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-/* Quatro colunas de 900 a 1339px: a ficha fica estreita (190–290px) para "Detalhes" e
-   "WhatsApp" lado a lado, e o botão verde saía do card. Nessa faixa o WhatsApp fica só
-   com o ícone, como no celular (o nome acessível vem do aria-label). A partir de 1340px
-   os dois rótulos cabem com folga (≥ 10px) dentro do respiro do card. De 640 a 659px
-   (2 colunas, logo acima do celular) a folga seria de só 2px, então vale o mesmo. */
-@media (min-width: 640px) and (max-width: 659px), (min-width: 900px) and (max-width: 1339px) {
-  .vt-feat__grid .spec__foot { grid-template-columns: minmax(0, 1fr) 48px; column-gap: 4px; }
-  .vt-feat__grid .spec__foot .btn--line { padding-inline: calc(5px + 44px * var(--tan) / 2); }
-  .vt-feat__grid .spec__foot .btn--green { padding: 0; }
-  .vt-feat__grid .spec__foot .btn--green .st { display: none; }
-  .vt-feat__grid .spec__foot .btn--green .i { width: 20px; height: 20px; }
-}
-/* Resumo de uma frase (no celular, como no catálogo, fica só foto, marca e modelo);
-   o selo "Consulte disponibilidade" fica para o catálogo */
-@media (min-width: 640px) { .vt-feat__grid .spec--compacta .spec__sub { display: block; } }
-.vt-feat__grid .spec--compacta .spec__fig { margin-top: 34px; }
-.vt-feat__grid .badge--consulte { display: none; }
-@supports selector(:has(*)) {
-  .vt-feat__grid .spec__badges:not(:has(.badge:not(.badge--consulte))) { display: none; }
-}
-.vt-feat__grid .spec__body { padding-bottom: 2px; }
-.vt-feat__grid .spec__foot { margin-top: 14px; }
-.vt-feat__grid .spec__model { font-size: clamp(28px, 2.3vw, 38px); }
-
-.vt-feat__side { display: grid; gap: 14px; justify-items: start; }
+.vt-feat__side { display: grid; gap: 12px; justify-items: start; }
 .vt-feat__links { display: flex; flex-wrap: wrap; align-items: center; gap: 0 28px; }
-.vt-feat__links .link-u { color: var(--ink); }
+.vt-feat__links .link-u { color: var(--paper); }
 .vt-feat__links .i { width: 16px; height: 16px; transition: transform .5s var(--ease); }
 .vt-feat__links a:hover .i { transform: translateX(5px); }
+.vt-feat__wa { color: var(--paper); font-weight: 600; text-decoration: underline; text-decoration-color: var(--green); text-decoration-thickness: 2px; text-underline-offset: 4px; white-space: nowrap; }
+.vt-feat__wa .i { display: inline-block; width: 17px; height: 17px; margin-left: 6px; vertical-align: -3px; color: var(--green); }
+.vt-feat__wa:hover { color: var(--green); }
+
+.vt-feat__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(12px, 1.4vw, 20px); }
+@media (max-width: 1023px) { .vt-feat__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.vt-card { border: 0; }
+.vt-feat__grid .vt-card .spec__head, .vt-feat__grid .vt-card .spec__table,
+.vt-feat__grid .vt-card .spec__price:not(.has-preco) { display: none; }
+.vt-feat__grid .vt-card .spec__fig { margin: 32px 14px 0; aspect-ratio: 16 / 9.4; box-shadow: inset 0 0 0 1px #E6E6E0; }
+.vt-feat__grid .vt-card .spec__fig::before, .vt-feat__grid .vt-card .spec__fig::after { width: 9px; height: 9px; }
+.vt-feat__grid .vt-card .spec__body { padding: 14px 16px 0; }
+.vt-feat__grid .vt-card .spec__brand { font-size: 10.5px; }
+.vt-feat__grid .vt-card .spec__model { margin-top: 6px; font-size: clamp(26px, 2.1vw, 36px); line-height: 1.02; }
+.vt-feat__grid .vt-card .spec__sub {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+  margin-top: 6px; font-size: 14px; line-height: 1.4; color: #3A3A36;
+}
+.vt-feat__grid .vt-card .spec__badges { padding-top: 12px; }
+.vt-feat__grid .vt-card .badge { padding: 5px 7px 4px; gap: 6px; font-size: 10px; letter-spacing: .03em; }
+.vt-feat__grid .vt-card .badge::before { width: 6px; height: 6px; }
+.vt-feat__grid .vt-card .spec__price.has-preco b { font: 700 18px/1 var(--f-text); text-transform: none; }
+.vt-feat__grid .vt-card .spec__foot { margin-top: 14px; padding: 12px 14px 14px; border-top-color: #EBEBE6; }
+.vt-feat__grid .vt-card :focus-visible { outline-color: var(--ink); }
+/* Ficha estreita (4 colunas até 1339 px; 2 colunas de 640 a 699 px): o WhatsApp fica só
+   com o ícone (o nome acessível vem do aria-label), "Detalhes" ganha o resto */
+@media (min-width: 1024px) and (max-width: 1339px), (min-width: 640px) and (max-width: 699px) {
+  .vt-feat__grid .vt-card .spec__foot { grid-template-columns: minmax(0, 1fr) 52px; column-gap: 4px; }
+  .vt-feat__grid .vt-card .spec__foot .btn--green { padding: 0; }
+  .vt-feat__grid .vt-card .spec__foot .btn--green .st { display: none; }
+  .vt-feat__grid .vt-card .spec__foot .btn--green .i { width: 20px; height: 20px; }
+  .vt-feat__grid .vt-card .badge { letter-spacing: 0; padding-inline: 6px; gap: 5px; }
+  .vt-feat__grid .vt-card .spec__body { padding-inline: 13px; }
+}
 
 /* =====================================================================
-   5. PROVA SOCIAL — nota do Google + logos de clientes
+   4. 03 · QUEM SOMOS — texto curto, dois números e os logos de clientes.
+   A nota do Google é um fato fixo: "5,0" sempre, sem contador.
    ===================================================================== */
-.vt-proof {
-  display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .9fr); align-items: end;
-  gap: clamp(28px, 5vw, 96px); margin-bottom: clamp(32px, 3.6vw, 56px);
+.vt-about__grid {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); align-items: end;
+  gap: clamp(28px, 5vw, 96px); margin-bottom: clamp(30px, 3.2vw, 52px);
 }
-.vt-proof__head .sec__intro { margin-top: 22px; }
-.vt-g {
-  position: relative; isolation: isolate; overflow: hidden; display: grid; gap: 12px; justify-items: start;
-  padding: clamp(24px, 2.4vw, 34px) clamp(24px, 2.4vw, 34px) 24px;
-  background: var(--ink-3); box-shadow: inset 0 0 0 1px #2A2A29; color: var(--paper); text-decoration: none;
-  transition: color .45s var(--ease);
+.vt-about__head { display: grid; justify-items: start; }
+.vt-about__p { margin-top: clamp(14px, 1.4vw, 22px); max-width: 30em; font-size: clamp(17px, 1.3vw, 19px); line-height: 1.5; color: var(--body-paper); }
+.vt-about__more { margin-top: 14px; color: var(--ink); }
+.vt-about__more .i { width: 16px; height: 16px; transition: transform .5s var(--ease); }
+.vt-about__more:hover .i { transform: translateX(5px); }
+
+.vt-nums { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 2px solid var(--ink); }
+.vt-num { min-width: 0; display: grid; align-content: start; gap: 12px; padding: 22px clamp(14px, 1.8vw, 30px) 2px 0; }
+.vt-num + .vt-num { padding-left: clamp(16px, 2vw, 34px); border-left: 1px solid #C9C9C2; }
+.vt-num__k { color: var(--muted); }
+/* Linha de base comum: a unidade senta na base dos algarismos; o "+" fica no alto.
+   O respiro embaixo guarda a cauda da vírgula de "5,0" (line-height curto). */
+.vt-num__v {
+  display: flex; align-items: baseline; gap: .06em; min-width: 0;
+  font: 900 clamp(70px, 7.2vw, 116px)/.8 var(--f-display); letter-spacing: -.01em; color: var(--ink);
+  padding: .05em 0 .12em;
 }
-.vt-g::before {
-  content: ""; position: absolute; z-index: -1; top: 0; bottom: 0; right: -14%; width: 30%;
-  background: var(--green); transform: skewX(var(--slash)); transform-origin: 100% 50%; transition: transform .75s var(--ease);
+.vt-num__x { display: inline-block; }
+.vt-num__u { font: 500 clamp(11px, .9vw, 13px)/1 var(--f-mono); letter-spacing: .03em; text-transform: uppercase; color: var(--muted); padding-left: .35em; white-space: nowrap; }
+/* O "+" fica no alto e a unidade passa por baixo dele (margem negativa = largura do sinal) */
+.vt-num__plus { align-self: flex-start; font-size: .5em; line-height: 1; margin: 0 -.62em 0 -.02em; color: var(--green-deep); }
+.vt-num__stars { align-self: center; display: flex; gap: .04em; margin-left: .14em; color: var(--green-deep); }
+.vt-num__stars .i { width: .19em; height: .19em; }
+.vt-num__s { font-size: 15px; line-height: 1.45; color: var(--body-paper); max-width: 22em; }
+.vt-num__s strong { color: var(--ink); }
+.vt-num__a {
+  display: inline; padding-block: 12px;   /* área de toque ≥ 44 px sem mexer na linha */
+  color: var(--ink); font-weight: 700; text-decoration: underline; text-decoration-color: var(--green-deep);
+  text-decoration-thickness: 1px; text-underline-offset: 4px;
 }
-.vt-g__lbl { color: var(--grey); transition: color .45s; }
-.vt-g__row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 18px; }
-/* line-height curto + respiro embaixo: a cauda da vírgula de "5,0" não encosta no texto */
-.vt-g__n { font: 900 clamp(100px, 9vw, 156px)/.78 var(--f-display); letter-spacing: -.01em; padding-bottom: .14em; }
-.vt-g__stars { display: flex; gap: 4px; color: var(--green); transition: color .45s; }
-.vt-g__stars .i { width: 24px; height: 24px; }
-.vt-g__txt { font-size: 17px; color: var(--body-dark); max-width: 22em; transition: color .45s; }
-.vt-g__txt strong { color: var(--paper); transition: color .45s; }
-.vt-g__go { display: inline-flex; align-items: center; gap: 8px; min-height: 30px; color: var(--green); transition: color .45s; }
-.vt-g__go .i { width: 13px; height: 13px; }
-.vt-g:hover::before, .vt-g:focus-visible::before { transform: skewX(var(--slash)) scaleX(5.2); }
-.vt-g:hover, .vt-g:focus-visible,
-.vt-g:hover .vt-g__lbl, .vt-g:focus-visible .vt-g__lbl,
-.vt-g:hover .vt-g__stars, .vt-g:focus-visible .vt-g__stars,
-.vt-g:hover .vt-g__txt, .vt-g:focus-visible .vt-g__txt,
-.vt-g:hover .vt-g__txt strong, .vt-g:focus-visible .vt-g__txt strong,
-.vt-g:hover .vt-g__go, .vt-g:focus-visible .vt-g__go { color: var(--ink); }
-.vt-clients { padding-top: 20px; }
+.vt-num__a .i { display: inline-block; width: 13px; height: 13px; margin-left: 6px; vertical-align: -1px; color: var(--green-deep); }
+.vt-num__a:hover { text-decoration-thickness: 2px; }
+
+.vt-clients { gap: 14px; padding-top: 18px; }
+@media (min-width: 1001px) { .vt-clients .clients__i { aspect-ratio: 12 / 5; } .vt-clients .clients__i img { max-height: 66%; } .vt-clients .clients__i--sq img { max-height: 80%; } }
 
 /* =====================================================================
-   6. CHAMADA FINAL (verde)
+   5. CHAMADA FINAL (verde)
    ===================================================================== */
-.vt-ask { padding-block: clamp(64px, 6.4vw, 104px); }
+.vt-ask { padding-block: clamp(52px, 4.8vw, 84px); }
+.vt-ask .ask__t { font-size: clamp(46px, 5.4vw, 100px); }
+.vt-ask .ask__side { gap: 18px; }
 .vt-ask .ask__side p { max-width: 28em; }
 .vt-ask__status { display: flex; width: fit-content; margin-top: 12px; }
 .on-green .status.is-aberto::before { background: var(--ink); box-shadow: 0 0 0 3px rgba(10, 10, 10, .18); animation: none; }
@@ -367,7 +357,7 @@ a.vt-num__a:hover::before { background: var(--green); }
 .vt-ask .ask__btns .link-u { margin-left: 16px; }
 
 /* =====================================================================
-   7. BOTÕES FLUTUANTES — escondidos também saem da ordem do Tab
+   6. BOTÕES FLUTUANTES — escondidos também saem da ordem do Tab
    ===================================================================== */
 .float { transition: transform .6s var(--ease), opacity .4s, visibility 0s; }
 .float.is-off { visibility: hidden; transition: transform .6s var(--ease), opacity .4s, visibility 0s .6s; }
@@ -386,23 +376,24 @@ a.vt-num__a:hover::before { background: var(--green); }
 /* =====================================================================
    RESPONSIVO
    ===================================================================== */
-@media (max-width: 1180px) {
-  .vt-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .vt-num:nth-child(3) { padding-left: 0; border-left: 0; }
-  .vt-num:nth-child(n + 3) { border-top: 1px solid #C9C9C2; margin-top: 18px; }
-  .vt-proof { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-}
 @media (max-width: 1240px) and (min-width: 861px) {
   .vit .phero__call--2 { left: 0; right: auto; top: calc(7% + 36px); }
 }
-@media (max-width: 1179px) and (min-width: 861px) {
-  .vt-do__c { grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); }
+@media (max-width: 1180px) and (min-width: 861px) {
+  .vt-do__go { flex-direction: column; align-items: flex-start; padding-top: 10px; }
+  .vt-do__wa { margin-left: -4px; }
 }
 /* Faixa de confiança entre 861 e 1040 px: os quatro itens numa linha só (sem item sozinho na 2ª) */
 @media (min-width: 861px) and (max-width: 1040px) {
   .phero--home .trust { flex-wrap: nowrap; gap: 0 14px; }
   .phero--home .trust__i { font-size: 10px; letter-spacing: .02em; white-space: nowrap; }
   .phero--home .trust__i + .trust__i::before { width: 8px; height: 8px; margin-right: 10px; }
+}
+@media (min-width: 1500px) {
+  .vt-about__grid { grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); }
+}
+@media (max-width: 1000px) {
+  .vt-about__grid { grid-template-columns: minmax(0, 1fr); align-items: start; }
 }
 
 /* Tablet e celular: o hero empilha (mesma regra do .phero) */
@@ -417,9 +408,18 @@ a.vt-num__a:hover::before { background: var(--green); }
   .vit__ruler { display: none; }
   .vit .phero__call--1 { left: var(--gut); top: 12px; }
   .vit .phero__call--2 { display: none; }
-  .vt-proof { grid-template-columns: minmax(0, 1fr); align-items: start; }
-  .vt-do { grid-template-columns: minmax(0, 1fr); }
-  .vt-do__c { min-height: 0; }
+
+  /* 01: blocos em linha — texto à esquerda, imagem na faixa à direita, rodapé embaixo */
+  .vt-do { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .vt-do__c { grid-template: "txt fig" 1fr "sat sat" auto "go go" auto / minmax(0, 1fr) 36%; }
+  .vt-do__sat { grid-area: sat; align-self: start; margin: -2px 0 16px var(--pad); }
+  .vt-do__band { top: 0; bottom: 0; height: auto; right: -16%; width: 46%; transform-origin: 100% 50%; transform: skewX(var(--slash)); }
+  .vt-do__c:hover .vt-do__band, .vt-do__c:focus-within .vt-do__band { transform: skewX(var(--slash)) scaleX(3.2); }
+  .vt-do__txt { padding: 18px 4px 16px var(--pad); }
+  .vt-do__fig { padding: 14px 10px 8px 0; }
+  .vt-do__fig img { max-height: 170px; }
+  .vt-do__go { margin-top: 0; }
+  .vt-do-sec__intro { max-width: 30em; }
 }
 /* Tablet em pé (640–860 px): mantém frase ao lado do produto, como no desktop */
 @media (min-width: 640px) and (max-width: 860px) {
@@ -440,20 +440,52 @@ a.vt-num__a:hover::before { background: var(--green); }
   .vit__tab { padding: 0 13px; }
   .vit__tab-n { display: none; }
   .vit__pause { width: 46px; }
-  .vt-do { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Celular */
+@media (max-width: 639px) {
+  /* 02: a vitrine vira uma prateleira que se arrasta para o lado (a próxima ficha aparece na borda) */
+  .vt-feat__grid {
+    display: flex; gap: 10px; overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory; scroll-padding-inline: var(--gut);
+    margin-inline: calc(var(--gut) * -1); padding: 2px var(--gut) 12px;
+    scrollbar-width: none;
+  }
+  .vt-feat__grid::-webkit-scrollbar { display: none; }
+  .vt-feat__grid > .pgrid__i { flex: 0 0 min(76vw, 300px); scroll-snap-align: start; }
+  .vt-feat__grid .vt-card .spec__tab { padding: 8px 12px 7px calc(12px + 30px * var(--tan)); font-size: 12px; clip-path: polygon(calc(26px * var(--tan)) 0, 100% 0, 100% 100%, 0 100%); }
+  .vt-feat__grid .vt-card .spec__fig { margin: 36px 12px 0; aspect-ratio: 16 / 10; }
+  .vt-feat__grid .vt-card .spec__fig img { width: 84%; height: 84%; }
+  .vt-feat__grid .vt-card .spec__body { padding: 12px 14px 0; }
+  .vt-feat__grid .vt-card .spec__model { font-size: 28px; }
+  .vt-feat__grid .vt-card .spec__sub { font-size: 14.5px; }
+  .vt-feat__grid .vt-card .spec__brand, .vt-feat__grid .vt-card .badge { font-size: 12px; }
+  .vt-feat__grid .vt-card .badge { white-space: normal; line-height: 1.2; letter-spacing: 0; padding: 5px 7px 4px; }
+  .vt-feat__grid .vt-card .spec__foot { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px; padding: 12px 12px 14px; }
+  .vt-feat__grid .vt-card .spec__foot .btn { font-size: 12px; letter-spacing: .02em; padding-inline: calc(6px + 44px * var(--tan) / 2); }
+  .vt-feat__grid .vt-card .spec__foot .btn--green { padding-inline: calc(6px + 44px * var(--tan) / 2); }
+  .vt-feat__grid .vt-card .spec__foot .btn--green .st { display: inline; }
+  .vt-feat__grid .vt-card .spec__foot .btn--green .i { width: 17px; height: 17px; }
 }
 @media (max-width: 599px) {
-  .vt-do__c { grid-template-columns: minmax(0, 1fr) 36%; }
-  .vt-do__band { width: 44%; right: -16%; }
-  .vt-do__txt { padding: 20px 4px 18px 18px; }
-  .vt-do__t { font-size: clamp(31px, 8.8vw, 44px); padding-top: 18px; }
-  .vt-do__p { font-size: 15px; }
-  .vt-do__fig { padding: 18px 10px 18px 0; }
-  .vt-do__fig img { max-height: 150px; }
-  .vt-do__go { margin-top: 16px; }
+  .vt-do__c { grid-template-columns: minmax(0, 1fr) 37%; }
+  .vt-do__band { width: 48%; right: -18%; }
+  .vt-do__txt { padding: 18px 2px 14px 18px; }
+  .vt-do__top { gap: 10px; }
+  .vt-do__n { font-size: 34px; }
+  .vt-do__t { font-size: clamp(30px, 8.6vw, 40px); padding-top: 10px; }
+  .vt-do__p { display: none; }   /* no celular o rótulo do alto (ex.: "Conserto e lacre") faz as vezes do resumo */
+  .vt-do__sat { margin-top: 14px; }
+  .vt-do__fig { padding: 12px 8px 4px 0; }
+  .vt-do__fig img { max-height: 112px; }
+  .vt-do__sat { margin: -4px 0 14px 18px; }
+  .vt-do__go { --pad: 18px; flex-wrap: nowrap; padding: 2px 10px 4px 18px; }
+  .vt-do__more-l { display: none; }
+  .vt-do__more-s { display: inline; }
+  .vt-do-sec__intro { display: none; }   /* no celular os três blocos já dizem tudo */
 }
 @media (max-width: 560px) {
-  /* Primeira tela do celular: frase, um parágrafo curto, WhatsApp e o produto inteiro */
+  /* Primeira tela do celular: frase, um parágrafo curto, WhatsApp e o produto GRANDE */
   .vt-eyebrow, .vt-m-off { display: none; }
   .phero--home .phero__ctas { gap: 4px; }
   .phero--home .vt-hero-more {
@@ -464,45 +496,57 @@ a.vt-num__a:hover::before { background: var(--green); }
   .phero--home .vt-hero-more:hover, .phero--home .vt-hero-more:focus-visible { color: var(--green); }
   .phero--home .vt-hero-more .i { width: 18px; height: 18px; }
   .phero--home .phero__t { font-size: clamp(52px, 17.5vw, 100px); }
-  .phero--home .phero__visual { margin-top: 18px; padding-top: 20px; }
-  .vit .phero__fig { width: 100%; }
-  .vit__stage { max-height: 210px; }
+  .phero--home .phero__visual { margin-top: 14px; padding-top: 28px; }
+  .phero--home .phero__band { left: 14%; width: 72%; }
+  /* O palco ocupa a largura da tela (sangra até as bordas) e cresce: o produto fica grande */
+  .vit .phero__fig { width: auto; justify-self: stretch; margin-inline: calc(var(--gut) * -1); }
+  .vit__stage { aspect-ratio: auto; height: clamp(250px, 76vw, 330px); max-height: none; }
+  .vit__img[data-vit-i="0"] { --vs: .97; }
+  .vit__img[data-vit-i="1"] { --vs: .95; }
+  .vit__img[data-vit-i="2"] { --vs: .93; }
+  .vit__dim { margin-inline: calc(var(--gut) + 4%); }
+  .vit .phero__call--1 { top: 10px; }
   .vit__nav { width: 100%; gap: 2px; }
-  .vit__tab { flex: 1; justify-content: center; padding: 0 10px; gap: 6px; font-size: 10.5px; }
+  .vit__tab { flex: 1; justify-content: center; padding: 0 8px; gap: 6px; }
   .vit__pause { width: 48px; flex: none; }
-  .vit__name { font-size: 10.5px; }
-  .vt-ticker__lbl { font-size: 9.5px; padding-right: calc(var(--vt-tk) * var(--tan) + 10px); }
+  .vt-ticker__lbl { padding-right: calc(var(--vt-tk) * var(--tan) + 10px); line-height: 1.25; }
+
+  .vt-also { gap: 0 14px; padding-top: 2px; }
+  .vt-also__a span { display: none; }
 
   .vt-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .vt-num { padding-top: 18px; gap: 10px; }
-  .vt-num__v { font-size: clamp(52px, 16vw, 76px); }
-  .vt-num__s { font-size: 13px; }
-  .vt-num__s .tag { font-size: 10px; }
-
-  .vt-also { gap: 0 18px; }
-  .vt-also__k { flex-basis: 100%; padding-top: 6px; }
-  .vt-also__a { padding-block: 6px; }
-
-
-  .vt-g__n { font-size: clamp(88px, 28vw, 120px); }
-  .vt-g::before { width: 14%; right: -8%; }
-  .vt-g__txt { padding-right: 16%; }
-  .vt-g__stars .i { width: 20px; height: 20px; }
+  .vt-num { padding-top: 16px; gap: 10px; }
+  .vt-num__v { font-size: clamp(54px, 16.4vw, 76px); }
+  .vt-num__s { font-size: 14px; }
   .vt-clients .clients__list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
   .vt-clients .clients__i { padding: 6px; }
+
+  .vt-ask .ask__t { font-size: clamp(44px, 13vw, 60px); }
+  .vt-about__head .h2 { font-size: clamp(40px, 11.4vw, 48px); }
+  .vt-about__p { font-size: 16px; }
   .vt-ask .ask__btns { flex-direction: column; align-items: stretch; margin-left: 0; }
   .vt-ask .ask__btns .btn { width: 100%; }
   .vt-ask .ask__btns .link-u { margin-left: 0; align-self: flex-start; }
 }
 @media (max-width: 400px) {
   .vit__tab-n { display: none; }
-  .vt-num__v { font-size: 50px; }
-  .vt-num__u { font-size: 10px; }
+  .vt-num__v { font-size: 52px; }
+}
+
+/* Leitura no celular (leitor 45+): rótulos em mono nunca abaixo de 12 px nesta página —
+   inclusive os blocos compartilhados que aparecem aqui (faixa de confiança, abas, fichas,
+   menu e rodapé). O "Automação comercial" da marca no cabeçalho faz parte do logotipo. */
+@media (max-width: 760px) {
+  .pg-inicio--v1 :is(.mono, .kicker, .tag, .status, .trust__i, .sec__tab, .spec__brand, .spec__tab, .badge,
+    .phero__call, .vit__name, .vit__tab, .vt-ticker__lbl, .vt-num__u, .vt-also__wa, .menu__list a .mono) { font-size: 12px; }
+  .pg-inicio--v1 .sec__tab b { font-size: 24px; }
+  .pg-inicio--v1 .vt-do__n { font-size: 34px; }
+  .pg-inicio--v1 .phero__call { padding: 5px 7px 4px; }
 }
 
 /* Movimento reduzido: hover sem zoom/giro e sem varreduras longas */
 @media (prefers-reduced-motion: reduce) {
-  .vt-do__c:hover .vt-do__fig img, .vt-do__c:hover .vt-do__disc { transform: none; }
-  .vt-do__band, .vt-g::before { transition: none; }
+  .vt-do__c:hover .vt-do__fig img { transform: none; }
+  .vt-do__band { transition: none; }
   .vit__pause { display: none; }   /* sem troca automática, não há o que pausar */
 }

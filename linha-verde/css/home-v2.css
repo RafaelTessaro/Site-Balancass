@@ -1,8 +1,9 @@
 /* =====================================================================
    Balanças.com — "Linha Verde" — Página inicial · VARIAÇÃO 2 "Capítulos"
    css/home-v2.css — só index-2.html (carregado depois de base.css e
-   paginas.css). Editorial e enxuta: capa tipográfica, sumário numerado
-   (com imagem que segue o cursor), vitrine horizontal e contracapa.
+   paginas.css). Editorial e enxuta: capa tipográfica com a faixa verde
+   (3 produtos se revezam), "O que a gente faz" (uma linha por página, cada
+   uma com a sua miniatura), vitrine horizontal e atendimento.
    Prefixo de classes: .hv2-
    ===================================================================== */
 
@@ -49,49 +50,66 @@
 /* Fora do horário o status não abre a página (ele continua no rodapé) */
 .hv2-hero__status:has(.is-fechado) { display: none; }
 
-/* Título gigante. As quebras mudam entre desktop (3 linhas) e celular (4 linhas) */
+/* Título gigante. As quebras mudam entre desktop (3 linhas) e celular (4 linhas + faixa) */
 .hv2-title__big {
+  --l3: 1em;   /* da linha de base da linha 2 à da linha 3 (o "NEGÓCIO." desce .16em por causa do acento) */
   display: block;
   font: 900 clamp(64px, min(10.6vw, 17.4vh), 200px)/.84 var(--f-display);
   text-transform: uppercase; letter-spacing: -.01em; color: var(--paper);
 }
 .hv2-title .w { display: inline-block; position: relative; }
-.hv2-title .w--green { color: var(--green); margin-top: .18em; }   /* espaço para o acento do Ó */
+.hv2-title .w--green { color: var(--green); margin-top: .16em; }   /* espaço para o acento do Ó */
 br.hv2-m { display: none; }
 
-/* Linha 2 no desktop: "para o seu" + a placa, que se estica até a margem direita
-   da coluna (a "faixa" do Design 3). A linha nunca quebra. */
+/* Linha 2 no desktop: "para o seu" + a faixa, que se estica até a margem direita
+   da coluna e desce até a linha de base do "NEGÓCIO." (a linha 3 é curta). */
 .hv2-l2 { display: flex; align-items: baseline; }
 .hv2-l2__t { flex: none; white-space: nowrap; }
 
-/* A "placa" verde inclinada no meio da frase, com a balança dentro */
+/* A faixa verde inclinada no meio da frase, com o produto dentro */
 .hv2-slab {
-  position: relative; isolation: isolate; display: block;
-  flex: 1 1 auto; min-width: 2.15em; height: .72em; margin: 0 .08em 0 .3em;
+  position: relative; display: block;
+  flex: 1 1 auto; min-width: 2.8em; height: .72em; margin: 0 0 0 .3em;
 }
-.hv2-slab::before {
-  content: ""; position: absolute; inset: 0; z-index: -1;
-  background: var(--green); transform: skewX(var(--slash));
+.hv2-slab__band {
+  /* o canto de cima, empurrado pela inclinação, encosta na margem direita (como os botões) */
+  position: absolute; left: 0; right: calc((.72em + var(--l3)) * var(--tan) / 2); top: 0; bottom: calc(var(--l3) * -1);
+  overflow: hidden; background: var(--green); transform: skewX(var(--slash));
 }
-.hv2-slab::after {
-  /* fio técnico dentro da placa (como na faixa do Design 3) */
-  content: ""; position: absolute; inset: 0 .16em; z-index: -1;
-  border-left: 1px solid rgba(10,10,10,.35); border-right: 1px solid rgba(10,10,10,.35);
-  transform: skewX(var(--slash));
+.hv2-slab__band::before, .hv2-slab__band::after {
+  /* fios técnicos dentro da faixa (como na faixa do Design 3) */
+  content: ""; position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(10,10,10,.32);
 }
-/* No desktop a balança é maior e "salta" da placa para baixo (abaixo da placa a linha
-   3 está vazia); o prato não chega à linha de cima. */
-.hv2-slab img {
-  position: absolute; left: 56%; bottom: -.35em; width: 1.9em; max-width: none; height: auto;
-  margin-left: -.95em;
-  filter: drop-shadow(0 .08em .07em rgba(0,0,0,.5));
+.hv2-slab__band::before { left: .16em; }
+.hv2-slab__band::after { right: .16em; }
+/* Na troca de produto, uma barra preta atravessa a faixa (a "leitura") */
+.hv2-slab__wipe {
+  position: absolute; top: 0; bottom: 0; left: 0; width: 18%;
+  background: var(--ink); transform: translateX(-120%);
 }
+.hv2-slab.is-swap .hv2-slab__wipe { animation: hv2-scan .95s var(--ease) both; }
+@keyframes hv2-scan { to { transform: translateX(680%); } }
 
-/* Linha de cota (medida) entre o título e o texto */
-.hv2-rule {
-  position: relative; height: 13px; margin-top: auto; padding-top: clamp(22px, 4.4vh, 48px);
-  box-sizing: content-box; color: #3A3A38;
+/* Produtos: ancorados no pé da faixa; cada um com o seu tamanho (proporções diferentes) */
+.hv2-slab__ps { position: absolute; left: 0; right: 0; top: -1.2em; bottom: calc(var(--l3) * -1); pointer-events: none; }
+.hv2-slab__p {
+  position: absolute; left: 60%; bottom: .07em; display: block;
+  opacity: 0; transform: translate3d(14%, 0, 0) rotate(-2deg);
+  transition: opacity .5s var(--ease), transform 1s var(--ease-out);
 }
+.hv2-slab__p.is-on { opacity: 1; transform: none; transition-delay: .32s; }
+.hv2-slab__p.is-out { opacity: 0; transform: translate3d(-10%, 0, 0); transition-duration: .4s, .6s; transition-delay: 0s; }
+.hv2-slab__p img { display: block; width: 100%; height: auto; max-width: none; filter: drop-shadow(0 .07em .06em rgba(0,0,0,.5)); }
+.hv2-slab__p--uno { width: 2.9em; margin-left: -1.45em; }
+.hv2-slab__p--l42 { width: 2.1em; margin-left: -1.05em; bottom: .1em; }
+.hv2-slab__p--pdv { width: 2.05em; margin-left: -1.02em; bottom: .05em; }
+
+/* Linha de cota (medida) entre o título e o texto, com a legenda do produto na ponta */
+.hv2-meta {
+  display: flex; align-items: center; gap: 16px;
+  margin-top: auto; padding-top: clamp(22px, 4.4vh, 48px);
+}
+.hv2-rule { position: relative; flex: 1 1 auto; height: 13px; color: #3A3A38; }
 .hv2-rule::before, .hv2-rule::after {
   content: ""; position: absolute; bottom: 0; width: 1px; height: 13px; background: currentColor;
 }
@@ -102,13 +120,36 @@ br.hv2-m { display: none; }
   content: ""; position: absolute; left: 0; top: -4px; width: 64px; height: 9px;
   background: var(--green); transform: skewX(var(--slash)); transform-origin: 0 50%;
 }
+.hv2-cap { flex: none; display: flex; align-items: center; gap: 4px; margin-block: -14px; }
+.hv2-cap__btn {
+  position: relative; isolation: isolate; width: 44px; height: 44px; display: grid; place-items: center;
+  border: 0; background: none; color: var(--paper); cursor: pointer;
+}
+.hv2-cap__btn::before {
+  content: ""; position: absolute; inset: 9px 7px; z-index: -1; transform: skewX(var(--slash));
+  border: 1px solid #5A5A55; transition: background .3s, border-color .3s;
+}
+.hv2-cap__btn:hover::before { background: var(--green); border-color: var(--green); }
+.hv2-cap__btn:hover { color: var(--ink); }
+.hv2-cap__btn .i { width: 12px; height: 12px; }
+.hv2-cap__play, .hv2-cap__btn[aria-pressed="true"] .hv2-cap__pause { display: none; }
+.hv2-cap__btn[aria-pressed="true"] .hv2-cap__play { display: block; }
+.hv2-cap__a {
+  display: inline-flex; align-items: baseline; gap: 10px; min-height: 44px; align-items: center;
+  font: 400 11px/1.3 var(--f-mono); letter-spacing: .03em; text-transform: uppercase;
+  color: var(--grey); text-decoration: none;
+}
+.hv2-cap__n { color: var(--green); font-weight: 500; }
+.hv2-cap__t { color: var(--paper); }
+.hv2-cap__a:hover .hv2-cap__t { text-decoration: underline; text-underline-offset: 4px; }
 
 .hv2-hero__foot {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end;
   gap: 24px clamp(32px, 5vw, 96px); margin-top: clamp(20px, 3.2vh, 34px);
 }
-.hv2-hero__lead { max-width: 37em; font-size: clamp(16.5px, 1.25vw, 19px); line-height: 1.52; color: #C9C9C3; }
+.hv2-hero__lead { max-width: 38em; font-size: clamp(16.5px, 1.25vw, 19px); line-height: 1.52; color: #C9C9C3; text-wrap: pretty; }
 .hv2-hero__lead strong { display: block; margin-bottom: 4px; color: var(--paper); font-weight: 700; font-size: 1.14em; letter-spacing: -.005em; text-wrap: balance; }
+.hv2-seg { color: var(--paper); font-weight: 600; }
 .hv2-hero__ctas { justify-content: flex-end; flex-wrap: nowrap; }
 
 @media (max-width: 1100px) {
@@ -119,7 +160,7 @@ br.hv2-m { display: none; }
    acompanha o conteúdo, em vez de abrir um vão preto entre o título e o texto */
 @media (min-width: 861px) and (max-aspect-ratio: 29/20) {
   .hv2-hero { min-height: 0; }
-  .hv2-rule { margin-top: 0; }
+  .hv2-meta { margin-top: 0; }
 }
 /* Notebooks (até 880 px de altura): título e respiros menores, para a faixa de
    confiança caber na primeira tela */
@@ -128,7 +169,7 @@ br.hv2-m { display: none; }
   .hv2-hero__in { padding-block: clamp(22px, 3.6vh, 72px) clamp(20px, 3vh, 60px); }
   .hv2-hero__status { top: clamp(22px, 3.6vh, 72px); }
   .hv2-title__pre { margin-bottom: clamp(16px, 2.8vh, 40px); }
-  .hv2-rule { padding-top: clamp(16px, 3vh, 48px); }
+  .hv2-meta { padding-top: clamp(16px, 3vh, 48px); }
   .hv2-hero__foot { margin-top: clamp(16px, 2.6vh, 34px); }
 }
 /* Faixa de confiança em 861–1100 px: numa linha só (sem o "(56 avaliações)") */
@@ -138,65 +179,99 @@ br.hv2-m { display: none; }
   .hv2-hero .trust__i a > span { display: none; }
 }
 @media (max-width: 860px), (max-width: 1180px) and (max-aspect-ratio: 5/6) {
-  /* celular e tablet em pé: título em 4 linhas, bem maior */
+  /* celular e tablet em pé: título em 4 linhas, bem maior, e a faixa numa linha só dela */
   br.hv2-d { display: none; }
   br.hv2-m { display: inline; }
   .hv2-hero { min-height: 0; }
-  .hv2-hero__in { padding-bottom: 34px; }
+  .hv2-hero__in { padding-bottom: 32px; }
   .hv2-hero__status { display: none; }
   .hv2-title__pre { padding-right: 0; }
-  .hv2-title__big { font-size: clamp(50px, 17.6vw, 150px); line-height: .86; }
-  .hv2-rule { margin-top: 0; }
-  /* a linha 2 volta a ser texto corrido; a placa fica do tamanho de uma palavra */
+  /* o teto pela altura (10,5vh) só age em telas proporcionalmente baixas (tablet em pé,
+     celular deitado): os botões do hero voltam para a 1ª tela em 768×1024 e 820×1180.
+     Nos celulares em pé (altura ≥ 1,68 × largura) vale o 17,6vw de sempre. */
+  .hv2-title__big { font-size: clamp(50px, min(17.6vw, 10.5vh), 150px); line-height: .86; }
+  .hv2-meta { margin-top: 0; }
   .hv2-l2, .hv2-l2__t { display: contents; }
-  .hv2-slab { display: inline-block; vertical-align: baseline; width: 2.15em; margin: 0 0 0 .08em; }
-  .hv2-slab img { left: 50%; bottom: -.03em; width: 1.62em; margin-left: -.81em; filter: drop-shadow(0 .06em .05em rgba(0,0,0,.45)); }
+  /* a faixa sangra até a borda direita da tela; o produto sobe para o lado vazio do "O SEU" */
+  .hv2-slab { min-width: 0; height: 1.16em; margin: .06em calc(var(--gut) * -1) .1em 0; }
+  .hv2-slab__band { right: 0; bottom: 0; }
+  .hv2-slab__ps { top: -1em; bottom: 0; }
+  .hv2-slab__p { left: auto; right: 3%; margin-left: 0; bottom: .05em; }
+  .hv2-slab__p--uno { width: 3.04em; right: 1.5%; }
+  .hv2-slab__p--l42 { width: 2.3em; right: 8%; }
+  .hv2-slab__p--pdv { width: 1.95em; right: 5%; }
+  .hv2-slab__p img { filter: drop-shadow(0 .06em .05em rgba(0,0,0,.45)); }
+  .hv2-title .w--green { margin-top: 0; }
 }
 @media (max-width: 700px) {
-  .hv2-hero__in { padding-top: 22px; }
-  .hv2-title__pre { padding-bottom: 12px; margin-bottom: 18px; }
+  .hv2-hero__in { padding-top: 20px; }
+  .hv2-title__pre { padding-bottom: 12px; margin-bottom: 16px; }
   .hv2-title__sep { display: none; }
   /* a marca já está no logotipo logo acima: fica só para leitores de tela e buscadores */
   .hv2-title__brand { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .hv2-title__where { flex-basis: auto; }
+  .hv2-title__where { flex: 1 1 0; min-width: 0; white-space: normal; }
   .hv2-hero .crop--tl { display: none; }
-  .hv2-rule { padding-top: 26px; }
-  .hv2-hero__lead { font-size: 16.5px; line-height: 1.5; }
+  .hv2-meta { padding-top: 14px; gap: 10px; }
+  .hv2-cap__a { font-size: 12px; gap: 8px; }
+  .hv2-cap__m { display: none; }   /* no celular, só o tipo de produto (o modelo fica no link) */
+  .hv2-hero__foot { margin-top: 14px; }
+  .hv2-hero__lead { font-size: 16px; line-height: 1.5; }
+  .hv2-hero__lead strong { font-size: 1.12em; }
   .hv2-hero__ctas { flex-direction: column; align-items: stretch; gap: 10px; margin-left: 0; }
   .hv2-hero__ctas .btn { width: 100%; margin: 0; }
 }
+@media (max-width: 380px) {
+  /* celulares pequenos (360 × 740): os dois botões ainda na primeira tela */
+  .hv2-hero__in { padding-top: 14px; padding-bottom: 26px; }
+  .pg-inicio--v2 .hv2-title__pre { letter-spacing: 0; margin-bottom: 12px; }
+  .hv2-title__big { font-size: 16.9vw; }
+  .hv2-meta { padding-top: 8px; }
+  .hv2-hero__foot { margin-top: 8px; }
+  .hv2-hero__lead { font-size: 15.5px; line-height: 1.46; }
+  .hv2-hero__lead strong { margin-bottom: 2px; }
+  .hv2-hero__ctas { gap: 8px; }
+  .hv2-hero__ctas .btn--lg { --bh: 52px; }
+}
+/* Botões flutuantes (WhatsApp + Ligar): a capa não tem data-float-off, então eles são o
+   contato da 1ª tela quando os botões da capa ficam abaixo da dobra (celular com a barra
+   do navegador, tablet em pé). Saem assim que o "Falar no WhatsApp" da capa aparece
+   (o js/home-v2.js marca html.hv2-cta-vis) — mesma saída do .float.is-off do base.css. */
+html.hv2-cta-vis .float {
+  transform: translateY(140%); opacity: 0; pointer-events: none; visibility: hidden;
+  transition: transform .6s var(--ease), opacity .4s, visibility 0s linear .6s;
+}
 
 /* =====================================================================
-   2. SUMÁRIO (índice numerado estilo revista)
+   2. O QUE A GENTE FAZ (índice numerado estilo revista)
    ===================================================================== */
-/* Grade compartilhada pelo sumário e pela vitrine: as linhas do sumário e os
-   cabeçalhos das duas seções usam as mesmas colunas (nº · título · texto · [miniatura] · seta),
-   então o texto da direita começa sempre na mesma vertical. */
+/* Grade compartilhada pelo índice e pela vitrine: nº · título · miniatura · texto · seta.
+   A miniatura fica no vão entre o título e o texto: pequena em repouso e, no mouse/foco,
+   cresce ali mesmo (a coluna e os vãos têm a largura da prévia: nada de texto coberto). */
 .hv2-idx, .hv2-shelf {
-  --c-n: 40px; --c-t: 1.5fr; --c-th: 136px; --c-go: 56px; --c-gap: clamp(16px, 2.6vw, 44px);
-  --cols: var(--c-n) minmax(0, var(--c-t)) minmax(0, 1fr) var(--c-th) var(--c-go);
+  --c-n: 40px; --c-th: clamp(176px, 17vw, 290px); --c-go: 56px; --c-gap: clamp(16px, 2.6vw, 44px);
+  --cols: var(--c-n) minmax(0, 1fr) var(--c-th) minmax(0, 1.15fr) var(--c-go);
 }
-.hv2-follow .hv2-idx, .hv2-follow .hv2-shelf { --cols: var(--c-n) minmax(0, var(--c-t)) minmax(0, 1fr) var(--c-go); }
 @media (max-width: 1100px) {
-  .hv2-idx, .hv2-shelf { --c-n: 34px; --c-t: 1.3fr; --c-th: 112px; --c-go: 52px; }
-  .hv2-follow .hv2-idx, .hv2-follow .hv2-shelf { --c-t: 1.4fr; }
+  .hv2-idx, .hv2-shelf { --c-n: 34px; --c-go: 52px; --c-th: clamp(150px, 17vw, 190px); }
 }
 
 .hv2-idx { padding-block: clamp(96px, 9.4vw, 150px) clamp(76px, 8vw, 128px); }
+.hv2-idx .sec__tab b { font-size: 26px; }
 .hv2-idx__head {
   display: grid; grid-template-columns: var(--cols); align-items: end;
   gap: 22px var(--c-gap); margin-bottom: clamp(36px, 4.4vw, 68px);
 }
-.hv2-idx__head .h2 { max-width: 13em; }
-.hv2-idx__head .h2, .hv2-shelf__head .h2 { grid-column: 1 / 3; }
-.hv2-idx__head .sec__intro, .hv2-shelf__side { grid-column: 3 / -1; }
+.hv2-idx__head .h2 { max-width: 11em; }
+.hv2-idx__head .h2 { grid-column: 1 / 4; }
+.hv2-shelf__head .h2 { grid-column: 1 / 3; }
+.hv2-idx__head .sec__intro, .hv2-shelf__side { grid-column: 4 / -1; }
 .hv2-idx__list { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--ink); }
 
 .hv2-row__a {
   position: relative; isolation: isolate;
   display: grid; align-items: center;
   grid-template-columns: var(--cols);
-  grid-template-areas: "n t d th go";
+  grid-template-areas: "n t th d go";
   column-gap: var(--c-gap);
   padding-block: clamp(18px, 2vw, 28px);
   color: var(--ink); text-decoration: none;
@@ -210,6 +285,7 @@ br.hv2-m { display: none; }
   transition: transform .6s var(--ease);
 }
 .hv2-row__a:hover::before, .hv2-row__a:focus-visible::before { transform: skewX(var(--slash)) scaleX(1); transform-origin: 0 50%; }
+.hv2-row__a:hover, .hv2-row__a:focus-visible { z-index: 2; }
 .hv2-row__a:focus-visible { outline-offset: 2px; }
 .hv2-row__n { grid-area: n; align-self: start; padding-top: .9em; font: 500 12px/1 var(--f-mono); letter-spacing: .04em; color: var(--muted); transition: color .4s; }
 .hv2-row__t {
@@ -218,8 +294,12 @@ br.hv2-m { display: none; }
   text-wrap: balance;
 }
 .hv2-row__t > span { display: inline-block; transition: transform .6s var(--ease); }
-.hv2-row__d { grid-area: d; max-width: 29em; font-size: clamp(15px, 1.1vw, 17px); line-height: 1.45; color: var(--body-paper); transition: color .4s; }
-.hv2-row__th { grid-area: th; width: var(--c-th); container-type: inline-size; }
+.hv2-row__d { grid-area: d; max-width: 29em; font-size: clamp(15px, 1.1vw, 17px); line-height: 1.45; color: var(--body-paper); transition: color .4s; text-wrap: pretty; }
+.hv2-row__th {
+  --grow: 2.05;
+  grid-area: th; justify-self: center; width: 56%; position: relative; z-index: 1;
+  transition: transform .62s var(--ease), filter .62s var(--ease);
+}
 .hv2-row__go {
   grid-area: go; justify-self: end; position: relative; width: 56px; height: 48px; display: grid; place-items: center;
 }
@@ -233,134 +313,127 @@ br.hv2-m { display: none; }
 .hv2-row__a:hover .hv2-row__d, .hv2-row__a:focus-visible .hv2-row__d { color: var(--ink); }
 .hv2-row__a:hover .hv2-row__go::before, .hv2-row__a:focus-visible .hv2-row__go::before { background: var(--ink); }
 .hv2-row__a:hover .hv2-row__go .i, .hv2-row__a:focus-visible .hv2-row__go .i { color: var(--green); transform: translateX(4px); }
+/* A prévia: a miniatura cresce no próprio vão (só mouse/teclado no computador) */
+@media (min-width: 861px) {
+  .hv2-row__a:hover .hv2-row__th, .hv2-row__a:focus-visible .hv2-row__th {
+    transform: scale(var(--grow)); filter: drop-shadow(0 18px 22px rgba(10,10,10,.32));
+  }
+}
 
-/* Com mouse + JS + movimento: a miniatura vira a imagem que segue o cursor */
-.hv2-follow .hv2-row__a { grid-template-areas: "n t d go"; }
-.hv2-follow .hv2-row__th { display: none; }
+/* "E mais": as duas frentes que ficam dentro de sistema.html, em linhas menores */
+.hv2-idx__more { margin-top: clamp(30px, 3.4vw, 52px); }
+.hv2-idx__k { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; color: var(--muted); }
+.hv2-idx__k::before { content: ""; width: 22px; height: 9px; flex: none; background: var(--green); transform: skewX(var(--slash)); }
+.hv2-row--mini .hv2-row__a { padding-block: clamp(12px, 1.2vw, 16px); }
+.hv2-row--mini .hv2-row__n { padding-top: .3em; font-size: 16px; color: var(--green-deep); }
+.hv2-row--mini .hv2-row__t { font-size: clamp(30px, 2.7vw, 46px); }
+.hv2-row--mini .hv2-row__th { width: 36%; --grow: 2.9; }
+.hv2-row--mini .hv2-row__go { height: 42px; }
 
-/* Mídia de cada capítulo (miniatura e imagem flutuante) — paralelogramo a −12° */
-.hv2-media {
-  --k: 14.9%;   /* altura × tan(12°) ÷ largura (proporção 10:7) */
-  position: relative; display: grid; place-items: center; overflow: hidden;
-  aspect-ratio: 10 / 7;
+/* ---------- Miniaturas: todas no mesmo corte a −12°, mesma chapa e mesmo fio ---------- */
+.hv2-plate {
+  --k: 14.88%;   /* altura × tan(12°) ÷ largura (proporção 10:7) */
+  position: relative; isolation: isolate; overflow: hidden;
+  display: grid; place-items: center;
+  width: 100%; aspect-ratio: 10 / 7; container-type: inline-size;
   clip-path: polygon(var(--k) 0, 100% 0, calc(100% - var(--k)) 100%, 0 100%);
-  background: var(--ink);
+  background: var(--ink-2); color: var(--paper);
 }
-.hv2-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.hv2-media--stage {
-  /* palco branco com grade, como a foto das fichas de produto */
-  background:
-    linear-gradient(90deg, rgba(10,10,10,.07) 1px, transparent 1px) 0 0 / 20% 100%,
-    linear-gradient(rgba(10,10,10,.07) 1px, transparent 1px) 0 0 / 100% 25%,
-    var(--white);
+.hv2-plate > * { grid-area: 1 / 1; }
+.hv2-plate__f {
+  position: absolute; inset: 0; z-index: 4; width: 100%; height: 100%; pointer-events: none;
+  fill: none; stroke: rgba(244,244,240,.26); stroke-width: 1; vector-effect: non-scaling-stroke;
 }
-.hv2-media--stage img { object-fit: contain; padding: 7% 16% 5%; }
-.hv2-media--ink { background: var(--ink-3); }
-.hv2-media--ink img { object-fit: contain; padding: 9% 14% 7%; }
-/* produto preto recortado sobre a placa verde (como no hero da assistência) */
-.hv2-media--green { background: var(--green); }
-.hv2-media--green img { object-fit: contain; padding: 8% 15% 6%; filter: drop-shadow(0 6px 8px rgba(0,0,0,.28)); }
-.hv2-media--tel { background: var(--paper-3); color: var(--ink); align-content: center; gap: 5%; }
-.hv2-media__ic { width: 24%; height: auto; aspect-ratio: 1; color: var(--green-deep); }
-.hv2-media--stage, .hv2-media--tel { box-shadow: inset 0 0 0 1px #CFCFC8; }
-.hv2-media__cap { font: 900 1em/1 var(--f-display); text-transform: uppercase; letter-spacing: .01em; white-space: nowrap; }
-/* A empresa: monogramas da equipe (sem fotos), como em empresa.html */
-.hv2-media--team { container-type: inline-size; background: var(--ink); color: var(--paper); align-content: center; gap: 9%; }
-.hv2-team { display: flex; justify-content: center; gap: 2cqw; }
-.hv2-team i {
-  position: relative; isolation: isolate; display: grid; place-items: center;
-  width: 13cqw; height: 11.5cqw; font: 900 6cqw/1 var(--f-display); font-style: normal; color: var(--ink); letter-spacing: .02em;
-}
-.hv2-team i::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--green); transform: skewX(var(--slash)); }
-.hv2-team i:first-child { color: var(--green); }
-.hv2-team i:first-child::before { background: var(--paper); }
-/* Miniatura fixa (toque): a legenda aparece menor, para os 5 quadros falarem a mesma língua */
-.hv2-row__th .hv2-media__cap { font-size: 12.5cqw; }
-.hv2-row__th .hv2-media__more { display: none; }
-.hv2-row__th .hv2-media__ic { width: 30%; }
-.hv2-row__th.hv2-media--tel { gap: 8%; }
-.hv2-row__th.hv2-media--tel .hv2-media__cap { font-size: 11cqw; margin-right: 3%; }   /* o paralelogramo estreita embaixo, à direita */
+.hv2-plate__cap { font: 900 1em/1 var(--f-display); text-transform: uppercase; letter-spacing: .01em; white-space: nowrap; }
 
-/* Imagem que segue o cursor (criada pelo js/home-v2.js; só mouse) */
-.hv2-peek {
-  position: fixed; left: 0; top: 0; z-index: 60;
-  width: clamp(270px, 22vw, 400px); aspect-ratio: 10 / 7;
-  pointer-events: none; opacity: 0; visibility: hidden;
-  transition: opacity .35s var(--ease), visibility 0s linear .35s;
-  will-change: transform;
-  filter: drop-shadow(0 22px 30px rgba(10,10,10,.28));
+/* 01 Assistência: carimbo "Oficina autorizada · IPEM-SP" */
+.hv2-stamp { width: 60cqw; height: 60cqw; color: var(--green); transform: rotate(-12deg); overflow: visible; }
+.hv2-stamp__arc { font: 500 15px var(--f-mono); letter-spacing: .07em; text-transform: uppercase; fill: currentColor; }
+.hv2-stamp__name { font: 900 46px var(--f-display); text-transform: uppercase; fill: currentColor; }
+
+/* 02 Produtos: balança sobre a faixa verde + a contagem do catálogo */
+.hv2-plate__band { position: absolute; top: 0; bottom: 0; left: 40%; width: 30%; background: var(--green); transform: skewX(var(--slash)); }
+.hv2-plate--prod img { position: relative; width: 74%; height: auto; transform: translate(6%, 8%); filter: drop-shadow(0 3cqw 3cqw rgba(0,0,0,.45)); }
+.hv2-plate--prod .hv2-plate__cap {
+  position: absolute; left: 19cqw; top: 9cqw; z-index: 2; font-size: 11cqw; color: var(--paper);
 }
-.hv2-peek.is-on { opacity: 1; visibility: visible; transition: opacity .35s var(--ease), visibility 0s; }
-.hv2-peek .hv2-media {
-  position: absolute; inset: 0; font-size: clamp(30px, 2.6vw, 46px);
-  clip-path: polygon(var(--k) 0, var(--k) 0, 0 100%, 0 100%);
-  transition: clip-path .62s var(--ease);
+.hv2-plate--prod .hv2-plate__cap span { color: var(--green); }
+
+/* 03 BC System: a tela do caixa + o selo NFC-e */
+.hv2-plate--screen { background: #1E1E1D; }
+.hv2-plate--screen img { position: relative; width: 80%; height: auto; transform: translate(-3%, 3%); }
+.hv2-plate__tag {
+  position: absolute; left: 14cqw; top: 8cqw; z-index: 2; padding: .16em .55em .1em;
+  font: 900 9.5cqw/1 var(--f-display); color: var(--ink); background: var(--green);
+  clip-path: polygon(.36em 0, 100% 0, calc(100% - .36em) 100%, 0 100%);
 }
-.hv2-peek .hv2-media.is-on { clip-path: polygon(var(--k) 0, 100% 0, calc(100% - var(--k)) 100%, 0 100%); }
-.hv2-peek .hv2-media img { transform: scale(1.12); transition: transform 1s var(--ease-out); }
-.hv2-peek .hv2-media.is-on img { transform: none; }
-.hv2-peek .hv2-media__cap { font-size: .62em; }
-.hv2-peek .hv2-media--tel .hv2-media__cap { font-size: 1em; }
-.hv2-peek .hv2-media--team .hv2-media__cap { font-size: 9cqw; }
+
+/* 04 A empresa: a régua de 2010 até hoje */
+.hv2-ruler { display: grid; gap: 3cqw; width: 64cqw; margin-left: 1cqw; }
+.hv2-ruler__top { display: flex; align-items: baseline; gap: 2.4cqw; }
+.hv2-ruler__n { font: 900 25cqw/.78 var(--f-display); letter-spacing: -.01em; color: var(--paper); }
+.hv2-ruler__u { font: 900 10cqw/1 var(--f-display); text-transform: uppercase; color: var(--green); }
+.hv2-ruler__bar {
+  position: relative; height: 6.4cqw; border-bottom: 1px solid rgba(244,244,240,.7);
+  background: repeating-linear-gradient(90deg, rgba(244,244,240,.7) 0 1px, transparent 1px 6.25%) 0 100% / calc(100% + 1px) 50% no-repeat;
+}
+.hv2-ruler__bar::before, .hv2-ruler__bar::after { content: ""; position: absolute; bottom: 0; width: 1px; height: 100%; background: var(--paper); }
+.hv2-ruler__bar::before { left: 0; }
+.hv2-ruler__bar::after { right: 0; }
+.hv2-ruler__bar i { position: absolute; left: 0; right: 0; bottom: 0; height: 2.2cqw; background: var(--green); transform-origin: 0 50%; }
+.hv2-ruler__y { display: flex; justify-content: space-between; font: 900 8cqw/1 var(--f-display); text-transform: uppercase; color: var(--grey); }
+
+/* 05 Contato: WhatsApp + telefone */
+.hv2-plate--tel { align-content: center; justify-items: center; }
+.hv2-plate--tel > * { grid-area: auto; }
+.hv2-plate__ic { width: 26cqw; height: 26cqw; color: var(--green); }
+.hv2-plate--tel .hv2-plate__cap { margin: 4cqw 2cqw 0 0; font-size: 10.6cqw; }
+
+/* + BC Fichas: a ficha impressa (como em sistema.html#fichas) */
+.hv2-ticket {
+  display: grid; gap: 1.8cqw; width: 52cqw; padding: 4.6cqw 5cqw 4cqw;
+  background: var(--paper); color: var(--ink); transform: rotate(-12deg) translateY(2%);
+  box-shadow: 0 3cqw 5cqw -2cqw rgba(0,0,0,.6);
+  -webkit-mask: radial-gradient(circle 3cqw at 0 50%, transparent 98%, #000), radial-gradient(circle 3cqw at 100% 50%, transparent 98%, #000);
+  -webkit-mask-composite: source-in; mask-composite: intersect;
+}
+.hv2-ticket__k { font: 500 4.6cqw/1 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.hv2-ticket__t { font: 900 12.5cqw/.9 var(--f-display); text-transform: uppercase; white-space: nowrap; }
+.hv2-ticket__bars { height: 6cqw; background: repeating-linear-gradient(90deg, var(--ink) 0 .9cqw, transparent .9cqw 1.4cqw, var(--ink) 1.4cqw 1.8cqw, transparent 1.8cqw 3cqw, var(--ink) 3cqw 4.3cqw, transparent 4.3cqw 4.8cqw); }
+
+/* + Informática: monitor + chave */
+.hv2-plate--mon .hv2-plate__ic { width: 36cqw; height: 36cqw; color: var(--paper); }
+.hv2-plate__ic2 { position: absolute; z-index: 2; right: 30cqw; bottom: 13cqw; width: 17cqw; height: 17cqw; color: var(--green); }
 
 @media (max-width: 860px) {
   .hv2-idx__head { grid-template-columns: minmax(0, 1fr); align-items: start; }
   .hv2-idx__head .h2, .hv2-idx__head .sec__intro { grid-column: auto; }
-  /* Celular/tablet: cada linha mostra a miniatura fixa */
-  .hv2-row__a, .hv2-follow .hv2-row__a {
+  /* Celular/tablet: cada linha mostra a miniatura à direita do título */
+  .hv2-row__a {
     --c-th: clamp(96px, 26vw, 150px);
     grid-template-columns: minmax(0, 1fr) var(--c-th);
-    grid-template-areas: "n th" "t th" "d d" "go go";
-    grid-template-rows: auto 1fr auto auto;
-    column-gap: 16px; row-gap: 8px; align-items: start;
-    padding-block: 18px 16px;
+    grid-template-areas: "n th" "t th" "d d";
+    grid-template-rows: auto 1fr auto;
+    column-gap: 16px; row-gap: 6px; align-items: start;
+    padding-block: 14px 12px;
   }
-  .hv2-follow .hv2-row__th { display: block; }
   .hv2-row__n { padding-top: 2px; }
-  .hv2-row__t { align-self: end; font-size: clamp(36px, 10.6vw, 64px); line-height: .98; }
-  .hv2-row__d { margin-top: 4px; max-width: 36em; font-size: 15.5px; }
-  .hv2-row__th { align-self: start; }
+  .hv2-row__t { align-self: end; font-size: clamp(32px, 9.4vw, 60px); line-height: .98; }
+  .hv2-row__d { margin-top: 4px; max-width: 36em; padding-right: 62px; font-size: 15px; line-height: 1.42; }
+  .hv2-row__th { align-self: start; width: 100%; }
   .hv2-row__go { position: absolute; right: 0; bottom: 12px; width: 50px; height: 40px; }
-  .hv2-row__d { padding-right: 62px; }
   .hv2-row__a::before { left: -40px; right: -40px; }
+  .hv2-row--mini .hv2-row__a { --c-th: clamp(76px, 20vw, 112px); padding-block: 12px 10px; }
+  .hv2-row--mini .hv2-row__t { font-size: clamp(26px, 7.4vw, 44px); }
+  .hv2-row--mini .hv2-row__th { width: 100%; }
+  .hv2-row--mini .hv2-row__n { font-size: 15px; padding-top: 0; }
 }
-
-/* "E mais": as duas frentes que não têm capítulo próprio (ficam em sistema.html) */
-.hv2-idx__more {
-  display: grid; grid-template-columns: var(--cols); column-gap: var(--c-gap); align-items: start;
-  padding-top: clamp(18px, 2vw, 26px);
-}
-.hv2-idx__k {
-  grid-column: 1 / 3; display: flex; align-items: center; gap: 10px; min-height: 44px; color: var(--muted);
-}
-.hv2-idx__k::before { content: ""; width: 22px; height: 9px; flex: none; background: var(--green); transform: skewX(var(--slash)); }
-.hv2-idx__links { grid-column: 3 / -1; list-style: none; margin: 0; padding: 0; }
-.hv2-xl {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding-block: 6px;
-  color: var(--body-paper); text-decoration: none; font-size: clamp(15px, 1.1vw, 17px); line-height: 1.35;
-}
-.hv2-xl b { color: var(--ink); font-weight: 700; }
-.hv2-xl span {
-  text-wrap: pretty;
-  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
-  transition: background-size .45s var(--ease);
-}
-.hv2-xl .i { width: 20px; height: 20px; color: var(--green-deep); transition: transform .45s var(--ease); }
-.hv2-xl:hover span, .hv2-xl:focus-visible span { background-size: 100% 1px; }
-.hv2-xl:hover .i, .hv2-xl:focus-visible .i { transform: translateX(4px); }
-.hv2-idx__links li + li .hv2-xl { border-top: 1px dashed #BDBDB6; }
-
 @media (max-width: 860px) {
-  /* celular: sumário mais enxuto (o subtítulo repete o título; respiros menores) */
+  /* celular: índice mais enxuto (respiros menores) */
   .hv2-idx { padding-block: 64px 52px; }
-  .hv2-idx__head { margin-bottom: 26px; }
-  .hv2-idx__head .sec__intro { display: none; }
-  .hv2-row__a, .hv2-follow .hv2-row__a { padding-block: 14px 12px; row-gap: 6px; }
-  .hv2-row__t { font-size: clamp(32px, 9.4vw, 60px); }
-  .hv2-row__d { font-size: 15px; line-height: 1.42; }
-  .hv2-idx__more { grid-template-columns: minmax(0, 1fr); padding-top: 14px; }
-  .hv2-idx__k, .hv2-idx__links { grid-column: auto; }
-  .hv2-idx__k { min-height: 0; margin-bottom: 4px; }
+  .hv2-idx__head { margin-bottom: 22px; }
+  .hv2-idx__head .sec__intro { font-size: 16px; }
+  .hv2-idx__more { margin-top: 26px; }
 }
 
 /* =====================================================================
@@ -372,12 +445,15 @@ br.hv2-m { display: none; }
   gap: 22px var(--c-gap); margin-bottom: clamp(32px, 3.8vw, 56px);
 }
 .hv2-shelf__side { display: grid; gap: 18px; }
+.hv2-wa-in { color: var(--paper); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; white-space: nowrap; }
+.hv2-wa-in .i { display: inline-block; width: 16px; height: 16px; margin-left: 6px; vertical-align: -2px; color: var(--green); }
+.hv2-wa-in:hover { color: var(--green); }
 .hv2-shelf__ctrl { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .hv2-shelf__ctrl .link-u { color: var(--paper); }
 .hv2-shelf__btns { display: flex; gap: 2px; margin-right: -5px; }
 .hv2-nav {
   position: relative; isolation: isolate; width: 62px; height: 48px; display: grid; place-items: center;
-  border: 0; background: none; color: var(--paper);
+  border: 0; background: none; color: var(--paper); cursor: pointer;
   transition: color .35s var(--ease), opacity .35s;
 }
 .hv2-nav::before {
@@ -386,9 +462,10 @@ br.hv2-m { display: none; }
 }
 .hv2-nav .i { width: 20px; height: 20px; }
 .hv2-nav--prev .i { transform: rotate(180deg); }
-.hv2-nav:not(:disabled):hover { color: var(--ink); }
-.hv2-nav:not(:disabled):hover::before { background: var(--green); border-color: var(--green); }
-.hv2-nav:disabled { opacity: .32; cursor: default; }
+.hv2-nav:not([aria-disabled="true"]):hover { color: var(--ink); }
+.hv2-nav:not([aria-disabled="true"]):hover::before { background: var(--green); border-color: var(--green); }
+.hv2-nav[aria-disabled="true"] { opacity: .32; cursor: default; }
+.hv2-nav:focus-visible { outline-offset: 2px; }
 
 .hv2-shelf__rail { position: relative; }
 .hv2-strip {
@@ -401,17 +478,30 @@ br.hv2-m { display: none; }
 }
 .hv2-strip::-webkit-scrollbar { display: none; }
 .hv2-strip:focus-visible { outline-offset: -2px; }
-.hv2-strip__i { flex: 0 0 clamp(262px, 21.5vw, 318px); display: flex; min-width: 0; scroll-snap-align: start; }
+.hv2-strip__i { flex: 0 0 clamp(258px, 20.5vw, 306px); display: flex; min-width: 0; scroll-snap-align: start; }
 .hv2-strip__i > .spec { flex: 1; }
-.hv2-strip .spec__model { font-size: clamp(30px, 2.5vw, 40px); }
-/* Uma linha de "o que é" (o resumo, em até 2 linhas): sem ela, "Elgin EL4200" não diz nada a quem é leigo */
-.hv2-strip .spec--compacta .spec__sub {
-  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
-  margin-top: 6px; font-size: 14px; line-height: 1.4;
-}
 /* Com o Lenis, o atributo data-lenis-prevent-horizontal ganha "overscroll-behavior: contain"
    (lenis.css): no toque, o deslize vertical sobre a faixa deixava de rolar a página. */
 .lenis .hv2-strip[data-lenis-prevent-horizontal] { overscroll-behavior-x: contain; overscroll-behavior-y: auto; }
+
+/* Fichas LIMPAS: foto, marca, nome, uma linha do que é, selo pequeno e Detalhes + WhatsApp.
+   Sem tabela técnica, sem nº e sem "Preço: Consulte" em letra grande. */
+.hv2-card { border: 0; }
+.hv2-card .spec__head, .hv2-card .spec__table, .hv2-card .spec__price:not(.has-preco) { display: none; }
+.hv2-card .spec__tab { font-size: 10px; padding-block: 7px 6px; }
+.hv2-card .spec__fig { margin: 30px 14px 0; aspect-ratio: 16 / 10.5; box-shadow: inset 0 0 0 1px #E6E6E0; }
+.hv2-card .spec__fig::before, .hv2-card .spec__fig::after { width: 9px; height: 9px; }
+.hv2-card .spec__body { padding: 14px 16px 0; }
+.hv2-card .spec__model { margin-top: 6px; font-size: clamp(28px, 2.2vw, 36px); line-height: 1.02; }
+.hv2-card .spec__sub {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+  margin-top: 6px; font-size: 14px; line-height: 1.4; color: #3A3A36;
+}
+.hv2-card .spec__badges { padding-top: 12px; }
+.hv2-card .badge { padding: 5px 7px 4px; gap: 6px; font-size: 10px; letter-spacing: .03em; }
+.hv2-card .badge::before { width: 6px; height: 6px; }
+.hv2-card .spec__price.has-preco b { font: 700 18px/1 var(--f-text); text-transform: none; }
+.hv2-card .spec__foot { margin-top: 14px; padding: 12px 14px 14px; border-top-color: #EBEBE6; }
 
 /* Ficha final "Ver todos" */
 .hv2-strip__more { flex-basis: clamp(230px, 17vw, 270px); }
@@ -446,31 +536,35 @@ br.hv2-m { display: none; }
   .hv2-shelf { padding-block: 64px calc(var(--tab) + 12px); }
   .hv2-shelf__head { grid-template-columns: minmax(0, 1fr); align-items: start; margin-bottom: 24px; }
   .hv2-shelf__head .h2, .hv2-shelf__side { grid-column: auto; }
+  .hv2-shelf__side .sec__intro { font-size: 16px; }
 }
 @media (max-width: 640px) {
-  .hv2-strip__i { flex-basis: min(74vw, 300px); }
-  .hv2-strip__more { flex-basis: min(60vw, 240px); }
+  .hv2-strip__i { flex-basis: min(72vw, 290px); }
+  .hv2-strip__more { flex-basis: min(58vw, 236px); }
   .hv2-shelf__foot { flex-direction: column; align-items: stretch; gap: 14px; }
   .hv2-shelf__bar { flex: none; }
   .hv2-shelf__note { text-align: left; }
   .hv2-shelf__btns { display: none; }
-  .hv2-strip .badge { font-size: 10px; letter-spacing: .02em; padding: 5px 7px 4px; gap: 6px; }
-  .hv2-strip .spec__fig { margin-top: 26px; }
+  .hv2-card .spec__fig { margin-top: 32px; }
+  .hv2-card .spec__model { font-size: 30px; }
+  .hv2-card .spec__foot .btn { font-size: 12px; }
 }
 
 /* =====================================================================
-   4. CONTRACAPA (nota do Google + chamada final) — fundo verde
+   4. ATENDIMENTO (nota do Google, clientes e chamada final) — fundo verde
    ===================================================================== */
 .hv2-end { padding-block: clamp(92px, 9vw, 150px) clamp(84px, 8vw, 132px); }
+.hv2-end .sec__tab b { font-size: 26px; }
 .hv2-end::before {
   content: ""; position: absolute; top: 0; bottom: 0; left: -9%; width: 22%;
   background: rgba(10,10,10,.08); transform: skewX(var(--slash)); pointer-events: none;
 }
 .hv2-end__in {
   display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); align-items: center;
-  gap: 40px clamp(36px, 6vw, 120px);
+  gap: 48px clamp(36px, 6vw, 120px);
 }
 .hv2-score { position: relative; color: var(--ink); }
+/* A nota é sempre "5,0" (sem contador): a barra preta só a revela */
 .hv2-score__n { width: fit-content; padding-bottom: .12em; font: 900 clamp(168px, 20vw, 350px)/.76 var(--f-display); letter-spacing: -.02em; margin-left: -.04em; }
 .hv2-score__stars { display: flex; gap: 6px; margin-top: clamp(6px, 1vw, 14px); }
 .hv2-score__stars .i { width: clamp(24px, 2.2vw, 34px); height: clamp(24px, 2.2vw, 34px); }
@@ -483,13 +577,52 @@ br.hv2-m { display: none; }
 .hv2-score__a .i { display: inline-block; width: 14px; height: 14px; margin-left: 6px; vertical-align: -1px; }
 .hv2-score__a:hover { text-decoration-thickness: 3px; }
 .hv2-score__sub { margin-top: 10px; max-width: 25em; font-size: 15.5px; line-height: 1.5; color: var(--ink); }
+
+/* Prova social discreta: os logos dos clientes em chapinhas brancas, sob a nota */
+.hv2-clients { margin-top: clamp(24px, 2.6vw, 34px); padding-top: 16px; border-top: 1.5px solid var(--ink); max-width: 30rem; }
+.hv2-clients__k { margin-bottom: 12px; color: var(--ink); }
+.hv2-clients__list { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; list-style: none; margin: 0; padding: 0; }
+.hv2-clients__i {
+  --k: 7px;
+  position: relative; display: grid; place-items: center; aspect-ratio: 5 / 3;
+  background: var(--white);
+  clip-path: polygon(var(--k) 0, 100% 0, calc(100% - var(--k)) 100%, 0 100%);
+}
+.hv2-clients__i img {
+  position: absolute; inset: 0; margin: auto; width: auto; height: auto; max-width: 70%; max-height: 56%;
+  object-fit: contain; mix-blend-mode: multiply;
+}
+.hv2-clients__i--sq img { max-height: 80%; }
+
 .hv2-end__t {
   font: 900 clamp(56px, 7vw, 132px)/.92 var(--f-display); text-transform: uppercase; letter-spacing: -.005em;
   text-wrap: balance; max-width: 8em;
 }
 .hv2-end__p { margin-top: clamp(18px, 2vw, 26px); max-width: 32em; font-size: clamp(16.5px, 1.3vw, 19px); line-height: 1.5; }
 .hv2-end__btns { margin-top: clamp(24px, 2.6vw, 34px); }
-.hv2-end__st { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 26px; margin-top: 22px; color: var(--ink); }
+
+/* WhatsApp por assunto: cada link abre a conversa com a mensagem certa */
+.hv2-ask { margin-top: clamp(26px, 2.8vw, 36px); max-width: 40rem; }
+.hv2-ask__k { margin-bottom: 8px; color: var(--ink); }
+.hv2-ask__list {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px;
+  list-style: none; margin: 0; padding: 0; border-top: 1.5px solid var(--ink);
+}
+.hv2-ask__a {
+  display: flex; align-items: center; gap: 10px; min-height: 52px; padding-block: 6px;
+  border-bottom: 1px solid rgba(10,10,10,.32);
+  color: var(--ink); text-decoration: none; font-size: 16px; font-weight: 600; line-height: 1.25;
+}
+.hv2-ask__a .i { flex: none; width: 18px; height: 18px; }
+.hv2-ask__go { margin-left: auto; transition: transform .45s var(--ease); }
+.hv2-ask__a span {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1.5px no-repeat;
+  transition: background-size .45s var(--ease);
+}
+.hv2-ask__a:hover span, .hv2-ask__a:focus-visible span { background-size: 100% 1.5px; }
+.hv2-ask__a:hover .hv2-ask__go, .hv2-ask__a:focus-visible .hv2-ask__go { transform: translateX(4px); }
+
+.hv2-end__st { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 26px; margin-top: 18px; color: var(--ink); }
 .hv2-end__more {
   display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); text-decoration: none;
   background: linear-gradient(currentColor, currentColor) 0 calc(50% + 1em) / 100% 1px no-repeat;
@@ -502,7 +635,7 @@ br.hv2-m { display: none; }
   .hv2-score { --fs: clamp(150px, 30vw, 260px); display: flex; flex-wrap: wrap; align-items: flex-end; column-gap: 24px; }
   .hv2-score__n { font-size: var(--fs); }
   .hv2-score__stars { margin: 0 0 calc(var(--fs) * .12); }
-  .hv2-score__txt, .hv2-score__sub { flex-basis: 100%; }
+  .hv2-score__txt, .hv2-score__sub, .hv2-clients { flex-basis: 100%; }
 }
 @media (max-width: 860px) {
   .hv2-end { padding-block: 68px 60px; }
@@ -511,21 +644,43 @@ br.hv2-m { display: none; }
   .hv2-score { --fs: clamp(104px, 31vw, 200px); column-gap: 16px; }
   .hv2-score__stars { gap: 4px; }
   .hv2-score__stars .i { width: clamp(20px, 6vw, 26px); height: clamp(20px, 6vw, 26px); }
+  .hv2-clients { max-width: 340px; }
+  .hv2-clients__list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .hv2-clients__i { aspect-ratio: 5 / 2; }
   .hv2-end__btns { flex-direction: column; align-items: stretch; gap: 10px; margin-left: 0; }
   .hv2-end__btns .btn { width: 100%; }
+  .hv2-ask__list { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* =====================================================================
-   5. Movimento — estado inicial no primeiro quadro (só com JS e sem
+   5. Leitura no celular: rótulos em mono nunca abaixo de 12 px nesta página
+   (também os blocos compartilhados que aparecem aqui: abas, faixa de
+   confiança, fichas, menu e rodapé)
+   ===================================================================== */
+@media (max-width: 760px) {
+  .pg-inicio--v2 .mono, .pg-inicio--v2 .status, .pg-inicio--v2 .trust__i, .pg-inicio--v2 .sec__tab,
+  .pg-inicio--v2 .spec__brand, .pg-inicio--v2 .spec__tab, .pg-inicio--v2 .badge,
+  .pg-inicio--v2 .menu__list a .mono, .pg-inicio--v2 .hv2-cap__a { font-size: 12px; }
+  .pg-inicio--v2 .sec__tab b { font-size: 24px; }
+  .hv2-card .badge { letter-spacing: .01em; padding: 5px 6px 4px; }
+}
+
+/* =====================================================================
+   6. Movimento — estado inicial no primeiro quadro (só com JS e sem
    "reduzir movimento"; o core tira "is-loading" antes de animar)
    ===================================================================== */
 @media (prefers-reduced-motion: no-preference) {
-  .is-loading .hv2-slab { clip-path: polygon(-12% -45%, -12% -45%, -32% 130%, -32% 130%); }
-  .via-vt.is-loading .hv2-slab { clip-path: none; }
+  .is-loading .hv2-slab__band { clip-path: inset(0 100% 0 0); }
+  .is-loading .hv2-slab__ps { opacity: 0; }
+  .via-vt.is-loading .hv2-slab__band { clip-path: none; }
+  .via-vt.is-loading .hv2-slab__ps { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hv2-slab__p, .hv2-row__th { transition: none; }
 }
 
 /* =====================================================================
-   6. Seletor "Variação 1 · 2 · 3" (js/preview.js) — SÓ NA FASE DE ESCOLHA.
+   7. Seletor "Variação 1 · 2 · 3" (js/preview.js) — SÓ NA FASE DE ESCOLHA.
    Sai de cena enquanto a capa ocupa o pé da tela (o js/home-v2.js marca
    html.hv2-lvp-off), para não cobrir a faixa de confiança nem os botões.
    Apagar junto com o preview.js na publicação.

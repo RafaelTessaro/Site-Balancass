@@ -29,6 +29,7 @@
       st.forEach(function (s, i) {
         var at = i / Math.max(1, st.length - 1) * 0.9;
         ftl.from($(".flow__mk", s), { scale: 0, duration: 0.08, ease: "none" }, at);
+        if (LV.jaVisivel && LV.jaVisivel(s)) return;   // já à vista no carregamento: não some
         gsap.from(s.querySelectorAll(".flow__n, .flow__t, p"), {
           opacity: 0, y: 24, stagger: 0.05, duration: 0.8, ease: "expo.out", delay: i * 0.08,
           scrollTrigger: LV.st(s, "top 85%")
@@ -38,11 +39,13 @@
 
     // Antes → depois: a seta empurra o "depois"
     $$(".ba__row").forEach(function (row) {
+      if (LV.jaVisivel && LV.jaVisivel(row)) return;
       gsap.from([$(".ba__ar", row), $(".ba__to", row)], { x: -24, opacity: 0, stagger: 0.1, duration: 0.9, ease: "expo.out", scrollTrigger: LV.st(row, "top 88%") });
     });
 
     // Tipos de balança: linhas entram da esquerda
     $$(".type").forEach(function (row) {
+      if (LV.jaVisivel && LV.jaVisivel(row)) return;
       gsap.from(row.children, { opacity: 0, x: -30, duration: 0.9, stagger: 0.06, ease: "expo.out", scrollTrigger: LV.st(row, "top 92%") });
     });
   });

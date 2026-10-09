@@ -31,15 +31,23 @@
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/paginas.css">
 <link rel="stylesheet" href="css/home-v2.css">
-<link rel="preload" as="image" href="../compartilhado/img/produtos-recorte/prix4uno.webp" imagesrcset="img/p480/r/prix4uno.webp 480w, ../compartilhado/img/produtos-recorte/prix4uno.webp 900w" imagesizes="(max-width: 700px) 46vw, 30vw" fetchpriority="high">
+<link rel="preload" as="image" href="../compartilhado/img/produtos-recorte/prix4uno.webp" imagesrcset="img/p480/r/prix4uno.webp 480w, ../compartilhado/img/produtos-recorte/prix4uno.webp 900w" imagesizes="(max-width: 860px) 62vw, 30vw" fetchpriority="high">
 <script>
   /* Marca o documento antes de pintar: as animações de entrada só escondem
      o conteúdo enquanto o JS não assume. Se algo falhar, tudo reaparece. */
-  document.documentElement.className += " js is-loading";
-  /* CDN lento: mostra tudo aos 2,6 s e marca "lv-tarde", para a abertura não tocar de novo depois */
-  setTimeout(function () { var c = document.documentElement.classList; if (c.contains("is-loading")) { c.remove("is-loading"); c.add("lv-tarde"); } }, 2600);
-  /* Chegou pela transição diagonal entre páginas: o destino aparece pronto */
-  addEventListener("pagereveal", function (e) { if (e.viewTransition) document.documentElement.classList.add("via-vt"); });
+  (function (d, w) {
+    d.className += " js is-loading";
+    /* Rede lenta (GSAP do CDN atrasado): aos 2,6 s o conteúdo aparece sozinho e fica marcado
+       "lv-late" (+ "via-vt"): quando o GSAP chegar, nada do que já está na tela some para
+       animar de novo e as aberturas vão direto ao fim. lv-tarde/LV_LIBEROU = nomes antigos. */
+    setTimeout(function () {
+      if (!d.classList.contains("is-loading")) return;
+      d.classList.add("lv-late", "lv-tarde", "via-vt"); d.classList.remove("is-loading"); w.LV_LIBEROU = true;
+    }, 2600);
+    /* Chegou pela transição diagonal entre páginas: o destino aparece pronto.
+       LV_REVELOU: o 1º quadro já saiu (o js/core.js usa para evitar corridas). */
+    addEventListener("pagereveal", function (e) { w.LV_REVELOU = true; if (e.viewTransition) d.classList.add("via-vt"); });
+  })(document.documentElement, window);
 </script>
 <noscript><style>.burger{display:none}@media(max-width:1080px){.nav{display:block;position:absolute;top:100%;left:0;right:0;margin:0;background:#0A0A0A;border-bottom:1px solid #1E1E1D}.nav__list{overflow-x:auto;padding-inline:var(--gut)}.nav__list li{flex:none}main{padding-top:44px}}</style></noscript>
 <script type="application/ld+json">
@@ -50,7 +58,7 @@
  "name": "Balanças.com — Automação Comercial",
  "alternateName": "Balanças.com",
  "slogan": "A medida certa para o seu negócio",
- "description": "Assistência técnica de balanças (oficina autorizada pelo IPEM-SP), venda de balanças e equipamentos de automação comercial, BC System (PDV com NFC-e e NF-e) e locação de terminais de fichas para eventos, em Rio Claro-SP.",
+ "description": "Assistência técnica de balanças (oficina autorizada pelo IPEM-SP), venda de balanças e equipamentos de automação comercial, BC System (PDV com NFC-e e NF-e) e locação de terminais de fichas para eventos, em Rio Claro-SP. Endereço: Rua 13, 650, entre as Avenidas 9 e 11 – Boa Morte, Rio Claro-SP.",
  "url": "https://balancass.com/",
  "logo": "https://balancass.com/img/logo-512.png",
  "image": "https://balancass.com/img/og-linha-verde.jpg",
@@ -66,13 +74,43 @@
  "taxID": "12.403.843/0001-18",
  "address": {
   "@type": "PostalAddress",
-  "streetAddress": "Rua 13, 650 - Boa Morte (entre as Avenidas 9 e 11)",
+  "streetAddress": "Rua 13, 650",
   "addressLocality": "Rio Claro",
   "addressRegion": "SP",
   "postalCode": "13500-120",
   "addressCountry": "BR"
  },
  "hasMap": "https://maps.google.com/?cid=12422356528564941318",
+ "makesOffer": [
+  {
+   "@type": "Offer",
+   "itemOffered": {
+    "@type": "Service",
+    "name": "Assistência técnica e manutenção de balanças"
+   }
+  },
+  {
+   "@type": "Offer",
+   "itemOffered": {
+    "@type": "Service",
+    "name": "BC System — sistema de gestão e PDV com NFC-e e NF-e"
+   }
+  },
+  {
+   "@type": "Offer",
+   "itemOffered": {
+    "@type": "Service",
+    "name": "Suporte em informática para o comércio"
+   }
+  },
+  {
+   "@type": "Offer",
+   "itemOffered": {
+    "@type": "Service",
+    "name": "Locação de terminais de fichas para eventos (BC Fichas)"
+   }
+  }
+ ],
  "openingHoursSpecification": [
   {
    "@type": "OpeningHoursSpecification",
@@ -212,10 +250,10 @@
 <main id="conteudo">
 
 <!-- =================================================================
-     VARIAÇÃO 2 · "CAPÍTULOS" — capa, sumário, vitrine e contracapa
+     VARIAÇÃO 2 · "CAPÍTULOS" — capa, o que a gente faz, vitrine e atendimento
      ================================================================= -->
 
-<!-- 1. CAPA: apresentação tipográfica -->
+<!-- 1. CAPA: manchete com a faixa verde e o produto (3 produtos se revezam) -->
 <section class="hv2-hero on-dark" aria-labelledby="hv2-t">
   <div class="hv2-hero__grid" aria-hidden="true"></div>
   <span class="crop crop--tl" aria-hidden="true"></span>
@@ -225,13 +263,19 @@
       <span class="hv2-title__pre mono" data-intro><span class="hv2-title__brand">Balanças.com</span> <span class="hv2-title__sep" aria-hidden="true">·</span> <span class="hv2-title__where">automação comercial em <span class="nobr">Rio Claro-SP</span></span><span class="sr-only">:</span></span>
       <span class="hv2-title__big">
         <span class="w" data-intro>A</span> <span class="w" data-intro>medida</span><br class="hv2-m"> <span class="w" data-intro>certa</span><br class="hv2-d">
-        <span class="hv2-l2"><span class="hv2-l2__t"><span class="w" data-intro>para</span><br class="hv2-m"> <span class="w" data-intro>o</span> <span class="w" data-intro>seu</span></span> <span class="hv2-slab" aria-hidden="true"><img src="../compartilhado/img/produtos-recorte/prix4uno.webp" srcset="img/p480/r/prix4uno.webp 480w, ../compartilhado/img/produtos-recorte/prix4uno.webp 900w" sizes="(max-width: 700px) 46vw, 30vw" width="900" height="534" alt="" fetchpriority="high" decoding="async"></span></span><br class="hv2-m">
+        <span class="hv2-l2"><span class="hv2-l2__t"><span class="w" data-intro>para</span><br class="hv2-m"> <span class="w" data-intro>o</span> <span class="w" data-intro>seu</span></span> <span class="hv2-slab" aria-hidden="true" data-slab><span class="hv2-slab__band"><i class="hv2-slab__wipe"></i></span><span class="hv2-slab__ps" data-slab-ps><span class="hv2-slab__p hv2-slab__p--uno is-on"><img src="../compartilhado/img/produtos-recorte/prix4uno.webp" srcset="img/p480/r/prix4uno.webp 480w, ../compartilhado/img/produtos-recorte/prix4uno.webp 900w" sizes="(max-width: 860px) 62vw, 30vw" width="900" height="534" alt="" fetchpriority="high" decoding="async"></span></span></span></span>
         <span class="w w--green" data-intro>negócio.</span>
       </span>
     </h1>
-    <div class="hv2-rule" aria-hidden="true" data-intro><i></i></div>
+    <div class="hv2-meta">
+      <div class="hv2-rule" aria-hidden="true" data-intro><i></i></div>
+      <p class="hv2-cap" data-intro>
+        <button class="hv2-cap__btn" type="button" aria-pressed="false" hidden data-cap-btn><svg class="i hv2-cap__pause" aria-hidden="true"><use href="#i-pause"/></svg><svg class="i hv2-cap__play" aria-hidden="true"><use href="#i-play"/></svg><span class="sr-only">Pausar a troca de produtos</span></button>
+        <a class="hv2-cap__a" href="produtos.html#p=toledo-prix-4-uno" data-cap-a><span class="hv2-cap__n" data-cap-n>01/03</span><span class="hv2-cap__t" data-cap-t>Balança com etiqueta</span><span class="hv2-cap__m" data-cap-m>Toledo Prix 4 Uno</span></a>
+      </p>
+    </div>
     <div class="hv2-hero__foot">
-      <p class="hv2-hero__lead" data-intro><strong>Prazer, somos a Balanças.com.</strong> Desde <span data-bc="desde">2010</span> cuidamos do que faz o comércio funcionar: consertamos balanças, vendemos equipamentos e implantamos o BC System, nosso sistema de PDV com NFC-e.</p>
+      <p class="hv2-hero__lead" data-intro><strong>Prazer, somos a Balanças.com.</strong> <b class="hv2-seg">Padarias, açougues, mercados e hortifrútis</b> de Rio Claro e região contam com a gente desde <span data-bc="desde">2010</span>: consertamos balanças, vendemos equipamentos e implantamos o BC System, nosso sistema de PDV com <span class="nobr">NFC-e</span>.</p>
       <div class="btns hv2-hero__ctas" data-intro data-float-off>
         <a class="btn btn--green btn--lg" data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener" data-magnet><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Falar no WhatsApp">Falar no WhatsApp</span></a>
         <a class="btn btn--line btn--lg" href="produtos.html"><span class="st" data-t="Ver produtos">Ver produtos</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
@@ -248,22 +292,22 @@
   </div>
 </section>
 
-<!-- 2. SUMÁRIO: um capítulo por página dedicada -->
-<section class="sec sec--first on-paper hv2-idx" id="sumario" aria-labelledby="sumario-t">
-  <div class="sec__tab" aria-hidden="true"><b>Sumário</b><span>· 5 capítulos</span></div>
+<!-- 2. O QUE A GENTE FAZ: uma linha por página dedicada, cada uma com a sua miniatura -->
+<section class="sec sec--first on-paper hv2-idx" id="servicos" aria-labelledby="servicos-t">
+  <div class="sec__tab" aria-hidden="true"><b>O que a gente faz</b></div>
   <div class="wrap">
     <div class="hv2-idx__head">
-      <h2 class="h2 h2--sm" id="sumario-t" data-reveal="split">A Balanças.com em cinco&nbsp;capítulos.</h2>
-      <p class="sec__intro" data-reveal>Escolha por onde começar. Cada capítulo abre uma página com os detalhes.</p>
+      <h2 class="h2 h2--sm" id="servicos-t" data-reveal="split">Por onde você quer começar?</h2>
+      <p class="sec__intro" data-reveal>Conserto, equipamento ou sistema: cada linha abre uma página com todos os detalhes.</p>
     </div>
-    <ol class="hv2-idx__list" role="list" data-peek-list>
+    <ol class="hv2-idx__list" role="list">
       <li class="hv2-row">
         <a class="hv2-row__a" href="assistencia.html">
           <span class="hv2-row__rule" aria-hidden="true"></span>
           <span class="hv2-row__n">01</span>
-          <span class="hv2-row__t"><span>Assistência técnica</span></span>
-          <span class="hv2-row__d">Oficina autorizada pelo <span class="nobr">IPEM-SP</span>: conserto, manutenção, lacre e regularização.</span>
-          <span class="hv2-row__th hv2-media hv2-media--green" aria-hidden="true"><img src="../compartilhado/img/produtos-recorte/w300.webp" srcset="img/p480/r/w300.webp 480w, ../compartilhado/img/produtos-recorte/w300.webp 900w" sizes="(max-width: 860px) 40vw, 400px" width="900" height="768" alt="" loading="lazy" decoding="async"></span>
+          <span class="hv2-row__t"><span>Assistência</span></span>
+          <span class="hv2-row__d">Conserto e manutenção de balanças, lacre e regularização. Oficina autorizada pelo <span class="nobr">IPEM-SP</span>.</span>
+          <span class="hv2-row__th" aria-hidden="true"><span class="hv2-plate hv2-plate--stamp"><svg class="hv2-plate__f" viewBox="0 0 100 70" preserveAspectRatio="none" focusable="false"><path d="M17.1 4H96.08L82.9 66H3.92Z"/></svg><svg class="hv2-stamp" viewBox="0 0 200 200" focusable="false"><defs><path id="hv2-stamp-top" d="M 34.2 138 A 76 76 0 1 1 165.8 138"/><path id="hv2-stamp-bot" d="M 19.25 114.24 A 82 82 0 0 0 180.75 114.24"/></defs><circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" stroke-width="6"/><circle cx="100" cy="100" r="85" fill="none" stroke="currentColor" stroke-width="2"/><text class="hv2-stamp__arc"><textPath href="#hv2-stamp-top" startOffset="50%" text-anchor="middle">Oficina autorizada</textPath></text><text class="hv2-stamp__arc"><textPath href="#hv2-stamp-bot" startOffset="50%" text-anchor="middle">Rio Claro-SP</textPath></text><circle cx="29" cy="134.6" r="4" fill="currentColor"/><circle cx="171" cy="134.6" r="4" fill="currentColor"/><line x1="36" y1="76" x2="164" y2="76" stroke="currentColor" stroke-width="3"/><line x1="36" y1="126" x2="164" y2="126" stroke="currentColor" stroke-width="3"/><text class="hv2-stamp__name" x="100" y="117" text-anchor="middle" textLength="124" lengthAdjust="spacingAndGlyphs">IPEM-SP</text></svg></span></span>
           <span class="hv2-row__go" aria-hidden="true"><svg class="i"><use href="#i-arrow"/></svg></span>
         </a>
       </li>
@@ -273,7 +317,7 @@
           <span class="hv2-row__n">02</span>
           <span class="hv2-row__t"><span>Produtos</span></span>
           <span class="hv2-row__d">Balanças, etiquetadoras, leitores de código de barras e tudo o que o caixa precisa: <span data-bc="total-produtos">41</span> equipamentos no catálogo.</span>
-          <span class="hv2-row__th hv2-media hv2-media--stage" aria-hidden="true"><img src="../compartilhado/img/fotos/prix-6-pdv.webp" width="1044" height="1098" alt="" loading="lazy" decoding="async"></span>
+          <span class="hv2-row__th" aria-hidden="true"><span class="hv2-plate hv2-plate--prod"><svg class="hv2-plate__f" viewBox="0 0 100 70" preserveAspectRatio="none" focusable="false"><path d="M17.1 4H96.08L82.9 66H3.92Z"/></svg><i class="hv2-plate__band"></i><img src="img/p480/r/prix3fit.webp" width="480" height="320" alt="" loading="lazy" decoding="async"><b class="hv2-plate__cap"><span data-bc="total-produtos">41</span> itens</b></span></span>
           <span class="hv2-row__go" aria-hidden="true"><svg class="i"><use href="#i-arrow"/></svg></span>
         </a>
       </li>
@@ -282,8 +326,8 @@
           <span class="hv2-row__rule" aria-hidden="true"></span>
           <span class="hv2-row__n">03</span>
           <span class="hv2-row__t"><span>BC System</span></span>
-          <span class="hv2-row__d">Gestão e PDV com NFC-e e NF-e, estoque e financeiro. Ainda no SAT? A gente migra você para a NFC-e.</span>
-          <span class="hv2-row__th hv2-media hv2-media--ink" aria-hidden="true"><img src="../compartilhado/img/sistema/bc-system-tablet-celular.webp" width="1000" height="640" alt="" loading="lazy" decoding="async"></span>
+          <span class="hv2-row__d">Sistema de caixa e gestão com <span class="nobr">NFC-e</span> e <span class="nobr">NF-e</span>, estoque e financeiro. Ainda no SAT? A gente migra você para a <span class="nobr">NFC-e</span>.</span>
+          <span class="hv2-row__th" aria-hidden="true"><span class="hv2-plate hv2-plate--screen"><svg class="hv2-plate__f" viewBox="0 0 100 70" preserveAspectRatio="none" focusable="false"><path d="M17.1 4H96.08L82.9 66H3.92Z"/></svg><img src="../compartilhado/img/sistema/bc-system-pdv-tablet.webp" width="1000" height="693" alt="" loading="lazy" decoding="async"><b class="hv2-plate__tag">NFC-e</b></span></span>
           <span class="hv2-row__go" aria-hidden="true"><svg class="i"><use href="#i-arrow"/></svg></span>
         </a>
       </li>
@@ -292,8 +336,8 @@
           <span class="hv2-row__rule" aria-hidden="true"></span>
           <span class="hv2-row__n">04</span>
           <span class="hv2-row__t"><span>A empresa</span></span>
-          <span class="hv2-row__d">Fundada em <span data-bc="desde">2010</span> por Fábio Godoy, há mais de <span data-bc="experiencia">25</span> anos no ramo. Conheça a equipe e quem confia na gente.</span>
-          <span class="hv2-row__th hv2-media hv2-media--team" aria-hidden="true"><span class="hv2-team" data-hv2-team><i>FG</i><i>AS</i><i>VG</i><i>TO</i><i>RT</i></span><b class="hv2-media__cap"><span data-bc="experiencia">25</span>+ anos<span class="hv2-media__more"> de ofício</span></b></span>
+          <span class="hv2-row__d">Desde <span data-bc="desde">2010</span> em Rio Claro, com Fábio Godoy à frente: mais de <span data-bc="experiencia">25</span> anos no ramo. Conheça a equipe e quem confia na gente.</span>
+          <span class="hv2-row__th" aria-hidden="true"><span class="hv2-plate hv2-plate--ruler"><svg class="hv2-plate__f" viewBox="0 0 100 70" preserveAspectRatio="none" focusable="false"><path d="M17.1 4H96.08L82.9 66H3.92Z"/></svg><span class="hv2-ruler"><span class="hv2-ruler__top"><b class="hv2-ruler__n">+<span data-bc="anos">16</span></b><span class="hv2-ruler__u">anos</span></span><span class="hv2-ruler__bar"><i></i></span><span class="hv2-ruler__y"><span data-bc="desde">2010</span><span>hoje</span></span></span></span></span>
           <span class="hv2-row__go" aria-hidden="true"><svg class="i"><use href="#i-arrow"/></svg></span>
         </a>
       </li>
@@ -302,29 +346,47 @@
           <span class="hv2-row__rule" aria-hidden="true"></span>
           <span class="hv2-row__n">05</span>
           <span class="hv2-row__t"><span>Contato</span></span>
-          <span class="hv2-row__d">WhatsApp, telefone, endereço e horários. Ou passe na loja, na <span class="nobr" data-bc="bairro">Boa Morte</span>.</span>
-          <span class="hv2-row__th hv2-media hv2-media--tel" aria-hidden="true"><svg class="hv2-media__ic"><use href="#i-wa"/></svg><b class="hv2-media__cap" data-bc="telefone">(19) 3023-9050</b></span>
+          <span class="hv2-row__d">WhatsApp, telefone, endereço e horários. Ou passe na loja: <span class="nobr" data-bc="rua">Rua 13, 650</span>, na <span class="nobr" data-bc="bairro">Boa Morte</span>.</span>
+          <span class="hv2-row__th" aria-hidden="true"><span class="hv2-plate hv2-plate--tel"><svg class="hv2-plate__f" viewBox="0 0 100 70" preserveAspectRatio="none" focusable="false"><path d="M17.1 4H96.08L82.9 66H3.92Z"/></svg><svg class="hv2-plate__ic"><use href="#i-wa"/></svg><b class="hv2-plate__cap" data-bc="telefone">(19) 3023-9050</b></span></span>
           <span class="hv2-row__go" aria-hidden="true"><svg class="i"><use href="#i-arrow"/></svg></span>
         </a>
       </li>
     </ol>
-    <div class="hv2-idx__more" data-reveal>
-      <p class="hv2-idx__k mono">E mais</p>
-      <ul class="hv2-idx__links" role="list">
-        <li><a class="hv2-xl" href="sistema.html#informatica"><span><b>Suporte em informática</b> para o comércio</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
-        <li><a class="hv2-xl" href="sistema.html#fichas"><span><b>BC Fichas</b>: terminais de fichas para festas e eventos</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+    <div class="hv2-idx__more">
+      <p class="hv2-idx__k mono" id="hv2-mais">E mais</p>
+      <ul class="hv2-idx__list hv2-idx__list--mini" role="list" aria-labelledby="hv2-mais">
+        <li class="hv2-row hv2-row--mini">
+          <a class="hv2-row__a" href="sistema.html#fichas">
+            <span class="hv2-row__rule" aria-hidden="true"></span>
+            <span class="hv2-row__n" aria-hidden="true">+</span>
+            <span class="hv2-row__t"><span>BC Fichas</span></span>
+            <span class="hv2-row__d">Aluguel de terminais de fichas por diária, para festas, quermesses e eventos.</span>
+            <span class="hv2-row__th" aria-hidden="true"><span class="hv2-plate hv2-plate--ticket"><svg class="hv2-plate__f" viewBox="0 0 100 70" preserveAspectRatio="none" focusable="false"><path d="M17.1 4H96.08L82.9 66H3.92Z"/></svg><span class="hv2-ticket"><span class="hv2-ticket__k">BC Fichas</span><b class="hv2-ticket__t">1 Pastel</b><i class="hv2-ticket__bars"></i></span></span></span>
+            <span class="hv2-row__go" aria-hidden="true"><svg class="i"><use href="#i-arrow"/></svg></span>
+          </a>
+        </li>
+        <li class="hv2-row hv2-row--mini">
+          <a class="hv2-row__a" href="sistema.html#informatica">
+            <span class="hv2-row__rule" aria-hidden="true"></span>
+            <span class="hv2-row__n" aria-hidden="true">+</span>
+            <span class="hv2-row__t"><span>Informática</span></span>
+            <span class="hv2-row__d">Computadores, impressoras, rede e periféricos do comércio funcionando, com suporte remoto ou no local.</span>
+            <span class="hv2-row__th" aria-hidden="true"><span class="hv2-plate hv2-plate--mon"><svg class="hv2-plate__f" viewBox="0 0 100 70" preserveAspectRatio="none" focusable="false"><path d="M17.1 4H96.08L82.9 66H3.92Z"/></svg><svg class="hv2-plate__ic"><use href="#i-monitor"/></svg><svg class="hv2-plate__ic2"><use href="#i-wrench"/></svg></span></span>
+            <span class="hv2-row__go" aria-hidden="true"><svg class="i"><use href="#i-arrow"/></svg></span>
+          </a>
+        </li>
       </ul>
     </div>
   </div>
 </section>
 
-<!-- 3. VITRINE: alguns produtos (vindos de window.BC) -->
-<section class="sec on-dark hv2-shelf" id="vitrine" aria-labelledby="vitrine-t">
+<!-- 3. VITRINE: alguns produtos (vindos de window.BC) em fichas limpas -->
+<section class="sec on-dark hv2-shelf" id="vitrine" aria-labelledby="vitrine-t" data-float-off>
   <div class="sec__tab" aria-hidden="true"><b>Vitrine</b><span>· do catálogo</span></div>
   <div class="wrap hv2-shelf__head">
     <h2 class="h2 h2--sm" id="vitrine-t" data-reveal="split">Da balança ao caixa.</h2>
     <div class="hv2-shelf__side">
-      <p class="sec__intro" data-reveal>Uma amostra do que a gente vende e instala. Preço e disponibilidade pelo WhatsApp.</p>
+      <p class="sec__intro" data-reveal>Uma amostra do que a gente vende e instala. Preço e disponibilidade <a class="hv2-wa-in" data-wa="Olá! Vim pelo site e quero orçamento de equipamento." href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20or%C3%A7amento%20de%20equipamento." target="_blank" rel="noopener">pelo WhatsApp<svg class="i" aria-hidden="true"><use href="#i-wa"/></svg></a>.</p>
       <div class="hv2-shelf__ctrl" data-reveal>
         <a class="link-u" href="produtos.html">Ver catálogo completo</a>
         <span class="hv2-shelf__btns" hidden data-strip-btns>
@@ -337,12 +399,12 @@
   <div class="hv2-shelf__rail">
     <ul class="hv2-strip" id="hv2-strip" role="list" aria-label="Equipamentos em destaque" data-strip data-lenis-prevent-horizontal>
       <!-- Fichas de reserva (sem JS e para buscadores): o js/home-v2.js troca pelas fichas atuais de window.BC -->
-      <li class="hv2-strip__i" data-id="toledo-prix-4-uno" data-fallback><article class="spec spec--compacta" data-cat="balancas" data-id="toledo-prix-4-uno"><span class="spec__tab">Balanças</span><div class="spec__head" aria-hidden="true"><span>Nº 01</span></div><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/prix4uno.webp" srcset="img/p480/r/prix4uno.webp 480w, ../compartilhado/img/produtos-recorte/prix4uno.webp 900w" sizes="(max-width: 640px) 74vw, 320px" alt="Toledo Prix 4 Uno" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Toledo</p><h3 class="spec__model"><span class="sr-only">Toledo </span>Prix 4 Uno</h3><p class="spec__sub">Balança etiquetadora compacta de 32&nbsp;kg, com Ethernet e Wi-Fi integrados.</p><dl class="spec__table"><div><dt>Capacidade</dt><dd>32 kg</dd></div><div><dt>Impressão</dt><dd>Térmica, 8 pontos/mm, 60 mm/s</dd></div><div><dt>Largura de etiqueta</dt><dd>40 mm</dd></div></dl><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><p class="spec__price"><span>Preço</span><b>Consulte</b></p><a class="btn btn--line btn--sm" href="produtos.html#p=toledo-prix-4-uno" data-detail="toledo-prix-4-uno" aria-label="Detalhes: Toledo Prix 4 Uno"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Toledo%20Prix%204%20Uno*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Toledo Prix 4 Uno pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
-      <li class="hv2-strip__i" data-id="elgin-l42-pro" data-fallback><article class="spec spec--compacta" data-cat="automacao" data-id="elgin-l42-pro"><span class="spec__tab">Automação</span><div class="spec__head" aria-hidden="true"><span>Nº 02</span></div><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/l42pro.webp" srcset="img/p480/r/l42pro.webp 480w, ../compartilhado/img/produtos-recorte/l42pro.webp 865w" sizes="(max-width: 640px) 74vw, 320px" alt="Elgin L42 Pro" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Elgin</p><h3 class="spec__model"><span class="sr-only">Elgin </span>L42 Pro</h3><p class="spec__sub">Impressora de etiquetas térmica direta ou com ribbon, 203&nbsp;dpi, até 102&nbsp;mm/s.</p><dl class="spec__table"><div><dt>Impressão</dt><dd>Transferência térmica ou térmica…</dd></div><div><dt>Resolução</dt><dd>203 dpi</dd></div><div><dt>Velocidade</dt><dd>Até 102 mm/s</dd></div></dl><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><p class="spec__price"><span>Preço</span><b>Consulte</b></p><a class="btn btn--line btn--sm" href="produtos.html#p=elgin-l42-pro" data-detail="elgin-l42-pro" aria-label="Detalhes: Elgin L42 Pro"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Elgin%20L42%20Pro*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Elgin L42 Pro pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
-      <li class="hv2-strip__i" data-id="centrium-mini-pc" data-fallback><article class="spec spec--compacta" data-cat="informatica" data-id="centrium-mini-pc"><span class="spec__tab">Informática</span><div class="spec__head" aria-hidden="true"><span>Nº 03</span></div><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/centrium-pc.webp" srcset="img/p480/r/centrium-pc.webp 480w, ../compartilhado/img/produtos-recorte/centrium-pc.webp 900w" sizes="(max-width: 640px) 74vw, 320px" alt="Centrium Mini PC para PDV" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Centrium</p><h3 class="spec__model"><span class="sr-only">Centrium </span>Mini PC para PDV</h3><p class="spec__sub">Computador compacto para o caixa, que libera espaço no balcão.</p><dl class="spec__table"><div><dt>Formato</dt><dd>Mini PC</dd></div><div><dt>Uso</dt><dd>Frente de caixa</dd></div></dl><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><p class="spec__price"><span>Preço</span><b>Consulte</b></p><a class="btn btn--line btn--sm" href="produtos.html#p=centrium-mini-pc" data-detail="centrium-mini-pc" aria-label="Detalhes: Centrium Mini PC para PDV"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Centrium%20Mini%20PC%20para%20PDV*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Centrium Mini PC para PDV pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
-      <li class="hv2-strip__i" data-id="toledo-prix-3-fit" data-fallback><article class="spec spec--compacta" data-cat="balancas" data-id="toledo-prix-3-fit"><span class="spec__tab">Balanças</span><div class="spec__head" aria-hidden="true"><span>Nº 04</span></div><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/prix3fit.webp" srcset="img/p480/r/prix3fit.webp 480w, ../compartilhado/img/produtos-recorte/prix3fit.webp 900w" sizes="(max-width: 640px) 74vw, 320px" alt="Toledo Prix 3 Fit" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Toledo</p><h3 class="spec__model"><span class="sr-only">Toledo </span>Prix 3 Fit</h3><p class="spec__sub">Balança computadora de 32&nbsp;kg com bateria de até 167&nbsp;horas, para o pequeno varejo.</p><dl class="spec__table"><div><dt>Capacidade</dt><dd>32 kg</dd></div><div><dt>Display</dt><dd>LCD alfanumérico com backlight verde</dd></div><div><dt>Bateria</dt><dd>Interna recarregável, até 167 horas…</dd></div></dl><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><p class="spec__price"><span>Preço</span><b>Consulte</b></p><a class="btn btn--line btn--sm" href="produtos.html#p=toledo-prix-3-fit" data-detail="toledo-prix-3-fit" aria-label="Detalhes: Toledo Prix 3 Fit"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Toledo%20Prix%203%20Fit*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Toledo Prix 3 Fit pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
-      <li class="hv2-strip__i" data-id="elgin-el4200" data-fallback><article class="spec spec--compacta" data-cat="automacao" data-id="elgin-el4200"><span class="spec__tab">Automação</span><div class="spec__head" aria-hidden="true"><span>Nº 05</span></div><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/el4200.webp" srcset="img/p480/r/el4200.webp 480w, ../compartilhado/img/produtos-recorte/el4200.webp 685w" sizes="(max-width: 640px) 74vw, 320px" alt="Elgin EL4200" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Elgin</p><h3 class="spec__model"><span class="sr-only">Elgin </span>EL4200</h3><p class="spec__sub">Leitor fixo laser omnidirecional para checkout, 3.000&nbsp;scans/s.</p><dl class="spec__table"><div><dt>Padrão de varredura</dt><dd>Laser omnidirecional, 5 direções / 30…</dd></div><div><dt>Velocidade</dt><dd>3.000 varreduras por segundo</dd></div><div><dt>Fonte de luz</dt><dd>Diodo laser de 650 nm</dd></div></dl><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><p class="spec__price"><span>Preço</span><b>Consulte</b></p><a class="btn btn--line btn--sm" href="produtos.html#p=elgin-el4200" data-detail="elgin-el4200" aria-label="Detalhes: Elgin EL4200"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Elgin%20EL4200*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Elgin EL4200 pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
-      <li class="hv2-strip__i" data-id="elgin-i9" data-fallback><article class="spec spec--compacta" data-cat="informatica" data-id="elgin-i9"><span class="spec__tab">Informática</span><div class="spec__head" aria-hidden="true"><span>Nº 06</span></div><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/elgin-i9.webp" srcset="img/p480/r/elgin-i9.webp 480w, ../compartilhado/img/produtos-recorte/elgin-i9.webp 805w" sizes="(max-width: 640px) 74vw, 320px" alt="Elgin i9 Full" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Elgin</p><h3 class="spec__model"><span class="sr-only">Elgin </span>i9 Full</h3><p class="spec__sub">Impressora de cupom 300&nbsp;mm/s com guilhotina e USB, Ethernet e Serial.</p><dl class="spec__table"><div><dt>Velocidade de impressão</dt><dd>Até 300 mm/s</dd></div><div><dt>Conectividade</dt><dd>USB, Ethernet e Serial RS-232</dd></div><div><dt>Largura do papel</dt><dd>57,5 mm ou 80 mm</dd></div></dl><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><p class="spec__price"><span>Preço</span><b>Consulte</b></p><a class="btn btn--line btn--sm" href="produtos.html#p=elgin-i9" data-detail="elgin-i9" aria-label="Detalhes: Elgin i9 Full"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Elgin%20i9%20Full*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Elgin i9 Full pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
+      <li class="hv2-strip__i" data-id="toledo-prix-4-uno" data-fallback><article class="spec spec--compacta hv2-card" data-cat="balancas" data-id="toledo-prix-4-uno"><span class="spec__tab">Balanças</span><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/prix4uno.webp" srcset="img/p480/r/prix4uno.webp 480w, ../compartilhado/img/produtos-recorte/prix4uno.webp 900w" sizes="(max-width: 640px) 70vw, 300px" alt="Toledo Prix 4 Uno" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Toledo</p><h3 class="spec__model"><span class="sr-only">Toledo </span>Prix 4 Uno</h3><p class="spec__sub">Balança etiquetadora compacta de 32 kg.</p><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><a class="btn btn--line btn--sm" href="produtos.html#p=toledo-prix-4-uno" data-detail="toledo-prix-4-uno" aria-label="Detalhes: Toledo Prix 4 Uno"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Toledo%20Prix%204%20Uno*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Toledo Prix 4 Uno pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
+      <li class="hv2-strip__i" data-id="elgin-l42-pro" data-fallback><article class="spec spec--compacta hv2-card" data-cat="automacao" data-id="elgin-l42-pro"><span class="spec__tab">Automação</span><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/l42pro.webp" srcset="img/p480/r/l42pro.webp 480w, ../compartilhado/img/produtos-recorte/l42pro.webp 865w" sizes="(max-width: 640px) 70vw, 300px" alt="Elgin L42 Pro" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Elgin</p><h3 class="spec__model"><span class="sr-only">Elgin </span>L42 Pro</h3><p class="spec__sub">Impressora de etiquetas térmica direta ou com ribbon.</p><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><a class="btn btn--line btn--sm" href="produtos.html#p=elgin-l42-pro" data-detail="elgin-l42-pro" aria-label="Detalhes: Elgin L42 Pro"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Elgin%20L42%20Pro*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Elgin L42 Pro pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
+      <li class="hv2-strip__i" data-id="centrium-mini-pc" data-fallback><article class="spec spec--compacta hv2-card" data-cat="informatica" data-id="centrium-mini-pc"><span class="spec__tab">Informática</span><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/centrium-pc.webp" srcset="img/p480/r/centrium-pc.webp 480w, ../compartilhado/img/produtos-recorte/centrium-pc.webp 900w" sizes="(max-width: 640px) 70vw, 300px" alt="Centrium Mini PC para PDV" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Centrium</p><h3 class="spec__model"><span class="sr-only">Centrium </span>Mini PC para PDV</h3><p class="spec__sub">Computador compacto para o caixa.</p><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><a class="btn btn--line btn--sm" href="produtos.html#p=centrium-mini-pc" data-detail="centrium-mini-pc" aria-label="Detalhes: Centrium Mini PC para PDV"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Centrium%20Mini%20PC%20para%20PDV*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Centrium Mini PC para PDV pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
+      <li class="hv2-strip__i" data-id="toledo-prix-3-fit" data-fallback><article class="spec spec--compacta hv2-card" data-cat="balancas" data-id="toledo-prix-3-fit"><span class="spec__tab">Balanças</span><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/prix3fit.webp" srcset="img/p480/r/prix3fit.webp 480w, ../compartilhado/img/produtos-recorte/prix3fit.webp 900w" sizes="(max-width: 640px) 70vw, 300px" alt="Toledo Prix 3 Fit" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Toledo</p><h3 class="spec__model"><span class="sr-only">Toledo </span>Prix 3 Fit</h3><p class="spec__sub">Balança computadora de 32 kg com bateria de até 167 horas.</p><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><a class="btn btn--line btn--sm" href="produtos.html#p=toledo-prix-3-fit" data-detail="toledo-prix-3-fit" aria-label="Detalhes: Toledo Prix 3 Fit"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Toledo%20Prix%203%20Fit*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Toledo Prix 3 Fit pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
+      <li class="hv2-strip__i" data-id="elgin-el4200" data-fallback><article class="spec spec--compacta hv2-card" data-cat="automacao" data-id="elgin-el4200"><span class="spec__tab">Automação</span><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/el4200.webp" srcset="img/p480/r/el4200.webp 480w, ../compartilhado/img/produtos-recorte/el4200.webp 685w" sizes="(max-width: 640px) 70vw, 300px" alt="Elgin EL4200" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Elgin</p><h3 class="spec__model"><span class="sr-only">Elgin </span>EL4200</h3><p class="spec__sub">Leitor fixo laser omnidirecional para checkout.</p><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><a class="btn btn--line btn--sm" href="produtos.html#p=elgin-el4200" data-detail="elgin-el4200" aria-label="Detalhes: Elgin EL4200"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Elgin%20EL4200*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Elgin EL4200 pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
+      <li class="hv2-strip__i" data-id="elgin-i9" data-fallback><article class="spec spec--compacta hv2-card" data-cat="informatica" data-id="elgin-i9"><span class="spec__tab">Informática</span><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/elgin-i9.webp" srcset="img/p480/r/elgin-i9.webp 480w, ../compartilhado/img/produtos-recorte/elgin-i9.webp 805w" sizes="(max-width: 640px) 70vw, 300px" alt="Elgin i9 Full" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Elgin</p><h3 class="spec__model"><span class="sr-only">Elgin </span>i9 Full</h3><p class="spec__sub">Impressora de cupom 300 mm/s com guilhotina e USB.</p><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><a class="btn btn--line btn--sm" href="produtos.html#p=elgin-i9" data-detail="elgin-i9" aria-label="Detalhes: Elgin i9 Full"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Elgin%20i9%20Full*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Elgin i9 Full pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
       <li class="hv2-strip__i hv2-strip__more"><a class="hv2-more" href="produtos.html"><span class="hv2-more__k mono">Catálogo completo</span><span class="hv2-more__n" data-bc="total-produtos">41</span><span class="hv2-more__t">equipamentos no catálogo</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
     </ul>
   </div>
@@ -352,22 +414,42 @@
   </div>
 </section>
 
-<!-- 4. CONTRACAPA: nota do Google + chamada final -->
+<!-- 4. ATENDIMENTO: nota do Google, clientes e chamada final (WhatsApp por assunto) -->
 <section class="sec on-green hv2-end" id="fale" aria-labelledby="fale-t" data-float-off>
-  <div class="sec__tab" aria-hidden="true"><b>Contracapa</b><span>· atendimento</span></div>
+  <div class="sec__tab" aria-hidden="true"><b>Atendimento</b></div>
   <div class="wrap hv2-end__in">
     <div class="hv2-score">
       <p class="hv2-score__n" aria-hidden="true"><span data-bc="google-nota">5,0</span></p>
       <div class="hv2-score__stars" aria-hidden="true"><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg></div>
       <p class="hv2-score__txt"><span class="sr-only">Nota <span data-bc="google-nota">5,0</span> de 5. </span><a class="hv2-score__a" data-bc-href="google" href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener">Com <b data-bc="google-qtd">56</b> avaliações no Google<svg class="i" aria-hidden="true"><use href="#i-out"/></svg></a></p>
       <p class="hv2-score__sub">Nas avaliações, os clientes elogiam a agilidade, o profissionalismo e a equipe atenciosa.</p>
+      <div class="hv2-clients">
+        <p class="hv2-clients__k mono" id="hv2-clientes">Alguns clientes</p>
+        <ul class="hv2-clients__list" role="list" aria-labelledby="hv2-clientes">
+          <li class="hv2-clients__i hv2-clients__i--sq"><img src="../compartilhado/img/clientes/brasil-frios.webp" width="480" height="480" alt="Brasil Frios Supermercados" loading="lazy" decoding="async"></li>
+          <li class="hv2-clients__i hv2-clients__i--sq"><img src="../compartilhado/img/clientes/camargo.webp" width="225" height="225" alt="Supermercados Camargo" loading="lazy" decoding="async"></li>
+          <li class="hv2-clients__i"><img src="../compartilhado/img/clientes/enxuto.webp" width="190" height="50" alt="Enxuto" loading="lazy" decoding="async"></li>
+          <li class="hv2-clients__i"><img src="../compartilhado/img/clientes/examine.webp" width="480" height="155" alt="Examine Supermercados" loading="lazy" decoding="async"></li>
+          <li class="hv2-clients__i"><img src="img/clientes/qualidade.webp" width="198" height="75" alt="Mercado Qualidade" loading="lazy" decoding="async"></li>
+          <li class="hv2-clients__i"><img src="../compartilhado/img/clientes/quitandao.webp" width="321" height="113" alt="Quitandão Supermercados" loading="lazy" decoding="async"></li>
+        </ul>
+      </div>
     </div>
     <div class="hv2-end__cta">
       <h2 class="hv2-end__t" id="fale-t" data-reveal="split">Conte com a gente.</h2>
       <p class="hv2-end__p" data-reveal>Conserto, equipamento ou sistema: diga o que você precisa e a gente indica o caminho certo. Atendimento de segunda a sábado, na <span class="nobr" data-bc="rua">Rua 13, 650</span> – <span class="nobr" data-bc="bairro">Boa Morte</span>.</p>
       <div class="btns hv2-end__btns" data-reveal>
-        <a class="btn btn--ink btn--lg" data-wa="Olá! Vim pela página inicial do site e gostaria de atendimento." href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pela%20p%C3%A1gina%20inicial%20do%20site%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener" data-magnet><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Falar no WhatsApp">Falar no WhatsApp</span></a>
+        <a class="btn btn--ink btn--lg" data-wa="Olá! Vim pela página inicial do site e gostaria de atendimento." href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vim%20pela%20p%C3%A1gina%20inicial%20do%20site%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener" data-magnet><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Falar no WhatsApp">Falar no WhatsApp</span></a>
         <a class="btn btn--line btn--lg" data-bc-href="tel" href="tel:+551930239050"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg><span class="st" data-t="(19) 3023-9050" data-bc="telefone">(19) 3023-9050</span></a>
+      </div>
+      <div class="hv2-ask" data-reveal>
+        <p class="hv2-ask__k mono" id="hv2-assunto">Ou vá direto ao assunto</p>
+        <ul class="hv2-ask__list" role="list" aria-labelledby="hv2-assunto">
+          <li><a class="hv2-ask__a" data-wa="Olá! Vim pelo site e preciso de conserto/manutenção da minha balança." href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20preciso%20de%20conserto%2Fmanuten%C3%A7%C3%A3o%20da%20minha%20balan%C3%A7a." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span>Conserto de balança</span><svg class="i hv2-ask__go" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+          <li><a class="hv2-ask__a" data-wa="Olá! Vim pelo site e quero orçamento de equipamento." href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20or%C3%A7amento%20de%20equipamento." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span>Orçamento de equipamento</span><svg class="i hv2-ask__go" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+          <li><a class="hv2-ask__a" data-wa="Olá! Vim pelo site e quero conhecer o BC System / sair do SAT." href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20conhecer%20o%20BC%20System%20%2F%20sair%20do%20SAT." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span>BC System ou sair do SAT</span><svg class="i hv2-ask__go" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+          <li><a class="hv2-ask__a" data-wa="Olá! Vim pelo site e quero alugar o BC Fichas para um evento." href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20alugar%20o%20BC%20Fichas%20para%20um%20evento." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span>Alugar o BC Fichas</span><svg class="i hv2-ask__go" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+        </ul>
       </div>
       <p class="hv2-end__st mono" data-reveal><a class="hv2-end__more" href="contato.html">Todos os contatos e horários</a></p>
     </div>

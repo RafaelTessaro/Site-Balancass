@@ -33,10 +33,19 @@
 <script>
   /* Marca o documento antes de pintar: as animações de entrada só escondem
      o conteúdo enquanto o JS não assume. Se algo falhar, tudo reaparece. */
-  document.documentElement.className += " js is-loading";
-  setTimeout(function () { document.documentElement.classList.remove("is-loading"); }, 2600);
-  /* Chegou pela transição diagonal entre páginas: o destino aparece pronto */
-  addEventListener("pagereveal", function (e) { if (e.viewTransition) document.documentElement.classList.add("via-vt"); });
+  (function (d, w) {
+    d.className += " js is-loading";
+    /* Rede lenta (GSAP do CDN atrasado): aos 2,6 s o conteúdo aparece sozinho e fica marcado
+       "lv-late" (+ "via-vt"): quando o GSAP chegar, nada do que já está na tela some para
+       animar de novo e as aberturas vão direto ao fim. lv-tarde/LV_LIBEROU = nomes antigos. */
+    setTimeout(function () {
+      if (!d.classList.contains("is-loading")) return;
+      d.classList.add("lv-late", "lv-tarde", "via-vt"); d.classList.remove("is-loading"); w.LV_LIBEROU = true;
+    }, 2600);
+    /* Chegou pela transição diagonal entre páginas: o destino aparece pronto.
+       LV_REVELOU: o 1º quadro já saiu (o js/core.js usa para evitar corridas). */
+    addEventListener("pagereveal", function (e) { w.LV_REVELOU = true; if (e.viewTransition) d.classList.add("via-vt"); });
+  })(document.documentElement, window);
 </script>
 <noscript><style>.burger{display:none}@media(max-width:1080px){.nav{display:block;position:absolute;top:100%;left:0;right:0;margin:0;background:#0A0A0A;border-bottom:1px solid #1E1E1D}.nav__list{overflow-x:auto;padding-inline:var(--gut)}.nav__list li{flex:none}main{padding-top:44px}}</style></noscript>
 <script type="application/ld+json">
@@ -86,7 +95,7 @@
    "name": "Balanças.com — Automação Comercial",
    "alternateName": "Balanças.com",
    "slogan": "A medida certa para o seu negócio",
-   "description": "Assistência técnica de balanças (oficina autorizada pelo IPEM-SP), venda de balanças e equipamentos de automação comercial, BC System (PDV com NFC-e e NF-e) e locação de terminais de fichas para eventos, em Rio Claro-SP.",
+   "description": "Assistência técnica de balanças (oficina autorizada pelo IPEM-SP), venda de balanças e equipamentos de automação comercial, BC System (PDV com NFC-e e NF-e) e locação de terminais de fichas para eventos, em Rio Claro-SP. Endereço: Rua 13, 650, entre as Avenidas 9 e 11 – Boa Morte, Rio Claro-SP.",
    "url": "https://balancass.com/",
    "logo": "https://balancass.com/img/logo-512.png",
    "image": "https://balancass.com/img/og-linha-verde.jpg",
@@ -102,13 +111,43 @@
    "taxID": "12.403.843/0001-18",
    "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Rua 13, 650 - Boa Morte",
+    "streetAddress": "Rua 13, 650",
     "addressLocality": "Rio Claro",
     "addressRegion": "SP",
     "postalCode": "13500-120",
     "addressCountry": "BR"
    },
    "hasMap": "https://maps.google.com/?cid=12422356528564941318",
+   "makesOffer": [
+    {
+     "@type": "Offer",
+     "itemOffered": {
+      "@type": "Service",
+      "name": "Assistência técnica e manutenção de balanças"
+     }
+    },
+    {
+     "@type": "Offer",
+     "itemOffered": {
+      "@type": "Service",
+      "name": "BC System — sistema de gestão e PDV com NFC-e e NF-e"
+     }
+    },
+    {
+     "@type": "Offer",
+     "itemOffered": {
+      "@type": "Service",
+      "name": "Suporte em informática para o comércio"
+     }
+    },
+    {
+     "@type": "Offer",
+     "itemOffered": {
+      "@type": "Service",
+      "name": "Locação de terminais de fichas para eventos (BC Fichas)"
+     }
+    }
+   ],
    "openingHoursSpecification": [
     {
      "@type": "OpeningHoursSpecification",

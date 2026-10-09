@@ -36,6 +36,25 @@
   LV.pagina = (decodeURIComponent(location.pathname.split("/").pop() || "") || "index.html").toLowerCase();
   LV.refresh = function () { if (window.ScrollTrigger) ScrollTrigger.refresh(); };
 
+  /* Página "já à vista" quando o GSAP chega:
+     - LV.tarde():  a rede de segurança do <head> (2,6 s) já mostrou tudo ("lv-late");
+     - LV.pronto(): o topo deve aparecer TERMINADO (chegou pela transição entre páginas — "via-vt" —
+                    ou chegou tarde): as timelines de abertura vão direto ao fim (tl.progress(1));
+     - LV.jaVisivel(el): o elemento está na tela e a pessoa JÁ o viu (um quadro foi pintado antes do
+                    GSAP, chegada por âncora, recarregar no meio da página, transição ou chegada tarde)
+                    → não esconder para animar de novo. Vale para data-reveal, contadores, abas .sec__tab,
+                    SAT e carimbo; use também nos ganchos das páginas (LV.onMotion). */
+  var pintou = false, manter = false;
+  requestAnimationFrame(function () { requestAnimationFrame(function () { pintou = true; }); });
+  LV.tarde = function () { return doc.classList.contains("lv-late"); };
+  LV.pronto = function () { return doc.classList.contains("via-vt") || LV.tarde(); };
+  LV.naTela = function (el) {
+    if (!el) return false;
+    var r = el.getBoundingClientRect();
+    return !!(r.width || r.height) && r.bottom > 0 && r.top < (window.innerHeight || doc.clientHeight);
+  };
+  LV.jaVisivel = function (el) { return manter && LV.naTela(el); };
+
   /* ------------------------------------------------------------------
      1. Dados da empresa → HTML (o HTML já traz os mesmos dados p/ SEO)
      ------------------------------------------------------------------ */
@@ -188,15 +207,26 @@
   LV.GRADE_HORARIOS = GRADE;
   var DIAS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 
-  /* Feriados (a loja fecha: "Domingo e feriados — Fechado").
-     FIXOS: "MM-DD" nacionais + estadual de SP (09/07). MÓVEIS: dias contados a partir da
-     Páscoa (−2 = Sexta-feira Santa). Feriado municipal de Rio Claro, ponto facultativo
-     (Carnaval, Corpus Christi) ou recesso da loja: acrescente aqui, ex. "06-24" ou −47/−48
-     (Carnaval) e 60 (Corpus Christi), ou datas avulsas em DATAS ("2026-12-24"). */
+  /* Feriados (a loja fecha: "Domingo e feriados — Fechado"). O status "Aberto agora" do site
+     consulta esta lista, no calendário de Rio Claro (America/Sao_Paulo).
+
+     NACIONAIS (Leis 662/49, 6.802/80, 10.607/02 e 14.759/23) — já incluídos, todo ano:
+       01/01 Confraternização · 21/04 Tiradentes · 01/05 Trabalho · 07/09 Independência ·
+       12/10 N. Sra. Aparecida · 02/11 Finados · 15/11 República · 20/11 Consciência Negra ·
+       25/12 Natal · Sexta-feira Santa (móvel, 2 dias antes da Páscoa).
+     ESTADUAL (SP): 09/07 Revolução Constitucionalista — já incluído.
+
+     >>> FERIADOS MUNICIPAIS DE RIO CLARO: o DONO ACRESCENTA AQUI, em MUNICIPAIS. <<<
+       - data fixa: "MM-DD" entre aspas, ex. "06-24" (confirme no calendário oficial da Prefeitura);
+       - data móvel: em MOVEIS, dias contados a partir da Páscoa, ex. 60 = Corpus Christi,
+         −47 = terça de Carnaval, −48 = segunda de Carnaval (só se a loja fechar nesses dias);
+       - dia avulso (ponte, recesso, inventário): em DATAS, "AAAA-MM-DD", ex. "2026-12-24".
+     Depois de mudar, confira com LV.statusAgora() no console do navegador. */
   var FERIADOS = {
     FIXOS: ["01-01", "04-21", "05-01", "07-09", "09-07", "10-12", "11-02", "11-15", "11-20", "12-25"],
-    MOVEIS: [-2],
-    DATAS: []
+    MUNICIPAIS: [],          // ← feriados municipais de Rio Claro ("MM-DD")
+    MOVEIS: [-2],            // −2 = Sexta-feira Santa (nacional); Corpus Christi = 60
+    DATAS: []                // dias avulsos "AAAA-MM-DD"
   };
   LV.FERIADOS = FERIADOS;
   function pascoa(y) {   // algoritmo de Meeus/Jones/Butcher → Date (UTC)
@@ -210,7 +240,8 @@
   function ehFeriado(t) {   // t = meia-noite UTC do dia (no calendário de Rio Claro)
     var dt = new Date(t), y = dt.getUTCFullYear();
     var md = LV.pad(dt.getUTCMonth() + 1) + "-" + LV.pad(dt.getUTCDate());
-    if (FERIADOS.FIXOS.indexOf(md) !== -1 || FERIADOS.DATAS.indexOf(y + "-" + md) !== -1) return true;
+    if (FERIADOS.FIXOS.indexOf(md) !== -1 || (FERIADOS.MUNICIPAIS || []).indexOf(md) !== -1 ||
+      (FERIADOS.DATAS || []).indexOf(y + "-" + md) !== -1) return true;
     var p = pascoa(y);
     return FERIADOS.MOVEIS.some(function (n) { return p + n * DIA_MS === t; });
   }
@@ -286,14 +317,16 @@
     return s ? s[1] : "";
   };
 
-  // Miniaturas de 480 px (img/p480/r/), geradas a partir de compartilhado/img/produtos-recorte.
-  // [largura da miniatura, largura do original]. Produto novo sem miniatura usa só o original.
-  var P480 = {"r/2098.webp":[480,900],"r/8217.webp":[480,882],"r/9094plus.webp":[480,785],"r/allmidia.webp":[480,900],"r/argox.webp":[480,609],"r/balmak-one.webp":[480,900],"r/balmak-orion2.webp":[480,900],"r/balmak.webp":[480,900],"r/bck30.webp":[480,886],"r/centrium-pc.webp":[480,900],"r/el4200.webp":[480,685],"r/elgin-i9.webp":[480,805],"r/epson-t20.webp":[480,755],"r/fatiador.webp":[480,900],"r/gavetabema.webp":[480,900],"r/gertec504.webp":[480,732],"r/l42pro.webp":[480,865],"r/menno.webp":[480,900],"r/mit.webp":[480,900],"r/mt720.webp":[480,882],"r/nobreak-apc.webp":[480,598],"r/one-pesadora.webp":[480,900],"r/prix3fit.webp":[480,900],"r/prix3plus.webp":[480,900],"r/prix4due.webp":[480,809],"r/prix4uno.webp":[480,900],"r/prix5.webp":[480,900],"r/sko44.webp":[480,886],"r/tanca.webp":[480,742],"r/tec44.webp":[480,900],"r/tl120.webp":[480,599],"r/tl900.webp":[480,631],"r/uni350.webp":[480,809],"r/w300.webp":[480,900],"r/zebra.webp":[480,785]};
+  // Miniaturas de 480 px: img/p480/r/ (recorte, de compartilhado/img/produtos-recorte) e img/p480/f/
+  // (foto em fundo branco, de compartilhado/img/produtos). WebP q82, geradas com Pillow.
+  // [largura da miniatura, largura do original]. Original com 480 px ou menos (bk200f, gertecg2,
+  // hospitalar, quickscan) e produto novo sem miniatura usam só o original.
+  var P480 = {"r/2098.webp":[480,900],"r/8217.webp":[480,882],"r/9094plus.webp":[480,785],"r/allmidia.webp":[480,900],"r/argox.webp":[480,609],"r/balmak-one.webp":[480,900],"r/balmak-orion2.webp":[480,900],"r/balmak.webp":[480,900],"r/bck30.webp":[480,886],"r/bematech-sat.webp":[480,836],"r/centrium-pc.webp":[480,900],"r/el4200.webp":[480,685],"r/elgin-i9.webp":[480,805],"r/elgin-smart.webp":[480,873],"r/epson-t20.webp":[480,755],"r/fatiador.webp":[480,900],"r/gavetabema.webp":[480,900],"r/gertec504.webp":[480,732],"r/l42pro.webp":[480,865],"r/menno.webp":[480,900],"r/mit.webp":[480,900],"r/mt720.webp":[480,882],"r/nobreak-apc.webp":[480,598],"r/nobreak-nhs.webp":[480,483],"r/one-pesadora.webp":[480,900],"r/prix3fit.webp":[480,900],"r/prix3plus.webp":[480,900],"r/prix4due.webp":[480,809],"r/prix4uno.webp":[480,900],"r/prix5.webp":[480,900],"r/sat-custom.webp":[480,891],"r/sat-jetway.webp":[480,874],"r/sat-tanca.webp":[480,718],"r/sko44.webp":[480,886],"r/tanca.webp":[480,742],"r/tec44.webp":[480,900],"r/tl120.webp":[480,599],"r/tl220.webp":[480,513],"r/tl900.webp":[480,631],"r/uni350.webp":[480,809],"r/w300.webp":[480,900],"r/zebra.webp":[480,785],"f/2098.webp":[480,900],"f/8217.webp":[480,882],"f/9094plus.webp":[480,785],"f/allmidia.webp":[480,900],"f/argox.webp":[480,609],"f/balmak-one.webp":[480,900],"f/balmak-orion2.webp":[480,900],"f/balmak.webp":[480,900],"f/bck30.webp":[480,886],"f/bematech-sat.webp":[480,836],"f/centrium-pc.webp":[480,900],"f/el4200.webp":[480,685],"f/elgin-i9.webp":[480,805],"f/elgin-smart.webp":[480,873],"f/epson-t20.webp":[480,755],"f/fatiador.webp":[480,900],"f/gavetabema.webp":[480,900],"f/gertec504.webp":[480,732],"f/l42pro.webp":[480,865],"f/menno.webp":[480,900],"f/mit.webp":[480,900],"f/mt720.webp":[480,882],"f/nobreak-apc.webp":[480,598],"f/nobreak-nhs.webp":[480,483],"f/one-pesadora.webp":[480,900],"f/prix3fit.webp":[480,900],"f/prix3plus.webp":[480,900],"f/prix4due.webp":[480,809],"f/prix4uno.webp":[480,900],"f/prix5.webp":[480,900],"f/sat-custom.webp":[480,891],"f/sat-jetway.webp":[480,874],"f/sat-tanca.webp":[480,718],"f/sko44.webp":[480,886],"f/tanca.webp":[480,742],"f/tec44.webp":[480,900],"f/tl120.webp":[480,599],"f/tl220.webp":[480,513],"f/tl900.webp":[480,631],"f/uni350.webp":[480,809],"f/w300.webp":[480,900],"f/zebra.webp":[480,785]};
   LV.imgProduto = function (p, opts) {
     opts = opts || {};
-    var src = BC.imgProduto(p, true), file = src.split("/").pop(), rec = BC.temRecorte(p);
-    var v = rec ? P480["r/" + file] : null;
-    var set = v ? ' srcset="img/p480/r/' + file + " " + v[0] + "w, " + src + " " + v[1] + 'w" sizes="' + (opts.sizes || "(max-width: 639px) 46vw, 340px") + '"' : "";
+    var src = BC.imgProduto(p, true), file = src.split("/").pop(), pasta = BC.temRecorte(p) ? "r/" : "f/";
+    var v = P480[pasta + file];
+    var set = v ? ' srcset="img/p480/' + pasta + file + " " + v[0] + "w, " + src + " " + v[1] + 'w" sizes="' + (opts.sizes || "(max-width: 639px) 46vw, 340px") + '"' : "";
     return '<img src="' + src + '"' + set + ' alt="' + LV.esc(opts.alt != null ? opts.alt : p.marca + " " + p.nome) + '" width="900" height="600"' +
       (opts.eager ? "" : ' loading="lazy"') + ' decoding="async">';
   };
@@ -462,12 +495,16 @@
   /* ------------------------------------------------------------------
      6. Âncoras internas (rolagem suave; distância do cabeçalho via scroll-margin-top)
      ------------------------------------------------------------------ */
+  // Posição de rolagem que deixa o alvo logo abaixo do cabeçalho: desconta só o scroll-margin-top
+  // (cabeçalho + aba da seção), sem somar o scroll-padding que o catálogo usa para a barra de filtros.
+  // Mesma conta para o clique numa âncora (LV.irPara) e para a chegada por pagina.html#secao.
+  function yAlvo(t) {
+    return Math.max(0, t.getBoundingClientRect().top + (window.scrollY || doc.scrollTop || 0) - (parseFloat(getComputedStyle(t).scrollMarginTop) || 0));
+  }
   LV.irPara = function (t) {
     if (typeof t === "string") t = document.getElementById(t.replace(/^#/, ""));
     if (!t) return;
-    // Posição calculada aqui: desconta só o scroll-margin-top do alvo (cabeçalho + aba da seção),
-    // sem somar o scroll-padding que o catálogo usa para a barra de filtros.
-    var y = Math.max(0, t.getBoundingClientRect().top + (window.scrollY || doc.scrollTop) - (parseFloat(getComputedStyle(t).scrollMarginTop) || 0));
+    var y = yAlvo(t);
     if (LV.lenis) LV.lenis.scrollTo(y, { duration: 1.3 });
     else window.scrollTo({ top: y, behavior: reduceMQ.matches ? "auto" : "smooth" });
     if (!t.hasAttribute("tabindex")) t.setAttribute("tabindex", "-1");
@@ -663,23 +700,29 @@
     if (el && +getComputedStyle(el).opacity < 1) gsap.to(el, { opacity: 1, x: 0, y: 0, yPercent: 0, skewX: 0, scale: 1, duration: 0.3, overwrite: true });
   });
 
-  // Abertura do hero de página (.phero): faixa desce, barras verdes revelam as linhas do título
+  // Abertura do hero de página (.phero): faixa desce, barras verdes revelam as linhas do título.
+  // Curta (~1,5 s): o texto de apoio entra junto com o título. Os botões (.btns[data-intro]) NÃO
+  // entram aqui: o base.css os mostra por animação CSS desde o 1º quadro (visíveis em < 1 s, sem
+  // esperar o GSAP do CDN).
   function introPhero() {
     var h = $(".phero"); if (!h) return;
-    var viaVT = doc.classList.contains("via-vt");
-    var tl = gsap.timeline({ defaults: { ease: "expo.out" }, delay: viaVT ? 0 : 0.08 });
+    var pronto = LV.pronto();
+    var tl = gsap.timeline({ defaults: { ease: "expo.out" } });
     var band = $(".phero__band", h);
-    if (band) tl.fromTo(band, { scaleY: 0, transformOrigin: "50% 0%" }, { scaleY: 1, duration: 1.15, ease: "expo.inOut" }, 0);
-    $$(".phero__l", h).forEach(function (line, i) { LV.wipe(line, { tl: tl, at: 0.26 + i * 0.16, cor: line.classList.contains("phero__l--green") ? "paper" : "green" }); });
+    if (band) tl.fromTo(band, { scaleY: 0, transformOrigin: "50% 0%" }, { scaleY: 1, duration: 1, ease: "expo.inOut" }, 0);
+    $$(".phero__l", h).forEach(function (line, i) { LV.wipe(line, { tl: tl, at: 0.1 + i * 0.12, cor: line.classList.contains("phero__l--green") ? "paper" : "green" }); });
     var fig = $$(".phero__fig", h);
-    if (fig.length) tl.from(fig, { yPercent: 12, autoAlpha: 0, duration: 1.3 }, 0.62);
+    if (fig.length) tl.from(fig, { yPercent: 12, autoAlpha: 0, duration: 1.2 }, 0.3);
     var calls = $$(".phero__call", h);
-    if (calls.length) tl.from(calls, { autoAlpha: 0, y: 8, stagger: 0.08, duration: 0.6 }, 1.25);
+    if (calls.length) tl.from(calls, { autoAlpha: 0, y: 8, stagger: 0.08, duration: 0.6 }, 0.85);
     var ref = $(".phero__ref", h);
-    if (ref) tl.from(ref, { autoAlpha: 0, duration: 1 }, 1.2);
-    var rest = $$("[data-intro]", h).filter(function (el) { return !el.classList.contains("phero__w"); });
-    if (rest.length) tl.from(rest, { opacity: 0, y: 24, stagger: 0.08, duration: 1.05 }, 0.7);
-    if (viaVT) tl.progress(1);
+    if (ref) tl.from(ref, { autoAlpha: 0, duration: 0.9 }, 0.8);
+    var rest = $$("[data-intro]", h).filter(function (el) { return !el.classList.contains("phero__w") && !el.classList.contains("btns"); });
+    if (rest.length) tl.from(rest, { opacity: 0, y: 24, stagger: 0.06, duration: 0.9 }, 0.3);
+    // Estado final garantido: chegou pela transição entre páginas ou tarde → já termina aqui;
+    // se o "pagereveal" (View Transitions) ainda vier depois, termina na hora em que ele chegar.
+    if (pronto) tl.progress(1);
+    else aoRevelar(function () { tl.progress(1); });
     // Ao rolar: título se separa um pouco e a figura sobe
     var lines = $$(".phero__l", h);
     var stl = gsap.timeline({ scrollTrigger: { trigger: h, start: "top top", end: "bottom top", scrub: true } });
@@ -688,11 +731,21 @@
     if (band) stl.to(band, { xPercent: 6, ease: "none" }, 0);
   }
 
+  // Se a abertura começou ANTES do "pagereveal" e a página chegou pela transição entre páginas,
+  // fn() roda quando ele chegar (ex.: termina a timeline do hero). LV.aoRevelar para os ganchos.
+  function aoRevelar(fn) {
+    if (window.LV_REVELOU || !("onpagereveal" in window)) return;
+    window.addEventListener("pagereveal", function (e) { if (e.viewTransition) fn(); }, { once: true });
+  }
+  LV.aoRevelar = aoRevelar;
+
   // data-reveal: "" (sobe) | "left" | "right" | "scale" | "stagger" | "mask" | "split" | "wipe"
   var FROM = { "": { y: 40 }, up: { y: 40 }, left: { x: -40 }, right: { x: 40 }, scale: { scale: 0.92 } };
   function reveals() {
     var simples = [], all = $$("[data-reveal]");
     all.forEach(function (el) {
+      // Já está na tela e já foi visto (âncora, recarregar no meio, GSAP tardio): fica como está
+      if (LV.jaVisivel(el)) return;
       var t = el.getAttribute("data-reveal") || "";
       var start = el.getAttribute("data-reveal-start") || "top 90%";
       var delay = parseFloat(el.getAttribute("data-reveal-delay")) || 0;
@@ -744,6 +797,7 @@
     }
   }
 
+  var rodou = false;
   function motion() {
     if (!hasGSAP()) { doc.classList.remove("is-loading"); return; }
     var plugins = [ScrollTrigger];
@@ -754,11 +808,16 @@
     var mm = (LV.mm = gsap.matchMedia());
 
     mm.add("(prefers-reduced-motion: reduce)", function () {
+      rodou = true;
       doc.classList.remove("is-loading");
       $$("[data-ticker]").forEach(function (t) { t.classList.add("is-static"); });
     });
 
     mm.add("(prefers-reduced-motion: no-preference)", function () {
+      // Rodando de novo (a pessoa desligou "reduzir movimento" com a página aberta): nada do que
+      // já está na tela some para animar outra vez
+      if (rodou) manter = true;
+      rodou = true;
       // Rolagem suave
       if (window.Lenis) {
         var lenis = (LV.lenis = new Lenis({ autoRaf: false, lerp: 0.11, wheelMultiplier: 1 }));
@@ -777,8 +836,9 @@
 
       if (progress) gsap.to(progress, { scaleX: 1, ease: "none", scrollTrigger: { start: 0, end: "max", scrub: 0.3 } });
 
-      // Abas das seções entram pela esquerda
+      // Abas das seções entram pela esquerda (as que já estão à vista ficam no lugar)
       $$(".sec__tab").forEach(function (tab) {
+        if (LV.jaVisivel(tab)) return;
         gsap.from(tab, { xPercent: -101, duration: 1.1, ease: "expo.out", scrollTrigger: LV.st(tab.parentElement, "top 94%") });
       });
 
@@ -799,6 +859,7 @@
 
       // Contadores: data-count (inteiro), data-count-from="2010", data-count-dec (uma casa, vírgula)
       $$("[data-count], [data-count-from], [data-count-dec]").forEach(function (el) {
+        if (LV.jaVisivel(el)) return;   // número já à vista: não volta a zero
         var dec = el.hasAttribute("data-count-dec");
         var to = parseFloat((el.textContent || "0").replace(",", "."));
         if (isNaN(to)) return;
@@ -851,6 +912,7 @@
 
       // SAT → NFC-e: risca, aponta e acende ([data-sat])
       $$("[data-sat]").forEach(function (sat) {
+        if (LV.jaVisivel(sat)) return;
         var strike = $(".sat__strike", sat);
         if (strike) gsap.set(strike, { rotation: -12, scaleX: 0, transformOrigin: "0% 50%" });
         var tl = gsap.timeline({ scrollTrigger: LV.st(sat, "top 75%") });
@@ -862,7 +924,7 @@
 
       // Carimbo: cai do alto e "bate" na página ([data-stamp])
       $$("[data-stamp]").forEach(function (stamp) {
-        if (stamp.closest(".phero")) return;
+        if (stamp.closest(".phero") || LV.jaVisivel(stamp)) return;
         gsap.timeline({ scrollTrigger: LV.st(stamp, "top 85%") })
           .fromTo(stamp, { scale: 2.4, autoAlpha: 0, rotation: -32 }, { scale: 1, autoAlpha: 1, rotation: -12, duration: 0.55, ease: "power4.in" })
           .to(stamp, { scale: 0.94, duration: 0.08, yoyo: true, repeat: 1, ease: "power1.inOut" });
@@ -915,9 +977,84 @@
   onScrollBasic();
   // As páginas registram seus ganchos; a animação começa depois que todos os scripts
   // (inclusive os do CDN, que vêm depois dos locais) rodaram.
-  document.addEventListener("DOMContentLoaded", function () {
+  var iniciou = false;
+  function alvoDoHash() {
+    var h = location.hash;
+    if (h.length < 2 || h.indexOf("#p=") === 0) return null;
+    try { return document.getElementById(decodeURIComponent(h.slice(1))); } catch (e) { return null; }
+  }
+  /* Chegada por âncora com as fontes ainda chegando (link compartilhado, nova aba, Google): a rolagem
+     inicial acontece com as fontes de reserva; quando as fontes da web chegam, a página encolhe
+     (~1000 px) e a ancoragem de rolagem do navegador não acompanha o alvo, que acaba sob o
+     cabeçalho. Enquanto a pessoa não rolar nem tocar na página, realinha o alvo depois de
+     document.fonts.ready e do "load" (depois do LV.refresh, registrado antes em motion()) e a cada
+     mudança de altura até a carga terminar. Ao primeiro gesto (roda, toque, clique, tecla), solta. */
+  function fixarAncora(alvo) {
+    var solto = false, fontes = false, carregou = document.readyState === "complete", ro = null, fimT = 0;
+    var gestos = ["wheel", "touchstart", "pointerdown", "mousedown", "keydown"];
+    var fonts = document.fonts;
+    function soltar() {
+      if (solto) return; solto = true; clearTimeout(fimT);
+      gestos.forEach(function (n) { window.removeEventListener(n, soltar, true); });
+      if (ro) ro.disconnect();
+      if (fonts && fonts.removeEventListener) fonts.removeEventListener("loadingdone", alinhar);
+    }
+    function alinhar() {
+      if (solto || !alvo.getClientRects().length) return;
+      var y = yAlvo(alvo), atual = window.scrollY || doc.scrollTop || 0;
+      if (LV.lenis) {
+        LV.lenis.resize();
+        if (Math.abs(y - atual) > 1 || LV.lenis.isScrolling === "smooth") LV.lenis.scrollTo(y, { immediate: true, force: true });
+      } else if (Math.abs(y - atual) > 1) window.scrollTo(0, y);
+    }
+    function talvezFim() {
+      if (solto || !fontes || !carregou) return;
+      // Ainda há fonte a caminho (pedida depois do 1º "ready"): espera a próxima
+      if (fonts && fonts.status === "loading") { fontes = false; fonts.ready.then(aoFontes); return; }
+      clearTimeout(fimT);
+      fimT = setTimeout(function () { alinhar(); soltar(); }, 700);   // última olhada e solta
+    }
+    function aoFontes() { fontes = true; alinhar(); talvezFim(); }
+    gestos.forEach(function (n) { window.addEventListener(n, soltar, { capture: true, passive: true }); });
+    if (fonts && fonts.ready) {
+      fonts.ready.then(aoFontes);
+      if (fonts.addEventListener) fonts.addEventListener("loadingdone", alinhar);
+    } else fontes = true;
+    if (carregou) talvezFim();
+    else window.addEventListener("load", function () { carregou = true; alinhar(); talvezFim(); }, { once: true });
+    if (window.ResizeObserver) { ro = new ResizeObserver(function () { alinhar(); }); ro.observe(document.body); }
+  }
+  function iniciar(visto) {
+    if (iniciou) return; iniciou = true;
+    // Chegada por âncora (pagina.html#secao): o navegador só rola até ela no fim da carga. Rola já
+    // (mesma conta do LV.irPara) para medir o que vai estar na tela.
+    var alvo = alvoDoHash(), fixar = false;
+    if (alvo) {
+      if ((window.scrollY || doc.scrollTop || 0) < 2) { window.scrollTo(0, yAlvo(alvo)); fixar = true; }
+      else {
+        // O próprio navegador já levou até a âncora (com ou sem o scroll-padding do catálogo)?
+        // Recarregar no meio da página (posição restaurada longe do alvo) não entra aqui.
+        var d = alvo.getBoundingClientRect().top - (parseFloat(getComputedStyle(alvo).scrollMarginTop) || 0);
+        var pad = parseFloat(getComputedStyle(doc).scrollPaddingTop) || 0;
+        fixar = Math.abs(d) < 3 || Math.abs(d - pad) < 3;
+      }
+    }
+    // "manter": o que já está na tela não some para animar de novo (ver LV.jaVisivel)
+    manter = !!visto || !!alvo || LV.pronto() || (window.scrollY || doc.scrollTop || 0) > 2;
     if (LV.beforeMotion) LV.beforeMotion();
     if (LV.motionOK()) motion();
     else { doc.classList.remove("is-loading"); if (hasGSAP()) motion(); }
+    // Depois de motion(): o Lenis já existe e o LV.refresh das fontes/"load" roda antes do realinhamento
+    if (fixar) fixarAncora(alvo);
+  }
+  document.addEventListener("DOMContentLoaded", function () {
+    var visto = pintou || !!window.LV_REVELOU;   // algum quadro já foi pintado antes do GSAP
+    if (!window.LV_REVELOU && "onpagereveal" in window && !document.hidden) {
+      // O 1º quadro ainda não saiu: o "pagereveal" vem logo antes dele e diz se a página chegou
+      // pela transição entre páginas ("via-vt", marcado no <head>). Começar ali evita a corrida
+      // em que a abertura toca do zero e a transição mostra o hero pela metade.
+      window.addEventListener("pagereveal", function () { iniciar(false); }, { once: true });
+      setTimeout(function () { iniciar(visto); }, 400);   // rede de segurança (aoRevelar cobre o resto)
+    } else iniciar(visto);
   });
 })();

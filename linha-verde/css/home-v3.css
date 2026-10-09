@@ -4,13 +4,18 @@
    Prefixo das classes próprias: .pn-
      1. Hero compacto (.pn-hero) + faixa de confiança (.trust, de paginas.css)
      2. Painel em mosaico (.pn-panel, .pn-grid, módulo .pn-t)
-     3. Módulos: empresa (régua), assistência (carimbo), produtos (vitrine),
-        BC System, BC Fichas, Google, contato
-     4. Produtos em destaque (.pn-feat)
-     5. Responsivo
+     3. Quadros: empresa (régua), assistência (carimbo), produtos (vitrine),
+        BC System (+ "Também": informática e BC Fichas), Google + clientes
+     4. Direto do catálogo (.pn-feat): atalhos por categoria + fichas limpas
+     5. Letreiro das marcas (.pn-brands) e fechamento verde (.pn-ask)
+     6. Responsivo
+     7. Leitura no celular: rótulos mono com no mínimo 12 px
+     8. Seletor de variação (js/preview.js) — só na fase de escolha
+   Textos que mudam com a tela: .pn-x só no computador/tablet; .pn-m só no celular.
    ===================================================================== */
 
 .pg-inicio--v3 { --sec-pad: clamp(60px, 7.4vw, 120px); }
+.pn-m { display: none; }
 
 /* =====================================================================
    1. HERO COMPACTO (~70% da tela) — a faixa de confiança fecha o hero
@@ -84,7 +89,7 @@
 /* Cabeçalho enxuto: a primeira fileira de quadros espia acima da dobra */
 .pn-sec.sec--first { padding-top: clamp(62px, 4.8vw, 92px); }
 .pn-head { margin-bottom: clamp(22px, 2vw, 36px); }
-.pn-head .sec__intro { max-width: 28em; }
+.pn-head .sec__intro { max-width: 27em; }
 .pn-panel { position: relative; }
 /* Marcas de registro nos quatro cantos do painel */
 .pn-mark { position: absolute; width: 18px; height: 18px; pointer-events: none; }
@@ -96,28 +101,31 @@
 .pn-mark--bl { bottom: -12px; left: -12px; } .pn-mark--bl::before, .pn-mark--bl::after { bottom: 0; left: 0; }
 .pn-mark--br { bottom: -12px; right: -12px; } .pn-mark--br::before, .pn-mark--br::after { bottom: 0; right: 0; }
 
+/* Três protagonistas (assistência, produtos, BC System) e duas peças de apoio
+   (quem somos; Google + clientes). Um único bloco verde chapado: a assistência. */
 .pn-grid {
   display: grid; gap: 1px; padding: 1px;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.18fr);
-  grid-template-rows: minmax(320px, auto) minmax(300px, auto) minmax(300px, auto);
+  grid-template-rows: minmax(330px, auto) minmax(300px, auto) auto;
   grid-template-areas:
     "quem assi prod"
     "sist sist prod"
-    "fich goog cont";
+    "prova prova prova";
 }
 .pn-t--quem { grid-area: quem; } .pn-t--assi { grid-area: assi; } .pn-t--prod { grid-area: prod; }
-.pn-t--sist { grid-area: sist; } .pn-t--fich { grid-area: fich; } .pn-t--goog { grid-area: goog; }
-.pn-t--cont { grid-area: cont; }
+.pn-t--sist { grid-area: sist; } .pn-t--prova { grid-area: prova; }
 
-/* Módulo */
+/* Quadro */
 .pn-t {
   --pad: clamp(20px, 2.1vw, 34px);
+  --pad-t: calc(34px + clamp(20px, 2.2vw, 32px));
+  --pad-b: clamp(18px, 1.8vw, 26px);
   position: relative; isolation: isolate; overflow: hidden; min-width: 0;
   display: flex; flex-direction: column; align-items: flex-start;
-  outline: 1px solid var(--ink);   /* os fios do painel: cada módulo traz o seu (aparece junto na animação) */
-  padding: calc(34px + clamp(20px, 2.2vw, 32px)) var(--pad) clamp(18px, 1.8vw, 26px);
+  outline: 1px solid var(--ink);   /* os fios do painel: cada quadro traz o seu (aparece junto na animação) */
+  padding: var(--pad-t) var(--pad) var(--pad-b);
 }
-/* Aba do módulo: o mesmo corte das abas de seção */
+/* Aba do quadro: o mesmo corte das abas de seção */
 .pn-t__tab {
   position: absolute; top: 0; left: 0; z-index: 3; height: 34px;
   display: flex; align-items: center; gap: 9px;
@@ -131,7 +139,7 @@
 .on-dark.pn-t .pn-t__tab { background: var(--green); color: var(--ink); }
 .on-dark.pn-t .pn-t__tab b { color: var(--ink); }
 
-/* Título = link do módulo inteiro */
+/* Título = link do quadro inteiro */
 .pn-t__h {
   /* 1.04: o acento de "TÉCNICA" não encosta na linha de cima (Big Shoulders em caixa alta) */
   font: 900 clamp(36px, 3.1vw, 54px)/1.04 var(--f-display); text-transform: uppercase;
@@ -146,6 +154,7 @@
 .on-dark.pn-t .pn-t__a:focus-visible::after { outline-color: var(--volt); }
 .pn-t__p { margin-top: 12px; max-width: 30em; font-size: 15.5px; line-height: 1.5; text-wrap: pretty; }
 .on-paper .pn-t__p { color: var(--body-paper); }
+.on-paper .pn-t__p strong { color: var(--ink); }
 .on-dark .pn-t__p { color: var(--body-dark); }
 .on-dark .pn-t__p strong { color: var(--paper); }
 .on-green .pn-t__p { color: var(--ink); }
@@ -156,14 +165,31 @@
   display: flex; align-items: center; gap: 12px;
   font: 500 11px/1 var(--f-mono); letter-spacing: .04em; text-transform: uppercase;
 }
-.pn-t__arr { position: relative; isolation: isolate; display: grid; place-items: center; width: 46px; height: 30px; color: var(--paper); }
+.pn-t__arr { position: relative; isolation: isolate; flex: none; display: grid; place-items: center; width: 46px; height: 30px; color: var(--paper); }
 .pn-t__arr::before { content: ""; position: absolute; inset: 0 3px; z-index: -1; background: var(--ink); transform: skewX(var(--slash)); transition: background .45s var(--ease); }
 .pn-t__arr .i { width: 17px; height: 17px; transition: transform .55s var(--ease); }
 .on-dark .pn-t__arr { color: var(--ink); }
 .on-dark .pn-t__arr::before { background: var(--green); }
-.pn-t__foot { margin-top: auto; padding-top: 20px; width: 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; }
+/* Pé do quadro: "abrir" + WhatsApp com a mensagem do assunto. O rótulo do "abrir"
+   encurta quando o pé fica estreito (consulta de contêiner) */
+.pn-t__foot {
+  container-type: inline-size;
+  margin-top: auto; padding-top: 20px; width: 100%;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 14px;
+}
 .pn-t__foot .pn-t__go { margin-top: 0; padding-top: 0; }
-/* Barra verde que corre na base do módulo (hover/foco) */
+.pn-go-s { display: none; }
+@container (max-width: 400px) {
+  .pn-go-l { display: none; }
+  .pn-go-s { display: inline; }
+}
+/* Bem estreito: fica só a lâmina com a seta (o título do quadro já é o link) */
+@container (max-width: 360px) {
+  .pn-go-s { display: none; }
+}
+.pn-wa { margin-right: -6px; font-size: 12px; letter-spacing: .03em; gap: 8px; padding-inline: calc(13px + 44px * var(--tan) / 2); }
+.pn-wa .st { white-space: nowrap; }
+/* Barra verde que corre na base do quadro (hover/foco) */
 .pn-t::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; height: 4px;
   background: var(--green); transform: scaleX(0); transform-origin: 100% 50%;
@@ -180,11 +206,11 @@
   .on-dark.pn-t:hover .pn-t__arr::before { background: var(--paper); }
   .on-paper.pn-t:hover .pn-t__arr { color: var(--ink); }
 }
-/* Elementos clicáveis dentro do módulo ficam acima do link que cobre tudo */
-.pn-t .btn, .pn-sat, .pn-info, .pn-goog__ext, .pn-cont__tel a, .pn-cont__addr a, .pn-vit__ctrl { position: relative; z-index: 2; }
+/* Elementos clicáveis dentro do quadro ficam acima do link que cobre tudo */
+.pn-t .btn, .pn-sat, .pn-also__a, .pn-also__wa, .pn-goog__ext, .pn-vit__ctrl { position: relative; z-index: 2; }
 
 /* =====================================================================
-   3. MÓDULOS
+   3. QUADROS
    ===================================================================== */
 
 /* 01 · Empresa — régua 2010 → hoje */
@@ -205,18 +231,24 @@
 }
 .pn-ruler__ticks::after { content: ""; position: absolute; right: -1px; bottom: 0; width: 1px; height: 14px; background: var(--ink); }
 .pn-ruler__lbl { position: absolute; left: 50%; top: -6px; transform: translateX(-50%); padding: 3px 7px 2px; background: var(--ink); color: var(--paper); font-size: 10px; white-space: nowrap; }
+.pn-t--quem .pn-t__p { max-width: 27em; }
 
-/* 02 · Assistência — carimbo IPEM */
-.pn-t--assi .pn-t__p { max-width: 21em; }
-.pn-stamp { position: absolute; right: clamp(14px, 1.6vw, 26px); bottom: clamp(14px, 1.6vw, 24px); width: clamp(118px, 9.4vw, 150px); z-index: 0; }
-.pn-t--assi .pn-t__h { max-width: 7.5em; }
+/* 02 · Assistência — o carimbo IPEM fica ao lado do texto (grade: nada se sobrepõe) */
+.pn-t--assi {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto 1fr auto;
+  column-gap: clamp(12px, 1.2vw, 20px); align-items: start;
+}
+.pn-t--assi .pn-t__h { grid-column: 1 / -1; grid-row: 1; max-width: 7.5em; }
+.pn-t--assi .pn-t__p { grid-column: 1; grid-row: 2; max-width: 17em; }
+.pn-stamp { grid-column: 2; grid-row: 2 / span 2; align-self: start; justify-self: end; width: clamp(104px, 8.2vw, 136px); margin: 6px -4px 0 0; z-index: 0; }
+.pn-t--assi .pn-t__foot { grid-column: 1 / -1; grid-row: 4; }
 
 /* 03 · Produtos — vitrine automática */
-.pn-t--prod { padding-bottom: clamp(18px, 1.8vw, 26px); }
 .pn-t--prod .pn-t__p { max-width: 26em; }
 .pn-vit { --cap: 84px; position: relative; width: 100%; flex: 1 1 auto; display: flex; flex-direction: column; margin-top: clamp(14px, 1.6vw, 22px); }
 .pn-vit__stage { position: relative; z-index: 2; flex: 1 1 auto; min-height: 300px; isolation: isolate; }
-.pn-vit__band { position: absolute; top: 0; bottom: var(--cap); left: 50%; width: 46%; margin-left: -23%; z-index: -1; }
+/* Faixa um pouco à direita: abre um respiro preto entre ela e o verde da assistência */
+.pn-vit__band { position: absolute; top: 0; bottom: var(--cap); left: 56%; width: 40%; margin-left: -20%; z-index: -1; }
 .pn-vit__band::before { content: ""; position: absolute; inset: 0; background: var(--green); transform: skewX(var(--slash)); }
 .pn-vit__band::after { content: ""; position: absolute; inset: 0 14px; border-inline: 1px solid rgba(10,10,10,.35); transform: skewX(var(--slash)); }
 .pn-vit__stage::before, .pn-vit__stage::after { content: ""; position: absolute; width: 14px; height: 14px; border: 0 solid var(--line); pointer-events: none; }
@@ -273,128 +305,214 @@
 .pn-vit__pause[aria-pressed="true"]::before { background: var(--green); border-color: var(--green); }
 .pn-vit__pause[aria-pressed="true"] { color: var(--ink); }
 .pn-vit__pause .i { position: relative; width: 14px; height: 14px; pointer-events: none; }
-.pn-t--prod > .pn-t__go { padding-top: 16px; }
+.pn-t--prod > .pn-t__foot { padding-top: 16px; }
 
-/* 04 · BC System */
-.pn-t--sist { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; gap: 0 clamp(16px, 2vw, 32px); }
-.pn-sist__copy { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
-.pn-sat { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 18px; min-height: 44px; text-decoration: none; color: var(--ink); font-size: 14.5px; font-weight: 600; }
-.pn-sat__t { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat; padding-bottom: 2px; }
+/* 04 · BC System — texto | imagem; embaixo, a linha "Também" (informática e BC Fichas) */
+.pn-t--sist {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: 1fr auto;
+  grid-template-areas: "copy vis" "also also";
+  align-items: stretch; gap: 0 clamp(16px, 2vw, 32px);
+}
+.pn-sist__copy { grid-area: copy; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+.pn-sat { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 16px; min-height: 44px; text-decoration: none; color: var(--ink); font-size: 14.5px; font-weight: 600; }
+.pn-sat__t { display: inline-flex; align-items: center; gap: 7px; background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat; padding-bottom: 2px; }
 .pn-sat__t .i { width: 14px; height: 14px; color: var(--green-deep); transition: transform .45s var(--ease); }
 .pn-sat:hover .pn-sat__t .i { transform: translateX(4px); }
-/* Link secundário: suporte em informática */
-.pn-info { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-top: 2px; color: var(--muted); font-size: 14px; text-decoration: none; }
-.pn-info .i { width: 13px; height: 13px; color: var(--green-deep); transition: transform .45s var(--ease); }
-.pn-info:hover { color: var(--ink); }
-.pn-info:hover .i { transform: translateX(4px); }
-.pn-sist__vis { position: relative; min-height: 220px; margin: calc(-34px - clamp(20px, 2.2vw, 32px)) calc(var(--pad) * -1) calc(clamp(18px, 1.8vw, 26px) * -1) 0; display: grid; align-items: end; overflow: hidden; }
-/* Faixa estreita que passa visível dos dois lados do tablet + celular */
-.pn-sist__band { position: absolute; top: 0; bottom: 0; left: 14%; width: 26%; background: var(--green); transform: skewX(var(--slash)); }
-/* A imagem já traz a sombra no chão; a do CSS é leve (no claro, uma sombra forte vira uma "caixa" cinza) */
-.pn-sist__vis img { position: relative; width: 92%; max-width: 440px; height: auto; margin: 0 0 7%; align-self: end; justify-self: center; filter: drop-shadow(0 12px 14px rgba(0,0,0,.16)); }
-
-/* 05 · BC Fichas — ficha impressa */
-/* --fw: largura da ficha. O texto se estreita para nunca passar por baixo dela */
-.pn-t--fich { --fw: clamp(184px, 15vw, 216px); }
-.pn-t--fich .pn-t__p { max-width: min(11.5em, calc(100% + var(--pad) - var(--fw))); }
-/* O cabeçalho da ficha cabe numa linha; ela fica acima da linha "Ver BC Fichas" */
-.pn-fich__vis { position: absolute; right: -26px; bottom: clamp(64px, 5vw, 74px); width: var(--fw); z-index: 0; pointer-events: none; }
-.pn-fich__vis .ficha { width: 100%; padding: 16px 18px 13px; transform: rotate(-12deg); box-shadow: 0 22px 34px -18px rgba(0,0,0,.65); }
-.pn-fich__vis .ficha__top { font-size: 9px; letter-spacing: .02em; }
-.pn-fich__vis .ficha__top span { white-space: nowrap; }
-.pn-fich__vis .ficha__item { font-size: clamp(26px, 2.2vw, 34px); }
-
-/* 06 · Google */
-.pn-goog__h { display: block; }
-.pn-goog__h .pn-t__a { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 12px; }
-.pn-goog__n { font-size: clamp(96px, 8.4vw, 140px); line-height: .78; font-weight: 900; letter-spacing: -.02em; }
-.pn-goog__lbl { font-size: clamp(24px, 1.9vw, 30px); color: var(--grey); }
-.pn-goog__stars { display: flex; gap: 4px; margin-top: 14px; color: var(--green); }
-.pn-goog__stars .i { width: 20px; height: 20px; }
-.pn-t--goog .pn-t__p { margin-top: 8px; }
-.pn-goog__ext { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--green); text-decoration: none; background: linear-gradient(currentColor, currentColor) 0 calc(50% + 1em) / 100% 1px no-repeat; }
-.pn-goog__ext .i { width: 13px; height: 13px; }
-.pn-goog__ext:hover { color: var(--paper); }
-.pn-t--goog::before { content: ""; position: absolute; top: -10%; bottom: -10%; right: -14%; width: 26%; z-index: -1; background: var(--ink-3); transform: skewX(var(--slash)); }
-
-/* 07 · Contato */
-.pn-cont__status { margin-top: 14px; min-height: 15px; color: var(--ink); }
-.pn-cont__tel { margin-top: 14px; }
-.pn-cont__tel a {
-  display: inline-flex; align-items: center; min-height: 48px; font: 900 clamp(40px, 3.3vw, 54px)/.9 var(--f-display); letter-spacing: -.005em;
-  text-decoration: none; white-space: nowrap; color: var(--ink);
-  background: linear-gradient(var(--green), var(--green)) 0 100% / 0 3px no-repeat; padding-bottom: 4px;
-  transition: background-size .5s var(--ease);
+.pn-sist__vis {
+  grid-area: vis; position: relative; min-height: 220px; display: grid; align-items: end; overflow: hidden;
+  margin: calc(var(--pad-t) * -1) calc(var(--pad) * -1) 0 0;
 }
-.pn-cont__tel a:hover, .pn-cont__tel a:focus-visible { background-size: 100% 3px; }
-.pn-cont__addr { margin-top: 6px; color: var(--muted); }
-/* Endereço leva ao mapa; alvo de toque ≥ 44 px */
-.pn-cont__addr a { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; min-height: 44px; padding-block: 4px; color: inherit; text-decoration: none; }
-.pn-cont__ref { color: var(--ink); background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat; padding-bottom: 1px; }
-.pn-cont__addr .i { width: 12px; height: 12px; color: var(--green-deep); }
-.pn-cont__addr a:hover .pn-cont__ref { color: var(--green-deep); }
-.pn-cont__wa { margin-right: -6px; }
+/* Palco cinza claro (não verde): o verde chapado do painel fica só na assistência */
+.pn-sist__band { position: absolute; top: 0; bottom: 0; left: 12%; width: 30%; background: var(--paper-3); transform: skewX(var(--slash)); }
+.pn-sist__band::after { content: ""; position: absolute; top: 0; bottom: 0; right: 0; width: 6px; background: var(--green); }
+/* A imagem já traz a sombra no chão; a do CSS é leve (no claro, uma sombra forte vira uma "caixa" cinza) */
+.pn-sist__vis img { position: relative; width: 92%; max-width: 440px; height: auto; margin: 0 0 6%; align-self: end; justify-self: center; filter: drop-shadow(0 12px 14px rgba(0,0,0,.16)); }
+
+/* "Também": serviços de apoio em tamanho menor (o BC Fichas sai do destaque) */
+.pn-also {
+  grid-area: also; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: stretch; gap: 0 clamp(16px, 2vw, 28px);
+  margin-top: 22px; border-top: 1px solid var(--ink); width: 100%;
+}
+.pn-also__lbl { align-self: center; padding-top: 2px; color: var(--muted); }
+.pn-also__list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); list-style: none; margin: 0; padding: 0; }
+.pn-also__i { display: flex; align-items: stretch; min-width: 0; border-left: 1px solid #CFCFC8; }
+.pn-also__a {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 14px 8px 16px;
+  color: var(--ink); text-decoration: none;
+}
+.pn-also__ic { flex: none; width: 24px; height: 24px; color: var(--green-deep); }
+.pn-also__t { flex: 1; min-width: 0; display: grid; gap: 2px; font-size: 13.5px; line-height: 1.3; color: var(--muted); }
+.pn-also__t b { font-size: 15px; font-weight: 700; color: var(--ink); }
+.pn-also__go { flex: none; width: 14px; height: 14px; color: var(--green-deep); transition: transform .45s var(--ease); }
+.pn-also__a:hover b { text-decoration: underline; text-underline-offset: 3px; }
+.pn-also__a:hover .pn-also__go { transform: translateX(4px); }
+.pn-also__a:focus-visible, .pn-also__wa:focus-visible { outline-offset: -3px; }
+.pn-also__wa {
+  position: relative; isolation: isolate; flex: none; align-self: center; display: grid; place-items: center;
+  width: 48px; height: 44px; margin-right: 2px; color: var(--ink);
+}
+.pn-also__wa::before { content: ""; position: absolute; inset: 0 4px; z-index: -1; background: var(--green); transform: skewX(var(--slash)); transition: background .3s; }
+.pn-also__wa .i { width: 19px; height: 19px; }
+.pn-also__wa:hover { color: var(--paper); }
+.pn-also__wa:hover::before { background: var(--ink); }
+
+/* 05 · Google + clientes — faixa discreta: nota fixa 5,0 e seis logos em chapas iguais */
+.pn-t--prova {
+  display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); grid-template-rows: 1fr auto;
+  grid-template-areas: "g c" "foot c"; gap: 0 clamp(28px, 4vw, 72px); align-items: start;
+  padding-top: calc(34px + clamp(18px, 1.8vw, 26px));
+}
+.pn-prova__g { grid-area: g; }
+.pn-goog__h { display: block; }
+.pn-goog__h .pn-t__a { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 14px; row-gap: 10px; }
+.pn-goog__n { font-size: clamp(88px, 7.4vw, 124px); line-height: .78; font-weight: 900; letter-spacing: -.02em; }
+.pn-goog__lbl { font-size: clamp(24px, 1.9vw, 30px); color: var(--muted); }
+.pn-goog__row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 16px; font-size: 15px; color: var(--body-paper); }
+.pn-goog__row strong { color: var(--ink); }
+.pn-goog__stars { display: inline-flex; gap: 3px; color: var(--green-deep); }
+.pn-goog__stars .i { width: 19px; height: 19px; }
+.pn-prova__foot { grid-area: foot; align-self: end; }
+/* "56 avaliações no Google ↗" abre o Google (fica acima do link do quadro) */
+.pn-goog__ext { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; margin-block: -8px; color: inherit; text-decoration: none; }
+.pn-goog__t { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: #A9A9A2; }
+.pn-goog__ext .i { flex: none; width: 13px; height: 13px; color: var(--green-deep); }
+.pn-goog__ext:hover { color: var(--ink); }
+.pn-goog__ext:hover .pn-goog__t { text-decoration-color: currentColor; }
+.pn-prova__c { grid-area: c; align-self: stretch; display: grid; align-content: center; gap: 14px; padding-left: clamp(28px, 4vw, 72px); border-left: 1px solid #CFCFC8; }
+.pn-prova__lbl { display: flex; align-items: center; gap: 10px; color: var(--muted); }
+.pn-prova__lbl::before { content: ""; width: 22px; height: 9px; flex: none; background: var(--green); transform: skewX(var(--slash)); }
+/* Chapas claras do mesmo tamanho (os logos ficam em cor) */
+.pn-clients.clients__list { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: clamp(8px, .8vw, 12px); }
+.pn-clients .clients__i { aspect-ratio: 8 / 5; padding: 10px; border-color: #D6D6CF; }
+.pn-clients .clients__i img { max-width: 80%; max-height: 60%; }
+.pn-clients .clients__i--sq img { max-height: 80%; }
 
 /* =====================================================================
-   4. PRODUTOS EM DESTAQUE
+   4. DIRETO DO CATÁLOGO — atalhos por categoria logo abaixo do título
    ===================================================================== */
-.pn-feat__head { margin-bottom: clamp(36px, 4.4vw, 64px); }
+.pn-feat { padding-bottom: 0; }
+.pn-feat__head {
+  display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: end;
+  gap: 0 clamp(28px, 5vw, 96px); margin-bottom: clamp(28px, 3vw, 44px);
+}
+@media (min-width: 1600px) { .pn-feat__head { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); } }
+.pn-feat__intro { max-width: 26em; }
+/* Faixa de três atalhos: nome + contagem real (js/home-v3.js) */
+.pn-cats {
+  grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: clamp(24px, 2.6vw, 36px) 0 0; padding: 0; list-style: none;
+  border-block: 1px solid var(--line);
+}
+.pn-cats li + li { border-left: 1px solid var(--line); }
+.pn-cats a {
+  position: relative; display: flex; align-items: center; gap: 6px 14px; min-height: 64px; height: 100%;
+  padding: 10px clamp(14px, 1.6vw, 24px); text-decoration: none; color: var(--paper);
+  transition: background .35s, color .35s;
+}
+.pn-cats li:first-child a { padding-left: 0; }
+.pn-cats__n { font: 800 clamp(22px, 1.8vw, 30px)/1 var(--f-display); text-transform: uppercase; letter-spacing: .01em; }
+.pn-cats__q { color: var(--grey); white-space: nowrap; }
+.pn-cats__q b { color: var(--green); font-weight: 500; }
+.pn-cats .i { width: 16px; height: 16px; margin-left: auto; color: var(--grey); transition: transform .45s var(--ease), color .3s; }
+.pn-cats a:hover .pn-cats__n { color: var(--green); }
+.pn-cats a:hover .i { transform: translateX(4px); color: var(--green); }
+.pn-cats a:focus-visible { outline-offset: -4px; }
+
 .pn-nojs { display: flex; align-items: center; min-height: 64px; padding: 0 16px; border: 1px solid var(--line); }
+/* Fichas limpas (variante "compacta" do core): foto, marca, nome, resumo de uma linha,
+   selo pequeno e Detalhes + WhatsApp — sem tabela e sem "Preço: consulte" */
+.pn-feat__grid .spec--compacta .spec__fig { margin-top: 36px; }
+.pn-feat__grid .spec__body { padding-bottom: 2px; }
+.pn-feat__grid .spec__model { font-size: clamp(26px, 2.1vw, 36px); }
+.pn-feat__grid .spec--compacta .spec__sub {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+  font-size: 13.5px; color: #3D3D39;
+}
+.pn-feat__grid .spec__badges { padding-top: 12px; }
+.pn-feat__grid .badge { font-size: 10px; padding: 5px 8px 4px; }
+.pn-feat__grid .spec__foot { margin-top: 14px; }
+/* Quatro fichas numa linha só a partir de 901 px (a base passaria a 3 colunas e deixaria a 4ª sozinha) */
+@media (min-width: 901px) { .pn-feat__grid.pgrid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+/* Quatro colunas estreitas (900–1339 px): o WhatsApp fica só com o ícone (nome vem do aria-label) */
+@media (min-width: 640px) and (max-width: 679px), (min-width: 901px) and (max-width: 1339px) {
+  .pn-feat__grid .spec__foot { grid-template-columns: minmax(0, 1fr) 52px; column-gap: 4px; }
+  .pn-feat__grid .spec__foot .btn--green { padding: 0; }
+  .pn-feat__grid .spec__foot .btn--green .st { display: none; }
+  .pn-feat__grid .spec__foot .btn--green .i { width: 20px; height: 20px; }
+}
+
 .pn-feat__foot {
-  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 18px clamp(24px, 3vw, 48px);
-  margin-top: clamp(32px, 3.6vw, 52px); padding-top: clamp(24px, 2.6vw, 34px); border-top: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px;
+  margin-top: clamp(28px, 3vw, 44px); padding-bottom: clamp(44px, 5vw, 76px);
 }
 .pn-feat__foot .btn { margin-left: -6px; }
-.pn-cats { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 clamp(16px, 2.2vw, 36px); list-style: none; margin: 0; padding: 0; }
-.pn-cats a {
-  display: inline-flex; align-items: baseline; gap: 8px; min-height: 44px; padding-top: 12px; text-decoration: none; color: var(--paper);
-  font: 800 clamp(20px, 1.6vw, 26px)/1 var(--f-display); text-transform: uppercase; letter-spacing: .01em;
-}
-.pn-cats b { font: 500 11px/1 var(--f-mono); color: var(--green); }
-.pn-cats .i { width: 14px; height: 14px; align-self: center; color: var(--grey); transition: transform .45s var(--ease), color .3s; }
-.pn-cats a:hover { color: var(--green); }
-.pn-cats a:hover .i { transform: translateX(4px); color: var(--green); }
-.pn-feat__note { grid-column: 1 / -1; color: var(--grey); }
+.pn-feat__note { color: var(--grey); }
 
 /* =====================================================================
-   5. RESPONSIVO
+   5. LETREIRO DAS MARCAS (discreto) e FECHAMENTO VERDE
+   ===================================================================== */
+.pn-brands { --dur: 70s; background: var(--ink); color: #8F8F89; border-color: #232322; }
+.pn-brands .ticker__list li { font-size: clamp(20px, 1.7vw, 26px); font-weight: 800; padding: 15px 0 12px; }
+.pn-brands .ticker__list li::after { width: .3em; height: .3em; margin: 0 .9em; background: var(--green); }
+.pn-brands__lbl {
+  position: relative; z-index: 2; flex: none; align-self: stretch; display: flex; align-items: center;
+  padding: 0 calc(56px * var(--tan) + 14px) 0 max(var(--gut), calc((100% - var(--max)) / 2 + var(--gut)));
+  background: var(--ink); color: var(--paper); font-size: 10.5px; letter-spacing: .04em; white-space: nowrap;
+  box-shadow: 12px 0 18px -6px var(--ink);
+}
+.pn-brands .ticker__btn { border-left-color: #2B2B2A; color: var(--grey); }
+.pn-brands .ticker__btn:hover { background: var(--green); color: var(--ink); }
+.pn-brands :focus-visible { outline-color: var(--volt); }
+.pn-brands .ticker__track { -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
+
+/* Fechamento: faixa verde curta antes do rodapé */
+.pn-ask { padding-block: clamp(52px, 4.6vw, 80px); }
+.pn-ask .ask__t { font-size: clamp(48px, 5.2vw, 92px); }
+.pn-ask .ask__side p { max-width: 28em; }
+.pn-ask__status { display: flex; width: fit-content; margin-top: 12px; }
+.on-green .status.is-aberto::before { background: var(--ink); box-shadow: 0 0 0 3px rgba(10, 10, 10, .18); animation: none; }
+/* Fechado sobre o verde: quadrado vazado em preto (vermelho sobre verde não se lê bem) */
+.on-green .status.is-fechado::before { background: transparent; box-shadow: inset 0 0 0 2px var(--ink); }
+.pn-ask .ask__btns { gap: 14px 10px; }
+.pn-ask__all { margin-left: 16px; }
+
+/* Botões flutuantes: escondidos também saem da ordem do Tab */
+.float { transition: transform .6s var(--ease), opacity .4s, visibility 0s; }
+.float.is-off { visibility: hidden; transition: transform .6s var(--ease), opacity .4s, visibility 0s .6s; }
+
+/* =====================================================================
+   6. RESPONSIVO
    ===================================================================== */
 @media (max-width: 1240px) {
   .pn-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.08fr); }
   .pn-t__h { font-size: clamp(32px, 3.2vw, 46px); }
-  /* Ficha do BC Fichas entra no fluxo (abaixo do texto), sem cobrir nada */
-  .pn-t--fich .pn-t__p { max-width: 20em; }
-  .pn-fich__vis { position: relative; right: auto; bottom: auto; align-self: flex-end; width: 216px; max-width: 100%; margin: 16px -4px 12px 0; }
-  .pn-fich__vis .ficha { padding: 14px 14px 11px; }
-  .pn-fich__vis .ficha__item { font-size: 26px; }
+  .pn-clients.clients__list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pn-clients .clients__i { aspect-ratio: 3 / 1; padding: 8px; }
+  .pn-clients .clients__i img { max-height: 66%; }
+  .pn-clients .clients__i--sq img { max-height: 84%; }
 }
 
-/* Fichas em destaque de 901 a 1180 px: a base (base.css) passa para 3 colunas e o 4º card
-   ficaria sozinho numa segunda linha. Aqui ficam 3 cards numa linha só. */
-@media (min-width: 901px) and (max-width: 1180px) {
-  .pn-feat__grid > li:nth-child(4) { display: none; }
-}
-
-/* Tablet: duas colunas; produtos e contato ocupam a largura toda */
+/* Tablet: duas colunas; produtos, sistema e clientes ocupam a largura toda */
 @media (max-width: 1060px) {
   .pn-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: none; grid-auto-rows: minmax(280px, auto);
+    grid-template-rows: none; grid-auto-rows: minmax(260px, auto);
     grid-template-areas:
       "quem assi"
       "prod prod"
       "sist sist"
-      "fich goog"
-      "cont cont";
+      "prova prova";
   }
   .pn-t--prod { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); grid-template-rows: auto 1fr auto; column-gap: 28px; }
   .pn-t--prod .pn-prod__head { grid-column: 1; grid-row: 1; }
   .pn-t--prod .pn-vit { grid-column: 2; grid-row: 1 / span 3; margin-top: 0; }
-  .pn-t--prod > .pn-t__go { grid-column: 1; grid-row: 3; }
+  .pn-t--prod > .pn-t__foot { grid-column: 1; grid-row: 3; }
   .pn-vit__stage { min-height: 280px; }
-  .pn-t--cont { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 24px; align-items: start; }
-  .pn-t--cont > * { grid-column: 1; }
-  .pn-t--cont .pn-t__foot { grid-column: 1 / -1; }
+  .pn-t--prova { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "g" "c" "foot"; }
+  .pn-prova__c { padding: 22px 0 0; margin-top: 22px; border-left: 0; border-top: 1px solid #CFCFC8; }
+  .pn-clients.clients__list { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .pn-clients .clients__i { aspect-ratio: 8 / 5; }
+  .pn-prova__foot { padding-top: 14px; }
 }
 
 /* Hero no celular e tablet estreito: texto em cima, faixa com a imagem embaixo */
@@ -410,80 +528,218 @@
   .pn-hero__call { font-size: 10px; padding: 4px 6px 3px; gap: 5px; }
   .pn-hero__call--1 { left: var(--gut); top: auto; bottom: 14px; }
   .pn-hero__call--2 { right: var(--gut); bottom: auto; top: 14px; }
+  .pn-feat__head { grid-template-columns: minmax(0, 1fr); align-items: start; }
+  .pn-feat__intro { margin-top: 14px; }
 }
 
-/* Celular: hero curto (faixa de confiança e a aba "01 Resumo" já entram na primeira tela) */
+/* Celular: hero curto (faixa de confiança e a aba "01" já entram na primeira tela) */
 @media (max-width: 640px) {
-  .pn-hero__in { padding-top: 16px; }
-  .pn-hero__eyebrow { margin-bottom: 12px; }
-  .pn-hero__lead { margin-top: 14px; font-size: 15.5px; line-height: 1.48; }
+  .pn-x { display: none; }
+  .pn-m { display: inline; }
+  .pn-hero__in { padding-top: 14px; }
+  .pn-hero__eyebrow { margin-bottom: 10px; }
+  .pn-hero__lead { margin-top: 12px; font-size: 15.5px; line-height: 1.46; }
   .pn-hero__lead strong { margin-bottom: 4px; font-size: 1.14em; }
-  .pn-hero__ctas { flex-direction: column; align-items: stretch; gap: 10px; margin: 18px 0 0; }
-  .pn-hero__ctas .btn { --bh: 54px; width: 100%; margin: 0; justify-content: flex-start; }
+  .pn-hero__ctas { flex-direction: column; align-items: stretch; gap: 10px; margin: 16px 0 0; }
+  .pn-hero__ctas .btn { --bh: 52px; width: 100%; margin: 0; justify-content: flex-start; }
   .pn-hero__ctas .btn--line { justify-content: space-between; }
   .pn-hero__strip .pn-trust__x { display: none; }
-  .pn-hero__visual { margin-top: 18px; padding-block: 12px 10px; }
-  .pn-hero__fig { width: min(58%, 260px); }
-  .pn-hero__fig img { max-height: 170px; }
+  .pn-hero__visual { margin-top: 16px; padding-block: 10px 8px; }
+  .pn-hero__fig { width: min(54%, 240px); }
+  .pn-hero__fig img { max-height: 140px; }
 }
 
-/* Celular: mosaico de uma coluna, com o par BC Fichas | Google lado a lado */
+/* Celular: mosaico de uma coluna; cada quadro com 1–2 linhas de texto */
 @media (max-width: 640px) {
-  .pn-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-auto-rows: auto;
-    grid-template-areas: "quem quem" "assi assi" "prod prod" "sist sist" "fich goog" "cont cont";
-  }
+  .pn-grid { grid-template-columns: minmax(0, 1fr); grid-auto-rows: auto; grid-template-areas: "quem" "assi" "prod" "sist" "prova"; }
   .pn-mark { display: none; }
-  .pn-t { --pad: 18px; padding: 54px var(--pad) 18px; }
-  .pn-head { gap: 16px; }
-  .pn-head .sec__intro { font-size: 16px; }
-  .pn-ruler { margin-bottom: 18px; }
-  .pn-t__h { font-size: clamp(36px, 10.4vw, 46px); }
-  .pn-t__p { font-size: 15px; }
-  .pn-ruler__y b { font-size: clamp(56px, 17vw, 72px); }
-  .pn-ruler__y--now b { font-size: clamp(28px, 8vw, 36px); }
-  .pn-t--assi { min-height: 264px; }
-  .pn-t--assi .pn-t__p { max-width: calc(100% - 96px); }
-  .pn-stamp { width: 112px; right: 12px; bottom: 14px; }
+  .pn-sec.sec--first { padding-top: 58px; padding-bottom: 44px; }
+  .pn-head { gap: 10px; margin-bottom: 18px; }
+  .pn-head .sec__intro { display: none; }
+  .pn-head .kicker { margin-bottom: 12px; }
+  .pn-t { --pad: 18px; --pad-t: 52px; --pad-b: 16px; }
+  .pn-t__h { font-size: clamp(34px, 10vw, 42px); }
+  .pn-t__p { margin-top: 8px; font-size: 15px; line-height: 1.45; }
+  .pn-t__go { padding-top: 16px; }
+  .pn-t__foot { padding-top: 16px; }
+  /* Pé estreito: só a lâmina com a seta (o título já é o link), WhatsApp do assunto à direita */
+  .pn-t__foot .pn-go-l, .pn-t__foot .pn-go-s { display: none; }
+  /* Empresa: régua mais baixa */
+  .pn-ruler { margin-bottom: 12px; gap: 10px; }
+  .pn-ruler__y { gap: 2px; }
+  .pn-ruler__y b { font-size: clamp(44px, 12.4vw, 50px); }
+  .pn-ruler__y--now b { font-size: clamp(26px, 7.2vw, 30px); }
+  .pn-ruler__scale { height: 26px; }
+  /* Assistência: carimbo ao lado do título */
+  .pn-t--assi { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto auto; }
+  .pn-t--assi .pn-t__h { grid-column: 1; max-width: none; }
+  .pn-t--assi .pn-t__p { grid-column: 1; }
+  .pn-stamp { grid-row: 1 / span 2; width: 92px; margin: -6px -2px 0 0; align-self: center; }
+  .pn-t--assi .pn-t__foot { grid-row: 3; }
+  /* Produtos: vitrine mais baixa */
   .pn-t--prod { display: flex; }
-  .pn-vit__stage { min-height: 210px; }
-  /* BC System: imagem baixa e centrada, sem a faixa solta */
-  .pn-t--sist { display: flex; flex-direction: column; }
+  .pn-vit { --cap: 64px; margin-top: 8px; }
+  .pn-vit__stage { min-height: 164px; }
+  .pn-vit__ctrl { margin-top: 10px; padding-top: 6px; }
+  .pn-t--prod > .pn-t__foot { padding-top: 10px; }
+  /* BC System: tablet + celular pequenos ao lado do título; "Também" em duas linhas */
+  .pn-t--sist {
+    grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: none;
+    grid-template-areas: "h vis" "p p" "sat sat" "foot foot" "also also"; column-gap: 10px;
+  }
   .pn-sist__copy { display: contents; }
-  .pn-sist__vis { order: 1; width: calc(100% + var(--pad) * 2); margin: 8px calc(var(--pad) * -1) 0; min-height: 0; padding-top: 4px; overflow: visible; }
-  .pn-t--sist .pn-t__go { order: 2; margin-top: 0; }
-  .pn-sist__band { display: none; }
-  .pn-sist__vis img { width: auto; max-width: 84%; max-height: 156px; margin: 0 auto 10px; justify-self: center; }
-  /* Par compacto: BC Fichas e Google */
-  .pn-t--fich, .pn-t--goog { --pad: 14px; padding: 50px var(--pad) 14px; }
-  .pn-t--fich .pn-t__h, .pn-t--goog .pn-t__h { font-size: clamp(28px, 8.4vw, 34px); }
-  .pn-t--fich .pn-t__p, .pn-t--goog .pn-t__p { font-size: 13.5px; line-height: 1.45; }
-  .pn-t--fich .pn-t__p { margin-top: 8px; }
-  .pn-fich__vis { display: none; }
-  .pn-t--fich .pn-t__go, .pn-t--goog .pn-t__go { gap: 8px; font-size: 10px; line-height: 1.3; }
-  .pn-t--fich .pn-t__arr, .pn-t--goog .pn-t__arr { flex: none; width: 38px; }
-  .pn-goog__h .pn-t__a { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .pn-goog__n { font-size: clamp(64px, 20vw, 84px); line-height: .8; }
-  .pn-goog__lbl { font-size: 18px; line-height: 1; }
-  .pn-goog__stars { margin-top: 8px; gap: 2px; }
-  .pn-goog__stars .i { width: 15px; height: 15px; }
-  .pn-t--goog .pn-t__foot { padding-top: 12px; gap: 0; }
-  .pn-goog__ext { font-size: 10px; }
-  .pn-t--cont { display: flex; }
-  .pn-cont__tel a { font-size: clamp(38px, 11.6vw, 48px); }
-  /* Destaques */
-  .pn-feat__head .h2 { line-height: 1.06; }
-  .pn-feat__foot { grid-template-columns: minmax(0, 1fr); }
-  .pn-cats { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; border-bottom: 1px solid #2A2A29; }
-  .pn-cats li { border-top: 1px solid #2A2A29; }
-  .pn-cats a { display: flex; align-items: center; min-height: 52px; padding: 0; }
-  .pn-cats .i { margin-left: auto; }
+  .pn-t--sist .pn-t__h { grid-area: h; align-self: center; }
+  .pn-t--sist .pn-t__p { grid-area: p; }
+  .pn-sat { grid-area: sat; justify-self: start; margin-top: 10px; gap: 6px 10px; }
+  .pn-t--sist .pn-t__foot { grid-area: foot; padding-top: 12px; }
+  .pn-sist__vis { width: 128px; margin: -14px -6px 0 0; min-height: 0; overflow: visible; align-self: center; }
+  .pn-sist__band { left: 24%; width: 40%; top: -6px; bottom: -4px; }
+  .pn-sist__vis img { width: 100%; max-width: none; margin: 0; }
+  .pn-also { grid-template-columns: minmax(0, 1fr); margin-top: 14px; }
+  .pn-also__lbl { padding: 8px 0 0; }
+  .pn-also__list { grid-template-columns: minmax(0, 1fr); }
+  .pn-also__i { border-left: 0; }
+  .pn-also__i + .pn-also__i { border-top: 1px solid #CFCFC8; }
+  .pn-also__a { min-height: 56px; padding: 6px 0 5px; gap: 12px; }
+  .pn-also__ic { width: 22px; height: 22px; }
+  /* Google + clientes */
+  .pn-t--prova { padding-top: 52px; }
+  .pn-goog__h .pn-t__a { column-gap: 14px; }
+  .pn-goog__n { font-size: clamp(64px, 18.4vw, 76px); }
+  .pn-goog__lbl { font-size: 20px; }
+  .pn-goog__row { margin-top: 12px; font-size: 14.5px; }
+  .pn-goog__stars .i { width: 17px; height: 17px; }
+  .pn-prova__c { margin-top: 14px; padding-top: 12px; gap: 10px; }
+  .pn-clients.clients__list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .pn-clients .clients__i { aspect-ratio: 2 / 1; padding: 6px; }
+  .pn-prova__foot { padding-top: 14px; }
+
+  /* Direto do catálogo: atalhos compactos e fichas numa faixa de arrastar (uma linha) */
+  .pn-feat.sec { padding-top: 50px; }
+  .pn-feat__head { margin-bottom: 16px; }
+  .pn-feat__head .h2 { font-size: 40px; line-height: 1.04; }
+  /* No celular a faixa de atalhos (com a contagem) já resume o catálogo */
+  .pn-feat__intro { display: none; }
+  .pn-cats { margin-top: 18px; }
+  .pn-cats a { flex-wrap: wrap; align-content: center; gap: 5px 6px; min-height: 64px; padding: 8px 8px 8px 10px; }
+  .pn-cats li:first-child a { padding-left: 0; }
+  .pn-cats__n { flex-basis: 100%; font-size: clamp(17px, 5vw, 21px); }
+  .pn-cats .i { width: 13px; height: 13px; margin-left: auto; }
+  .pn-feat__grid.pgrid {
+    display: flex; gap: 10px; overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory; scroll-padding-inline: var(--gut);
+    margin-inline: calc(var(--gut) * -1); padding: 2px var(--gut) 14px;
+    scrollbar-width: thin; scrollbar-color: var(--green) #232322;
+  }
+  .pn-feat__grid > li { flex: 0 0 min(60%, 240px); scroll-snap-align: start; }
+  .pn-feat__grid .spec__sub { display: -webkit-box; }
+  .pn-feat__grid .spec--compacta .spec__fig { margin-top: 30px; aspect-ratio: 16 / 11; }
+  .pn-feat__grid .spec__model { font-size: 24px; }
+  .pn-feat__foot { margin-top: 14px; padding-bottom: 28px; flex-direction: column; align-items: stretch; gap: 12px; }
+  /* As fichas já trazem o selo "Consulte disponibilidade" */
+  .pn-feat__note { display: none; }
+  .pn-feat__foot .btn { width: 100%; margin: 0; justify-content: space-between; --bh: 54px; }
+
+  /* Marcas: rótulo curto à esquerda, letreiro menor */
+  .pn-brands .ticker__list li { font-size: 19px; padding: 13px 0 11px; }
+  .pn-brands__lbl { padding-right: calc(48px * var(--tan) + 10px); white-space: normal; line-height: 1.3; }
+  .pn-brands__lbl > span { width: min-content; }
+  .pn-brands .ticker__btn { width: 48px; }
+
+  /* Fechamento (faixa preta da direita mais estreita: nada encosta nela) */
+  .pn-ask { padding-block: 46px 50px; }
+  .pn-ask.ask::before { width: 9% !important; right: -5% !important; }
+  .pn-ask .ask__in { gap: 18px; }
+  .pn-ask .ask__t { font-size: clamp(44px, 13vw, 56px); }
+  .pn-ask .ask__side { gap: 16px; }
+  .pn-ask .ask__side p { font-size: 15.5px; }
+  /* WhatsApp na largura toda; telefone e "todos os contatos" lado a lado */
+  .pn-ask .ask__btns { justify-content: space-between; margin-left: 0; gap: 10px 12px; }
+  .pn-ask .ask__btns .btn--ink { flex: 1 1 100%; --bh: 54px; }
+  .pn-ask .ask__btns .btn--line { --bh: 48px; font-size: 13px; letter-spacing: .02em; gap: 8px; padding-inline: calc(10px + 48px * var(--tan) / 2); margin-left: -2px; }
+  .pn-ask .ask__btns .btn--line .i { width: 16px; height: 16px; }
+  .pn-ask__all { margin-left: 0; font-size: 13px; letter-spacing: .02em; }
 }
 @media (max-width: 380px) {
   .pn-hero__call--2 { display: none; }
-  .pn-ruler { gap: 10px; }
+  .pn-ruler { gap: 8px; }
   /* Vitrine: cada traço com pelo menos 44 px de largura */
   .pn-vit__ctrl { gap: 8px; }
   .pn-vit__dots { gap: 0; }
   .pn-vit__count { min-width: 3.6em; }
+  .pn-stamp { width: 84px; }
+  .pn-t--assi .pn-t__h { font-size: 33px; }
+}
+
+/* =====================================================================
+   7. LEITURA NO CELULAR (leitor 45+): rótulos mono com no mínimo 12 px
+   ===================================================================== */
+@media (max-width: 760px) {
+  .pg-inicio--v3 .mono, .pg-inicio--v3 .kicker, .pg-inicio--v3 .sec__tab, .pg-inicio--v3 .status,
+  .pg-inicio--v3 .tag, .pg-inicio--v3 .trust__i,
+  .pn-hero__call, .pn-t__tab, .pn-t__go, .pn-ruler__y .mono, .pn-ruler__lbl,
+  .pn-vit__brand, .pn-vit__count, .pn-goog__ext, .pn-cats__q, .pn-brands__lbl,
+  .pn-feat__grid .spec__brand, .pn-feat__grid .spec__tab, .pn-feat__grid .badge,
+  .pg-inicio--v3 .ftr__h, .pg-inicio--v3 .ftr__legal, .pg-inicio--v3 .menu__info { font-size: 12px; }
+  .pn-t__tab { letter-spacing: .03em; }
+  .pn-t__tab b { font-size: 20px; }
+  .pn-hero__call { padding: 4px 6px 3px; letter-spacing: 0; }
+  .pn-feat__grid .badge { line-height: 1.25; letter-spacing: .01em; padding: 5px 7px 4px; }
+  .pn-feat__grid .spec__tab { padding: 6px 10px 5px calc(10px + 20px * var(--tan)); letter-spacing: .02em; }
+  .pn-feat__grid .spec__brand { letter-spacing: .03em; }
+}
+
+/* =====================================================================
+   8. SELETOR DE VARIAÇÃO (js/preview.js) — SÓ NA FASE DE ESCOLHA.
+   No computador e no tablet (> 760 px) usa a mesma pílula compacta "V3"
+   do celular, no lugar da barra "Variação 1 2 3" de 212 px: abre as
+   opções ao clicar (Enter/Espaço no teclado) ou com o mouse em cima.
+   Na primeira meia tela fica escondida (classe .lvp--topo, posta pelo
+   preview.js), para não cobrir a aba "01" nem o título do painel.
+   As regras do preview.js vêm depois deste arquivo: o prefixo
+   .pg-inicio--v3 garante a precedência. Apagar junto com o preview.js
+   na publicação.
+   ===================================================================== */
+@media (min-width: 761px) {
+  .pg-inicio--v3 .lvp {
+    left: max(6px, env(safe-area-inset-left)); bottom: calc(14px + env(safe-area-inset-bottom));
+    padding: 0; gap: 0; background: none; border: 0; box-shadow: none;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    transition: opacity .3s, transform .3s var(--ease), visibility 0s;
+  }
+  .pg-inicio--v3 .lvp.lvp--topo {
+    opacity: 0; visibility: hidden; transform: translateY(12px); pointer-events: none;
+    transition: opacity .3s, transform .3s var(--ease), visibility 0s .3s;
+  }
+  .pg-inicio--v3 .lvp__l { display: none; }
+  .pg-inicio--v3 .lvp__t {
+    display: grid; place-items: center; isolation: isolate; width: 44px; height: 44px; margin: 0; padding: 0;
+    border: 0; background: none; color: #F4F4F0; font: inherit; cursor: pointer;
+  }
+  .pg-inicio--v3 .lvp__t span[aria-hidden] {
+    position: relative; display: flex; align-items: center; justify-content: center; white-space: nowrap;
+    min-width: 36px; height: 24px; padding: 0 7px; font-size: 10.5px; letter-spacing: .04em;
+  }
+  .pg-inicio--v3 .lvp__t span[aria-hidden]::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; transform: skewX(-12deg);
+    background: rgba(10, 10, 10, .9); border: 1px solid #3A3A38; box-shadow: 0 6px 18px -6px rgba(0, 0, 0, .6);
+    transition: background .25s, border-color .25s;
+  }
+  .pg-inicio--v3 .lvp__t span b { color: #019F42; font-weight: 500; }
+  .pg-inicio--v3 .lvp__t[aria-expanded="true"] span[aria-hidden] { color: #0A0A0A; }
+  .pg-inicio--v3 .lvp__t[aria-expanded="true"] span[aria-hidden]::before { background: #019F42; border-color: #019F42; }
+  .pg-inicio--v3 .lvp__t[aria-expanded="true"] span b { color: #0A0A0A; }
+  .pg-inicio--v3 .lvp__op {
+    display: none; margin-left: 2px; padding: 0 2px;
+    background: rgba(10, 10, 10, .94); border: 1px solid #3A3A38; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .6);
+  }
+  .pg-inicio--v3 .lvp.is-open .lvp__op { display: flex; }
+}
+/* Mouse: as opções abrem com o ponteiro em cima da pílula (e ficam abertas sobre elas) */
+@media (min-width: 761px) and (hover: hover) and (pointer: fine) {
+  .pg-inicio--v3 .lvp:not(.lvp--topo):hover .lvp__op { display: flex; }
+  .pg-inicio--v3 .lvp:hover .lvp__t span[aria-hidden]::before { border-color: #019F42; }
+}
+@media (min-width: 761px) and (prefers-reduced-motion: reduce) {
+  .pg-inicio--v3 .lvp, .pg-inicio--v3 .lvp.lvp--topo { transition: none; }
 }

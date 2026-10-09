@@ -2,17 +2,21 @@
    Balanças.com — "Linha Verde" — Página inicial · VARIAÇÃO 2 "Capítulos"
    js/home-v2.js — só index-2.html. Carregado depois do core.js e antes
    dos scripts do CDN (todos com "defer").
-   1. Vitrine: escolhe as fichas em window.BC (BC.destaques), monta com
-      LV.cardProduto (no lugar das fichas de reserva do HTML), botões ‹ ›,
-      barra de progresso e foco por teclado.
-   2. Sumário: no mouse, a imagem de cada capítulo segue o cursor
-      (sem GSAP, com requestAnimationFrame); no toque, miniaturas fixas.
-      Monogramas da equipe (capítulo 04) a partir de BC.empresa.equipe.
-   3. Movimento (LV.onMotion): abertura da capa, linhas do sumário,
-      fichas da vitrine e contracapa. Sem GSAP ou com "reduzir
-      movimento", tudo aparece direto.
+   1. Vitrine: escolhe as fichas em window.BC (BC.destaques) e monta com
+      LV.cardProduto no modelo LIMPO (foto, marca, nome, uma linha do que
+      é, selo e Detalhes + WhatsApp); botões ‹ › (aria-disabled, não perdem
+      o foco), setas ← → do teclado entre as fichas e barra de progresso.
+   2. Capa: a faixa verde da manchete reveza 3 produtos (balança com
+      etiqueta, impressora de etiquetas e kit PDV), com legenda e botão de
+      pausa. Pausa sozinha no mouse/foco, fora da tela e com a aba oculta;
+      dá 2 voltas e para na balança. Com "reduzir movimento": produto fixo.
+   3. Movimento (LV.onMotion): abertura da capa, linhas do índice, fichas
+      da vitrine e atendimento. Sem GSAP ou com "reduzir movimento", tudo
+      aparece direto.
    4. Fase de escolha: tira o seletor de variação (js/preview.js) da
       frente da capa.
+   5. Botões flutuantes: saem de cena quando o "Falar no WhatsApp" da
+      capa está na tela (html.hv2-cta-vis), sem sobrepor os dois.
    ===================================================================== */
 (function () {
   "use strict";
@@ -22,8 +26,6 @@
   var $ = LV.$, $$ = LV.$$;
   var doc = document.documentElement;
   var reduceMQ = window.matchMedia("(prefers-reduced-motion: reduce)");
-  var fineMQ = window.matchMedia("(hover: hover) and (pointer: fine)");
-  var wideMQ = window.matchMedia("(min-width: 861px)");
 
   function naTela(el) {
     var r = el.getBoundingClientRect();
@@ -62,15 +64,35 @@
     return out;
   }
 
+  // "Uma linha do que é": a 1ª oração do resumo ("Balança etiquetadora compacta de 32 kg.")
+  function resumoCurto(s) {
+    s = String(s || "").replace(/\s+/g, " ").trim().replace(/\.$/, "");
+    var c = s.split(/,\s|;\s|\s[–—]\s/)[0];
+    if (c.length > 64) { var cut = c.slice(0, 64); c = cut.slice(0, cut.lastIndexOf(" ")) + "…"; }
+    // "32 kg", "203 dpi": número e unidade não se separam
+    c = c.replace(/(\d) (kg|g|mm\/s|mm|dpi|horas|scans\/s)(?=[\s,.;)]|$)/g, "$1 $2");
+    return c + (/…$/.test(c) ? "" : ".");
+  }
+
+  // Ficha no modelo limpo (o mesmo das fichas de reserva do HTML)
+  function fichaLimpa(p, i) {
+    var t = document.createElement("template");
+    t.innerHTML = LV.cardProduto(p, { variante: "compacta", classe: "hv2-card", n: i + 1, linhas: 0, sizes: "(max-width: 640px) 70vw, 300px" });
+    var card = t.content.firstElementChild;
+    if (!card) return "";
+    $$(".spec__head, .spec__table, .spec__price:not(.has-preco)", card).forEach(function (el) { el.parentNode.removeChild(el); });
+    var sub = $(".spec__sub", card);
+    if (sub) sub.textContent = resumoCurto(p.resumo);
+    return '<li class="hv2-strip__i" data-id="' + LV.esc(p.id) + '">' + card.outerHTML + "</li>";
+  }
+
   function montarVitrine() {
     if (!strip || !BC || !LV.cardProduto) return;
     var lista = escolher(6);
     if (!lista.length) return;   // sem dados: ficam as fichas de reserva do HTML
     var mais = $(".hv2-strip__more", strip);
-    var html = lista.map(function (p, i) {
-      return '<li class="hv2-strip__i" data-id="' + LV.esc(p.id) + '">' +
-        LV.cardProduto(p, { variante: "compacta", n: i + 1, sizes: "(max-width: 640px) 74vw, 320px" }) + "</li>";
-    }).join("");
+    var html = lista.map(fichaLimpa).join("");
+    if (!html) return;
     // Sem o snap durante a troca: senão o navegador "re-encaixa" numa ficha qualquer
     // e a faixa já abre rolada.
     strip.style.scrollSnapType = "none";
@@ -79,10 +101,6 @@
     else strip.insertAdjacentHTML("beforeend", html);
     strip.scrollLeft = 0;
     requestAnimationFrame(function () { strip.scrollLeft = 0; strip.style.scrollSnapType = ""; });
-    // "32 kg", "203 dpi": número e unidade não se separam no resumo
-    $$(".spec__sub", strip).forEach(function (el) {
-      el.textContent = el.textContent.replace(/(\d) (kg|g|mm\/s|mm|dpi|horas|scans\/s)(?=[\s,.;)]|$)/g, "$1\u00a0$2");
-    });
   }
 
   function controlesVitrine() {
@@ -95,18 +113,20 @@
       return Math.max(1, Math.floor((strip.clientWidth * 0.86) / w)) * w;
     }
     function ir(dir) { strip.scrollBy({ left: dir * passo(), behavior: reduceMQ.matches ? "auto" : "smooth" }); }
+    // aria-disabled (e não "disabled"): o botão continua com o foco do teclado no fim da faixa
+    function trava(b, sim) { if (b) b.setAttribute("aria-disabled", sim ? "true" : "false"); }
     var raf = 0;
     function atualiza() {
       raf = 0;
       var max = strip.scrollWidth - strip.clientWidth, x = strip.scrollLeft;
       if (box) box.hidden = max <= 4;
-      if (prev) prev.disabled = x <= 4;
-      if (next) next.disabled = x >= max - 4;
+      trava(prev, x <= 4);
+      trava(next, x >= max - 4);
       if (bar) bar.style.setProperty("--p", max > 4 ? Math.min(1, (x + strip.clientWidth) / strip.scrollWidth).toFixed(4) : "1");
     }
     function agenda() { if (!raf) raf = requestAnimationFrame(atualiza); }
-    if (prev) prev.addEventListener("click", function () { ir(-1); });
-    if (next) next.addEventListener("click", function () { ir(1); });
+    if (prev) prev.addEventListener("click", function () { if (prev.getAttribute("aria-disabled") !== "true") ir(-1); });
+    if (next) next.addEventListener("click", function () { if (next.getAttribute("aria-disabled") !== "true") ir(1); });
     strip.addEventListener("scroll", agenda, { passive: true });
     window.addEventListener("resize", agenda);
     window.addEventListener("load", agenda);
@@ -120,128 +140,114 @@
       else if (r.right > s.right - pad) dx = r.right - (s.right - pad);
       if (Math.abs(dx) > 1) strip.scrollBy({ left: dx, behavior: reduceMQ.matches ? "auto" : "smooth" });
     });
+    // Setas ← → levam ao mesmo botão da ficha vizinha (Detalhes → Detalhes, WhatsApp → WhatsApp)
+    strip.addEventListener("keydown", function (e) {
+      if ((e.key !== "ArrowRight" && e.key !== "ArrowLeft") || e.altKey || e.ctrlKey || e.metaKey) return;
+      var li = e.target.closest ? e.target.closest(".hv2-strip__i") : null;
+      if (!li) return;
+      var itens = $$(".hv2-strip__i", strip), k = itens.indexOf(li) + (e.key === "ArrowRight" ? 1 : -1);
+      if (k < 0 || k >= itens.length) return;
+      var sel = e.target.classList.contains("btn--green") ? ".btn--green" : ".btn--line";
+      var alvo = $(sel, itens[k]) || $("a, button", itens[k]);
+      if (alvo) { e.preventDefault(); alvo.focus(); }
+    });
     atualiza();
   }
 
   /* ------------------------------------------------------------------
-     2. SUMÁRIO — monogramas da equipe e imagem que segue o cursor
+     2. CAPA — a faixa verde reveza 3 produtos
      ------------------------------------------------------------------ */
-  function monogramas() {
-    var box = $("[data-hv2-team]"), eq = BC && BC.empresa && BC.empresa.equipe;
-    if (!box || !eq || !eq.length) return;
-    box.innerHTML = eq.slice(0, 5).map(function (p) {
-      var n = String(p.nome || "").split(/\s+/).filter(Boolean);
-      return "<i>" + LV.esc(((n[0] || "").charAt(0) + (n.length > 1 ? n[n.length - 1].charAt(0) : "")).toUpperCase()) + "</i>";
-    }).join("");
-  }
+  function capa() {
+    var slab = $("[data-slab]"), ps = $("[data-slab-ps]"), btn = $("[data-cap-btn]"), link = $("[data-cap-a]");
+    var cn = $("[data-cap-n]"), ct = $("[data-cap-t]"), cm = $("[data-cap-m]"), hero = $(".hv2-hero");
+    if (!slab || !ps || !link || !BC) return;
+    var p1 = BC.porId("toledo-prix-4-uno"), p2 = BC.porId("elgin-l42-pro");
+    var itens = [{ el: $(".hv2-slab__p", ps), tipo: "Balança com etiqueta", nome: p1 ? p1.marca + " " + p1.nome : "Toledo Prix 4 Uno", href: "produtos.html#p=toledo-prix-4-uno" }];
+    if (!itens[0].el || reduceMQ.matches) return;   // movimento reduzido: a balança fica fixa
 
-  function seguidor() {
-    var list = $("[data-peek-list]");
-    if (!list) return;
-    var rows = $$(".hv2-row__a", list);
-    var peek = null, figs = [], ativo = false, cur = -1, z = 1, listaNaTela = false;
-    var x = 0, y = 0, tx = 0, ty = 0, rot = 0, mx = -1, my = -1, raf = 0, visivel = false;
-
-    function montar() {
-      if (peek) return;
-      peek = document.createElement("div");
-      peek.className = "hv2-peek";
-      peek.setAttribute("aria-hidden", "true");
-      rows.forEach(function (a) {
-        var th = $(".hv2-row__th", a);
-        if (!th) { figs.push(null); return; }
-        var f = th.cloneNode(true);
-        f.classList.remove("hv2-row__th");
-        f.removeAttribute("aria-hidden");
-        $$("img", f).forEach(function (im) { im.removeAttribute("loading"); });
-        peek.appendChild(f); figs.push(f);
-      });
-      document.body.appendChild(peek);
+    function novo(cls, img) {
+      var s = document.createElement("span");
+      s.className = "hv2-slab__p hv2-slab__p--" + cls;
+      s.innerHTML = img;
+      return s;
     }
-    // A imagem fica ACIMA da linha em foco (o X segue o cursor): o título continua legível.
-    // Sem espaço em cima (perto do cabeçalho), passa para baixo da linha.
-    function alvo() {
-      var w = peek.offsetWidth, h = peek.offsetHeight, top = LV.hdr() + 12;
-      var rr = cur > -1 ? rows[cur].getBoundingClientRect() : null;
-      tx = Math.min(Math.max(mx - w * 0.5, 16), window.innerWidth - w - 16);
-      ty = rr ? Math.min(my - h - 26, rr.top - h - 8) : my - h - 26;
-      if (ty < top) ty = Math.min(rr ? Math.max(my + 30, rr.bottom + 8) : my + 30, window.innerHeight - h - 12);
-    }
-    function loop() {
-      raf = 0;
-      if (!visivel) return;
-      var dx = tx - x;
-      x += dx * 0.17; y += (ty - y) * 0.17;
-      rot += (Math.max(-7, Math.min(7, dx * 0.05)) - rot) * 0.2;
-      peek.style.transform = "translate3d(" + x.toFixed(1) + "px," + y.toFixed(1) + "px,0) rotate(" + rot.toFixed(2) + "deg)";
-      if (Math.abs(dx) > 0.3 || Math.abs(ty - y) > 0.3 || Math.abs(rot) > 0.05) raf = requestAnimationFrame(loop);
-    }
-    function mexe() { if (!raf) raf = requestAnimationFrame(loop); }
-    function mostra(i) {
-      if (!ativo || !peek || !figs[i]) return;
-      if (cur !== i) {
-        if (cur > -1 && figs[cur]) figs[cur].classList.remove("is-on");
-        figs[i].style.zIndex = ++z;
-        figs[i].classList.add("is-on");
-        cur = i;
-      }
-      alvo();
-      if (!visivel) { x = tx; y = ty; rot = 0; visivel = true; peek.classList.add("is-on"); }
-      mexe();
-    }
-    function esconde() {
-      if (!peek) return;
-      visivel = false; peek.classList.remove("is-on");
-      if (cur > -1 && figs[cur]) figs[cur].classList.remove("is-on");
-      cur = -1;
-    }
-    function linhaSobCursor() {
-      if (mx < 0) return -1;
-      var el = document.elementFromPoint(mx, my);
-      var a = el && el.closest ? el.closest(".hv2-row__a") : null;
-      return a ? rows.indexOf(a) : -1;
-    }
-
-    rows.forEach(function (a, i) { a.addEventListener("mouseenter", function () { mostra(i); }); });
-    list.addEventListener("mouseleave", esconde);
-    window.addEventListener("mousemove", function (e) {
-      mx = e.clientX; my = e.clientY;
-      if (visivel) { alvo(); mexe(); }
-    }, { passive: true });
-    // Rolando com o mouse parado: atualiza a linha sob o cursor (só com o sumário na tela)
-    window.addEventListener("scroll", function () {
-      if (!ativo || !listaNaTela) return;
-      var i = linhaSobCursor();
-      if (i > -1) mostra(i); else if (visivel) esconde();
-    }, { passive: true });
-    if ("IntersectionObserver" in window) {
-      new IntersectionObserver(function (en) {
-        listaNaTela = en[en.length - 1].isIntersecting;
-        if (!listaNaTela && visivel) esconde();
-      }).observe(list);
-    } else listaNaTela = true;
-
-    function avalia() {
-      var pode = fineMQ.matches && !reduceMQ.matches && wideMQ.matches;
-      if (pode === ativo) return;
-      ativo = pode;
-      doc.classList.toggle("hv2-follow", pode);
-      if (!pode) esconde();
-      else if (!peek) {
-        // monta (e carrega as imagens) quando o sumário se aproxima da tela
-        if ("IntersectionObserver" in window) {
-          var io = new IntersectionObserver(function (en) {
-            if (en.some(function (e) { return e.isIntersecting; })) { io.disconnect(); montar(); }
-          }, { rootMargin: "600px 0px" });
-          io.observe(list);
-        } else montar();
-      }
-      LV.refresh();
-    }
-    [fineMQ, reduceMQ, wideMQ].forEach(function (mq) {
-      if (mq.addEventListener) mq.addEventListener("change", avalia); else if (mq.addListener) mq.addListener(avalia);
+    var extra = [];
+    if (p2) extra.push({
+      el: novo("l42", LV.imgProduto(p2, { alt: "", eager: true, sizes: "(max-width: 860px) 46vw, 24vw" })),
+      tipo: "Impressora de etiquetas", nome: p2.marca + " " + p2.nome, href: "produtos.html#p=" + encodeURIComponent(p2.id)
     });
-    avalia();
+    extra.push({
+      el: novo("pdv", '<img src="../compartilhado/img/fotos/prix-6-pdv.webp" width="1044" height="1098" alt="" decoding="async">'),
+      tipo: "Kit PDV", nome: "Balança, gaveta e impressora", href: "produtos.html#kits"
+    });
+
+    var n = 0, i = 0, timer = 0, trocas = 0, MAX = 0;
+    var pausado = false, emCima = false, foco = false, visivel = true;
+
+    function pad(k) { return (k < 10 ? "0" : "") + k; }
+    function legenda(k) {
+      var it = itens[k];
+      if (cn) cn.textContent = pad(k + 1) + "/" + pad(n);
+      if (ct) ct.textContent = it.tipo;
+      if (cm) cm.textContent = it.nome;
+      link.href = it.href;
+      link.setAttribute("aria-label", it.tipo + ": " + it.nome + " (ver no catálogo)");
+    }
+    function pode() { return !pausado && !emCima && !foco && visivel && !document.hidden && trocas < MAX; }
+    function agenda() { clearTimeout(timer); timer = 0; if (pode()) timer = setTimeout(proximo, 4200); }
+    function botao() {
+      if (!btn) return;
+      var parado = pausado || trocas >= MAX;
+      btn.setAttribute("aria-pressed", parado ? "true" : "false");
+    }
+    function ir(k) {
+      var de = itens[i], para = itens[k];
+      if (de === para) return;
+      slab.classList.remove("is-swap"); void slab.offsetWidth; slab.classList.add("is-swap");
+      de.el.classList.remove("is-on"); de.el.classList.add("is-out");
+      para.el.classList.remove("is-out"); para.el.classList.add("is-on");
+      setTimeout(function () { de.el.classList.remove("is-out"); }, 700);
+      i = k; legenda(k);
+    }
+    function proximo() { trocas++; ir((i + 1) % n); botao(); agenda(); }
+
+    function ligar() {
+      extra.forEach(function (it) { ps.appendChild(it.el); itens.push(it); });
+      n = itens.length; MAX = n * 2;   // duas voltas e para de novo na balança
+      legenda(0);
+      if (btn) {
+        btn.hidden = false;
+        btn.addEventListener("click", function () {
+          if (pausado || trocas >= MAX) { pausado = false; if (trocas >= MAX) trocas = 0; proximo(); }
+          else { pausado = true; clearTimeout(timer); botao(); }
+        });
+      }
+      botao();
+      [$(".hv2-title", hero), $(".hv2-cap", hero)].forEach(function (el) {
+        if (!el) return;
+        el.addEventListener("mouseenter", function () { emCima = true; clearTimeout(timer); });
+        el.addEventListener("mouseleave", function () { emCima = false; agenda(); });
+      });
+      var cap = $(".hv2-cap", hero);
+      if (cap) {
+        cap.addEventListener("focusin", function () { foco = true; clearTimeout(timer); });
+        cap.addEventListener("focusout", function () { foco = false; agenda(); });
+      }
+      document.addEventListener("visibilitychange", agenda);
+      if ("IntersectionObserver" in window && hero) {
+        new IntersectionObserver(function (en) { visivel = en[en.length - 1].isIntersecting; agenda(); }, { threshold: 0.25 }).observe(hero);
+      }
+      agenda();
+    }
+    // Só depois que a página carregou (a 1ª imagem é a do LCP) e com as outras já decodificadas
+    function preparar() {
+      var imgs = extra.map(function (it) { return $("img", it.el); });
+      Promise.all(imgs.map(function (im) {
+        return im.decode ? im.decode().catch(function () {}) : Promise.resolve();
+      })).then(function () { setTimeout(ligar, 600); });
+    }
+    if (document.readyState === "complete") setTimeout(preparar, 900);
+    else window.addEventListener("load", function () { setTimeout(preparar, 900); }, { once: true });
   }
 
   /* ------------------------------------------------------------------
@@ -253,7 +259,7 @@
     // O que já está na tela não some para tocar a entrada de novo.
     var tarde = doc.classList.contains("lv-tarde");
 
-    // 3.1 Capa: linha de abertura, palavras cortadas pela barra verde, placa, cota e texto
+    // 3.1 Capa: linha de abertura, palavras cortadas pela barra verde, faixa, produto, cota e texto
     var hero = $(".hv2-hero");
     if (hero) {
       var tl = gsap.timeline({ defaults: { ease: "expo.out" }, delay: viaVT ? 0 : 0.08 });
@@ -262,22 +268,14 @@
       $$(".hv2-title .w", hero).forEach(function (w, i) {
         LV.wipe(w, { tl: tl, at: 0.16 + i * 0.075, cor: w.classList.contains("w--green") ? "paper" : "green" });
       });
-      var slab = $(".hv2-slab", hero), img = slab && $("img", slab);
-      if (slab) {
-        // A placa abre da esquerda para a direita com a borda inclinada a −12°, seja qual
-        // for a largura dela (no desktop ela se estica até a margem). A janela vai de
-        // −50% a 170% da altura para não cortar a balança, que sai da placa.
-        var sw = slab.offsetWidth || 1, sh = slab.offsetHeight || 1;
-        var dx = (sh * 2.2 * 0.2126) / sw * 100;
-        var f = function (n) { return n.toFixed(2) + "%"; };
-        tl.fromTo(slab,
-          { clipPath: "polygon(-2% -50%, -2% -50%, " + f(-2 - dx) + " 170%, " + f(-2 - dx) + " 170%)" },
-          { clipPath: "polygon(-2% -50%, " + f(104 + dx) + " -50%, 104% 170%, " + f(-2 - dx) + " 170%)", duration: 0.95, ease: "expo.inOut", clearProps: "clipPath" }, 0.42);
-        if (img) tl.from(img, { yPercent: 38, rotation: -4, opacity: 0, duration: 1.3 }, 0.8);
-      }
+      // A faixa abre da esquerda para a direita com a borda inclinada a −12° (o recorte
+      // é aplicado antes da inclinação); o produto sobe para dentro dela.
+      var band = $(".hv2-slab__band", hero), ps = $(".hv2-slab__ps", hero);
+      if (band) tl.fromTo(band, { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.95, ease: "expo.inOut", clearProps: "clipPath" }, 0.42);
+      if (ps) tl.fromTo(ps, { yPercent: 26, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.3, clearProps: "opacity" }, 0.8);
       var rule = $(".hv2-rule", hero);
       if (rule) tl.fromTo(rule, { scaleX: 0, transformOrigin: "0% 50%" }, { scaleX: 1, duration: 1.3, ease: "expo.inOut", clearProps: "transform" }, 0.55);
-      var resto = [$(".hv2-hero__lead", hero), $(".hv2-hero__ctas", hero), $(".phero__strip", hero)].filter(Boolean);
+      var resto = [$(".hv2-cap", hero), $(".hv2-hero__lead", hero), $(".phero__strip", hero)].filter(Boolean);
       tl.from(resto, { opacity: 0, y: 24, duration: 1.05, stagger: 0.09 }, 0.82);
       if (viaVT || tarde) tl.progress(1);
       else {
@@ -286,18 +284,18 @@
         window.addEventListener("pagereveal", function (e) { if (e.viewTransition) tl.progress(1); }, { once: true });
       }
 
-      // Ao rolar: o título sobe mais devagar e a balança "flutua" para fora da placa
+      // Ao rolar: o título sobe mais devagar e o produto "flutua" para fora da faixa
       var big = $(".hv2-title__big", hero);
-      var stl = gsap.timeline({ scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true } });
+      var stl = gsap.timeline({ scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true, invalidateOnRefresh: true } });
       if (big) stl.to(big, { yPercent: 14, ease: "none" }, 0);
-      if (img) stl.to(img, { yPercent: -16, ease: "none" }, 0);
+      if (ps) stl.to(ps, { y: function () { return -ps.offsetHeight * 0.14; }, ease: "none" }, 0);
     }
 
-    // 3.2 Sumário: o fio de cada linha se desenha e o conteúdo sobe
+    // 3.2 Índice: o fio de cada linha se desenha e o conteúdo sobe
     var rows = $$(".hv2-row__a");
     if (rows.length) {
       var partes = function (a) {
-        return $$(".hv2-row__n, .hv2-row__t, .hv2-row__d, .hv2-row__th, .hv2-row__go", a)
+        return $$(".hv2-row__n, .hv2-row__t, .hv2-row__th, .hv2-row__d, .hv2-row__go", a)
           .filter(function (el) { return el.offsetParent !== null; });
       };
       rows.forEach(function (a) {
@@ -312,7 +310,7 @@
         var r = $(".hv2-row__rule", a);
         var t = gsap.timeline({ delay: atraso || 0 });
         if (r) t.to(r, { scaleX: 1, duration: 1.1, ease: "expo.inOut" }, 0);
-        t.to(partes(a), { opacity: 1, y: 0, duration: 0.95, ease: "expo.out", stagger: 0.05, clearProps: "transform" }, 0.22);
+        t.to(partes(a), { opacity: 1, y: 0, duration: 0.95, ease: "expo.out", stagger: 0.05, clearProps: "transform,opacity" }, 0.22);
       };
       ScrollTrigger.batch(rows, {
         start: "top 92%", once: true,
@@ -339,16 +337,19 @@
       }
     }
 
-    // 3.4 Contracapa: a barra preta revela o 5,0 e as estrelas acendem
+    // 3.4 Atendimento: a barra preta revela o 5,0 (a nota é fixa, sem contador),
+    // as estrelas acendem e os logos dos clientes entram em fila
     var score = $(".hv2-score");
     if (score && !(tarde && naTela(score))) {
-      var n = $(".hv2-score__n", score);
+      var nota = $(".hv2-score__n", score);
       var stl2 = gsap.timeline({ scrollTrigger: LV.st(score, "top 82%") });
-      if (n) LV.wipe(n, { tl: stl2, at: 0, cor: "ink" });
+      if (nota) LV.wipe(nota, { tl: stl2, at: 0, cor: "ink" });
       var stars = $$(".hv2-score__stars .i", score);
       if (stars.length) stl2.from(stars, { scale: 0, rotation: -40, transformOrigin: "50% 55%", duration: 0.7, ease: "back.out(2.2)", stagger: 0.08 }, 0.5);
-      var txt = $$(".hv2-score__txt, .hv2-score__sub", score);
+      var txt = $$(".hv2-score__txt, .hv2-score__sub, .hv2-clients__k", score);
       if (txt.length) stl2.from(txt, { opacity: 0, y: 18, duration: 0.9, ease: "expo.out", stagger: 0.08 }, 0.7);
+      var logos = $$(".hv2-clients__i", score);
+      if (logos.length) stl2.from(logos, { opacity: 0, y: 12, duration: 0.8, ease: "expo.out", stagger: 0.05, clearProps: "transform,opacity" }, 0.95);
       // Teclado: o link da nota recebe foco já visível
       score.addEventListener("focusin", function () { stl2.progress(1); });
     }
@@ -367,7 +368,7 @@
       raf = 0;
       var r = hero.getBoundingClientRect();
       // enquanto a capa ocupa boa parte da tela (no tablet em pé ela não chega ao pé da tela,
-      // mas o seletor cobriria o título do sumário logo abaixo)
+      // mas o seletor cobriria o título do índice logo abaixo)
       doc.classList.toggle("hv2-lvp-off", r.top < window.innerHeight && r.bottom > window.innerHeight * 0.4);
     }
     function agenda() { if (!raf) raf = requestAnimationFrame(avalia); }
@@ -377,11 +378,31 @@
   }
 
   /* ------------------------------------------------------------------
+     5. BOTÕES FLUTUANTES × BOTÕES DA CAPA
+     A capa NÃO tem data-float-off (só os botões dela têm): em celular
+     baixo e tablet em pé, enquanto os botões da capa estão abaixo da
+     dobra, o WhatsApp flutuante é o contato da 1ª tela. O core só tira
+     o flutuante quando os botões passam de 88% da altura da tela; entre
+     88% e o pé da tela os dois apareciam juntos (768×1024) ou um cobria
+     o outro (375×667). Aqui
+     o flutuante sai assim que o "Falar no WhatsApp" da capa aparece
+     quase inteiro (≥ 55% visível), e volta quando ele sai da tela.
+     ------------------------------------------------------------------ */
+  function flutuanteNaCapa() {
+    var wa = $(".hv2-hero__ctas [data-wa]");
+    if (!wa || !$("[data-float]") || !("IntersectionObserver" in window)) return;
+    new IntersectionObserver(function (en) {
+      var e = en[en.length - 1];
+      doc.classList.toggle("hv2-cta-vis", e.isIntersecting && e.intersectionRatio >= 0.55);
+    }, { threshold: [0, 0.3, 0.55, 0.8, 1] }).observe(wa);
+  }
+
+  /* ------------------------------------------------------------------
      Início (o core já preencheu os dados; aqui só o que é desta página)
      ------------------------------------------------------------------ */
   try { montarVitrine(); } catch (e) { if (window.console) console.warn(e); }
   controlesVitrine();
-  monogramas();
-  seguidor();
+  try { capa(); } catch (e) { if (window.console) console.warn(e); }
   seletorVariacao();
+  flutuanteNaCapa();
 })();

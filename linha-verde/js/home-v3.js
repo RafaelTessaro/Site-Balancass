@@ -7,8 +7,9 @@
       em cima, com o foco do teclado dentro, fora da tela ou com a aba
       oculta. Com "reduzir movimento" começa parada.
    3. Links das categorias (contagem real do catálogo).
-   4. Animações (LV.onMotion): abertura do hero, módulos que "acendem"
-      com um corte diagonal, régua 2010 → hoje.
+   4. Animações (LV.onMotion): abertura do hero, quadros que "acendem"
+      com um corte diagonal, régua 2010 → hoje, logos dos clientes.
+   A nota do Google fica sempre fixa em "5,0" (sem contador).
    ===================================================================== */
 (function () {
   "use strict";
@@ -151,11 +152,17 @@
   if (vitBox && vitrine.length) montaVitrine(vitBox, vitrine);
 
   /* ------------------------------------------------------------------
-     Fichas em destaque (seção 02) — o core.js revela os cards (data-reveal)
+     Direto do catálogo (seção 02): quatro fichas que NÃO estão na vitrine do
+     quadro 03 — o core.js revela os cards (data-reveal)
      ------------------------------------------------------------------ */
   var gradeEl = $("[data-pn-destaques]");
   if (gradeEl && grade.length) {
-    gradeEl.innerHTML = LV.listaProdutos(grade, { linhas: 2, sizes: "(max-width: 639px) 46vw, (max-width: 1180px) 30vw, 340px" });
+    // Ficha limpa: variante "compacta" (sem nº, tabela e "Preço: consulte"); o resumo de uma
+    // frase e o selo "Consulte disponibilidade" voltam pelo css/home-v3.css
+    gradeEl.innerHTML = grade.map(function (p, i) {
+      return '<li class="pgrid__i" data-id="' + esc(p.id) + '">' +
+        LV.cardProduto(p, { n: i + 1, variante: "compacta", linhas: 0, sizes: "(max-width: 639px) 64vw, (max-width: 900px) 46vw, (max-width: 1519px) 23vw, 340px" }) + "</li>";
+    }).join("");
     $$(".pgrid__i > .spec", gradeEl).forEach(function (c) { c.setAttribute("data-reveal", ""); });
   }
 
@@ -169,7 +176,10 @@
     if (!qtd) { if (li) li.hidden = true; return; }
     $("[data-pn-cat-nome]", a).textContent = LV.catCurto(id);
     $("[data-pn-cat-n]", a).textContent = qtd;
-    a.setAttribute("aria-label", c.nome + ": " + qtd + (qtd === 1 ? " produto" : " produtos"));
+    // Nome acessível = texto visível ("Balanças 16 itens"); o nome completo vai no title
+    a.title = c.nome;
+    var q = $(".pn-cats__q", a);
+    if (q && qtd === 1) q.lastChild.textContent = " item";
   });
 
   /* ------------------------------------------------------------------
@@ -246,7 +256,7 @@
       if (band) stl.to(band, { xPercent: 7, ease: "none" }, 0);
     }
 
-    // Painel: os módulos "acendem" com um corte diagonal, na ordem 01 → 07
+    // Painel: os quadros "acendem" com um corte diagonal, na ordem 01 → 05
     if (tiles.length) {
       var FECHADO = "polygon(0% 0%, 0% 0%, -14% 100%, -14% 100%)";
       var ABERTO = "polygon(0% 0%, 114% 0%, 100% 100%, -14% 100%)";
@@ -270,8 +280,9 @@
           if (lbl) tl2.from(lbl, { autoAlpha: 0, y: 6, duration: 0.5 }, at + 0.9);
           var band2 = $(".pn-vit__band, .pn-sist__band", t);
           if (band2) tl2.from(band2, { scaleY: 0, transformOrigin: "50% 0%", duration: 1, ease: "expo.inOut" }, at);
-          var ficha = $(".pn-fich__vis .ficha", t);
-          if (ficha) tl2.from(ficha, { yPercent: 70, rotation: 6, autoAlpha: 0, duration: 1.1, ease: "expo.out" }, at + 0.25);
+          var logos = $$(".pn-clients .clients__i", t);
+          // só opacidade: as chapas já têm transição CSS de transform (paginas.css)
+          if (logos.length) tl2.from(logos, { autoAlpha: 0, duration: 0.6, stagger: 0.07, ease: "power2.out" }, at + 0.25);
         });
       };
       // "top 97%": a primeira fileira, que espia na dobra, já acende na abertura

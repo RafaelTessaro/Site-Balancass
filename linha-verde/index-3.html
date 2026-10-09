@@ -35,12 +35,19 @@
 <script>
   /* Marca o documento antes de pintar: as animações de entrada só escondem
      o conteúdo enquanto o JS não assume. Se algo falhar, tudo reaparece. */
-  document.documentElement.className += " js is-loading";
-  /* LV_LIBEROU: a rede de segurança já mostrou a página; se o GSAP chegar depois,
-     o que já está na tela não é escondido de novo (js/home-v3.js) */
-  setTimeout(function () { window.LV_LIBEROU = true; document.documentElement.classList.remove("is-loading"); }, 2600);
-  /* Chegou pela transição diagonal entre páginas: o destino aparece pronto */
-  addEventListener("pagereveal", function (e) { window.LV_REVELOU = true; if (e.viewTransition) document.documentElement.classList.add("via-vt"); });
+  (function (d, w) {
+    d.className += " js is-loading";
+    /* Rede lenta (GSAP do CDN atrasado): aos 2,6 s o conteúdo aparece sozinho e fica marcado
+       "lv-late" (+ "via-vt"): quando o GSAP chegar, nada do que já está na tela some para
+       animar de novo e as aberturas vão direto ao fim. lv-tarde/LV_LIBEROU = nomes antigos. */
+    setTimeout(function () {
+      if (!d.classList.contains("is-loading")) return;
+      d.classList.add("lv-late", "lv-tarde", "via-vt"); d.classList.remove("is-loading"); w.LV_LIBEROU = true;
+    }, 2600);
+    /* Chegou pela transição diagonal entre páginas: o destino aparece pronto.
+       LV_REVELOU: o 1º quadro já saiu (o js/core.js usa para evitar corridas). */
+    addEventListener("pagereveal", function (e) { w.LV_REVELOU = true; if (e.viewTransition) d.classList.add("via-vt"); });
+  })(document.documentElement, window);
 </script>
 <noscript><style>.burger{display:none}@media(max-width:1080px){.nav{display:block;position:absolute;top:100%;left:0;right:0;margin:0;background:#0A0A0A;border-bottom:1px solid #1E1E1D}.nav__list{overflow-x:auto;padding-inline:var(--gut)}.nav__list li{flex:none}main{padding-top:44px}}</style></noscript>
 <script type="application/ld+json">
@@ -51,7 +58,7 @@
  "name": "Balanças.com — Automação Comercial",
  "alternateName": "Balanças.com",
  "slogan": "A medida certa para o seu negócio",
- "description": "Assistência técnica de balanças (oficina autorizada pelo IPEM-SP), venda de balanças e equipamentos de automação comercial, BC System (PDV com NFC-e e NF-e) e locação de terminais de fichas para eventos, em Rio Claro-SP.",
+ "description": "Assistência técnica de balanças (oficina autorizada pelo IPEM-SP), venda de balanças e equipamentos de automação comercial, BC System (PDV com NFC-e e NF-e) e locação de terminais de fichas para eventos, em Rio Claro-SP. Endereço: Rua 13, 650, entre as Avenidas 9 e 11 – Boa Morte, Rio Claro-SP.",
  "url": "https://balancass.com/",
  "logo": "https://balancass.com/img/logo-512.png",
  "image": "https://balancass.com/img/og-linha-verde.jpg",
@@ -67,13 +74,43 @@
  "taxID": "12.403.843/0001-18",
  "address": {
   "@type": "PostalAddress",
-  "streetAddress": "Rua 13, 650 - Boa Morte (entre as Avenidas 9 e 11)",
+  "streetAddress": "Rua 13, 650",
   "addressLocality": "Rio Claro",
   "addressRegion": "SP",
   "postalCode": "13500-120",
   "addressCountry": "BR"
  },
  "hasMap": "https://maps.google.com/?cid=12422356528564941318",
+ "makesOffer": [
+  {
+   "@type": "Offer",
+   "itemOffered": {
+    "@type": "Service",
+    "name": "Assistência técnica e manutenção de balanças"
+   }
+  },
+  {
+   "@type": "Offer",
+   "itemOffered": {
+    "@type": "Service",
+    "name": "BC System — sistema de gestão e PDV com NFC-e e NF-e"
+   }
+  },
+  {
+   "@type": "Offer",
+   "itemOffered": {
+    "@type": "Service",
+    "name": "Suporte em informática para o comércio"
+   }
+  },
+  {
+   "@type": "Offer",
+   "itemOffered": {
+    "@type": "Service",
+    "name": "Locação de terminais de fichas para eventos (BC Fichas)"
+   }
+  }
+ ],
  "openingHoursSpecification": [
   {
    "@type": "OpeningHoursSpecification",
@@ -226,7 +263,7 @@
         <span class="pn-hero__l pn-hero__l--green"><span class="pn-hero__w" data-intro>Caixa em dia.</span></span>
         <span class="sr-only"> Balanças, automação comercial e assistência técnica em Rio Claro-SP.</span>
       </h1>
-      <p class="pn-hero__lead" data-intro><strong><span data-bc="frase">A medida certa para o seu negócio</span>.</strong> Conserto de balanças, equipamentos para o balcão e o BC System com NFC-e — num lugar só, em Rio Claro e região.</p>
+      <p class="pn-hero__lead" data-intro><strong><span data-bc="frase">A medida certa para o seu negócio</span>.</strong> Conserto de balanças, equipamentos<span class="pn-x"> para o balcão</span> e o BC System com NFC-e<span class="pn-x"> — num lugar só,</span><span class="pn-m">,</span> em Rio Claro e região.</p>
       <div class="btns pn-hero__ctas" data-intro data-float-off>
         <a class="btn btn--green btn--lg" data-magnet data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Falar no WhatsApp">Falar no WhatsApp</span></a>
         <a class="btn btn--line btn--lg" data-magnet href="produtos.html"><span class="st" data-t="Ver produtos">Ver produtos</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
@@ -255,18 +292,20 @@
 </section>
 
 <!-- ============================== 01 PAINEL (grade bento) ==============================
-     Sete módulos, cada um leva à sua página. Ordem do HTML = ordem no celular:
-     01 Empresa · 02 Assistência · 03 Produtos · 04 BC System · 05 BC Fichas · 06 Google · 07 Contato.
-     O título (h3 > a.pn-t__a) cobre o módulo inteiro; links extras ficam por cima (z-index 2). -->
+     Cinco quadros, cada um leva à sua página. Ordem do HTML = ordem no celular:
+     01 Empresa · 02 Assistência · 03 Produtos · 04 BC System (+ informática e BC Fichas) ·
+     05 Google + clientes. O título (h3 > a.pn-t__a) cobre o quadro inteiro; links e botões
+     extras ficam por cima (z-index 2). Textos: .pn-x só aparece no computador/tablet,
+     .pn-m só no celular (no celular cada quadro fica com 1–2 linhas). -->
 <section class="sec on-paper sec--first pn-sec" id="painel" aria-labelledby="painel-t">
-  <div class="sec__tab" aria-hidden="true"><b>01</b><span>/02 · Resumo</span></div>
+  <div class="sec__tab" aria-hidden="true"><b>01</b><span>/02 · O que fazemos</span></div>
   <div class="wrap">
     <header class="sec__head sec__head--split pn-head">
       <div>
-        <p class="kicker">A Balanças.com num relance</p>
-        <h2 class="h2 h2--sm" id="painel-t" data-reveal="split">Tudo à mão.</h2>
+        <p class="kicker">Assistência · Produtos · Sistema</p>
+        <h2 class="h2 h2--sm" id="painel-t" data-reveal="split">O que a gente faz por você.</h2>
       </div>
-      <p class="sec__intro" data-reveal>Quem somos, o que fazemos e como falar com a gente — cada quadro abre a página completa.</p>
+      <p class="sec__intro" data-reveal>Do conserto da balança ao sistema do caixa, com atendimento aqui em Rio Claro. Cada quadro abre a página completa.</p>
     </header>
 
     <div class="pn-panel">
@@ -284,15 +323,15 @@
             <span class="pn-ruler__y pn-ruler__y--now"><span class="mono">Hoje</span><b data-bc="ano">2026</b></span>
           </div>
           <h3 class="pn-t__h"><a class="pn-t__a" href="empresa.html">Quem somos</a></h3>
-          <p class="pn-t__p">Oficina, loja e sistema próprio em Rio Claro. Atendemos mercados, padarias, açougues e lojas da região. À frente, Fábio Godoy: mais de <span data-bc="experiencia">25</span> anos no ramo.</p>
+          <p class="pn-t__p"><strong>Prazer, somos a Balanças.com.</strong> Desde <span data-bc="desde">2010</span> cuidamos do que faz o comércio funcionar<span class="pn-x">: consertamos balanças, vendemos equipamentos e implantamos o BC System</span>.</p>
           <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span>Conheça a empresa</p>
         </article>
 
         <!-- 02 · ASSISTÊNCIA TÉCNICA -->
-        <article class="pn-t pn-t--assi on-green">
+        <article class="pn-t pn-t--assi on-green" data-float-off>
           <p class="pn-t__tab"><b aria-hidden="true">02</b>Assistência</p>
           <h3 class="pn-t__h"><a class="pn-t__a" href="assistencia.html">Assistência técnica</a></h3>
-          <p class="pn-t__p">Conserto, manutenção e lacre. Deixamos sua balança pronta para a verificação do <span class="nobr">IPEM.</span></p>
+          <p class="pn-t__p">Conserto, manutenção e lacre<span class="pn-x">. Deixamos sua balança pronta para a verificação do <span class="nobr">IPEM</span></span>.</p>
           <div class="stamp pn-stamp" data-stamp role="img" aria-label="Carimbo: oficina autorizada pelo IPEM-SP">
             <svg class="stamp__svg" viewBox="0 0 200 200" focusable="false" aria-hidden="true">
               <defs>
@@ -309,15 +348,18 @@
               <text class="stamp__name" x="100" y="111.5" text-anchor="middle" textLength="112" lengthAdjust="spacingAndGlyphs">Balanças.com</text>
             </svg>
           </div>
-          <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span>Ver assistência</p>
+          <div class="pn-t__foot">
+            <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span><span class="pn-go-l">Ver assistência</span><span class="pn-go-s">Ver mais</span></p>
+            <a class="btn btn--ink btn--sm pn-wa" data-wa="Olá! Vim pelo site e preciso de conserto/manutenção da minha balança." href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20preciso%20de%20conserto%2Fmanuten%C3%A7%C3%A3o%20da%20minha%20balan%C3%A7a." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Pedir conserto">Pedir conserto</span></a>
+          </div>
         </article>
 
         <!-- 03 · PRODUTOS (vitrine automática — js/home-v3.js) -->
-        <article class="pn-t pn-t--prod on-dark">
+        <article class="pn-t pn-t--prod on-dark" data-float-off>
           <p class="pn-t__tab"><b aria-hidden="true">03</b>Catálogo</p>
           <div class="pn-prod__head">
             <h3 class="pn-t__h"><a class="pn-t__a" href="produtos.html">Produtos</a></h3>
-            <p class="pn-t__p">Balanças, etiquetadoras, leitores e PDV: <span class="nobr"><span data-bc="total-produtos" data-count>41</span> itens</span> no catálogo.</p>
+            <p class="pn-t__p"><span class="pn-x">Balanças, etiquetadoras, leitores e PDV: </span><span class="nobr"><span data-bc="total-produtos">41</span> itens</span> no catálogo.</p>
           </div>
           <div class="pn-vit" data-pn-vit>
             <div class="pn-vit__stage">
@@ -329,64 +371,68 @@
                 </li>
               </ul>
             </div>
-            <div class="pn-vit__ctrl" data-pn-ctrl data-float-off hidden>
+            <div class="pn-vit__ctrl" data-pn-ctrl hidden>
               <p class="pn-vit__count mono" aria-hidden="true"><b data-pn-count>01</b>/<span data-pn-total>04</span></p>
               <ul class="pn-vit__dots" role="list" data-pn-dots></ul>
               <button class="pn-vit__pause" type="button" aria-pressed="false" data-pn-pause><svg class="i" aria-hidden="true"><use href="#i-pause"/></svg><span class="sr-only">Pausar a vitrine</span></button>
             </div>
           </div>
-          <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span>Ver catálogo</p>
+          <div class="pn-t__foot">
+            <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span><span class="pn-go-l">Ver catálogo</span><span class="pn-go-s">Ver mais</span></p>
+            <a class="btn btn--green btn--sm pn-wa" data-wa="Olá! Vim pelo site e quero orçamento de equipamento." href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20or%C3%A7amento%20de%20equipamento." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Pedir orçamento">Pedir orçamento</span></a>
+          </div>
         </article>
 
-        <!-- 04 · BC SYSTEM -->
-        <article class="pn-t pn-t--sist on-paper">
+        <!-- 04 · BC SYSTEM (+ "Também": informática e BC Fichas, em tamanho menor) -->
+        <article class="pn-t pn-t--sist on-paper" data-float-off>
           <p class="pn-t__tab"><b aria-hidden="true">04</b>Sistema</p>
           <div class="pn-sist__copy">
             <h3 class="pn-t__h"><a class="pn-t__a" href="sistema.html">BC System</a></h3>
-            <p class="pn-t__p">Nosso sistema de gestão e PDV: frente de caixa com NFC-e e NF-e, estoque e financeiro — integrado à balança.</p>
-            <a class="pn-sat" href="sistema.html#fiscal"><span class="tag tag--volt">Ainda no SAT?</span><span class="pn-sat__t">Regularize já: NFC-e com suporte local <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></span></a>
-            <a class="pn-info" href="sistema.html#informatica">Também cuidamos da informática da loja <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-            <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span>Ver o sistema</p>
+            <p class="pn-t__p"><span class="pn-x">Nosso sistema de gestão e PDV: frente de caixa com NFC-e e NF-e, estoque e financeiro — integrado à balança.</span><span class="pn-m">Gestão e frente de caixa com NFC-e, integrado à balança.</span></p>
+            <a class="pn-sat" href="sistema.html#fiscal"><span class="tag tag--volt">Ainda no SAT?</span><span class="pn-sat__t"><span>Regularize já<span class="pn-x">: NFC-e com suporte local</span></span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></span></a>
+            <div class="pn-t__foot">
+              <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span><span class="pn-go-l">Ver o sistema</span><span class="pn-go-s">Ver mais</span></p>
+              <a class="btn btn--green btn--sm pn-wa" data-wa="Olá! Vim pelo site e quero conhecer o BC System / sair do SAT." href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20conhecer%20o%20BC%20System%20%2F%20sair%20do%20SAT." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Quero conhecer">Quero conhecer</span></a>
+            </div>
           </div>
           <div class="pn-sist__vis" aria-hidden="true">
             <span class="pn-sist__band"></span>
             <img src="../compartilhado/img/sistema/bc-system-tablet-celular.webp" width="1000" height="640" alt="" loading="lazy" decoding="async">
           </div>
-        </article>
-
-        <!-- 05 · BC FICHAS -->
-        <article class="pn-t pn-t--fich on-green">
-          <p class="pn-t__tab"><b aria-hidden="true">05</b>Eventos</p>
-          <h3 class="pn-t__h"><a class="pn-t__a" href="sistema.html#fichas">BC Fichas</a></h3>
-          <p class="pn-t__p">Aluguel de terminais de fichas para festas e eventos, por diária. Vai com bobinas e treinamento.</p>
-          <div class="pn-fich__vis" aria-hidden="true">
-            <span class="ficha"><span class="ficha__top mono"><span>BC Fichas</span><span>Caixa 01</span></span><span class="ficha__item">2 Pastéis</span><span class="ficha__meta mono">Nº 000128 · 21:43</span><span class="ficha__bars"></span></span>
-          </div>
-          <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span>Ver BC Fichas</p>
-        </article>
-
-        <!-- 06 · GOOGLE -->
-        <article class="pn-t pn-t--goog on-dark">
-          <p class="pn-t__tab"><b aria-hidden="true">06</b>Avaliações</p>
-          <h3 class="pn-t__h pn-goog__h"><a class="pn-t__a" href="empresa.html#clientes"><b class="pn-goog__n" data-bc="google-nota" data-count-dec>5,0</b> <span class="pn-goog__lbl">no Google</span></a></h3>
-          <p class="pn-goog__stars" aria-hidden="true"><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg></p>
-          <p class="pn-t__p"><strong><span data-bc="google-qtd">56</span> avaliações</strong> de clientes no Google.</p>
-          <div class="pn-t__foot">
-            <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span>Ver avaliações</p>
-            <a class="pn-goog__ext mono" data-bc-href="google" href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener">Ver no Google <svg class="i" aria-hidden="true"><use href="#i-out"/></svg></a>
+          <div class="pn-also">
+            <p class="pn-also__lbl mono" id="pn-also-t">Também</p>
+            <ul class="pn-also__list" role="list" aria-labelledby="pn-also-t">
+              <li class="pn-also__i">
+                <a class="pn-also__a" href="sistema.html#informatica"><svg class="i pn-also__ic" aria-hidden="true"><use href="#i-monitor"/></svg><span class="pn-also__t"><b>Informática da loja</b><span class="pn-also__s">Computadores, impressoras e rede</span></span><svg class="i pn-also__go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+              </li>
+              <li class="pn-also__i pn-also__i--fich">
+                <a class="pn-also__a" href="sistema.html#fichas"><svg class="i pn-also__ic" aria-hidden="true"><use href="#i-ticket"/></svg><span class="pn-also__t"><b>BC Fichas</b><span class="pn-also__s">Aluguel para festas e eventos</span></span><svg class="i pn-also__go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+                <a class="pn-also__wa" data-wa="Olá! Vim pelo site e quero alugar o BC Fichas para um evento." href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20alugar%20o%20BC%20Fichas%20para%20um%20evento." target="_blank" rel="noopener" aria-label="Alugar o BC Fichas pelo WhatsApp"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg></a>
+              </li>
+            </ul>
           </div>
         </article>
 
-        <!-- 07 · CONTATO -->
-        <article class="pn-t pn-t--cont on-paper" data-float-off>
-          <p class="pn-t__tab"><b aria-hidden="true">07</b>Atendimento</p>
-          <h3 class="pn-t__h"><a class="pn-t__a" href="contato.html">Contato</a></h3>
-          <p class="pn-cont__status"><span class="status" data-bc="status" hidden></span></p>
-          <p class="pn-cont__tel"><a data-bc-href="tel" href="tel:+551930239050"><span data-bc="telefone">(19) 3023-9050</span><span class="sr-only"> — ligar</span></a></p>
-          <p class="pn-cont__addr mono"><a data-bc-href="mapa" href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener"><span class="pn-cont__rua"><span data-bc="rua">Rua 13, 650</span> – <span data-bc="bairro">Boa Morte</span> · <span class="nobr">Rio Claro-SP</span></span> <span class="pn-cont__ref" data-bc="referencia">Entre as Avenidas 9 e 11</span><svg class="i" aria-hidden="true"><use href="#i-out"/></svg></a></p>
-          <div class="pn-t__foot">
-            <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span>Ver contatos</p>
-            <a class="btn btn--green btn--sm pn-cont__wa" data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a>
+        <!-- 05 · GOOGLE + CLIENTES (a nota fica sempre fixa em 5,0: sem contador) -->
+        <article class="pn-t pn-t--prova on-paper">
+          <p class="pn-t__tab"><b aria-hidden="true">05</b>Clientes</p>
+          <div class="pn-prova__g">
+            <h3 class="pn-t__h pn-goog__h"><a class="pn-t__a" href="empresa.html#clientes"><b class="pn-goog__n" data-bc="google-nota">5,0</b> <span class="pn-goog__lbl">no Google</span></a></h3>
+            <p class="pn-goog__row"><span class="pn-goog__stars" aria-hidden="true"><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg></span><a class="pn-goog__ext" data-bc-href="google" href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener"><span class="pn-goog__t"><strong><span data-bc="google-qtd">56</span> avaliações</strong><span class="pn-x"> de clientes</span> no Google</span><svg class="i" aria-hidden="true"><use href="#i-out"/></svg></a></p>
+          </div>
+          <div class="pn-prova__c">
+            <p class="pn-prova__lbl mono" id="pn-clientes-t">Quem confia na gente</p>
+            <ul class="clients__list pn-clients" role="list" aria-labelledby="pn-clientes-t" data-bc-list="clientes">
+              <li class="clients__i clients__i--sq"><img src="../compartilhado/img/clientes/brasil-frios.webp" width="480" height="480" alt="Brasil Frios Supermercados" loading="lazy" decoding="async"></li>
+              <li class="clients__i clients__i--sq"><img src="../compartilhado/img/clientes/camargo.webp" width="225" height="225" alt="Supermercados Camargo" loading="lazy" decoding="async"></li>
+              <li class="clients__i"><img src="../compartilhado/img/clientes/enxuto.webp" width="190" height="50" alt="Enxuto" loading="lazy" decoding="async"></li>
+              <li class="clients__i"><img src="../compartilhado/img/clientes/examine.webp" width="480" height="155" alt="Examine Supermercados" loading="lazy" decoding="async"></li>
+              <li class="clients__i"><img src="img/clientes/qualidade.webp" width="198" height="75" alt="Mercado Qualidade" loading="lazy" decoding="async"></li>
+              <li class="clients__i"><img src="../compartilhado/img/clientes/quitandao.webp" width="321" height="113" alt="Quitandão Supermercados" loading="lazy" decoding="async"></li>
+            </ul>
+          </div>
+          <div class="pn-t__foot pn-prova__foot">
+            <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span>Ver depoimentos</p>
           </div>
         </article>
 
@@ -395,21 +441,27 @@
   </div>
 </section>
 
-<!-- ============================== 02 PRODUTOS EM DESTAQUE ==============================
-     Quatro fichas (LV.listaProdutos) com destaques que não estão na vitrine do
-     módulo 03, variando a categoria. Sem JS fica a lista de links abaixo. -->
+<!-- ============================== 02 DIRETO DO CATÁLOGO ==============================
+     Atalhos por categoria (com a contagem real) logo abaixo do título e quatro fichas
+     limpas (foto, marca, nome, resumo, selo, Detalhes + WhatsApp) com produtos que NÃO
+     estão na vitrine do quadro 03 (js/home-v3.js). Sem JS fica a lista de links. -->
 <section class="sec on-dark pn-feat" id="destaques" aria-labelledby="feat-t">
-  <div class="sec__tab" aria-hidden="true"><b>02</b><span>/02 · Destaques</span></div>
+  <div class="sec__tab" aria-hidden="true"><b>02</b><span>/02 · Catálogo</span></div>
   <div class="wrap">
-    <header class="sec__head sec__head--split pn-feat__head">
-      <div>
+    <header class="pn-feat__head">
+      <div class="pn-feat__title">
         <p class="kicker">Produtos em destaque</p>
         <h2 class="h2 h2--md" id="feat-t" data-reveal="split">Direto do catálogo.</h2>
       </div>
-      <p class="sec__intro" data-reveal>Uma amostra dos <span data-bc="total-produtos">41</span> itens do catálogo. Preço e disponibilidade direto no WhatsApp.</p>
+      <p class="sec__intro pn-feat__intro" data-reveal>Uma amostra dos <span data-bc="total-produtos">41</span> itens<span class="pn-x"> do catálogo</span>. Preço e disponibilidade direto no WhatsApp.</p>
+      <ul class="pn-cats" role="list" aria-label="Categorias do catálogo">
+        <li><a href="produtos.html?cat=balancas" data-pn-cat="balancas"><span class="pn-cats__n" data-pn-cat-nome>Balanças</span> <span class="pn-cats__q mono"><b data-pn-cat-n>16</b> itens</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+        <li><a href="produtos.html?cat=automacao" data-pn-cat="automacao"><span class="pn-cats__n" data-pn-cat-nome>Automação</span> <span class="pn-cats__q mono"><b data-pn-cat-n>19</b> itens</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+        <li><a href="produtos.html?cat=informatica" data-pn-cat="informatica"><span class="pn-cats__n" data-pn-cat-nome>Informática</span> <span class="pn-cats__q mono"><b data-pn-cat-n>6</b> itens</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+      </ul>
     </header>
 
-    <ul class="pgrid pgrid--4 pn-feat__grid" role="list" data-pn-destaques>
+    <ul class="pgrid pgrid--4 pn-feat__grid" role="list" data-pn-destaques data-float-off>
       <li class="pn-nojs"><a class="link-u" href="produtos.html#p=balmak-orion-1-plus">Balmak Órion 1 Key</a></li>
       <li class="pn-nojs"><a class="link-u" href="produtos.html#p=elgin-el4200">Elgin EL4200</a></li>
       <li class="pn-nojs"><a class="link-u" href="produtos.html#p=elgin-i9">Elgin i9 Full</a></li>
@@ -418,12 +470,32 @@
 
     <div class="pn-feat__foot" data-reveal>
       <a class="btn btn--green btn--lg" data-magnet href="produtos.html"><span class="st" data-t="Ver catálogo completo">Ver catálogo completo</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-      <ul class="pn-cats" role="list" aria-label="Categorias do catálogo">
-        <li><a href="produtos.html?cat=balancas" data-pn-cat="balancas"><span data-pn-cat-nome>Balanças</span><b data-pn-cat-n>16</b><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
-        <li><a href="produtos.html?cat=automacao" data-pn-cat="automacao"><span data-pn-cat-nome>Automação</span><b data-pn-cat-n>19</b><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
-        <li><a href="produtos.html?cat=informatica" data-pn-cat="informatica"><span data-pn-cat-nome>Informática</span><b data-pn-cat-n>6</b><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
-      </ul>
       <p class="pn-feat__note mono">Estoque sujeito à disponibilidade. Confirme pelo WhatsApp.</p>
+    </div>
+  </div>
+
+  <!-- Letreiro discreto das marcas (texto: não temos os logos oficiais) -->
+  <div class="ticker pn-brands" data-ticker role="region" aria-labelledby="pn-marcas-t">
+    <p class="pn-brands__lbl mono" id="pn-marcas-t"><span>Trabalhamos <span class="nobr">com as marcas</span></span></p>
+    <div class="ticker__skew"><div class="ticker__track">
+      <ul class="ticker__list" data-bc-list="marcas"><li>Toledo</li><li>Balmak</li><li>Elgin</li><li>Bematech</li><li>Epson</li><li>Gertec</li><li>Tanca</li><li>Zebra</li><li>Argox</li><li>Filizola</li><li>Urano</li><li>Welmy</li><li>Micheletti</li><li>Daruma</li><li>Diebold</li><li>NHS</li><li>SMS</li><li>APC</li></ul>
+    </div></div>
+    <button class="ticker__btn" type="button" aria-pressed="false" data-ticker-btn><svg class="i" aria-hidden="true"><use href="#i-pause"/></svg><span class="sr-only">Pausar a faixa de marcas</span></button>
+  </div>
+</section>
+
+<!-- ============================== FECHAMENTO: FALE COM QUEM RESOLVE ==============================
+     Faixa verde curta antes do rodapé: WhatsApp, telefone, aberto/fechado agora e todos os contatos -->
+<section class="ask on-green pn-ask" aria-labelledby="ask-t" data-float-off>
+  <div class="wrap ask__in">
+    <h2 class="ask__t" id="ask-t" data-reveal="split">Fale com quem resolve.</h2>
+    <div class="ask__side">
+      <p data-reveal><span class="pn-x">WhatsApp, telefone ou pessoalmente — na </span><span class="pn-m">Ou passe na loja: </span><span data-bc="rua">Rua 13, 650</span>, entre as Avenidas 9 e 11<span class="pn-x">, em Rio Claro</span>. <span class="status pn-ask__status" data-bc="status" hidden></span></p>
+      <div class="ask__btns" data-reveal>
+        <a class="btn btn--ink btn--lg" data-magnet data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Falar no WhatsApp">Falar no WhatsApp</span></a>
+        <a class="btn btn--line btn--lg" data-bc-href="tel" href="tel:+551930239050"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg><span class="st" data-t="(19) 3023-9050"><span data-bc="telefone">(19) 3023-9050</span></span><span class="sr-only"> — ligar</span></a>
+        <a class="link-u pn-ask__all" href="contato.html">Todos os contatos</a>
+      </div>
     </div>
   </div>
 </section>

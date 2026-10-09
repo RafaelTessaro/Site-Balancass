@@ -117,12 +117,13 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
   font-family: var(--f-display); font-weight: 900; text-transform: uppercase;
   letter-spacing: -.005em; text-wrap: balance;
 }
-.h2 { font-size: clamp(50px, 7.2vw, 128px); line-height: .98; }
+/* Títulos em 2+ linhas: entrelinha ≥ 1,05 para os acentos (Ã, Õ, É, Ç) não tocarem a linha de cima */
+.h2 { font-size: clamp(50px, 7.2vw, 128px); line-height: 1.05; }
 .h2--md { font-size: clamp(46px, 5.8vw, 100px); }
 .h2--sm { font-size: clamp(40px, 4.6vw, 76px); }
 .h3 {
   font-family: var(--f-display); font-weight: 800;
-  font-size: clamp(30px, 3.2vw, 48px); line-height: 1.02; text-transform: uppercase;
+  font-size: clamp(30px, 3.2vw, 48px); line-height: 1.06; text-transform: uppercase;
   text-wrap: balance;
 }
 .lead { font-size: clamp(17px, 1.35vw, 20px); line-height: 1.5; max-width: 34em; }
@@ -516,7 +517,7 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .spec__brand { font: 500 10.5px/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--green-deep); }
 .spec__model {
   margin-top: 8px;
-  font: 900 clamp(32px, 2.8vw, 44px)/.98 var(--f-display); text-transform: uppercase; letter-spacing: 0;
+  font: 900 clamp(32px, 2.8vw, 44px)/1.05 var(--f-display); text-transform: uppercase; letter-spacing: 0;
   overflow-wrap: break-word; text-wrap: balance;
 }
 .spec__sub { margin-top: 8px; font-size: 14px; line-height: 1.45; color: #34342F; }
@@ -600,7 +601,7 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
   .pgrid .spec__fig img { width: 88%; height: 86%; }
   .pgrid .spec__body { padding: 10px 10px 0; }
   .pgrid .spec__brand { font-size: 9.5px; }
-  .pgrid .spec__model { margin-top: 5px; font-size: clamp(20px, 5.6vw, 26px); line-height: 1; }
+  .pgrid .spec__model { margin-top: 5px; font-size: clamp(20px, 5.6vw, 26px); line-height: 1.06; }
   .pgrid .spec__badges { padding-top: 10px; }
   .pgrid .badge { font-size: 9.5px; line-height: 1.2; letter-spacing: .02em; padding: 5px 6px 4px; gap: 5px; }
   .pgrid .badge::before { width: 6px; height: 6px; }
@@ -713,19 +714,27 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 /* =====================================================================
    ESTADO INICIAL DAS ANIMAÇÕES DE ENTRADA
    Só com JS (classe "is-loading" posta no <head>) e sem "reduzir movimento".
-   O <head> tira "is-loading" sozinho depois de 2,6 s se algo falhar.
+   O <head> tira "is-loading" sozinho depois de 2,6 s se algo falhar (e marca "lv-late":
+   o GSAP que chegar depois não esconde nem reanima o que já está na tela).
    Revelações por rolagem (data-reveal) NÃO são escondidas por CSS: o JS
    esconde na hora de animar, então sem JS tudo aparece.
    ===================================================================== */
 @media (prefers-reduced-motion: no-preference) {
-  .is-loading [data-intro] { opacity: 0; }
+  .is-loading [data-intro]:not(.btns) { opacity: 0; }
   .is-loading .phero__band { transform: scaleY(0); transform-origin: 50% 0; }
   .is-loading .phero__fig, .is-loading .phero__ref, .is-loading .phero__call { opacity: 0; }
   /* Chegando por transição entre páginas: o destino já aparece pronto */
   .via-vt.is-loading [data-intro], .via-vt.is-loading .phero__fig,
   .via-vt.is-loading .phero__ref, .via-vt.is-loading .phero__call { opacity: 1; }
   .via-vt.is-loading .phero__band { transform: none; }
+  /* Botões do topo (WhatsApp / Ver produtos — ".btns" com data-intro, em TODAS as páginas):
+     entram por CSS desde o 1º quadro, sem esperar o GSAP do CDN → visíveis em menos de 1 s.
+     A animação CSS prevalece sobre o estilo inline do GSAP: nenhuma timeline de abertura
+     consegue escondê-los de novo. Pela transição entre páginas já aparecem prontos. */
+  .js .btns[data-intro] { animation: lv-cta .5s var(--ease-out) .12s both; }
+  .via-vt .btns[data-intro] { animation: none; }
 }
+@keyframes lv-cta { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }

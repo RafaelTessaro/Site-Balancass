@@ -29,7 +29,8 @@ linha-verde/
   js/catalogo.js      só produtos.html
   js/assistencia.js   só assistencia.html
   js/preview.js       seletor de variação (fase de escolha; remover na publicação)
-  img/                logo-512.png, og-linha-verde.jpg, clientes/qualidade.webp, p480/r/*.webp (miniaturas)
+  img/                logo-512.png, og-*.jpg, clientes/qualidade.webp, miniaturas de 480 px (WebP q82):
+                      p480/r/*.webp (de compartilhado/img/produtos-recorte) e p480/f/*.webp (de compartilhado/img/produtos)
 ```
 
 Links internos úteis para as páginas iniciais:
@@ -93,10 +94,19 @@ e troque só o `<main>`. Ajuste:
 <script>
   /* Marca o documento antes de pintar: as animações de entrada só escondem
      o conteúdo enquanto o JS não assume. Se algo falhar, tudo reaparece. */
-  document.documentElement.className += " js is-loading";
-  setTimeout(function () { document.documentElement.classList.remove("is-loading"); }, 2600);
-  /* Chegou pela transição diagonal entre páginas: o destino aparece pronto */
-  addEventListener("pagereveal", function (e) { if (e.viewTransition) document.documentElement.classList.add("via-vt"); });
+  (function (d, w) {
+    d.className += " js is-loading";
+    /* Rede lenta (GSAP do CDN atrasado): aos 2,6 s o conteúdo aparece sozinho e fica marcado
+       "lv-late" (+ "via-vt"): quando o GSAP chegar, nada do que já está na tela some para
+       animar de novo e as aberturas vão direto ao fim. lv-tarde/LV_LIBEROU = nomes antigos. */
+    setTimeout(function () {
+      if (!d.classList.contains("is-loading")) return;
+      d.classList.add("lv-late", "lv-tarde", "via-vt"); d.classList.remove("is-loading"); w.LV_LIBEROU = true;
+    }, 2600);
+    /* Chegou pela transição diagonal entre páginas: o destino aparece pronto.
+       LV_REVELOU: o 1º quadro já saiu (o js/core.js usa para evitar corridas). */
+    addEventListener("pagereveal", function (e) { w.LV_REVELOU = true; if (e.viewTransition) d.classList.add("via-vt"); });
+  })(document.documentElement, window);
 </script>
 <noscript><style>.burger{display:none}@media(max-width:1080px){.nav{display:block;position:absolute;top:100%;left:0;right:0;margin:0;background:#0A0A0A;border-bottom:1px solid #1E1E1D}.nav__list{overflow-x:auto;padding-inline:var(--gut)}.nav__list li{flex:none}main{padding-top:44px}}</style></noscript>
 <script type="application/ld+json">
@@ -454,7 +464,7 @@ LV.cardProduto(p | "id", { n, variante: "ficha"|"compacta"|"escura", linhas: 3, 
 //   resumo, tabela técnica, selo "Consulte disponibilidade", preço "Consulte", botões Detalhes e WhatsApp.
 LV.listaProdutos(lista, opts)  // → "<li class='pgrid__i'>…</li>" × n
 LV.produtos("destaques")       // → array de produtos (mesmos seletores de data-produtos)
-LV.imgProduto(p, { eager, sizes, alt })  // → <img> com srcset da miniatura de 480px (img/p480/r/)
+LV.imgProduto(p, { eager, sizes, alt })  // → <img> com srcset da miniatura de 480px (img/p480/r/ ou, sem recorte, img/p480/f/)
 LV.spec(p, "capacidade")       // → valor de uma especificação
 ```
 - Fora do catálogo, **Detalhes** abre `produtos.html#p=ID` (painel com ficha completa, WhatsApp, Ligar, Copiar link).
@@ -559,7 +569,10 @@ pausa no hover e botão de pausa; nada de animação infinita chamativa.
 Extras: `data-reveal-delay="0.2"`, `data-reveal-start="top 80%"`.
 
 ### Outros atributos animados pelo core
-- `data-intro` — entrada do topo da página: escondido enquanto `html.is-loading` (só com JS e sem movimento reduzido); o `<head>` libera sozinho após 2,6 s.
+- `data-intro` — entrada do topo da página: escondido enquanto `html.is-loading` (só com JS e sem movimento reduzido); o `<head>` libera sozinho após 2,6 s (e marca `lv-late`).
+  **Exceção: os botões do topo (`.btns[data-intro]`)** não esperam o GSAP — o `base.css` os faz entrar por animação CSS
+  desde o 1º quadro (visíveis em < 1 s, em todas as páginas). Essa animação prevalece sobre o estilo inline do GSAP:
+  não inclua `.btns` nas timelines de abertura (se incluir, não tem efeito visível).
 - `data-drift` — palavra gigante atravessa com a rolagem · `data-parallax="-12"` — paralaxe vertical (yPercent).
 - `data-count` (inteiro), `data-count-from="2010"`, `data-count-dec` (5,0) — contador quando entra na tela.
 - `data-magnet` — botão magnético (mouse) · `data-tilt` — inclinação 3D com o mouse (área = seção pai).
@@ -575,6 +588,12 @@ LV.onMotion(function (mm) {            // roda dentro do gsap.matchMedia "sem mo
   tl.from(".minha-figura", { yPercent: 12, autoAlpha: 0, duration: 1.2, ease: "expo.out" }, 0.5);
   gsap.from(".x", { opacity: 0, y: 30, scrollTrigger: LV.st(".x", "top 85%") });
 });
+LV.pronto()          // o topo deve aparecer TERMINADO (chegou pela transição "via-vt" ou o GSAP chegou tarde "lv-late"): use tl.progress(1)
+LV.aoRevelar(fn)     // fn() roda se o "pagereveal" de uma transição entre páginas ainda chegar (ex.: () => tl.progress(1))
+LV.jaVisivel(el)     // el está na tela e JÁ foi visto (quadro pintado antes do GSAP, âncora, recarregar no meio,
+                     // transição, GSAP tardio) → NÃO esconda para animar. O core já respeita isso em data-reveal,
+                     // contadores, abas .sec__tab, SAT e carimbo; use nos seus ganchos também.
+LV.tarde()           // a rede de segurança do <head> já mostrou a página (html.lv-late)
 LV.motionOK()        // GSAP carregado e sem movimento reduzido
 LV.reduzido()        // usuário pediu menos movimento
 LV.reveal(els, dur)  // revela um lote (o que já ficou para trás aparece direto)
@@ -582,7 +601,11 @@ LV.wipe(el, opts)    // barra verde revela o elemento (cria .lv-wipe se não hou
 LV.st(trigger, start)// config de ScrollTrigger "once" (padrão "top 88%")
 LV.refresh()         // ScrollTrigger.refresh()
 LV.irPara("#id")     // rolagem suave até a âncora (respeita cabeçalho + aba da seção)
-LV.statusAgora()     // { aberto, curto, texto } no horário de Rio Claro (considera LV.FERIADOS)
+                     // Chegada por pagina.html#id: o core.js rola com a mesma conta e, até a pessoa rolar
+                     // ou tocar na página, realinha o alvo quando as fontes chegam e no "load" (a página
+                     // encolhe ~1000 px com as fontes da web). Não role para o hash por conta própria.
+LV.statusAgora()     // { aberto, curto, texto } no horário de Rio Claro (considera LV.FERIADOS: nacionais + SP;
+                     // feriados MUNICIPAIS de Rio Claro → o dono acrescenta em FERIADOS.MUNICIPAIS no js/core.js)
 LV.nomeHTML(nome)    // nome do modelo para títulos display: não quebra no hífen nem deixa "7" sozinho
 LV.lenis, LV.mm      // instância do Lenis e o gsap.matchMedia
 LV.hdr(), LV.esc(s), LV.pad(n), LV.catCurto(cat), LV.inertBg(on), LV.fecharMenu()
@@ -597,8 +620,12 @@ primeiro quadro, use `.is-loading .minha-classe { opacity: 0 }` dentro de
 
 ## 9. Pré-visualização das variações (`js/preview.js`)
 
-- `<body data-variacao="1|2|3">` → grava `sessionStorage["lv-home"]` com `index.html` / `index-2.html` / `index-3.html`
-  e mostra o seletor fixo **"Variação 1 · 2 · 3"** no canto inferior esquerdo (não cobre WhatsApp/Ligar; testado em 360 e 390 px).
+- `<body data-variacao="1|2|3">` → grava `"lv-home"` = `index.html` / `index-2.html` / `index-3.html` em **localStorage**
+  (vale para links abertos em nova aba) e em sessionStorage (reserva se o localStorage estiver bloqueado). Leitura: a
+  escolha desta aba (sessionStorage) e, se não houver, a última escolha (localStorage).
+- Seletor: no computador, **"Variação 1 · 2 · 3"** no canto inferior esquerdo; no celular (≤ 760 px), só uma pílula
+  **"V1"** (alvo de 44 px) que abre as opções ao tocar e fecha ao tocar fora, com Esc ou ao rolar — não cobre o
+  conteúdo nem os flutuantes de WhatsApp/Ligar (testado em 360 e 390 px); no topo da página fica escondida e aparece ao rolar. Classe `.lvp`, atributo `data-preview`.
 - Em todas as páginas, os links com `data-home` passam a apontar para a variação guardada (padrão `index.html`).
 - Incluir `<script defer src="js/preview.js"></script>` em todas as páginas. **Remover na publicação.**
 

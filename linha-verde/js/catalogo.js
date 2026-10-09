@@ -493,7 +493,9 @@
 
   /* ---------- Animações do catálogo ---------- */
   LV.onMotion(function () {
-    if (!doc.classList.contains("via-vt")) gsap.from(".fbar__in > *", { opacity: 0, y: 16, stagger: 0.08, duration: 0.9, ease: "expo.out", delay: 0.8 });
+    // A barra de filtros só entra animada se ainda não estava à vista (GSAP tardio, âncora, recarregar no meio)
+    var fbarIn = document.querySelector(".fbar__in");
+    if (!doc.classList.contains("via-vt") && !(LV.jaVisivel && fbarIn && LV.jaVisivel(fbarIn))) gsap.from(".fbar__in > *", { opacity: 0, y: 16, stagger: 0.08, duration: 0.9, ease: "expo.out", delay: 0.8 });
     // Fichas abaixo da dobra entram em lotes; as que já estão na tela não somem e reaparecem
     var cards = $$(".pgrid__i:not([hidden]) > .spec", grid).filter(function (c) { return c.getBoundingClientRect().top > window.innerHeight; });
     if (cards.length) {

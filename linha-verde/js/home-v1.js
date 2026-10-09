@@ -5,9 +5,12 @@
    1. Vitrine do hero: três peças — Pesa · Imprime · Vende — com abas,
       troca automática (pausável) e movimento de "esteira".
    2. Produtos em destaque: BC.destaques(), uma peça de cada tipo, em
-      fichas leves (variante "compacta").
+      fichas LIMPAS (LV.cardProduto "compacta" + .vt-card): foto, marca,
+      nome, uma linha do que é, selo "Consulte disponibilidade",
+      Detalhes + WhatsApp.
    3. Seletor de variação (só na fase de escolha) some enquanto o hero está na tela.
-   4. Animações (LV.onMotion): cota/régua do hero, contadores e paralaxe.
+   4. Animações (LV.onMotion): cota/régua do hero, estrelas e paralaxe.
+      A nota do Google NUNCA é animada nem escondida: aparece sempre "5,0".
    Sem JS: a página mostra a Prix 4 Uno parada e os destaques escritos no HTML.
    ===================================================================== */
 (function () {
@@ -239,10 +242,12 @@
     if (!ul) return;
     var lista = destaques(4);
     if (!lista.length) return;
-    // Ficha leve: foto, marca, modelo e resumo (sem nº, tabela, selo "consulte" e preço)
+    // Ficha limpa: foto, marca, modelo, uma linha de resumo, selo e Detalhes + WhatsApp
+    // (sem nº, sem tabela técnica e sem "Preço: Consulte" — o CSS .vt-card cuida do resto)
     ul.innerHTML = lista.map(function (p, i) {
       return '<li class="pgrid__i" data-id="' + LV.esc(p.id) + '">' +
-        LV.cardProduto(p, { n: i + 1, variante: "compacta", linhas: 0, sizes: "(max-width: 899px) 46vw, (max-width: 1519px) 23vw, 340px" }) + "</li>";
+        LV.cardProduto(p, { n: i + 1, variante: "compacta", classe: "vt-card", linhas: 0,
+          sizes: "(max-width: 639px) 76vw, (max-width: 1023px) 46vw, (max-width: 1519px) 23vw, 340px" }) + "</li>";
     }).join("");
     $$(".pgrid__i > .spec", ul).forEach(function (c) { c.setAttribute("data-reveal", ""); });
   }
@@ -300,25 +305,14 @@
       .from(".vit__nav > *", { autoAlpha: 0, y: 12, duration: 0.7, stagger: 0.06, ease: "expo.out" }, 1.45);
     if (viaVT) tl.progress(1);
 
-    // Contadores sem pular o layout (o valor final, invisível, reserva a largura)
-    $$("[data-vt-count]").forEach(function (el) {
-      var txt = (el.textContent || "").trim(), dec = el.hasAttribute("data-vt-dec");
-      var to = parseFloat(txt.replace(",", "."));
-      if (isNaN(to)) return;
-      el.innerHTML = '<span class="vt-cnt"><span class="vt-cnt__g" aria-hidden="true">' + LV.esc(txt) + '</span><span class="vt-cnt__v">' + LV.esc(txt) + "</span></span>";
-      var v = el.querySelector(".vt-cnt__v"), o = { n: 0 };
-      var fmt = function (n) { return dec ? n.toFixed(1).replace(".", ",") : String(Math.round(n)); };
-      gsap.to(o, {
-        n: to, duration: 1.6, ease: "power3.out", scrollTrigger: LV.st(el, "top 92%"),
-        onStart: function () { v.textContent = fmt(0); },
-        onUpdate: function () { v.textContent = fmt(o.n); },
-        onComplete: function () { v.textContent = txt; }
-      });
-    });
-
-    // O ano "2010" entra com a barra verde
-    $$(".vt-num:first-child .vt-num__v > span").forEach(function (el) {
-      LV.wipe(el, { tl: gsap.timeline({ scrollTrigger: LV.st(el, "top 92%"), delay: 0.15 }), at: 0, cor: "green" });
+    // Números (nota do Google e 25+ anos): fatos fixos, NUNCA escondidos nem contados —
+    // a nota aparece sempre "5,0". Só os detalhes decorativos se mexem: as estrelas
+    // "acendem" uma a uma (já estão lá, apagadas) e o "+" sobe.
+    $$(".vt-nums").forEach(function (ul) {
+      if (LV.jaVisivel(ul)) return;
+      var tl = gsap.timeline({ scrollTrigger: LV.st(ul, "top 85%") });
+      tl.fromTo($$(".vt-num__stars .i", ul), { opacity: 0.22, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2.4)", stagger: 0.09 }, 0.15)
+        .fromTo($$(".vt-num__plus", ul), { yPercent: 60, opacity: 0.22 }, { yPercent: 0, opacity: 1, duration: 0.7, ease: "expo.out" }, 0.25);
     });
 
     // Imagens dos blocos "O que fazemos": sobem devagar com a rolagem. O paralaxe vai no
