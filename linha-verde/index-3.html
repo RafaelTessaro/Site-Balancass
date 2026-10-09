@@ -36,9 +36,11 @@
   /* Marca o documento antes de pintar: as animações de entrada só escondem
      o conteúdo enquanto o JS não assume. Se algo falhar, tudo reaparece. */
   document.documentElement.className += " js is-loading";
-  setTimeout(function () { document.documentElement.classList.remove("is-loading"); }, 2600);
+  /* LV_LIBEROU: a rede de segurança já mostrou a página; se o GSAP chegar depois,
+     o que já está na tela não é escondido de novo (js/home-v3.js) */
+  setTimeout(function () { window.LV_LIBEROU = true; document.documentElement.classList.remove("is-loading"); }, 2600);
   /* Chegou pela transição diagonal entre páginas: o destino aparece pronto */
-  addEventListener("pagereveal", function (e) { if (e.viewTransition) document.documentElement.classList.add("via-vt"); });
+  addEventListener("pagereveal", function (e) { window.LV_REVELOU = true; if (e.viewTransition) document.documentElement.classList.add("via-vt"); });
 </script>
 <noscript><style>.burger{display:none}@media(max-width:1080px){.nav{display:block;position:absolute;top:100%;left:0;right:0;margin:0;background:#0A0A0A;border-bottom:1px solid #1E1E1D}.nav__list{overflow-x:auto;padding-inline:var(--gut)}.nav__list li{flex:none}main{padding-top:44px}}</style></noscript>
 <script type="application/ld+json">
@@ -218,7 +220,7 @@
   <span class="crop crop--tl" aria-hidden="true"></span>
   <div class="wrap pn-hero__in">
     <div class="pn-hero__copy">
-      <p class="pn-hero__eyebrow mono" data-intro><span class="tag tag--volt">Rio Claro-SP</span><span>Automação comercial <span class="nobr">desde <span data-bc="desde">2010</span></span></span></p>
+      <p class="pn-hero__eyebrow mono" data-intro><span class="tag tag--volt">Rio Claro-SP</span><span>Balanças · PDV · NFC-e</span></p>
       <h1 class="pn-hero__t" id="pn-hero-t">
         <span class="pn-hero__l"><span class="pn-hero__w" data-intro>Peso certo.</span></span>
         <span class="pn-hero__l pn-hero__l--green"><span class="pn-hero__w" data-intro>Caixa em dia.</span></span>
@@ -241,13 +243,15 @@
       <p class="pn-hero__ref mono" aria-hidden="true">Balanças.com — <span data-bc="rua">Rua 13, 650</span> — Rio Claro-SP</p>
     </div>
   </div>
-</section>
-
-<section class="ticker" aria-label="O que fazemos" data-ticker data-skew>
-  <div class="ticker__skew"><div class="ticker__track">
-    <ul class="ticker__list"><li>Assistência técnica</li><li>Balanças</li><li>Etiquetas</li><li>PDV</li><li>BC System</li><li>NFC-e</li><li>BC Fichas</li><li>Rio Claro-SP</li></ul>
-  </div></div>
-  <button class="ticker__btn" type="button" aria-pressed="false" data-ticker-btn><svg class="i" aria-hidden="true"><use href="#i-pause"/></svg><span class="sr-only">Pausar a faixa animada</span></button>
+  <!-- Faixa de confiança (a mesma das páginas internas): Google, IPEM-SP, desde 2010 -->
+  <div class="phero__strip pn-hero__strip" data-intro>
+    <ul class="wrap trust" aria-label="Por que confiar">
+      <li class="trust__i"><a data-bc-href="google" href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener"><svg class="i i--star" aria-hidden="true"><use href="#i-star"/></svg><b data-bc="google-nota">5,0</b> no Google <span>(<span data-bc="google-qtd">56</span> avaliações)</span></a></li>
+      <li class="trust__i"><b>Autorizada</b> pelo <span class="nobr">IPEM-SP</span></li>
+      <li class="trust__i"><b class="nobr">Desde <span data-bc="desde">2010</span></b> <span class="pn-trust__x">em Rio Claro</span></li>
+      <li class="trust__i"><b>Suporte</b> local</li>
+    </ul>
+  </div>
 </section>
 
 <!-- ============================== 01 PAINEL (grade bento) ==============================
@@ -255,14 +259,14 @@
      01 Empresa · 02 Assistência · 03 Produtos · 04 BC System · 05 BC Fichas · 06 Google · 07 Contato.
      O título (h3 > a.pn-t__a) cobre o módulo inteiro; links extras ficam por cima (z-index 2). -->
 <section class="sec on-paper sec--first pn-sec" id="painel" aria-labelledby="painel-t">
-  <div class="sec__tab" aria-hidden="true"><b>01</b><span>/02 · Painel</span></div>
+  <div class="sec__tab" aria-hidden="true"><b>01</b><span>/02 · Resumo</span></div>
   <div class="wrap">
     <header class="sec__head sec__head--split pn-head">
       <div>
         <p class="kicker">A Balanças.com num relance</p>
-        <h2 class="h2 h2--md" id="painel-t" data-reveal="split">Tudo à mão.</h2>
+        <h2 class="h2 h2--sm" id="painel-t" data-reveal="split">Tudo à mão.</h2>
       </div>
-      <p class="sec__intro" data-reveal>Quem somos, o que fazemos e como falar com a gente. Escolha um módulo para abrir a página completa.</p>
+      <p class="sec__intro" data-reveal>Quem somos, o que fazemos e como falar com a gente — cada quadro abre a página completa.</p>
     </header>
 
     <div class="pn-panel">
@@ -280,13 +284,13 @@
             <span class="pn-ruler__y pn-ruler__y--now"><span class="mono">Hoje</span><b data-bc="ano">2026</b></span>
           </div>
           <h3 class="pn-t__h"><a class="pn-t__a" href="empresa.html">Quem somos</a></h3>
-          <p class="pn-t__p">Oficina, loja e sistema próprio, desde <span data-bc="desde">2010</span> em Rio Claro. À frente, Fábio Godoy: mais de <span data-bc="experiencia">25</span> anos no ramo.</p>
+          <p class="pn-t__p">Oficina, loja e sistema próprio em Rio Claro. Atendemos mercados, padarias, açougues e lojas da região. À frente, Fábio Godoy: mais de <span data-bc="experiencia">25</span> anos no ramo.</p>
           <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span>Conheça a empresa</p>
         </article>
 
         <!-- 02 · ASSISTÊNCIA TÉCNICA -->
         <article class="pn-t pn-t--assi on-green">
-          <p class="pn-t__tab"><b aria-hidden="true">02</b>Oficina</p>
+          <p class="pn-t__tab"><b aria-hidden="true">02</b>Assistência</p>
           <h3 class="pn-t__h"><a class="pn-t__a" href="assistencia.html">Assistência técnica</a></h3>
           <p class="pn-t__p">Conserto, manutenção e lacre. Deixamos sua balança pronta para a verificação do <span class="nobr">IPEM.</span></p>
           <div class="stamp pn-stamp" data-stamp role="img" aria-label="Carimbo: oficina autorizada pelo IPEM-SP">
@@ -310,7 +314,7 @@
 
         <!-- 03 · PRODUTOS (vitrine automática — js/home-v3.js) -->
         <article class="pn-t pn-t--prod on-dark">
-          <p class="pn-t__tab"><b aria-hidden="true">03</b>Loja</p>
+          <p class="pn-t__tab"><b aria-hidden="true">03</b>Catálogo</p>
           <div class="pn-prod__head">
             <h3 class="pn-t__h"><a class="pn-t__a" href="produtos.html">Produtos</a></h3>
             <p class="pn-t__p">Balanças, etiquetadoras, leitores e PDV: <span class="nobr"><span data-bc="total-produtos" data-count>41</span> itens</span> no catálogo.</p>
@@ -320,7 +324,7 @@
               <span class="pn-vit__band" aria-hidden="true"></span>
               <ul class="pn-vit__slides" role="list" data-pn-slides>
                 <li class="pn-vit__slide is-on">
-                  <figure class="pn-vit__fig"><img src="../compartilhado/img/produtos-recorte/prix4uno.webp" width="900" height="534" alt="Balança Toledo Prix 4 Uno" loading="lazy" decoding="async"></figure>
+                  <figure class="pn-vit__fig"><img src="../compartilhado/img/produtos-recorte/prix4uno.webp" srcset="img/p480/r/prix4uno.webp 480w, ../compartilhado/img/produtos-recorte/prix4uno.webp 900w" sizes="(max-width: 640px) 86vw, (max-width: 1060px) 50vw, 460px" width="900" height="534" alt="Balança Toledo Prix 4 Uno" loading="lazy" decoding="async"></figure>
                   <p class="pn-vit__cap"><span class="pn-vit__brand mono">Toledo · Balanças</span><a class="pn-vit__name" href="produtos.html#p=toledo-prix-4-uno">Prix 4 Uno<svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></p>
                 </li>
               </ul>
@@ -341,11 +345,12 @@
             <h3 class="pn-t__h"><a class="pn-t__a" href="sistema.html">BC System</a></h3>
             <p class="pn-t__p">Nosso sistema de gestão e PDV: frente de caixa com NFC-e e NF-e, estoque e financeiro — integrado à balança.</p>
             <a class="pn-sat" href="sistema.html#fiscal"><span class="tag tag--volt">Ainda no SAT?</span><span class="pn-sat__t">Regularize já: NFC-e com suporte local <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></span></a>
+            <a class="pn-info" href="sistema.html#informatica">Também cuidamos da informática da loja <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
             <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span>Ver o sistema</p>
           </div>
           <div class="pn-sist__vis" aria-hidden="true">
             <span class="pn-sist__band"></span>
-            <img src="../compartilhado/img/sistema/bc-system-pdv-tablet.webp" width="1000" height="693" alt="" loading="lazy" decoding="async">
+            <img src="../compartilhado/img/sistema/bc-system-tablet-celular.webp" width="1000" height="640" alt="" loading="lazy" decoding="async">
           </div>
         </article>
 
@@ -353,9 +358,9 @@
         <article class="pn-t pn-t--fich on-green">
           <p class="pn-t__tab"><b aria-hidden="true">05</b>Eventos</p>
           <h3 class="pn-t__h"><a class="pn-t__a" href="sistema.html#fichas">BC Fichas</a></h3>
-          <p class="pn-t__p">Terminais de fichas para festas e eventos, por diária.</p>
+          <p class="pn-t__p">Aluguel de terminais de fichas para festas e eventos, por diária. Vai com bobinas e treinamento.</p>
           <div class="pn-fich__vis" aria-hidden="true">
-            <span class="ficha"><span class="ficha__top mono"><span>BC Fichas · Festa</span><span>Caixa 01</span></span><span class="ficha__item">2 Pastéis</span><span class="ficha__meta mono">Nº 000128 · 21:43</span><span class="ficha__bars"></span></span>
+            <span class="ficha"><span class="ficha__top mono"><span>BC Fichas</span><span>Caixa 01</span></span><span class="ficha__item">2 Pastéis</span><span class="ficha__meta mono">Nº 000128 · 21:43</span><span class="ficha__bars"></span></span>
           </div>
           <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span>Ver BC Fichas</p>
         </article>
@@ -365,9 +370,9 @@
           <p class="pn-t__tab"><b aria-hidden="true">06</b>Avaliações</p>
           <h3 class="pn-t__h pn-goog__h"><a class="pn-t__a" href="empresa.html#clientes"><b class="pn-goog__n" data-bc="google-nota" data-count-dec>5,0</b> <span class="pn-goog__lbl">no Google</span></a></h3>
           <p class="pn-goog__stars" aria-hidden="true"><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg></p>
-          <p class="pn-t__p"><strong><span data-bc="google-qtd">56</span> avaliações</strong>, todas com 5 estrelas.</p>
+          <p class="pn-t__p"><strong><span data-bc="google-qtd">56</span> avaliações</strong> de clientes no Google.</p>
           <div class="pn-t__foot">
-            <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span>Clientes</p>
+            <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span>Ver avaliações</p>
             <a class="pn-goog__ext mono" data-bc-href="google" href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener">Ver no Google <svg class="i" aria-hidden="true"><use href="#i-out"/></svg></a>
           </div>
         </article>
@@ -378,9 +383,9 @@
           <h3 class="pn-t__h"><a class="pn-t__a" href="contato.html">Contato</a></h3>
           <p class="pn-cont__status"><span class="status" data-bc="status" hidden></span></p>
           <p class="pn-cont__tel"><a data-bc-href="tel" href="tel:+551930239050"><span data-bc="telefone">(19) 3023-9050</span><span class="sr-only"> — ligar</span></a></p>
-          <p class="pn-cont__addr mono"><span data-bc="rua">Rua 13, 650</span> – <span data-bc="bairro">Boa Morte</span> · <span class="nobr">Rio Claro-SP</span></p>
+          <p class="pn-cont__addr mono"><a data-bc-href="mapa" href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener"><span class="pn-cont__rua"><span data-bc="rua">Rua 13, 650</span> – <span data-bc="bairro">Boa Morte</span> · <span class="nobr">Rio Claro-SP</span></span> <span class="pn-cont__ref" data-bc="referencia">Entre as Avenidas 9 e 11</span><svg class="i" aria-hidden="true"><use href="#i-out"/></svg></a></p>
           <div class="pn-t__foot">
-            <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span>Contatos</p>
+            <p class="pn-t__go" aria-hidden="true"><span class="pn-t__arr"><svg class="i"><use href="#i-arrow"/></svg></span>Ver contatos</p>
             <a class="btn btn--green btn--sm pn-cont__wa" data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a>
           </div>
         </article>
@@ -394,7 +399,7 @@
      Quatro fichas (LV.listaProdutos) com destaques que não estão na vitrine do
      módulo 03, variando a categoria. Sem JS fica a lista de links abaixo. -->
 <section class="sec on-dark pn-feat" id="destaques" aria-labelledby="feat-t">
-  <div class="sec__tab" aria-hidden="true"><b>02</b><span>/02 · Vitrine</span></div>
+  <div class="sec__tab" aria-hidden="true"><b>02</b><span>/02 · Destaques</span></div>
   <div class="wrap">
     <header class="sec__head sec__head--split pn-feat__head">
       <div>
@@ -405,10 +410,10 @@
     </header>
 
     <ul class="pgrid pgrid--4 pn-feat__grid" role="list" data-pn-destaques>
-      <li class="pn-nojs"><a class="link-u" href="produtos.html#p=toledo-prix-5-plus">Toledo Prix 5 Plus</a></li>
+      <li class="pn-nojs"><a class="link-u" href="produtos.html#p=balmak-orion-1-plus">Balmak Órion 1 Key</a></li>
       <li class="pn-nojs"><a class="link-u" href="produtos.html#p=elgin-el4200">Elgin EL4200</a></li>
       <li class="pn-nojs"><a class="link-u" href="produtos.html#p=elgin-i9">Elgin i9 Full</a></li>
-      <li class="pn-nojs"><a class="link-u" href="produtos.html">Ver o catálogo completo</a></li>
+      <li class="pn-nojs"><a class="link-u" href="produtos.html#p=toledo-prix-3-fit">Toledo Prix 3 Fit</a></li>
     </ul>
 
     <div class="pn-feat__foot" data-reveal>

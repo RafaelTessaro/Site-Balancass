@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Mapa do site para o Google. Só a página inicial publicada (index.html) entra como "/". -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://balancass.com/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://balancass.com/assistencia.html</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://balancass.com/produtos.html</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://balancass.com/sistema.html</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://balancass.com/empresa.html</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://balancass.com/contato.html</loc><lastmod>2026-10-09</lastmod></url>
+</urlset>

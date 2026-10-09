@@ -15,11 +15,12 @@ os arquivos CSS/JS e os componentes descritos aqui, para que as 6 páginas pare�
 ```
 linha-verde/
   index.html          página inicial PROVISÓRIA (data-variacao="1") — será substituída
-  assistencia.html    conserto/manutenção, processo, tipos, IPEM, FAQ do IPEM
+  assistencia.html    conserto/manutenção, processo, tipos, IPEM, FAQ do IPEM e da aferição (#faq)
   produtos.html       catálogo completo (#p=ID, ?cat=&sub=&q=) + kits por segmento (#kits)
   sistema.html        BC System (#recursos #fiscal #implantacao), informática (#informatica), BC Fichas (#fichas)
   empresa.html        quem somos, como trabalhamos, equipe (#equipe), clientes/depoimentos (#clientes)
-  contato.html        roteador (#ajuda), canais + formulário (#canais), FAQ geral com 12 itens (#faq)
+  contato.html        roteador (#ajuda), canais + formulário (#canais), dúvidas (#faq: 1 pergunta própria + atalhos
+                      para assistencia.html#faq, sistema.html#fiscal e sistema.html#fichas — cada assunto na sua aba)
   css/base.css        tokens, tipografia, botões, cabeçalho, menu, rodapé, ficha de produto, grade, ticker
   css/paginas.css     hero de página (.phero) e TODOS os blocos de seção (router, IPEM, depoimentos…)
   css/catalogo.css    só produtos.html
@@ -488,7 +489,7 @@ LV.spec(p, "capacidade")       // → valor de uma especificação
 | Kits por segmento (abas + produtos) | `.kits[data-kits]` | `produtos.html#kits` | escuro |
 | BC Fichas (fichas impressas) | `.fichas`, `.ficha` | `sistema.html#fichas` | verde |
 | Informática | `.info` | `sistema.html#informatica` | escuro |
-| FAQ (acordeão acessível) | `.faq`, `.acc[data-acc]` | `contato.html#faq` | claro |
+| FAQ (acordeão acessível) | `.faq`, `.acc[data-acc]` (item com `aria-expanded="true"` + `.acc__p.is-open` já vem aberto) | `assistencia.html#faq` | claro |
 | Contato + formulário → WhatsApp | `.contact`, `.form[data-form]` | `contato.html#canais` | escuro |
 | Faixa final de chamada | `.ask.on-dark / .on-green / .on-paper` | fim das páginas dedicadas | — |
 
@@ -581,7 +582,8 @@ LV.wipe(el, opts)    // barra verde revela o elemento (cria .lv-wipe se não hou
 LV.st(trigger, start)// config de ScrollTrigger "once" (padrão "top 88%")
 LV.refresh()         // ScrollTrigger.refresh()
 LV.irPara("#id")     // rolagem suave até a âncora (respeita cabeçalho + aba da seção)
-LV.statusAgora()     // { aberto, curto, texto } no horário de Rio Claro
+LV.statusAgora()     // { aberto, curto, texto } no horário de Rio Claro (considera LV.FERIADOS)
+LV.nomeHTML(nome)    // nome do modelo para títulos display: não quebra no hífen nem deixa "7" sozinho
 LV.lenis, LV.mm      // instância do Lenis e o gsap.matchMedia
 LV.hdr(), LV.esc(s), LV.pad(n), LV.catCurto(cat), LV.inertBg(on), LV.fecharMenu()
 ```

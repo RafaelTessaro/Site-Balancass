@@ -85,6 +85,11 @@
   .subs::-webkit-scrollbar { display: none; }
   .sub { flex: none; }
   .fbar__end { margin-left: 0; justify-content: space-between; }
+  /* Celular: menos coisa antes da primeira ficha */
+  .subs__hint { display: none; }
+  .subs:empty, .subs:has(> .subs__hint:only-child) { display: none; }
+  .cat__body { display: flex; flex-direction: column; padding-top: 18px; }
+  .cat__body > .cat__note { order: 5; margin: 26px 0 0; }
 }
 
 /* ---------- Grade ---------- */
@@ -107,9 +112,20 @@
   .pgrid__i--cta { grid-column: 1 / -1; }
   .pgrid__cta { min-height: 0; padding: 22px 20px; gap: 14px; }
   .pgrid__cta-t { font-size: 32px; }
+  /* Nº ímpar de fichas: o "Procurando outro modelo?" ocupa a célula vazia ao lado da última */
+  .pgrid.is-impar .pgrid__i--cta { grid-column: auto; }
+  .pgrid.is-impar .pgrid__cta { padding: 18px 14px 16px; justify-content: space-between; }
+  .pgrid.is-impar .pgrid__cta::before { right: -60%; width: 70%; }
+  .pgrid.is-impar .pgrid__cta-t { font-size: clamp(24px, 7vw, 28px); max-width: none; }
+  .pgrid.is-impar .pgrid__cta-go { max-width: none; font-size: 12px; align-items: flex-start; }
 }
-.cat__noscript { padding: 32px 0; font-size: 18px; }
+.cat__noscript { padding: 8px 0 32px; font-size: 18px; display: grid; gap: 14px; }
 .cat__noscript a { color: var(--green-deep); }
+.cat__noscript ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 0 24px; list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
+.cat__noscript li { padding: 10px 0; border-bottom: 1px solid #C9C9C2; font-size: 16px; }
+.cat__noscript li b { font-weight: 700; }
+/* Sem JavaScript: sem busca nem contador sobre uma lista vazia */
+html:not(.js) .fbar, html:not(.js) .cat__jump-wrap, html:not(.js) .cat__note { display: none; }
 
 .empty { padding: clamp(40px, 6vw, 80px) 0 20px; display: grid; gap: 16px; justify-items: start; max-width: 760px; }
 .empty__big { font: 900 clamp(64px, 10vw, 160px)/.82 var(--f-display); text-transform: uppercase; color: transparent; -webkit-text-stroke: 1.5px var(--ink); }
@@ -169,6 +185,8 @@
 .dw__price span { font: 400 11px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .dw__price b { font: 900 34px/1 var(--f-display); text-transform: uppercase; }
 .dw__ctas { display: flex; flex-wrap: wrap; gap: 10px 4px; margin-left: -6px; }
+.dw__buy { display: grid; gap: 14px; }
+.dw__buy .dw__price { padding: 12px 0 0; border-top: 1px solid var(--ink); border-bottom: 0; }
 .drawer__panel .btn--line { --b-fg: var(--ink); --b-hv: var(--ink); --b-hfg: var(--paper); }
 .drawer__panel .btn--green { --b-hv: var(--ink); --b-hfg: var(--paper); }
 .drawer__panel :focus-visible { outline-color: var(--ink); }
@@ -191,8 +209,21 @@
 @media (max-width: 640px) {
   .drawer__panel { width: 100%; }
   .drawer__body { padding: 20px 18px 36px 26px; }
+  .dw__fig { aspect-ratio: 16 / 9; }
+  .dw__model { font-size: clamp(40px, 11vw, 56px); }
+  .dw__ctas { margin-left: 0; gap: 8px; }
   .dw__ctas .btn { flex: 1 1 100%; margin: 0; }
-  .dw__ctas { margin-left: 0; }
+  .dw__ctas .btn:not(.btn--green) { flex: 1 1 calc(50% - 4px); --bh: 48px; padding-inline: calc(10px + 48px * var(--tan) / 2); font-size: 12.5px; gap: 8px; }
+}
+
+/* ---------- Hero do catálogo no celular e no tablet: sem a faixa decorativa do contador ---------- */
+.phero__total { display: none; }
+@media (max-width: 860px) {
+  .pg-produtos .phero__visual--count { display: none; }
+  .pg-produtos .phero__in { padding-bottom: 26px; }
+  .phero__total { display: inline-flex; margin-left: auto; }
+  .pg-produtos .phero__lead { margin-top: 16px; }
+  .pg-produtos .phero__ctas { margin-top: 20px; }
 }
 
 /* ---------- Atalho para os filtros (celular, barra não fixa) ---------- */

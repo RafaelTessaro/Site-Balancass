@@ -73,6 +73,8 @@ Não é preciso mexer no HTML nem no design. Basta editar esse arquivo e enviar 
 - **Apagar de vez:** apague o bloco inteiro, do `{` até o `},`.
 - **Mudar a ordem:** produtos de **pronta entrega** aparecem primeiro automaticamente; dentro disso, os com `destaque: true` vêm antes.
 - **Telefone, endereço, horários, clientes, depoimentos:** ficam em `compartilhado/dados/empresa.js`, editados do mesmo jeito.
+- **Mudou os destaques (`destaque: true`)?** No design Linha Verde, o `produtos.html` tem uma lista curta dos destaques dentro de `<noscript>` (aparece só para quem navega sem JavaScript e para buscadores que não rodam JS). Ela é fixa: atualize os nomes ali também. A lista completa para o Google (JSON-LD `ItemList`) é gerada sozinha a partir do `produtos.js`.
+- **Feriados (Linha Verde):** o aviso "Aberto agora / Fechado agora" já considera os feriados nacionais e o 9 de julho (SP). Feriado municipal, Carnaval, Corpus Christi ou recesso da loja: acrescente em `linha-verde/js/core.js`, na lista `FERIADOS` (explicada no próprio arquivo).
 
 ## 5. Conferir
 

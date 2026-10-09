@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Balanças e Automação Comercial em Rio Claro-SP | Balanças.com</title>
-<meta name="description" content="Conserto de balanças (oficina autorizada pelo IPEM-SP), balanças Toledo e Balmak, PDV, etiquetadoras e o BC System com NFC-e. Atendimento em Rio Claro e região.">
+<meta name="description" content="Conserto de balanças (oficina autorizada pelo IPEM-SP), balanças Toledo e Balmak, etiquetadoras, PDV e o BC System com NFC-e. Rio Claro e região.">
 <meta name="theme-color" content="#0A0A0A">
 <link rel="canonical" href="https://balancass.com/">
 <meta property="og:type" content="website">
@@ -36,7 +36,12 @@
   /* Marca o documento antes de pintar: as animações de entrada só escondem
      o conteúdo enquanto o JS não assume. Se algo falhar, tudo reaparece. */
   document.documentElement.className += " js is-loading";
-  setTimeout(function () { document.documentElement.classList.remove("is-loading"); }, 2600);
+  /* Rede lenta: depois de 2,6 s o conteúdo aparece. "lv-late" (+ "via-vt", que o core.js já
+     entende) faz as entradas do GSAP, se ele chegar depois, irem direto ao fim — sem sumir de novo. */
+  setTimeout(function () {
+    var d = document.documentElement;
+    if (d.classList.contains("is-loading")) { d.classList.add("lv-late", "via-vt"); d.classList.remove("is-loading"); }
+  }, 2600);
   /* Chegou pela transição diagonal entre páginas: o destino aparece pronto */
   addEventListener("pagereveal", function (e) { if (e.viewTransition) document.documentElement.classList.add("via-vt"); });
 </script>
@@ -65,13 +70,19 @@
  "taxID": "12.403.843/0001-18",
  "address": {
   "@type": "PostalAddress",
-  "streetAddress": "Rua 13, 650 - Boa Morte (entre as Avenidas 9 e 11)",
+  "streetAddress": "Rua 13, 650 - Boa Morte",
   "addressLocality": "Rio Claro",
   "addressRegion": "SP",
   "postalCode": "13500-120",
   "addressCountry": "BR"
  },
  "hasMap": "https://maps.google.com/?cid=12422356528564941318",
+ "makesOffer": [
+  { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Assistência técnica e manutenção de balanças" } },
+  { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "BC System — sistema de gestão e PDV com NFC-e e NF-e" } },
+  { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Suporte em informática para o comércio" } },
+  { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Locação de terminais de fichas para eventos (BC Fichas)" } }
+ ],
  "openingHoursSpecification": [
   {
    "@type": "OpeningHoursSpecification",
@@ -219,17 +230,17 @@
   <span class="crop crop--tl" aria-hidden="true"></span>
   <div class="wrap phero__in">
     <div class="phero__copy">
-      <p class="phero__eyebrow mono" data-intro><span class="tag tag--volt">Rio Claro-SP</span><span>Balanças · <span class="vt-xs-off">Automação · </span>Sistema · <span class="nobr">Desde <span data-bc="desde">2010</span></span></span></p>
+      <p class="phero__eyebrow mono" data-intro><span class="tag tag--volt">Rio Claro-SP</span><span class="vt-eyebrow">Assistência · Balanças · Sistema</span></p>
       <h1 class="phero__t" id="hero-t">
         <span class="phero__l"><span class="phero__w" data-intro>Pesa.</span><span class="phero__bar" aria-hidden="true"></span></span>
         <span class="phero__l"><span class="phero__w" data-intro>Imprime.</span><span class="phero__bar" aria-hidden="true"></span></span>
         <span class="phero__l phero__l--green"><span class="phero__w" data-intro>Vende.</span><span class="phero__bar" aria-hidden="true"></span></span>
         <span class="sr-only"> Balanças, automação comercial e assistência técnica em Rio Claro-SP.</span>
       </h1>
-      <p class="phero__lead" data-intro><strong>A medida certa para o seu negócio.</strong> Conserto de balanças, equipamentos para o balcão e o caixa e o BC System com NFC-e — com suporte de perto, em Rio Claro e região.</p>
+      <p class="phero__lead" data-intro><strong>A medida certa para o seu negócio.</strong> Conserto de balanças, equipamentos para balcão e caixa, e o BC System com NFC-e.<span class="vt-m-off"> Suporte de perto, em Rio Claro e região.</span></p>
       <div class="btns phero__ctas" data-intro data-float-off>
         <a class="btn btn--green btn--lg" data-magnet data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Falar no WhatsApp">Falar no WhatsApp</span></a>
-        <a class="btn btn--line btn--lg" data-magnet href="produtos.html"><span class="st" data-t="Ver produtos">Ver produtos</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn--line btn--lg vt-hero-more" data-magnet href="produtos.html"><span class="st" data-t="Ver produtos">Ver produtos</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
       </div>
     </div>
 
@@ -245,9 +256,8 @@
           <a class="vit__name mono" href="produtos.html#p=toledo-prix-4-uno" data-vit-link><span data-vit-name>Toledo Prix 4 Uno</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
         </figcaption>
       </figure>
-      <p class="phero__call phero__call--1 mono" aria-hidden="true"><b>01</b> <span data-vit-c1>Pesa até 32 kg</span></p>
-      <p class="phero__call phero__call--2 mono" aria-hidden="true"><b>02</b> <span data-vit-c2>Com impressora de etiquetas</span></p>
-      <p class="phero__ref mono" aria-hidden="true">Vitrine — <span data-vit-ref>Ref. 01 — Toledo Prix 4 Uno</span></p>
+      <p class="phero__call phero__call--1 mono" aria-hidden="true"><span data-vit-c1>Pesa até 32 kg</span></p>
+      <p class="phero__call phero__call--2 mono" aria-hidden="true"><span data-vit-c2>Com impressora de etiquetas</span></p>
     </div>
   </div>
   <div class="phero__strip" data-intro>
@@ -260,11 +270,12 @@
   </div>
 </section>
 
-<section class="ticker vt-ticker" aria-label="O que fazemos" data-ticker data-skew>
+<section class="ticker vt-ticker" aria-labelledby="marcas-t" data-ticker data-skew>
+  <p class="vt-ticker__lbl mono" id="marcas-t"><span>Trabalhamos <span class="nobr">com as marcas</span></span></p>
   <div class="ticker__skew"><div class="ticker__track">
-    <ul class="ticker__list"><li>Assistência técnica</li><li>Balanças</li><li>Etiquetas</li><li>PDV</li><li>BC System</li><li>NFC-e</li><li>Rio Claro-SP</li></ul>
+    <ul class="ticker__list" data-bc-list="marcas"><li>Toledo</li><li>Balmak</li><li>Elgin</li><li>Bematech</li><li>Epson</li><li>Gertec</li><li>Tanca</li><li>Zebra</li><li>Argox</li><li>Filizola</li><li>Urano</li><li>Welmy</li><li>Micheletti</li><li>Daruma</li><li>Diebold</li><li>NHS</li><li>SMS</li><li>APC</li></ul>
   </div></div>
-  <button class="ticker__btn" type="button" aria-pressed="false" data-ticker-btn><svg class="i" aria-hidden="true"><use href="#i-pause"/></svg><span class="sr-only">Pausar a faixa animada</span></button>
+  <button class="ticker__btn" type="button" aria-pressed="false" data-ticker-btn><svg class="i" aria-hidden="true"><use href="#i-pause"/></svg><span class="sr-only">Pausar a faixa de marcas</span></button>
 </section>
 
 <!-- ============================== 01 QUEM SOMOS ============================== -->
@@ -278,10 +289,10 @@
       </div>
       <div class="vt-about__side">
         <div class="prose" data-reveal>
-          <p>Desde <span data-bc="desde">2010</span>, a Balanças.com cuida do comércio de Rio Claro e região.</p>
-          <p>Somos <strong>oficina autorizada pelo <span class="nobr">IPEM-SP</span></strong>, vendemos os equipamentos do balcão e do caixa e temos o nosso próprio sistema de gestão, o <strong>BC System</strong>. Quem atende é quem resolve — aqui de perto.</p>
+          <p>A Balanças.com cuida do comércio de Rio Claro e região.</p>
+          <p>Somos <strong>oficina autorizada pelo <span class="nobr">IPEM-SP</span></strong>. Vendemos os equipamentos do balcão e do caixa. E temos o nosso próprio sistema de gestão, o <strong>BC System</strong>. Quem atende é quem resolve — aqui de perto.</p>
         </div>
-        <a class="link-u vt-about__more" href="empresa.html" data-reveal>Conheça a empresa <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="link-u vt-about__more" href="empresa.html" data-reveal>Conhecer a empresa <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
       </div>
     </header>
 
@@ -289,7 +300,7 @@
       <li class="vt-num">
         <p class="vt-num__k mono">No mercado desde</p>
         <p class="vt-num__v"><span data-bc="desde">2010</span></p>
-        <p class="vt-num__s"><span class="tag tag--ink">+<span data-bc="anos">16</span> anos</span> de comércio local</p>
+        <p class="vt-num__s"><span class="tag tag--ink"><span data-bc="anos">16</span> anos</span> de comércio local</p>
       </li>
       <li class="vt-num">
         <p class="vt-num__k mono">Experiência</p>
@@ -299,12 +310,12 @@
       <li class="vt-num">
         <p class="vt-num__k mono">Nota no Google</p>
         <p class="vt-num__v"><span data-bc="google-nota" data-vt-count data-vt-dec>5,0</span><svg class="i vt-num__star" aria-hidden="true"><use href="#i-star"/></svg></p>
-        <p class="vt-num__s"><a class="tag tag--ink vt-num__a" data-bc-href="google" href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener"><span data-bc="google-qtd">56</span> avaliações</a> todas com 5 estrelas</p>
+        <p class="vt-num__s"><a class="tag tag--ink vt-num__a" data-bc-href="google" href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener"><span data-bc="google-qtd">56</span> avaliações</a> de clientes</p>
       </li>
       <li class="vt-num">
         <p class="vt-num__k mono">No catálogo</p>
         <p class="vt-num__v"><span data-bc="total-produtos" data-vt-count>41</span><span class="vt-num__u">itens</span></p>
-        <p class="vt-num__s"><a class="tag tag--ink vt-num__a" href="produtos.html">Ver catálogo</a> <span>em <span data-bc="total-categorias">3</span> categorias</span></p>
+        <p class="vt-num__s"><a class="tag tag--ink vt-num__a" href="produtos.html">Ver o catálogo</a> <span>em <span data-bc="total-categorias">3</span> categorias</span></p>
       </li>
     </ul>
   </div>
@@ -319,7 +330,7 @@
         <p class="kicker">O que fazemos</p>
         <h2 class="h2" id="do-t" data-reveal="split">Oficina, loja e sistema.</h2>
       </div>
-      <p class="sec__intro" data-reveal>Tudo o que o seu balcão precisa, num lugar só. Escolha por onde começar — cada área tem a sua página, com todos os detalhes.</p>
+      <p class="sec__intro" data-reveal>Tudo o que o seu balcão precisa, num lugar só. Cada área tem a sua página, com todos os detalhes.</p>
     </header>
 
     <ul class="vt-do" role="list" data-reveal="stagger">
@@ -329,8 +340,8 @@
           <div class="vt-do__txt">
             <p class="vt-do__top mono"><b class="vt-do__n">01</b><span>Oficina</span></p>
             <h3 class="vt-do__t"><a class="vt-do__a" href="assistencia.html">Assistência técnica</a></h3>
-            <p class="vt-do__p">Conserto, manutenção e lacre de balanças. Oficina autorizada pelo <span class="nobr">IPEM-SP</span>.</p>
-            <p class="vt-do__go mono" aria-hidden="true">Ver assistência <svg class="i"><use href="#i-arrow"/></svg></p>
+            <p class="vt-do__p">Conserto, manutenção e lacre de balanças. Deixamos sua balança pronta para a verificação do IPEM.</p>
+            <p class="vt-do__go mono" aria-hidden="true">Ver a assistência <svg class="i"><use href="#i-arrow"/></svg></p>
           </div>
           <figure class="vt-do__fig" aria-hidden="true"><img src="../compartilhado/img/produtos-recorte/w300.webp" width="900" height="768" alt="" loading="lazy" decoding="async"></figure>
         </article>
@@ -341,10 +352,10 @@
           <div class="vt-do__txt">
             <p class="vt-do__top mono"><b class="vt-do__n">02</b><span>Loja</span></p>
             <h3 class="vt-do__t"><a class="vt-do__a" href="produtos.html">Produtos</a></h3>
-            <p class="vt-do__p">Balanças, etiquetadoras, leitores, gavetas e computadores para o caixa — <span data-bc="total-produtos">41</span> itens no catálogo.</p>
-            <p class="vt-do__go mono" aria-hidden="true">Ver catálogo <svg class="i"><use href="#i-arrow"/></svg></p>
+            <p class="vt-do__p">Balanças, etiquetadoras, leitores, gavetas e computadores para o caixa.</p>
+            <p class="vt-do__go mono" aria-hidden="true">Ver o catálogo <svg class="i"><use href="#i-arrow"/></svg></p>
           </div>
-          <figure class="vt-do__fig" aria-hidden="true"><img src="../compartilhado/img/produtos-recorte/balmak.webp" width="900" height="576" alt="" loading="lazy" decoding="async"></figure>
+          <figure class="vt-do__fig vt-do__fig--tall" aria-hidden="true"><img src="../compartilhado/img/fotos/prix-6-pdv.webp" width="1044" height="1098" alt="" loading="lazy" decoding="async"></figure>
         </article>
       </li>
       <li class="vt-do__i">
@@ -354,6 +365,7 @@
             <p class="vt-do__top mono"><b class="vt-do__n">03</b><span>Sistema</span></p>
             <h3 class="vt-do__t"><a class="vt-do__a" href="sistema.html">BC System</a></h3>
             <p class="vt-do__p">Frente de caixa com NFC-e e NF-e, estoque e financeiro, integrado à balança.</p>
+            <a class="vt-do__sat tag tag--volt" href="sistema.html#fiscal">Ainda no SAT? Regularize já</a>
             <p class="vt-do__go mono" aria-hidden="true">Ver o sistema <svg class="i"><use href="#i-arrow"/></svg></p>
           </div>
           <figure class="vt-do__fig vt-do__fig--wide" aria-hidden="true"><img src="../compartilhado/img/sistema/bc-system-pdv-tablet.webp" width="1000" height="693" alt="" loading="lazy" decoding="async"></figure>
@@ -363,19 +375,29 @@
         <article class="vt-do__c">
           <span class="vt-do__band" aria-hidden="true"></span>
           <div class="vt-do__txt">
-            <p class="vt-do__top mono"><b class="vt-do__n">04</b><span>Rio Claro-SP</span></p>
+            <p class="vt-do__top mono"><b class="vt-do__n">04</b><span>Atendimento</span></p>
             <h3 class="vt-do__t"><a class="vt-do__a" href="empresa.html">Empresa e contato</a></h3>
-            <p class="vt-do__p">Na <span data-bc="rua">Rua 13, 650</span> – Boa Morte, desde <span data-bc="desde">2010</span>. Conheça a equipe e fale com a gente.</p>
+            <p class="vt-do__p">Na <span data-bc="rua">Rua 13, 650</span> – Boa Morte. Conheça a equipe e fale com a gente.</p>
             <p class="vt-do__go mono"><span aria-hidden="true">Conhecer a empresa <svg class="i"><use href="#i-arrow"/></svg></span><a class="vt-do__sub" href="contato.html">Contato <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></p>
           </div>
           <div class="vt-do__fig vt-do__fig--logo" aria-hidden="true"><span class="vt-do__disc"><svg class="vt-do__logo"><use href="#lv-logo"/></svg></span></div>
         </article>
       </li>
     </ul>
+
+    <div class="vt-also" data-reveal>
+      <p class="vt-also__k mono">Também fazemos</p>
+      <ul class="vt-also__list" role="list">
+        <li><a class="vt-also__a" href="sistema.html#informatica"><b>Suporte em informática</b> <span>para o comércio</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+        <li><a class="vt-also__a" href="sistema.html#fichas"><b>BC Fichas</b> <span>terminais de fichas para eventos, por diária</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+      </ul>
+    </div>
   </div>
 </section>
 
-<!-- ============================== 03 PRODUTOS EM DESTAQUE ============================== -->
+<!-- ============================== 03 PRODUTOS EM DESTAQUE ==============================
+     Fichas leves (variante "compacta") montadas por js/home-v1.js a partir de BC.destaques().
+     O HTML abaixo é a reserva sem JS (mesmos produtos), substituída pelo JS. -->
 <section class="sec on-paper vt-feat" id="destaques" aria-labelledby="feat-t">
   <div class="sec__tab" aria-hidden="true"><b>03</b><span>/04 · Vitrine</span></div>
   <div class="wrap">
@@ -385,29 +407,18 @@
         <h2 class="h2" id="feat-t" data-reveal="split">Na vitrine.</h2>
       </div>
       <div class="vt-feat__side">
-        <p class="sec__intro" data-reveal>Uma amostra do catálogo. Preço e disponibilidade direto no WhatsApp.</p>
-        <ul class="vt-cats" role="list" aria-label="Categorias do catálogo" data-vt-cats data-reveal="stagger">
-          <li><a href="produtos.html?cat=balancas"><span>Balanças</span><b>16<span class="sr-only"> produtos</span></b><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
-          <li><a href="produtos.html?cat=automacao"><span>Automação comercial</span><b>19<span class="sr-only"> produtos</span></b><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
-          <li><a href="produtos.html?cat=informatica"><span>Informática e PDV</span><b>6<span class="sr-only"> produtos</span></b><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
-        </ul>
+        <p class="sec__intro" data-reveal>Uma amostra do catálogo, do balcão ao caixa. Preço e disponibilidade direto no WhatsApp.</p>
+        <p class="vt-feat__links" data-reveal><a class="link-u" href="produtos.html">Ver o catálogo completo <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></p>
       </div>
     </header>
 
     <ul class="pgrid pgrid--4 vt-feat__grid" role="list" data-vt-destaques>
-      <li><a class="link-u" href="produtos.html">Ver o catálogo completo</a></li>
+      <li class="pgrid__i" data-id="toledo-prix-3-fit"><article class="spec spec--compacta" data-cat="balancas" data-id="toledo-prix-3-fit"><span class="spec__tab">Balanças</span><div class="spec__head"><span>Nº 01</span></div><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/prix3fit.webp" alt="Toledo Prix 3 Fit" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Toledo</p><h3 class="spec__model"><span class="sr-only">Toledo </span>Prix 3 Fit</h3><p class="spec__sub">Balança computadora de 32 kg com bateria de até 167 horas, para o pequeno varejo.</p><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><p class="spec__price"><span>Preço</span><b>Consulte</b></p><a class="btn btn--line btn--sm" href="produtos.html#p=toledo-prix-3-fit" data-detail="toledo-prix-3-fit" aria-label="Detalhes: Toledo Prix 3 Fit"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Toledo%20Prix%203%20Fit*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Toledo Prix 3 Fit pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"></use></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
+      <li class="pgrid__i" data-id="elgin-el4200"><article class="spec spec--compacta" data-cat="automacao" data-id="elgin-el4200"><span class="spec__tab">Automação</span><div class="spec__head"><span>Nº 02</span></div><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/el4200.webp" alt="Elgin EL4200" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Elgin</p><h3 class="spec__model"><span class="sr-only">Elgin </span>EL4200</h3><p class="spec__sub">Leitor fixo laser omnidirecional para checkout, 3.000 scans/s.</p><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><p class="spec__price"><span>Preço</span><b>Consulte</b></p><a class="btn btn--line btn--sm" href="produtos.html#p=elgin-el4200" data-detail="elgin-el4200" aria-label="Detalhes: Elgin EL4200"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Elgin%20EL4200*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Elgin EL4200 pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"></use></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
+      <li class="pgrid__i" data-id="toledo-uni-350-ga"><article class="spec spec--compacta" data-cat="automacao" data-id="toledo-uni-350-ga"><span class="spec__tab">Automação</span><div class="spec__head"><span>Nº 03</span></div><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/fatiador.webp" alt="Toledo Fatiador Prix Veloce 350A" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Toledo</p><h3 class="spec__model"><span class="sr-only">Toledo </span>Fatiador Prix Veloce 350A</h3><p class="spec__sub">Fatiador automático de frios com lâmina de 350 mm e pré-seleção de 1 a 99 fatias.</p><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><p class="spec__price"><span>Preço</span><b>Consulte</b></p><a class="btn btn--line btn--sm" href="produtos.html#p=toledo-uni-350-ga" data-detail="toledo-uni-350-ga" aria-label="Detalhes: Toledo Fatiador Prix Veloce 350A"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Toledo%20Fatiador%20Prix%20Veloce%20350A*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Toledo Fatiador Prix Veloce 350A pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"></use></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
+      <li class="pgrid__i" data-id="elgin-i9"><article class="spec spec--compacta" data-cat="informatica" data-id="elgin-i9"><span class="spec__tab">Informática</span><div class="spec__head"><span>Nº 04</span></div><figure class="spec__fig"><img src="../compartilhado/img/produtos-recorte/elgin-i9.webp" alt="Elgin i9 Full" width="900" height="600" loading="lazy" decoding="async"></figure><div class="spec__body"><p class="spec__brand">Elgin</p><h3 class="spec__model"><span class="sr-only">Elgin </span>i9 Full</h3><p class="spec__sub">Impressora de cupom 300 mm/s com guilhotina e USB, Ethernet e Serial.</p><div class="spec__badges"><span class="badge badge--consulte">Consulte disponibilidade</span></div></div><div class="spec__foot"><p class="spec__price"><span>Preço</span><b>Consulte</b></p><a class="btn btn--line btn--sm" href="produtos.html#p=elgin-i9" data-detail="elgin-i9" aria-label="Detalhes: Elgin i9 Full"><span class="st" data-t="Detalhes">Detalhes</span></a><a class="btn btn--green btn--sm" href="https://wa.me/551930239050?text=Ol%C3%A1!%20Vi%20no%20site%20da%20Balan%C3%A7as.com%20o%20produto%20*Elgin%20i9%20Full*%20e%20gostaria%20de%20saber%20pre%C3%A7o%20e%20disponibilidade." target="_blank" rel="noopener" aria-label="Pedir orçamento de Elgin i9 Full pelo WhatsApp (abre em nova aba)"><svg class="i" aria-hidden="true"><use href="#i-wa"></use></svg><span class="st" data-t="WhatsApp">WhatsApp</span></a></div></article></li>
     </ul>
 
-    <div class="vt-feat__foot">
-      <div class="btns" data-reveal>
-        <a class="btn btn--ink btn--lg" href="produtos.html"><span class="st" data-t="Ver catálogo completo">Ver catálogo completo</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-        <a class="link-u" href="produtos.html#kits">Kits por segmento</a>
-      </div>
-      <div class="vt-brands" data-reveal>
-        <p class="mono vt-brands__k">Trabalhamos com as marcas</p>
-        <ul class="vt-brands__list" role="list" data-bc-list="marcas"><li>Toledo</li><li>Balmak</li><li>Elgin</li><li>Bematech</li><li>Epson</li><li>Gertec</li><li>Tanca</li><li>Zebra</li><li>Argox</li><li>Filizola</li><li>Urano</li><li>Welmy</li><li>Micheletti</li><li>Daruma</li><li>Diebold</li><li>NHS</li><li>SMS</li><li>APC</li></ul>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -419,12 +430,12 @@
       <header class="vt-proof__head">
         <p class="kicker">Quem confia</p>
         <h2 class="h2" id="proof-t" data-reveal="split">Parceria de anos.</h2>
-        <p class="sec__intro" data-reveal>Supermercados, padarias e lojas de Rio Claro e região contam com a Balanças.com no dia a dia.</p>
+        <p class="sec__intro" data-reveal>Supermercados, padarias e lojas da região contam com a Balanças.com no dia a dia.</p>
       </header>
       <a class="vt-g" data-reveal data-bc-href="google" href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener">
         <span class="vt-g__lbl mono">Google · Avaliações</span>
         <span class="vt-g__row"><b class="vt-g__n" data-bc="google-nota">5,0</b><span class="vt-g__stars" aria-hidden="true"><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg></span></span>
-        <span class="vt-g__txt"><strong><span data-bc="google-qtd">56</span> avaliações</strong>, todas com 5 estrelas.</span>
+        <span class="vt-g__txt"><strong><span data-bc="google-qtd">56</span> avaliações</strong> de clientes no Google.</span>
         <span class="vt-g__go mono">Ver no Google <svg class="i" aria-hidden="true"><use href="#i-out"/></svg></span>
       </a>
     </div>
@@ -448,7 +459,7 @@
   <div class="wrap ask__in">
     <h2 class="ask__t" id="ask-t" data-reveal="split">Fale com quem resolve.</h2>
     <div class="ask__side">
-      <p data-reveal>WhatsApp, telefone ou balcão — na <span data-bc="rua">Rua 13, 650</span>, entre as Avenidas 9 e 11, em Rio Claro. <span class="status vt-ask__status" data-bc="status" hidden></span></p>
+      <p data-reveal>WhatsApp, telefone ou pessoalmente — na <span data-bc="rua">Rua 13, 650</span>, entre as Avenidas 9 e 11, em Rio Claro. <span class="status vt-ask__status" data-bc="status" hidden></span></p>
       <div class="ask__btns" data-reveal>
         <a class="btn btn--ink btn--lg" data-magnet data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Falar no WhatsApp">Falar no WhatsApp</span></a>
         <a class="btn btn--line btn--lg" data-bc-href="tel" href="tel:+551930239050"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg><span class="st" data-t="(19) 3023-9050" data-vt-tel><span data-bc="telefone">(19) 3023-9050</span></span><span class="sr-only"> — ligar</span></a>

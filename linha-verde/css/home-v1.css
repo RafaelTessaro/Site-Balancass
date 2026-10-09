@@ -1,16 +1,20 @@
 /* =====================================================================
    Balanças.com — "Linha Verde" — PÁGINA INICIAL · VARIAÇÃO 1 "VITRINE"
    css/home-v1.css (carregado depois de base.css e paginas.css)
-   Equilibrada e direta: hero em 100vh com a vitrine "Pesa · Imprime ·
-   Vende", quem somos em números, quatro caminhos para as páginas,
-   produtos em destaque, prova social compacta e chamada final.
+   Um resumo da empresa: hero em 100vh com a vitrine "Pesa · Imprime ·
+   Vende", faixa de marcas, quem somos em números, quatro caminhos para
+   as páginas, quatro produtos em destaque, prova social e chamada final.
    Prefixo das classes próprias: .vit (vitrine do hero) e .vt- (seções).
    ===================================================================== */
 
-.pg-inicio { --vt-tk: clamp(54px, 4.6vw, 70px); --sec-pad: clamp(80px, 8.4vw, 136px); }
+.pg-inicio { --vt-tk: clamp(54px, 4.6vw, 70px); --sec-pad: clamp(60px, 6vw, 100px); }
+.pg-inicio .sec--first { padding-top: clamp(72px, 7.2vw, 116px); }
+.pg-inicio .sec__head { margin-bottom: clamp(32px, 4vw, 64px); }
+/* Aba numerada: em telas largas o número acompanha a coluna do conteúdo (.wrap) */
+.pg-inicio .sec__tab { padding-left: max(var(--gut), calc((100% - var(--max)) / 2 + var(--gut))); }
 
 /* =====================================================================
-   1. HERO — ocupa a primeira tela junto com a faixa corrida
+   1. HERO — ocupa a primeira tela junto com a faixa de marcas
    ===================================================================== */
 .phero--home { min-height: max(620px, calc(100svh - var(--vt-tk))); }
 .phero--home .phero__in {
@@ -33,6 +37,11 @@
 .vit__img.is-on { opacity: 1; visibility: visible; }
 .vit__img[data-vit-i="1"] { --vs: .92; }
 .vit__img[data-vit-i="2"] { --vs: .9; }
+/* Sem GSAP (CDN fora do ar): a troca automática vira um esmaecer em CSS */
+@media (prefers-reduced-motion: no-preference) {
+  .vit--css .vit__img { transition: opacity .6s var(--ease), visibility 0s .6s; }
+  .vit--css .vit__img.is-on { transition-delay: 0s; }
+}
 
 /* Régua técnica à direita do palco */
 .vit__ruler {
@@ -64,10 +73,9 @@
 .vit__name:hover { background: var(--paper); color: var(--ink); }
 .vit__name:hover .i { color: var(--green-deep); }
 
-/* Callouts: os dois rótulos ficam no alto do palco */
+/* Rótulos técnicos: os dois ficam no alto do palco */
 .vit .phero__call--1 { left: 0; top: 7%; }
 .vit .phero__call--2 { right: 5%; left: auto; top: 7%; bottom: auto; }
-.vit .phero__ref { right: calc(var(--gut) * -1 + 14px); }
 
 /* Abas da vitrine (criadas pelo js/home-v1.js) */
 .vit__nav { position: relative; z-index: 3; display: flex; align-items: stretch; justify-content: center; gap: 4px; justify-self: center; }
@@ -111,14 +119,22 @@
   .vit__stage { max-height: min(48vh, 500px); }
 }
 
-/* Faixa corrida: completa a primeira tela */
+/* ---------- Faixa de marcas: completa a primeira tela ---------- */
 .vt-ticker { height: var(--vt-tk); }
 .vt-ticker .ticker__list li { padding: 0; }
+.vt-ticker__lbl {
+  position: relative; z-index: 2; flex: none; align-self: stretch; width: min-content;
+  display: flex; align-items: center;
+  padding: 0 calc(var(--vt-tk) * var(--tan) + 16px) 0 max(var(--gut), calc((100% - var(--max)) / 2 + var(--gut)));
+  background: var(--ink); color: var(--paper); font-size: 10.5px; line-height: 1.35; letter-spacing: .04em;
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--vt-tk) * var(--tan)) 100%, 0 100%);
+  box-sizing: content-box;
+}
 
 /* =====================================================================
    2. QUEM SOMOS — texto curto + quatro números
    ===================================================================== */
-.vt-about__head { margin-bottom: clamp(40px, 5vw, 80px); }
+.vt-about__head { margin-bottom: clamp(36px, 4.4vw, 68px); }
 .vt-about__side { display: grid; gap: 18px; justify-items: start; }
 .vt-about__side .prose { max-width: 34em; }
 .vt-about__more { color: var(--ink); }
@@ -126,21 +142,25 @@
 .vt-about__more:hover .i { transform: translateX(5px); }
 
 .vt-nums { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 2px solid var(--ink); }
-.vt-num { min-width: 0; display: grid; align-content: start; gap: 14px; padding: 24px clamp(14px, 1.8vw, 30px) 4px 0; }
+.vt-num { min-width: 0; display: grid; align-content: start; gap: 10px; padding: 24px clamp(14px, 1.8vw, 30px) 4px 0; }
 .vt-num + .vt-num { padding-left: clamp(14px, 1.8vw, 30px); border-left: 1px solid #C9C9C2; }
 .vt-num__k { color: var(--muted); }
+/* Linha de base comum: a unidade senta na base dos algarismos; o "+" fica no alto.
+   O respiro embaixo guarda a cauda da vírgula de "5,0" (line-height curto). */
 .vt-num__v {
-  display: flex; align-items: flex-end; gap: .1em; min-width: 0;
+  display: flex; align-items: baseline; gap: .06em; min-width: 0;
   font: 900 clamp(70px, 7.6vw, 140px)/.8 var(--f-display); letter-spacing: -.01em; color: var(--ink);
-  padding-top: .05em;
+  padding: .05em 0 .14em;
 }
-.vt-num__u { font: 500 clamp(11px, .9vw, 13px)/1 var(--f-mono); letter-spacing: .03em; text-transform: uppercase; color: var(--muted); padding: 0 0 .5em .5em; white-space: nowrap; }
-.vt-num__plus { align-self: flex-start; font-size: .5em; line-height: 1; margin-left: -.04em; color: var(--green-deep); }
-.vt-num__star { width: .3em; height: .3em; color: var(--green-deep); margin-bottom: .08em; }
+.vt-num__u { font: 500 clamp(11px, .9vw, 13px)/1 var(--f-mono); letter-spacing: .03em; text-transform: uppercase; color: var(--muted); padding-left: .35em; white-space: nowrap; }
+/* O "+" fica no alto e a unidade passa por baixo dele (margem negativa = largura do sinal) */
+.vt-num__plus { align-self: flex-start; font-size: .5em; line-height: 1; margin: 0 -.62em 0 -.02em; color: var(--green-deep); }
+.vt-num__star { align-self: center; width: .3em; height: .3em; color: var(--green-deep); margin-left: .06em; }
 .vt-num__s { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 14px; line-height: 1.4; color: var(--muted); }
 .vt-num__s .tag { min-height: 26px; }
 a.vt-num__a { text-decoration: none; }
 a.vt-num__a::before { transition: background .3s; }
+a.vt-num__a::after { content: ""; position: absolute; inset: -9px -4px; }   /* área de toque ≥ 44 px */
 a.vt-num__a:hover { color: var(--ink); }
 a.vt-num__a:hover::before { background: var(--green); }
 /* Contador sem pular o layout: o valor final (invisível) reserva a largura */
@@ -150,13 +170,15 @@ a.vt-num__a:hover::before { background: var(--green); }
 
 /* =====================================================================
    3. O QUE FAZEMOS — quatro blocos que levam às páginas
+   Padrão (861–1179 px): 2 × 2, texto à esquerda e imagem na faixa verde.
+   A partir de 1180 px e entre 600 e 860 px: blocos em pé, imagem no alto.
    ===================================================================== */
 .vt-do { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(12px, 1.4vw, 20px); }
 .vt-do__i { display: flex; min-width: 0; }
 .vt-do__c {
   position: relative; isolation: isolate; overflow: hidden; flex: 1; min-width: 0;
   display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr);
-  min-height: clamp(280px, 23.5vw, 360px);
+  min-height: clamp(240px, 22vw, 300px);
   background: var(--ink-3); box-shadow: inset 0 0 0 1px #2A2A29; color: var(--paper);
   transition: color .45s var(--ease);
 }
@@ -165,12 +187,13 @@ a.vt-num__a:hover::before { background: var(--green); }
   background: var(--green); transform: skewX(var(--slash)); transform-origin: 100% 50%;
   transition: transform .75s var(--ease);
 }
-.vt-do__txt { position: relative; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; padding: clamp(22px, 2.4vw, 38px); }
+/* Sem position aqui: o ::after do link (inset: 0) cobre o bloco inteiro, imagem incluída */
+.vt-do__txt { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; padding: clamp(22px, 2.4vw, 38px); }
 .vt-do__top { display: flex; align-items: baseline; gap: 12px; color: var(--grey); transition: color .45s; }
-.vt-do__n { font: 900 clamp(44px, 3.6vw, 60px)/.8 var(--f-display); letter-spacing: 0; color: var(--green); transition: color .45s; }
+.vt-do__n { font: 900 clamp(40px, 3.4vw, 56px)/.8 var(--f-display); letter-spacing: 0; color: var(--green); transition: color .45s; }
 .vt-do__t {
-  margin-top: auto; padding-top: clamp(26px, 3vw, 44px);
-  font: 900 clamp(40px, 3.7vw, 66px)/.96 var(--f-display); text-transform: uppercase; letter-spacing: -.005em; text-wrap: balance;
+  margin-top: auto; padding-top: clamp(22px, 2.6vw, 38px);
+  font: 900 clamp(38px, 3.4vw, 60px)/1.05 var(--f-display); text-transform: uppercase; letter-spacing: -.005em; text-wrap: balance;
 }
 .vt-do__a { color: inherit; text-decoration: none; }
 .vt-do__a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
@@ -179,10 +202,13 @@ a.vt-num__a:hover::before { background: var(--green); }
   .vt-do__a:focus-visible { outline: none; }
   .vt-do__c:has(.vt-do__a:focus-visible) { outline: 2px solid var(--volt); outline-offset: 4px; }
 }
-.vt-do__p { margin-top: 12px; max-width: 25em; font-size: 16px; line-height: 1.45; color: var(--body-dark); transition: color .45s; }
+.vt-do__p { margin-top: 10px; max-width: 25em; font-size: 16px; line-height: 1.45; color: var(--body-dark); transition: color .45s; }
+.vt-do__sat { position: relative; z-index: 2; margin-top: 12px; text-decoration: none; }
+.vt-do__sat::after { content: ""; position: absolute; inset: -12px -6px; }   /* área de toque ≥ 44 px */
+.vt-do__sat:hover::before { background: var(--paper); }
 .vt-do__go {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 18px;
-  width: 100%; margin-top: 22px; padding-top: 14px; border-top: 1px solid currentColor;
+  width: 100%; margin-top: 20px; padding-top: 14px; border-top: 1px solid currentColor;
 }
 .vt-do__go > span, .vt-do__go { gap: 8px; }
 .vt-do__go > span { display: inline-flex; align-items: center; }
@@ -192,14 +218,14 @@ a.vt-num__a:hover::before { background: var(--green); }
   color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px;
 }
 .vt-do__sub:hover { text-decoration-thickness: 2px; }
-.vt-do__fig { position: relative; display: grid; place-items: center; min-width: 0; padding: 26px 14px 26px 0; }
+.vt-do__fig { position: relative; display: grid; place-items: center; min-width: 0; padding: 22px 14px 22px 0; }
 .vt-do__fig img {
-  width: 100%; max-height: clamp(180px, 19vw, 290px); object-fit: contain;
+  width: 100%; max-height: clamp(150px, 16vw, 240px); object-fit: contain;
   filter: drop-shadow(0 22px 20px rgba(0, 0, 0, .5)); transition: transform .9s var(--ease-out);
 }
 .vt-do__fig--wide img { width: 108%; max-width: 108%; }
 .vt-do__disc {
-  display: grid; place-items: center; width: min(66%, 176px); aspect-ratio: 1; border-radius: 50%;
+  display: grid; place-items: center; width: min(66%, 168px); aspect-ratio: 1; border-radius: 50%;
   background: var(--ink); box-shadow: 0 0 0 1px #2A2A29, 0 26px 40px -18px rgba(0, 0, 0, .7);
   transition: transform .9s var(--ease);
 }
@@ -216,53 +242,87 @@ a.vt-num__a:hover::before { background: var(--green); }
 .vt-do__c:hover .vt-do__disc { transform: rotate(180deg); }
 .vt-do__c :focus-visible { outline-color: var(--ink); }
 
-/* =====================================================================
-   4. PRODUTOS EM DESTAQUE
-   ===================================================================== */
-.vt-feat__side { display: grid; gap: 22px; justify-items: start; }
-.vt-cats { width: 100%; max-width: 34em; border-top: 2px solid var(--ink); }
-.vt-cats li { border-bottom: 1px solid #C9C9C2; }
-.vt-cats a {
-  position: relative; isolation: isolate;
-  display: grid; grid-template-columns: minmax(0, 1fr) auto 18px; align-items: center; gap: 14px;
-  min-height: 52px; padding: 0 4px; color: var(--ink); text-decoration: none;
-  font: 600 14px/1.2 var(--f-text); letter-spacing: .04em; text-transform: uppercase;
-  transition: color .4s, padding .5s var(--ease);
+/* Blocos em pé: imagem no alto sobre a faixa, texto embaixo */
+@media (min-width: 1180px), (min-width: 600px) and (max-width: 860px) {
+  .vt-do { --fig-h: clamp(170px, 13vw, 220px); }
+  .vt-do__c { grid-template-columns: minmax(0, 1fr); grid-template-rows: var(--fig-h) 1fr; min-height: 0; }
+  .vt-do__fig { order: -1; height: var(--fig-h); padding: 20px 18px 6px; grid-template: minmax(0, 1fr) / minmax(0, 1fr); }
+  .vt-do__fig img { height: 100%; max-height: none; }
+  .vt-do__fig--wide img { width: 100%; max-width: 100%; }
+  .vt-do__fig--logo { justify-items: end; padding-right: 20%; }
+  .vt-do__disc { width: auto; height: 82%; }
+  /* A faixa fica só no alto; no hover ela cresce para baixo e anda para a direita
+     (compensa a inclinação de −12°) até cobrir o bloco inteiro */
+  .vt-do__band { bottom: auto; height: var(--fig-h); right: -10%; width: 66%; transform-origin: 100% 0; transform: skewX(var(--slash)) translateX(0) scale(1, 1); }
+  .vt-do__c:hover .vt-do__band, .vt-do__c:focus-within .vt-do__band { transform: skewX(var(--slash)) translateX(60%) scale(2.7, 4.2); }
+  .vt-do__txt { padding: 16px clamp(20px, 1.8vw, 28px) clamp(20px, 1.8vw, 26px); }
+  .vt-do__t { margin-top: 0; padding-top: 16px; font-size: clamp(32px, 2.5vw, 46px); }
+  .vt-do__p { font-size: 15px; }
+  .vt-do__p, .vt-do__sat { margin-bottom: 18px; }
+  .vt-do__go { margin-top: auto; }   /* o "Ver …" desce para a base: as quatro linhas alinham */
 }
-.vt-cats a::before {
-  content: ""; position: absolute; inset: 0 -8px; z-index: -1; background: var(--ink);
-  transform: skewX(var(--slash)) scaleX(0); transform-origin: 0 50%; transition: transform .55s var(--ease);
+@media (min-width: 1180px) {
+  .vt-do { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
-.vt-cats b { font: 500 11px/1 var(--f-mono); letter-spacing: .03em; color: var(--green-deep); transition: color .4s; }
-.vt-cats .i { width: 16px; height: 16px; transition: transform .5s var(--ease); }
-.vt-cats a:hover, .vt-cats a:focus-visible { color: var(--paper); padding-inline: 14px 10px; }
-.vt-cats a:hover::before, .vt-cats a:focus-visible::before { transform: skewX(var(--slash)) scaleX(1); }
-.vt-cats a:hover b, .vt-cats a:focus-visible b { color: var(--green); }
-.vt-cats a:focus-visible { outline-offset: -2px; outline-color: var(--volt); }
 
-.vt-feat__foot {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 28px 56px;
-  margin-top: clamp(36px, 4vw, 60px); padding-top: clamp(24px, 2.6vw, 34px); border-top: 1px solid #C9C9C2;
+/* Também fazemos: suporte em informática e BC Fichas */
+.vt-also {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px clamp(18px, 2.4vw, 36px);
+  margin-top: clamp(18px, 2vw, 26px); padding-top: 10px; border-top: 1px solid var(--line);
 }
-.vt-feat__foot .btns { gap: 14px 26px; }
-.vt-brands { display: grid; gap: 8px; flex: 0 1 40em; min-width: 0; }
-.vt-brands__k { color: var(--muted); }
-.vt-brands__list { display: flex; flex-wrap: wrap; row-gap: 2px; }
-.vt-brands__list li {
-  display: inline-flex; align-items: center;
-  font: 800 15px/1.5 var(--f-text); font-stretch: 75%; letter-spacing: .02em; text-transform: uppercase; color: var(--ink);
+.vt-also__k { color: var(--grey); }
+.vt-also__list { display: flex; flex-wrap: wrap; gap: 0 clamp(18px, 2.4vw, 36px); }
+.vt-also__a {
+  display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0 8px; min-height: 44px;
+  color: var(--paper); text-decoration: none; font-size: 15px; line-height: 1.35;
 }
-.vt-brands__list li:not(:last-child)::after {
-  content: ""; width: 6px; height: 9px; margin: 0 9px; background: var(--green); transform: skewX(var(--slash));
+.vt-also__a b { font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: var(--green); }
+.vt-also__a span { color: var(--body-dark); }
+.vt-also__a .i { width: 14px; height: 14px; color: var(--green); transition: transform .5s var(--ease); }
+.vt-also__a:hover b { text-decoration-thickness: 2px; }
+.vt-also__a:hover .i { transform: translateX(5px); }
+
+/* =====================================================================
+   4. PRODUTOS EM DESTAQUE — fichas leves (variante "compacta")
+   ===================================================================== */
+.vt-feat__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 899px) { .vt-feat__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* Quatro colunas de 900 a 1339px: a ficha fica estreita (190–290px) para "Detalhes" e
+   "WhatsApp" lado a lado, e o botão verde saía do card. Nessa faixa o WhatsApp fica só
+   com o ícone, como no celular (o nome acessível vem do aria-label). A partir de 1340px
+   os dois rótulos cabem com folga (≥ 10px) dentro do respiro do card. De 640 a 659px
+   (2 colunas, logo acima do celular) a folga seria de só 2px, então vale o mesmo. */
+@media (min-width: 640px) and (max-width: 659px), (min-width: 900px) and (max-width: 1339px) {
+  .vt-feat__grid .spec__foot { grid-template-columns: minmax(0, 1fr) 48px; column-gap: 4px; }
+  .vt-feat__grid .spec__foot .btn--line { padding-inline: calc(5px + 44px * var(--tan) / 2); }
+  .vt-feat__grid .spec__foot .btn--green { padding: 0; }
+  .vt-feat__grid .spec__foot .btn--green .st { display: none; }
+  .vt-feat__grid .spec__foot .btn--green .i { width: 20px; height: 20px; }
 }
+/* Resumo de uma frase (no celular, como no catálogo, fica só foto, marca e modelo);
+   o selo "Consulte disponibilidade" fica para o catálogo */
+@media (min-width: 640px) { .vt-feat__grid .spec--compacta .spec__sub { display: block; } }
+.vt-feat__grid .spec--compacta .spec__fig { margin-top: 34px; }
+.vt-feat__grid .badge--consulte { display: none; }
+@supports selector(:has(*)) {
+  .vt-feat__grid .spec__badges:not(:has(.badge:not(.badge--consulte))) { display: none; }
+}
+.vt-feat__grid .spec__body { padding-bottom: 2px; }
+.vt-feat__grid .spec__foot { margin-top: 14px; }
+.vt-feat__grid .spec__model { font-size: clamp(28px, 2.3vw, 38px); }
+
+.vt-feat__side { display: grid; gap: 14px; justify-items: start; }
+.vt-feat__links { display: flex; flex-wrap: wrap; align-items: center; gap: 0 28px; }
+.vt-feat__links .link-u { color: var(--ink); }
+.vt-feat__links .i { width: 16px; height: 16px; transition: transform .5s var(--ease); }
+.vt-feat__links a:hover .i { transform: translateX(5px); }
 
 /* =====================================================================
    5. PROVA SOCIAL — nota do Google + logos de clientes
    ===================================================================== */
-.vt-proof-sec { padding-block: clamp(80px, 8.4vw, 136px); }
 .vt-proof {
   display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .9fr); align-items: end;
-  gap: clamp(28px, 5vw, 96px); margin-bottom: clamp(36px, 4.4vw, 64px);
+  gap: clamp(28px, 5vw, 96px); margin-bottom: clamp(32px, 3.6vw, 56px);
 }
 .vt-proof__head .sec__intro { margin-top: 22px; }
 .vt-g {
@@ -276,9 +336,10 @@ a.vt-num__a:hover::before { background: var(--green); }
   background: var(--green); transform: skewX(var(--slash)); transform-origin: 100% 50%; transition: transform .75s var(--ease);
 }
 .vt-g__lbl { color: var(--grey); transition: color .45s; }
-.vt-g__row { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 8px 18px; }
-.vt-g__n { font: 900 clamp(100px, 9vw, 156px)/.78 var(--f-display); letter-spacing: -.01em; }
-.vt-g__stars { display: flex; gap: 4px; padding-bottom: 6px; color: var(--green); transition: color .45s; }
+.vt-g__row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 18px; }
+/* line-height curto + respiro embaixo: a cauda da vírgula de "5,0" não encosta no texto */
+.vt-g__n { font: 900 clamp(100px, 9vw, 156px)/.78 var(--f-display); letter-spacing: -.01em; padding-bottom: .14em; }
+.vt-g__stars { display: flex; gap: 4px; color: var(--green); transition: color .45s; }
 .vt-g__stars .i { width: 24px; height: 24px; }
 .vt-g__txt { font-size: 17px; color: var(--body-dark); max-width: 22em; transition: color .45s; }
 .vt-g__txt strong { color: var(--paper); transition: color .45s; }
@@ -296,11 +357,31 @@ a.vt-num__a:hover::before { background: var(--green); }
 /* =====================================================================
    6. CHAMADA FINAL (verde)
    ===================================================================== */
+.vt-ask { padding-block: clamp(64px, 6.4vw, 104px); }
 .vt-ask .ask__side p { max-width: 28em; }
 .vt-ask__status { display: flex; width: fit-content; margin-top: 12px; }
 .on-green .status.is-aberto::before { background: var(--ink); box-shadow: 0 0 0 3px rgba(10, 10, 10, .18); animation: none; }
+/* Fechado sobre o verde: quadrado vazado em preto (vermelho sobre verde não se lê bem) */
+.on-green .status.is-fechado::before { background: transparent; box-shadow: inset 0 0 0 2px var(--ink); }
 .vt-ask .ask__btns { gap: 14px 10px; }
 .vt-ask .ask__btns .link-u { margin-left: 16px; }
+
+/* =====================================================================
+   7. BOTÕES FLUTUANTES — escondidos também saem da ordem do Tab
+   ===================================================================== */
+.float { transition: transform .6s var(--ease), opacity .4s, visibility 0s; }
+.float.is-off { visibility: hidden; transition: transform .6s var(--ease), opacity .4s, visibility 0s .6s; }
+@media (hover: hover) and (pointer: fine) {
+  .js .float.is-hidden { visibility: hidden; transition: transform .6s var(--ease), opacity .4s, visibility 0s .6s; }
+}
+
+/* Seletor de variação (js/preview.js, só na fase de escolha — sai na publicação):
+   some enquanto a primeira tela está visível (classe posta pelo js/home-v1.js) */
+.pg-inicio .lvp { transition: opacity .35s, transform .35s var(--ease), visibility 0s; }
+.pg-inicio.vt-topo .lvp {
+  opacity: 0; visibility: hidden; transform: translateY(14px); pointer-events: none;
+  transition: opacity .35s, transform .35s var(--ease), visibility 0s .35s;
+}
 
 /* =====================================================================
    RESPONSIVO
@@ -314,8 +395,14 @@ a.vt-num__a:hover::before { background: var(--green); }
 @media (max-width: 1240px) and (min-width: 861px) {
   .vit .phero__call--2 { left: 0; right: auto; top: calc(7% + 36px); }
 }
-@media (max-width: 1080px) {
+@media (max-width: 1179px) and (min-width: 861px) {
   .vt-do__c { grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); }
+}
+/* Faixa de confiança entre 861 e 1040 px: os quatro itens numa linha só (sem item sozinho na 2ª) */
+@media (min-width: 861px) and (max-width: 1040px) {
+  .phero--home .trust { flex-wrap: nowrap; gap: 0 14px; }
+  .phero--home .trust__i { font-size: 10px; letter-spacing: .02em; white-space: nowrap; }
+  .phero--home .trust__i + .trust__i::before { width: 8px; height: 8px; margin-right: 10px; }
 }
 
 /* Tablet e celular: o hero empilha (mesma regra do .phero) */
@@ -334,14 +421,57 @@ a.vt-num__a:hover::before { background: var(--green); }
   .vt-do { grid-template-columns: minmax(0, 1fr); }
   .vt-do__c { min-height: 0; }
 }
-@media (max-width: 560px) {
-  .phero--home .phero__t { font-size: clamp(52px, 17.5vw, 100px); }
+/* Tablet em pé (640–860 px): mantém frase ao lado do produto, como no desktop */
+@media (min-width: 640px) and (max-width: 860px) {
+  .phero--home { min-height: calc(100svh - var(--vt-tk)); }
+  .phero--home .phero__in {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: center;
+    padding-block: 28px 24px;
+  }
+  .phero--home .phero__t { font-size: clamp(64px, 11.5vw, 96px); }
+  .phero--home .phero__lead { font-size: 17px; }
+  .phero--home .phero__ctas { flex-direction: column; align-items: flex-start; }
+  .phero--home .phero__visual { align-self: center; margin: 0 calc(var(--gut) * -1) 0 0; padding: 0 0 12px; overflow: visible; }
+  .phero--home .phero__band { top: -120vh; bottom: -120vh; left: 50%; width: 64%; margin-left: -32%; }
   .vit .phero__fig { width: 100%; }
-  .vit__stage { max-height: 230px; }
+  .vit__stage { max-height: 300px; }
+  .vit .phero__call--1 { left: 0; top: 6%; }
+  .vit__nav { gap: 2px; }
+  .vit__tab { padding: 0 13px; }
+  .vit__tab-n { display: none; }
+  .vit__pause { width: 46px; }
+  .vt-do { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 599px) {
+  .vt-do__c { grid-template-columns: minmax(0, 1fr) 36%; }
+  .vt-do__band { width: 44%; right: -16%; }
+  .vt-do__txt { padding: 20px 4px 18px 18px; }
+  .vt-do__t { font-size: clamp(31px, 8.8vw, 44px); padding-top: 18px; }
+  .vt-do__p { font-size: 15px; }
+  .vt-do__fig { padding: 18px 10px 18px 0; }
+  .vt-do__fig img { max-height: 150px; }
+  .vt-do__go { margin-top: 16px; }
+}
+@media (max-width: 560px) {
+  /* Primeira tela do celular: frase, um parágrafo curto, WhatsApp e o produto inteiro */
+  .vt-eyebrow, .vt-m-off { display: none; }
+  .phero--home .phero__ctas { gap: 4px; }
+  .phero--home .vt-hero-more {
+    --bh: 44px; width: auto; align-self: flex-start; padding: 0; gap: 10px; font-size: 13.5px;
+    background: linear-gradient(currentColor, currentColor) 0 calc(50% + .95em) / 100% 1.5px no-repeat;
+  }
+  .phero--home .vt-hero-more::before, .phero--home .vt-hero-more::after { display: none; }
+  .phero--home .vt-hero-more:hover, .phero--home .vt-hero-more:focus-visible { color: var(--green); }
+  .phero--home .vt-hero-more .i { width: 18px; height: 18px; }
+  .phero--home .phero__t { font-size: clamp(52px, 17.5vw, 100px); }
+  .phero--home .phero__visual { margin-top: 18px; padding-top: 20px; }
+  .vit .phero__fig { width: 100%; }
+  .vit__stage { max-height: 210px; }
   .vit__nav { width: 100%; gap: 2px; }
   .vit__tab { flex: 1; justify-content: center; padding: 0 10px; gap: 6px; font-size: 10.5px; }
   .vit__pause { width: 48px; flex: none; }
   .vit__name { font-size: 10.5px; }
+  .vt-ticker__lbl { font-size: 9.5px; padding-right: calc(var(--vt-tk) * var(--tan) + 10px); }
 
   .vt-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .vt-num { padding-top: 18px; gap: 10px; }
@@ -349,24 +479,14 @@ a.vt-num__a:hover::before { background: var(--green); }
   .vt-num__s { font-size: 13px; }
   .vt-num__s .tag { font-size: 10px; }
 
-  .vt-do__c { grid-template-columns: minmax(0, 1fr) 36%; }
-  .vt-do__band { width: 44%; right: -16%; }
-  .vt-do__txt { padding: 20px 4px 18px 18px; }
-  .vt-do__t { font-size: clamp(31px, 8.8vw, 44px); padding-top: 22px; }
-  .vt-do__p { font-size: 15px; }
-  .vt-do__fig { padding: 20px 10px 20px 0; align-items: start; }
-  .vt-do__fig img { max-height: 120px; }
-  .vt-do__go { margin-top: 16px; }
+  .vt-also { gap: 0 18px; }
+  .vt-also__k { flex-basis: 100%; padding-top: 6px; }
+  .vt-also__a { padding-block: 6px; }
 
-  .vt-cats a { font-size: 13px; min-height: 48px; }
-  .vt-feat__foot { gap: 22px; }
-  .vt-feat__foot .btns { width: 100%; }
-  .vt-feat__foot .link-u { margin-left: 6px; }
-  .vt-feat__foot .btn { width: 100%; }
-  .vt-brands__list li { font-size: 14px; }
 
   .vt-g__n { font-size: clamp(88px, 28vw, 120px); }
   .vt-g::before { width: 14%; right: -8%; }
+  .vt-g__txt { padding-right: 16%; }
   .vt-g__stars .i { width: 20px; height: 20px; }
   .vt-clients .clients__list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
   .vt-clients .clients__i { padding: 6px; }
@@ -375,14 +495,14 @@ a.vt-num__a:hover::before { background: var(--green); }
   .vt-ask .ask__btns .link-u { margin-left: 0; align-self: flex-start; }
 }
 @media (max-width: 400px) {
-  .vt-xs-off { display: none; }
   .vit__tab-n { display: none; }
   .vt-num__v { font-size: 50px; }
   .vt-num__u { font-size: 10px; }
 }
 
-/* Movimento reduzido: sem transições longas nos blocos */
+/* Movimento reduzido: hover sem zoom/giro e sem varreduras longas */
 @media (prefers-reduced-motion: reduce) {
-  .vt-do__c:hover .vt-do__disc { transform: none; }
+  .vt-do__c:hover .vt-do__fig img, .vt-do__c:hover .vt-do__disc { transform: none; }
+  .vt-do__band, .vt-g::before { transition: none; }
   .vit__pause { display: none; }   /* sem troca automática, não há o que pausar */
 }

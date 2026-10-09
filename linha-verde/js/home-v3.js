@@ -85,7 +85,9 @@
       var on = tocando();
       ul.setAttribute("aria-live", on ? "off" : "polite");
       btn.setAttribute("aria-pressed", st.user ? "true" : "false");
-      $("use", btn).setAttribute("href", st.user ? "#i-play" : "#i-pause");
+      // Só regrava o ícone quando muda: regravar o <use> no meio de um clique faz o Chrome perder o "click"
+      var u = $("use", btn), h = st.user ? "#i-play" : "#i-pause";
+      if (u.getAttribute("href") !== h) u.setAttribute("href", h);
       if (on && !raf) { last = 0; raf = requestAnimationFrame(frame); }
     }
     function ir(i) {
@@ -173,23 +175,70 @@
   /* ------------------------------------------------------------------
      4. Animações (só com GSAP e sem "reduzir movimento")
      ------------------------------------------------------------------ */
-  LV.onMotion(function () {
-    var doc = document.documentElement, viaVT = doc.classList.contains("via-vt");
+  var doc = document.documentElement;
+  // Está na tela agora (ou já ficou para trás, acima)?
+  function naTela(el) { return el.getBoundingClientRect().top < window.innerHeight; }
 
-    // Hero: faixa desce, barras verdes revelam as linhas, a imagem sobe
+  // GSAP atrasado: se a rede de segurança do <head> (2,6 s) já mostrou a página, o core.js
+  // não esconde de novo o que já está na tela (títulos divididos, data-reveal, contadores,
+  // abas de seção). Só o que está abaixo da dobra ainda anima ao rolar.
+  var antes = LV.beforeMotion;
+  LV.beforeMotion = function () {
+    if (antes) antes();
+    if (!window.LV_LIBEROU || !LV.motionOK()) return;
+    $$("[data-reveal]").forEach(function (el) { if (naTela(el)) el.removeAttribute("data-reveal"); });
+    $$("[data-count], [data-count-from], [data-count-dec]").forEach(function (el) {
+      if (naTela(el)) { el.removeAttribute("data-count"); el.removeAttribute("data-count-from"); el.removeAttribute("data-count-dec"); }
+    });
+    // As abas de seção são animadas logo depois, na mesma tarefa: termina as que já estão à vista
+    var abas = $$(".sec__tab").filter(naTela);
+    if (abas.length && window.Promise) Promise.resolve().then(function () {
+      abas.forEach(function (tab) {
+        gsap.getTweensOf(tab).forEach(function (tw) { var st = tw.scrollTrigger; tw.progress(1); tw.kill(); if (st) st.kill(); });
+        gsap.set(tab, { clearProps: "transform" });
+      });
+    });
+  };
+
+  // Estado dos módulos: fica no gancho (que roda de novo quando "reduzir movimento" é
+  // desligado com a página aberta), não no elemento.
+  var acesos = null, rodou = false;
+  var grid = $(".pn-grid");
+  if (grid) grid.addEventListener("focusin", function (e) {
+    // Foco do teclado num módulo ainda apagado: acende na hora
+    var t = e.target.closest(".pn-t");
+    if (t && acesos && !acesos.has(t) && window.gsap) { acesos.add(t); gsap.set(t, { clearProps: "clipPath" }); }
+  });
+
+  LV.onMotion(function () {
+    var viaVT = doc.classList.contains("via-vt");
+    // "pronto": a página já está à vista (transição entre páginas, CDN atrasado ou o gancho
+    // rodando de novo) → nada do que já aparece na tela some para animar outra vez
+    var pronto = viaVT || !!window.LV_LIBEROU || rodou;
+    rodou = true;
+    var tl = null, tiles = $$(".pn-t");
+    acesos = window.WeakSet ? new WeakSet() : { _l: [], has: function (t) { return this._l.indexOf(t) >= 0; }, add: function (t) { this._l.push(t); } };
+
+    // Hero: a faixa desce (a partir da borda de cima do hero), as barras verdes revelam as linhas
+    // e a imagem sobe. A imagem (LCP) nunca fica invisível: só se move.
     var hero = $(".pn-hero");
     if (hero) {
-      var tl = gsap.timeline({ defaults: { ease: "expo.out" }, delay: viaVT ? 0 : 0.08 });
+      tl = gsap.timeline({ defaults: { ease: "expo.out" }, delay: pronto ? 0 : 0.08 });
       var band = $(".pn-hero__band", hero), fig = $(".pn-hero__fig", hero), img = $(".pn-hero__fig img", hero);
-      if (band) tl.fromTo(band, { scaleY: 0, transformOrigin: "50% 0%" }, { scaleY: 1, duration: 1.15, ease: "expo.inOut" }, 0);
+      if (band) {
+        // A faixa é bem mais alta que o hero (−120vh … +120vh): a origem da escala fica na borda
+        // de cima do hero, senão a parte visível "pula" de 0 a 100% em poucos quadros.
+        var vis = band.parentElement.getBoundingClientRect(), o = hero.getBoundingClientRect().top - vis.top - (parseFloat(getComputedStyle(band).top) || 0);
+        tl.fromTo(band, { scaleY: 0, transformOrigin: "50% " + Math.max(0, Math.round(o)) + "px" }, { scaleY: 1, duration: 1.1, ease: "power3.inOut" }, 0);
+      }
       $$(".pn-hero__l", hero).forEach(function (l, i) {
-        LV.wipe(l, { tl: tl, at: 0.26 + i * 0.16, cor: l.classList.contains("pn-hero__l--green") ? "paper" : "green" });
+        LV.wipe(l, { tl: tl, at: 0.36 + i * 0.16, cor: l.classList.contains("pn-hero__l--green") ? "paper" : "green" });
       });
-      if (img) tl.from(img, { yPercent: 12, autoAlpha: 0, duration: 1.3 }, 0.62);
+      if (img) tl.fromTo(img, { yPercent: 8 }, { yPercent: 0, duration: 1.3, immediateRender: true }, 0.62);
       tl.from($$(".pn-hero__call, .pn-hero__ref", hero), { autoAlpha: 0, y: 8, stagger: 0.08, duration: 0.6 }, 1.2);
       var rest = $$("[data-intro]", hero).filter(function (el) { return !el.classList.contains("pn-hero__w"); });
-      if (rest.length) tl.from(rest, { opacity: 0, y: 24, stagger: 0.08, duration: 1.05 }, 0.66);
-      if (viaVT) tl.progress(1);
+      if (rest.length) tl.from(rest, { opacity: 0, y: 24, stagger: 0.08, duration: 1.05 }, 0.72);
+      if (pronto) tl.progress(1);
 
       var stl = gsap.timeline({ scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true } });
       $$(".pn-hero__l", hero).forEach(function (l, i) { stl.to(l, { xPercent: i % 2 ? 4 : -5, ease: "none" }, 0); });
@@ -198,15 +247,17 @@
     }
 
     // Painel: os módulos "acendem" com um corte diagonal, na ordem 01 → 07
-    var tiles = $$(".pn-t");
     if (tiles.length) {
       var FECHADO = "polygon(0% 0%, 0% 0%, -14% 100%, -14% 100%)";
       var ABERTO = "polygon(0% 0%, 114% 0%, 100% 100%, -14% 100%)";
-      gsap.set(tiles, { clipPath: FECHADO });
+      // Com a página já à vista, só fecha o que está abaixo da dobra
+      var fechar = pronto ? tiles.filter(function (t) { return !naTela(t); }) : tiles;
+      tiles.forEach(function (t) { if (fechar.indexOf(t) < 0) acesos.add(t); });
+      if (fechar.length) gsap.set(fechar, { clipPath: FECHADO });
       var abre = function (lote) {
-        lote = lote.filter(function (t) { return !t._pnOn; });
+        lote = lote.filter(function (t) { return !acesos.has(t); });
         if (!lote.length) return;
-        lote.forEach(function (t) { t._pnOn = true; });
+        lote.forEach(function (t) { acesos.add(t); });
         var tl2 = gsap.timeline();
         tl2.to(lote, { clipPath: ABERTO, duration: 1.05, ease: "expo.inOut", stagger: 0.11, clearProps: "clipPath" }, 0);
         lote.forEach(function (t, i) {
@@ -223,14 +274,23 @@
           if (ficha) tl2.from(ficha, { yPercent: 70, rotation: 6, autoAlpha: 0, duration: 1.1, ease: "expo.out" }, at + 0.25);
         });
       };
-      ScrollTrigger.batch(tiles, { start: "top 90%", end: "max", once: true, batchMax: 7, onEnter: abre });
-      // Foco do teclado num módulo ainda apagado: acende na hora
-      $(".pn-grid").addEventListener("focusin", function (e) {
-        var t = e.target.closest(".pn-t");
-        if (t && !t._pnOn) { t._pnOn = true; gsap.set(t, { clearProps: "clipPath" }); }
-      });
+      // "top 97%": a primeira fileira, que espia na dobra, já acende na abertura
+      ScrollTrigger.batch(tiles, { start: "top 97%", end: "max", once: true, batchMax: 7, onEnter: abre });
       // Marcas de registro "fecham" no canto quando o painel entra
-      gsap.from($$(".pn-mark"), { scale: 2.2, autoAlpha: 0, duration: 0.9, ease: "expo.out", stagger: 0.06, scrollTrigger: LV.st(".pn-panel", "top 85%") });
+      var panel = $(".pn-panel");
+      if (panel && !(pronto && naTela(panel))) {
+        gsap.from($$(".pn-mark"), { scale: 2.2, autoAlpha: 0, duration: 0.9, ease: "expo.out", stagger: 0.06, scrollTrigger: LV.st(panel, "top 85%") });
+      }
+    }
+
+    // Chegou pela transição entre páginas, mas o "pagereveal" veio depois do DOMContentLoaded:
+    // no primeiro quadro a abertura já aparece terminada (o destino aparece pronto)
+    if (!pronto && !window.LV_REVELOU && "onpagereveal" in window) {
+      window.addEventListener("pagereveal", function (e) {
+        if (!e.viewTransition) return;
+        if (tl) tl.progress(1);
+        tiles.forEach(function (t) { if (!acesos.has(t) && naTela(t)) { acesos.add(t); gsap.set(t, { clearProps: "clipPath" }); } });
+      }, { once: true });
     }
 
     // Imagem do BC System: leve paralaxe dentro do módulo

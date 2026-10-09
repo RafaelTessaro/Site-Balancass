@@ -183,6 +183,8 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .crop--tl::before, .crop--tl::after { top: 0; left: 0; }
 .crop--br { bottom: 16px; right: 16px; }
 .crop--br::before, .crop--br::after { bottom: 0; right: 0; }
+/* Nas páginas dedicadas, até 860px a marca do canto cairia sobre a trilha "Início / …" */
+@media (max-width: 860px) { body:not(.pg-inicio) .phero .crop--tl { display: none; } }
 
 /* Trilha de navegação (breadcrumb) — sobre fundo escuro */
 .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; color: var(--grey); margin-bottom: clamp(18px, 3vh, 30px); }
@@ -292,7 +294,7 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
   position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--green);
   transform-origin: 0 50%; transform: scaleX(0);
 }
-.logo { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: var(--paper); flex: none; }
+.logo { display: inline-flex; align-items: center; gap: 12px; min-height: 44px; text-decoration: none; color: var(--paper); flex: none; }
 .logo__icon { width: 38px; height: 38px; color: var(--paper); transition: transform .9s var(--ease); }
 .logo:hover .logo__icon { transform: rotate(180deg); }
 .logo__txt { display: flex; flex-direction: column; gap: 3px; }
@@ -363,8 +365,11 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .menu__list a .mono { color: var(--grey); font-size: 11px; transform: translateY(-1.6em); }
 .menu__list a:hover, .menu__list a:focus-visible, .menu__list a[aria-current] { color: var(--green); }
 .menu__list a[aria-current] .mono { color: var(--green); }
-.menu__foot { display: grid; gap: 14px; justify-items: start; }
-.menu__info { color: var(--paper); }
+.menu__foot { display: grid; gap: 14px; justify-items: start; z-index: 1; }
+.menu__info { color: var(--paper); background: var(--ink); padding: 4px 8px; margin-left: -8px; }
+/* O botão verde não se funde com a faixa verde: contorno preto em volta do corte */
+.menu__foot .btn--green::before { box-shadow: 0 0 0 3px var(--ink); }
+@media (max-width: 400px) { .menu__band { right: -30%; width: 30%; } }
 @media (max-height: 640px) {
   .menu__list a { font-size: clamp(34px, 9vw, 56px); }
 }
@@ -413,6 +418,11 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .giant--mid { top: 40%; }
 .giant--bottom { bottom: clamp(20px, 3vw, 48px); }
 .on-paper .giant--solid { color: var(--paper-2); }
+/* Celular: a palavra em contorno sobe para o respiro da seção, acima do kicker e do título */
+@media (max-width: 640px) {
+  .giant--outline { font-size: clamp(76px, 24vw, 110px); }
+  .giant--outline.giant--top { top: 2px; }
+}
 .sec > .wrap { position: relative; z-index: 1; }
 
 /* =====================================================================
@@ -507,7 +517,7 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .spec__model {
   margin-top: 8px;
   font: 900 clamp(32px, 2.8vw, 44px)/.98 var(--f-display); text-transform: uppercase; letter-spacing: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word; text-wrap: balance;
 }
 .spec__sub { margin-top: 8px; font-size: 14px; line-height: 1.45; color: #34342F; }
 .spec__table { margin-top: 14px; border-top: 1px solid var(--ink); }
@@ -601,6 +611,10 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
   .pgrid .spec__foot .btn--green .st { display: none; }   /* nome acessível vem do aria-label */
   .pgrid .spec__foot .btn--green .i { width: 20px; height: 20px; }
 }
+@media (max-width: 360px) {
+  .pgrid .spec__foot .btn--line { letter-spacing: 0; font-size: 10px; padding-inline: calc(3px + 44px * var(--tan) / 2); }
+  .pgrid .badge { font-size: 9px; white-space: normal; letter-spacing: 0; }
+}
 
 /* =====================================================================
    RODAPÉ — wordmark gigante "BALANÇAS.COM"
@@ -648,14 +662,16 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .float {
   position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 90;
   display: flex; flex-direction: column; gap: 10px; align-items: flex-end;
-  transition: transform .6s var(--ease), opacity .4s;
+  visibility: visible;
+  transition: transform .6s var(--ease), opacity .4s, visibility 0s;
 }
 /* No mouse, aparece depois do primeiro scroll; no toque, desde o topo. Perto de
-   blocos que já têm WhatsApp ([data-float-off], rodapé) sai de cena. */
+   blocos que já têm WhatsApp ([data-float-off], rodapé) sai de cena.
+   Fora de cena fica "visibility: hidden" (depois da saída): sai da ordem do Tab. */
 @media (hover: hover) and (pointer: fine) {
-  .js .float.is-hidden { transform: translateY(140%); opacity: 0; pointer-events: none; }
+  .js .float.is-hidden { transform: translateY(140%); opacity: 0; pointer-events: none; visibility: hidden; transition: transform .6s var(--ease), opacity .4s, visibility 0s linear .6s; }
 }
-.float.is-off { transform: translateY(140%); opacity: 0; pointer-events: none; }
+.float.is-off { transform: translateY(140%); opacity: 0; pointer-events: none; visibility: hidden; transition: transform .6s var(--ease), opacity .4s, visibility 0s linear .6s; }
 .float__b {
   position: relative; isolation: isolate; width: 58px; height: 58px; display: grid; place-items: center;
   color: var(--ink); text-decoration: none;

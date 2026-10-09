@@ -12,13 +12,44 @@
   var doc = document.documentElement;
 
   var grid = $("[data-grid]"), panelBox = $("#grade"), tabsBox = $("[data-tabs]"), subsBox = $("[data-subs]");
-  var satNote = $("[data-sat-note]"), jump = $("[data-jump]");
+  var satNote = $("[data-sat-note]"), jump = $("[data-jump]"), catSec = $("#catalogo");
   var qIn = $("[data-q]"), qClear = $("[data-q-clear]"), stock = $("[data-stock]"), stockWrap = $("[data-stock-wrap]");
-  var countEl = $("[data-results]"), empty = $("[data-empty]"), fbar = $("[data-fbar]");
+  var countEl = $("[data-results]"), empty = $("[data-empty]"), fbar = $("[data-fbar]"), allBtn = $("[data-all]");
   if (!grid) return;
 
   var state = { cat: "todos", sub: "", q: "", estoque: false };
   var motion = function () { return LV.motionOK() && window.Flip; };
+  var wideMQ = window.matchMedia("(min-width: 900px)");
+
+  /* ---------- Busca ----------
+     Sem acento e sem depender de hífen/espaço: "tl900" acha "TL-900", "wifi" acha "Wi-Fi",
+     "prix4" acha "Prix 4". Procura também nas especificações. */
+  function compacta(s) { return s.replace(/[\s\-./_,:;()]+/g, ""); }
+  var INDICE = {};
+  BC.produtos.forEach(function (p) {
+    var t = BC.normaliza([p.nome, p.marca, p.subcategoria, p.resumo, p.descricao, BC.categoriaNome(p.categoria), LV.catCurto(p.categoria)]
+      .concat((p.especificacoes || []).map(function (r) { return r.join(" "); })).join(" "));
+    INDICE[p.id] = { t: t, c: compacta(t) };
+  });
+  function termos(q) { return BC.normaliza(q).split(/\s+/).filter(Boolean); }
+  function casa(p, ts) {
+    var ix = INDICE[p.id];
+    if (!ix) return true;
+    for (var i = 0; i < ts.length; i++) {
+      if (ix.t.indexOf(ts[i]) !== -1) continue;
+      var c = compacta(ts[i]);
+      if (c && ix.c.indexOf(c) !== -1) continue;
+      return false;
+    }
+    return true;
+  }
+  // Mesmo contrato de BC.filtrar, com a busca acima (usado na grade, nas abas e nos tipos)
+  function filtrar(f) {
+    var ts = termos(f.texto);
+    var lista = BC.filtrar({ categoria: f.categoria, subcategoria: f.subcategoria, somenteEstoque: f.somenteEstoque });
+    return ts.length ? lista.filter(function (p) { return casa(p, ts); }) : lista;
+  }
+  function contar(f) { return filtrar(f).length; }
 
   /* ---------- Estado ⇄ URL ---------- */
   function readURL() {
@@ -42,16 +73,30 @@
     try { history.replaceState(history.state, "", location.pathname + (qs ? "?" + qs : "") + location.hash); } catch (e) { /* file:// */ }
   }
 
+  // Faixas roláveis do celular (abas, tipos): traz o item ativo para dentro, sem rolar a página
+  function mostra(el, box) {
+    if (!el || !box || box.scrollWidth <= box.clientWidth + 1) return;
+    var r = el.getBoundingClientRect(), b = box.getBoundingClientRect();
+    if (r.left >= b.left + 8 && r.right <= b.right - 8) return;
+    box.scrollLeft = Math.max(0, box.scrollLeft + r.left - b.left - 16);
+  }
+  function mostraAtivos() {
+    mostra($('.tab[aria-selected="true"]', tabsBox), tabsBox);
+    mostra($('.sub[aria-pressed="true"]', subsBox), subsBox);
+  }
+
   /* ---------- Abas (categorias) ---------- */
+  function nProdutos(n) { return n === 1 ? "1 produto" : n + " produtos"; }
   function renderTabs() {
     var cats = [{ id: "todos", nome: "Todos" }].concat(BC.categorias);
     tabsBox.innerHTML = cats.map(function (c) {
-      var n = BC.contar({ categoria: c.id });
+      var n = contar({ categoria: c.id, texto: state.q, somenteEstoque: state.estoque });
       var sel = c.id === state.cat;
       var nome = c.id === "todos" ? "Todos" : LV.catCurto(c.id);
       return '<button class="tab" role="tab" type="button" id="tab-' + esc(c.id) + '" data-cat="' + esc(c.id) + '"' +
         ' aria-selected="' + sel + '" aria-controls="grade" tabindex="' + (sel ? "0" : "-1") + '" title="' + esc(c.nome) + '">' +
-        '<span class="st" data-t="' + esc(nome) + '">' + esc(nome) + '</span><span class="tab__n">' + LV.pad(n) + "</span></button>";
+        '<span class="st" data-t="' + esc(nome) + '">' + esc(nome) + '</span><span class="tab__n" aria-hidden="true">' + LV.pad(n) + "</span>" +
+        '<span class="sr-only tab__sr">(' + nProdutos(n) + ")</span></button>";
     }).join("");
     (panelBox || grid).setAttribute("aria-labelledby", "tab-" + state.cat);
   }
@@ -70,7 +115,7 @@
     if (n === null) return;
     e.preventDefault();
     setCat(tabs[n].getAttribute("data-cat"));
-    $$(".tab", tabsBox)[n].focus();
+    $$(".tab", tabsBox)[n].focus({ preventScroll: true });
   });
   function setCat(id) {
     if (id === state.cat) return;
@@ -90,12 +135,11 @@
       subsBox.innerHTML = '<p class="subs__hint">Escolha uma categoria para filtrar por tipo.</p>';
       return;
     }
-    var items = c.subcategorias.map(function (s) { return { s: s, n: BC.contar({ categoria: c.id, subcategoria: s }) }; })
-      .filter(function (x) { return x.n > 0; });
+    var items = c.subcategorias.filter(function (s) { return BC.contar({ categoria: c.id, subcategoria: s }) > 0; });
     subsBox.innerHTML = '<button class="sub" type="button" data-sub="" aria-pressed="' + (!state.sub) + '">Todos os tipos</button>' +
-      items.map(function (x) {
-        return '<button class="sub" type="button" data-sub="' + esc(x.s) + '" aria-pressed="' + (state.sub === x.s) + '">' +
-          esc(x.s) + ' <span class="sub__n">' + x.n + "</span></button>";
+      items.map(function (s) {
+        return '<button class="sub" type="button" data-sub="' + esc(s) + '" aria-pressed="' + (state.sub === s) + '">' +
+          esc(s) + ' <span class="sub__n">' + contar({ categoria: c.id, subcategoria: s, texto: state.q, somenteEstoque: state.estoque }) + "</span></button>";
       }).join("");
   }
   subsBox.addEventListener("click", function (e) {
@@ -104,6 +148,19 @@
     $$(".sub", subsBox).forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
     apply(true);
   });
+  // Os números das abas e dos tipos acompanham a busca
+  function updateCounts() {
+    $$(".tab", tabsBox).forEach(function (t) {
+      var n = contar({ categoria: t.getAttribute("data-cat"), texto: state.q, somenteEstoque: state.estoque });
+      var nEl = $(".tab__n", t), sr = $(".tab__sr", t);
+      if (nEl) nEl.textContent = LV.pad(n);
+      if (sr) sr.textContent = "(" + nProdutos(n) + ")";
+    });
+    $$(".sub[data-sub]", subsBox).forEach(function (b) {
+      var s = b.getAttribute("data-sub"), nEl = $(".sub__n", b);
+      if (s && nEl) nEl.textContent = contar({ categoria: state.cat, subcategoria: s, texto: state.q, somenteEstoque: state.estoque });
+    });
+  }
 
   /* ---------- Busca e pronta entrega ---------- */
   var tmr;
@@ -112,16 +169,29 @@
     qClear.hidden = !qIn.value;
     clearTimeout(tmr); tmr = setTimeout(function () { apply(true); }, 140);
   });
-  qIn.addEventListener("keydown", function (e) { if (e.key === "Escape" && qIn.value) { e.stopPropagation(); qIn.value = ""; qIn.dispatchEvent(new Event("input")); } });
+  qIn.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && qIn.value) { e.stopPropagation(); qIn.value = ""; qIn.dispatchEvent(new Event("input")); return; }
+    // Tecla "Buscar" do teclado do celular: fecha o teclado e mostra o começo dos resultados
+    if (e.key === "Enter") {
+      e.preventDefault();
+      clearTimeout(tmr); state.q = qIn.value; apply(true, true);
+      if (!wideMQ.matches) qIn.blur();
+    }
+  });
   qClear.addEventListener("click", function () { qIn.value = ""; state.q = ""; qClear.hidden = true; qIn.focus(); apply(true); });
   if (BC.temProntaEntrega() && stockWrap) {
     stockWrap.hidden = false;
     stock.addEventListener("change", function () { state.estoque = stock.checked; apply(true); });
   }
-  $("[data-reset]").addEventListener("click", function () {
+  function resetFiltros() {
     state.q = ""; qIn.value = ""; qClear.hidden = true; state.sub = ""; state.estoque = false; if (stock) stock.checked = false;
     if (state.cat !== "todos") setCat("todos"); else { renderSubs(); apply(true); }
-    qIn.focus();
+  }
+  $("[data-reset]").addEventListener("click", function () { resetFiltros(); qIn.focus({ preventScroll: true }); });
+  // Estado vazio: a busca tem resultado em outra categoria
+  if (allBtn) allBtn.addEventListener("click", function () {
+    state.sub = ""; setCat("todos");
+    var t = $('.tab[aria-selected="true"]', tabsBox); if (t) t.focus({ preventScroll: true });
   });
 
   /* ---------- Grade: todas as fichas renderizadas uma vez ---------- */
@@ -134,24 +204,68 @@
       '<span class="pgrid__cta-go"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg>A gente consegue pra você</span>' +
       '<span class="sr-only"> (abre em nova aba)</span></a></li>';
 
+  // Lista dos produtos para buscadores (JSON-LD ItemList), gerada de produtos.js: acompanha o catálogo sozinha
+  (function itemList() {
+    try {
+      var canon = $('link[rel="canonical"]'), base = canon ? canon.href.split("#")[0] : location.href.split("#")[0].split("?")[0];
+      var abs = function (u) { try { return new URL(u, location.href).href; } catch (e) { return u; } };
+      var data = {
+        "@context": "https://schema.org", "@type": "ItemList", "name": "Catálogo da Balanças.com",
+        "numberOfItems": BC.produtos.length,
+        "itemListElement": BC.produtos.map(function (p, i) {
+          return { "@type": "ListItem", "position": i + 1, "name": p.marca + " " + p.nome, "description": p.resumo,
+            "image": abs(BC.imgProduto(p, false)), "url": base + "#p=" + encodeURIComponent(p.id) };
+        })
+      };
+      var s = document.createElement("script"); s.type = "application/ld+json";
+      s.textContent = JSON.stringify(data).replace(/</g, "\\u003c");
+      document.head.appendChild(s);
+    } catch (e) { /* ok */ }
+  })();
+
   function plural(n) { return n === 0 ? "Nenhum produto" : (n === 1 ? "<b>1</b> produto" : "<b>" + n + "</b> produtos"); }
 
-  function apply(animate) {
-    var lista = BC.filtrar({ categoria: state.cat, subcategoria: state.sub, texto: state.q, somenteEstoque: state.estoque });
+  // Quem trocou o filtro com a barra grudada no topo (rolado no meio da grade) volta ao começo dos resultados
+  function voltaAoInicio(force) {
+    if (!catSec) return false;
+    var wide = wideMQ.matches;
+    var gTop = grid.getBoundingClientRect().top, lim = LV.hdr() + (wide && fbar ? fbar.offsetHeight : 0);
+    if (!force && !(fbar && fbar.classList.contains("is-stuck") && wide) && gTop >= lim) return false;
+    if (force && gTop >= lim && gTop < window.innerHeight * 0.6) return false;
+    var y = Math.max(0, (wide ? catSec : grid).getBoundingClientRect().top + window.scrollY - LV.hdr() - (wide ? 0 : 12));
+    if (Math.abs(y - window.scrollY) < 4) return false;
+    if (LV.lenis) LV.lenis.scrollTo(y, { duration: 0.6, force: true });
+    else window.scrollTo({ top: y, behavior: LV.motionOK() ? "smooth" : "auto" });
+    return true;
+  }
+
+  function apply(animate, aoInicio) {
+    var lista = filtrar({ categoria: state.cat, subcategoria: state.sub, texto: state.q, somenteEstoque: state.estoque });
     var show = {}; lista.forEach(function (p) { show[p.id] = true; });
     var all = $$(".pgrid__i", grid);
     var useFlip = animate && motion();
+    var rolou = animate ? voltaAoInicio(aoInicio) : false;
     var flipState = useFlip ? Flip.getState(all) : null;
     all.forEach(function (li) { li.hidden = li.hasAttribute("data-cta") ? lista.length === 0 : !show[li.getAttribute("data-id")]; });
+    grid.classList.toggle("is-impar", lista.length % 2 === 1);
     countEl.innerHTML = plural(lista.length);
+    updateCounts();
     empty.hidden = lista.length > 0;
     var wa = $("[data-wa-empty]");
     if (wa) wa.href = BC.whatsLink(state.q.trim()
       ? "Olá! Procurei por \"" + state.q.trim() + "\" no catálogo do site e não encontrei. Vocês conseguem?"
       : "Olá! Procurei no catálogo do site e não encontrei o que procuro. Vocês conseguem?");
+    // Sem resultado aqui, mas a busca acha em outra categoria/tipo: oferece "ver em todas"
+    if (allBtn) {
+      var nTodos = lista.length || !(state.cat !== "todos" || state.sub) ? 0 : contar({ texto: state.q, somenteEstoque: state.estoque });
+      allBtn.hidden = !nTodos;
+      var allT = $(".st", allBtn);
+      if (nTodos && allT) { var tx = "Ver " + nProdutos(nTodos).replace("produto", "resultado") + " em todas as categorias"; allT.textContent = tx; allT.setAttribute("data-t", tx); }
+    }
     if (satNote) satNote.hidden = !/(^|\s)(cf-?e\s*)?sat(\s|$)/.test(BC.normaliza(state.q));
     writeURL();
-    if (animate && lista.length === 0) showEmpty();
+    if (animate) mostraAtivos();
+    if (animate && lista.length === 0 && !rolou) showEmpty();
     if (useFlip) {
       Flip.from(flipState, {
         duration: 0.6, ease: "power3.inOut", absolute: true, stagger: 0.012, nested: true,
@@ -170,7 +284,7 @@
   // Sem resultado: traz o estado vazio (e o botão do WhatsApp) para a tela, sem tirar o foco da busca
   function showEmpty() {
     requestAnimationFrame(function () {
-      var r = empty.getBoundingClientRect(), wide = window.matchMedia("(min-width: 900px)").matches;
+      var r = empty.getBoundingClientRect(), wide = wideMQ.matches;
       var top = LV.hdr() + (wide && fbar ? fbar.offsetHeight : 0) + 12;
       if (r.bottom <= window.innerHeight && r.top >= top) return;
       var dy = r.bottom > window.innerHeight ? Math.min(r.bottom - window.innerHeight + 24, r.top - top) : r.top - top;
@@ -184,8 +298,8 @@
 
   /* ---------- Painel de detalhes (#p=ID) ---------- */
   var drawer = $("[data-drawer]"), panel = $(".drawer__panel", drawer), body = $("[data-dw-body]", drawer);
-  var refEl = $("[data-dw-ref]", drawer), wipe = $(".drawer__wipe", drawer);
-  var lastFocus = null, openId = null, closeTl = null, closing = false;
+  var refEl = $("[data-dw-ref]", drawer), wipe = $(".drawer__wipe", drawer), copyMsg = $("[data-copy-msg]", drawer);
+  var lastFocus = null, openId = null, closeTl = null, closing = false, fechandoPeloHistorico = false;
   function depth() { return (history.state && history.state.lvDepth) || 0; }
 
   function pageURL(id) { return location.href.split("#")[0] + "#p=" + encodeURIComponent(id); }
@@ -196,21 +310,24 @@
     var rel = BC.produtos.filter(function (x) { return x.id !== p.id && x.subcategoria === p.subcategoria; });
     if (rel.length < 3) rel = rel.concat(BC.produtos.filter(function (x) { return x.id !== p.id && x.categoria === p.categoria && rel.indexOf(x) === -1; }));
     rel = rel.slice(0, 3);
+    // Ordem: nome → selos → preço e botões (já na primeira tela) → descrição → especificações → mesma linha
     return '<p class="mono dw__crumb">' + esc(BC.categoriaNome(p.categoria)) + " / " + esc(p.subcategoria) + "</p>" +
       '<figure class="dw__fig' + (rec ? "" : " dw__fig--photo") + '"><img src="' + BC.imgProduto(p, true) + '" alt="' + esc(p.marca + " " + p.nome) + '" width="900" height="600" decoding="async"></figure>' +
       '<p class="dw__brand">' + esc(p.marca) + "</p>" +
-      '<h2 class="dw__model" id="dw-title">' + esc(p.nome) + "</h2>" +
+      '<h2 class="dw__model" id="dw-title"><span class="sr-only">' + esc(p.marca) + " </span>" + LV.nomeHTML(p.nome) + "</h2>" +
       '<div class="dw__badges"><span class="badge badge--' + esc(est.classe) + '">' + esc(est.rotulo) + "</span>" +
         (semi ? '<span class="badge badge--semi">Seminovo</span>' : "") + "</div>" +
+      '<div class="dw__buy">' +
+        '<p class="dw__price"><span>Preço</span><b>' + (p.preco ? esc(p.preco) : "Consulte") + "</b></p>" +
+        '<div class="dw__ctas">' +
+          '<a class="btn btn--green btn--lg" href="' + BC.whatsProduto(p) + '" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Pedir orçamento no WhatsApp">Pedir orçamento no WhatsApp</span><span class="sr-only"> (abre em nova aba)</span></a>' +
+          '<a class="btn btn--line" href="' + BC.telLink() + '"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg><span class="st" data-t="Ligar">Ligar</span></a>' +
+          '<button class="btn btn--line dw__copy" type="button" data-copy><svg class="i" aria-hidden="true"><use href="#i-link"/></svg><span class="st" data-t="Copiar link">Copiar link</span></button>' +
+        "</div>" +
+        '<p class="mono dw__note">Estoque sujeito à disponibilidade. Confirme pelo WhatsApp.</p>' +
+      "</div>" +
       '<p class="dw__desc">' + esc(p.descricao || p.resumo) + "</p>" +
       '<dl class="dw__table">' + rows.map(function (r) { return "<div><dt>" + esc(r[0]) + "</dt><dd>" + esc(r[1]) + "</dd></div>"; }).join("") + "</dl>" +
-      '<p class="dw__price"><span>Preço</span><b>' + (p.preco ? esc(p.preco) : "Consulte") + "</b></p>" +
-      '<div class="dw__ctas">' +
-        '<a class="btn btn--green btn--lg" href="' + BC.whatsProduto(p) + '" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Pedir orçamento no WhatsApp">Pedir orçamento no WhatsApp</span><span class="sr-only"> (abre em nova aba)</span></a>' +
-        '<a class="btn btn--line" href="' + BC.telLink() + '"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg><span class="st" data-t="Ligar">Ligar</span></a>' +
-        '<button class="btn btn--line dw__copy" type="button" data-copy><svg class="i" aria-hidden="true"><use href="#i-link"/></svg><span class="st" data-t="Copiar link">Copiar link</span></button>' +
-      "</div>" +
-      '<p class="mono dw__note">Estoque sujeito à disponibilidade. Confirme pelo WhatsApp.</p>' +
       (rel.length ? '<div class="dw__rel"><p class="mono dw__rel-t">Da mesma linha</p><ul role="list">' + rel.map(function (r) {
         return '<li><a href="#p=' + encodeURIComponent(r.id) + '" data-detail="' + esc(r.id) + '"><img src="' + BC.imgProduto(r, true) + '" alt="" width="64" height="44" loading="lazy">' +
           '<span><small>' + esc(r.marca) + "</small><b>" + esc(r.nome) + '</b></span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>';
@@ -232,6 +349,7 @@
     if (drawer.hidden) lastFocus = document.activeElement;
     openId = id;
     body.innerHTML = detailHTML(p);
+    if (copyMsg) copyMsg.textContent = "";
     refEl.textContent = "Ref. " + LV.pad(BC.produtos.indexOf(p) + 1) + " · " + LV.catCurto(p.categoria);
     document.title = p.marca + " " + p.nome + " | Catálogo Balanças.com";
     drawer.hidden = false;
@@ -257,8 +375,9 @@
   var baseTitle = document.title;
   function closeDetail(fromHistory) {
     if (drawer.hidden || closing) return;
-    // Aberto por clique (pushState): fechar = voltar no histórico. O popstate chama sync().
-    if (!fromHistory && depth() > 0) { history.go(-depth()); return; }
+    // Aberto por clique (pushState): fechar = voltar no histórico. O popstate chama sync(),
+    // que fecha de vez (mesmo que a entrada de origem também tenha #p=, ex. link direto).
+    if (!fromHistory && depth() > 0) { fechandoPeloHistorico = true; history.go(-depth()); return; }
     var closedId = openId;
     openId = null; closing = true;
     var done = function () {
@@ -284,6 +403,12 @@
     } else done();
   }
   function sync() {
+    if (fechandoPeloHistorico) {
+      fechandoPeloHistorico = false;
+      if (/^#p=/.test(location.hash)) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { /* ok */ } }
+      closeDetail(true);
+      return;
+    }
     var m = /^#p=(.+)$/.exec(location.hash);
     if (m) { var id = decodeURIComponent(m[1]); if (id !== openId) openDetail(id, false); }
     else closeDetail(true);
@@ -301,14 +426,22 @@
     var c = e.target.closest("[data-copy]");
     if (c && openId) {
       var url = pageURL(openId);
-      var ok = function () { c.classList.add("is-done"); var t = $(".st", c); if (t) t.textContent = "Link copiado"; setTimeout(function () { c.classList.remove("is-done"); if (t) t.textContent = "Copiar link"; }, 2200); };
+      var ok = function () {
+        c.classList.add("is-done"); var t = $(".st", c); if (t) t.textContent = "Link copiado";
+        if (copyMsg) copyMsg.textContent = "Link do produto copiado.";
+        setTimeout(function () { c.classList.remove("is-done"); if (t) t.textContent = "Copiar link"; if (copyMsg) copyMsg.textContent = ""; }, 2200);
+      };
       if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(url).then(ok, function () { fallbackCopy(url); ok(); });
       else { fallbackCopy(url); ok(); }
     }
   });
   function fallbackCopy(t) {
-    var ta = document.createElement("textarea"); ta.value = t; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
-    document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) { /* ok */ } ta.remove();
+    // A cópia usa um campo temporário dentro do painel; depois o foco volta para o botão (o Esc continua fechando)
+    var prev = document.activeElement;
+    var ta = document.createElement("textarea"); ta.value = t; ta.setAttribute("readonly", ""); ta.setAttribute("aria-hidden", "true"); ta.tabIndex = -1;
+    ta.style.position = "fixed"; ta.style.opacity = "0"; ta.style.pointerEvents = "none";
+    (panel || document.body).appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) { /* ok */ } ta.remove();
+    if (prev && prev !== document.body && prev.focus) prev.focus({ preventScroll: true });
   }
   drawer.addEventListener("keydown", function (e) {
     if (e.key === "Escape") { e.preventDefault(); closeDetail(false); return; }
@@ -320,6 +453,7 @@
   });
 
   /* ---------- Barra de filtros "grudada" ---------- */
+  var jumpOn = false;
   function stuck() {
     if (!fbar) return;
     var r = fbar.getBoundingClientRect();
@@ -329,12 +463,16 @@
       var gone = r.bottom < LV.hdr() && grid.getBoundingClientRect().bottom > window.innerHeight * 0.5;
       jump.classList.toggle("is-on", gone);
       jump.tabIndex = gone ? 0 : -1;
+      if (gone !== jumpOn) { jumpOn = gone; scrollPad(); }
     }
   }
   window.addEventListener("scroll", stuck, { passive: true });
+  // Distância que o navegador reserva no topo ao levar o foco do teclado para a tela:
+  // cabeçalho + barra de filtros (desktop) ou + pílula "Filtrar / buscar" (celular)
   function scrollPad() {
-    var wide = window.matchMedia("(min-width: 900px)").matches;
-    doc.style.scrollPaddingTop = (LV.hdr() + (wide && fbar ? fbar.offsetHeight : 0) + 16) + "px";
+    var wide = wideMQ.matches;
+    var extra = wide && fbar ? fbar.offsetHeight + 16 : (jumpOn && jump ? jump.offsetHeight + 24 : 16);
+    doc.style.scrollPaddingTop = (LV.hdr() + extra) + "px";
   }
   scrollPad(); window.addEventListener("resize", scrollPad);
   if (jump) jump.addEventListener("click", function (e) {
@@ -349,6 +487,7 @@
   qIn.value = state.q; qClear.hidden = !state.q;
   if (stock) stock.checked = state.estoque;
   renderTabs(); renderSubs(); apply(false);
+  mostraAtivos();
   stuck();
   sync();
 

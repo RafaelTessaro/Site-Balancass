@@ -187,33 +187,64 @@
   };
   LV.GRADE_HORARIOS = GRADE;
   var DIAS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+
+  /* Feriados (a loja fecha: "Domingo e feriados — Fechado").
+     FIXOS: "MM-DD" nacionais + estadual de SP (09/07). MÓVEIS: dias contados a partir da
+     Páscoa (−2 = Sexta-feira Santa). Feriado municipal de Rio Claro, ponto facultativo
+     (Carnaval, Corpus Christi) ou recesso da loja: acrescente aqui, ex. "06-24" ou −47/−48
+     (Carnaval) e 60 (Corpus Christi), ou datas avulsas em DATAS ("2026-12-24"). */
+  var FERIADOS = {
+    FIXOS: ["01-01", "04-21", "05-01", "07-09", "09-07", "10-12", "11-02", "11-15", "11-20", "12-25"],
+    MOVEIS: [-2],
+    DATAS: []
+  };
+  LV.FERIADOS = FERIADOS;
+  function pascoa(y) {   // algoritmo de Meeus/Jones/Butcher → Date (UTC)
+    var a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4,
+      f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30,
+      i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451),
+      mes = Math.floor((h + l - 7 * m + 114) / 31), dia = ((h + l - 7 * m + 114) % 31) + 1;
+    return Date.UTC(y, mes - 1, dia);
+  }
+  var DIA_MS = 864e5;
+  function ehFeriado(t) {   // t = meia-noite UTC do dia (no calendário de Rio Claro)
+    var dt = new Date(t), y = dt.getUTCFullYear();
+    var md = LV.pad(dt.getUTCMonth() + 1) + "-" + LV.pad(dt.getUTCDate());
+    if (FERIADOS.FIXOS.indexOf(md) !== -1 || FERIADOS.DATAS.indexOf(y + "-" + md) !== -1) return true;
+    var p = pascoa(y);
+    return FERIADOS.MOVEIS.some(function (n) { return p + n * DIA_MS === t; });
+  }
+  LV.ehFeriado = function (d) { d = d || new Date(); return ehFeriado(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); };
   function agora() {
     try {
-      var parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/Sao_Paulo", weekday: "short", hour: "numeric", minute: "numeric", hourCycle: "h23" }).formatToParts(new Date());
+      var parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/Sao_Paulo", year: "numeric", month: "numeric", day: "numeric", weekday: "short", hour: "numeric", minute: "numeric", hourCycle: "h23" }).formatToParts(new Date());
       var o = {}; parts.forEach(function (p) { o[p.type] = p.value; });
       var dia = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(o.weekday);
       var h = parseInt(o.hour, 10) % 24, m = parseInt(o.minute, 10);
-      if (dia >= 0 && !isNaN(h)) return { dia: dia, min: h * 60 + m };
+      var t = Date.UTC(+o.year, +o.month - 1, +o.day);
+      if (dia >= 0 && !isNaN(h) && !isNaN(t)) return { dia: dia, min: h * 60 + m, t: t };
     } catch (e) { /* navegador antigo */ }
-    var d = new Date(); return { dia: d.getDay(), min: d.getHours() * 60 + d.getMinutes() };
+    var d = new Date(); return { dia: d.getDay(), min: d.getHours() * 60 + d.getMinutes(), t: Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) };
   }
   function hora(min) { var h = Math.floor(min / 60), m = min % 60; return h + "h" + (m ? LV.pad(m) : ""); }
+  function grade(dia, t) { return ehFeriado(t) ? [] : (GRADE[dia] || []); }
   LV.statusAgora = function () {
-    var a = agora(), hoje = GRADE[a.dia] || [];
+    var a = agora(), feriado = ehFeriado(a.t), hoje = grade(a.dia, a.t);
     for (var i = 0; i < hoje.length; i++) {
       if (a.min >= hoje[i][0] && a.min < hoje[i][1]) {
         return { aberto: true, curto: "Aberto agora", texto: "Aberto agora · fecha às " + hora(hoje[i][1]) };
       }
     }
-    for (var d = 0; d < 8; d++) {
-      var dia = (a.dia + d) % 7, g = GRADE[dia] || [];
+    var fechado = feriado ? "Fechado · feriado" : "Fechado agora";
+    for (var d = 0; d < 15; d++) {
+      var dia = (a.dia + d) % 7, t = a.t + d * DIA_MS, g = grade(dia, t);
       for (var j = 0; j < g.length; j++) {
         if (d === 0 && g[j][0] <= a.min) continue;
-        var quando = d === 0 ? "hoje" : d === 1 ? "amanhã" : DIAS[dia];
-        return { aberto: false, curto: "Fechado agora", texto: "Fechado agora · abre " + quando + " às " + hora(g[j][0]) };
+        var quando = d === 0 ? "hoje" : d === 1 ? "amanhã" : d < 7 ? DIAS[dia] : "dia " + new Date(t).getUTCDate();
+        return { aberto: false, curto: fechado, texto: fechado + " · abre " + quando + " às " + hora(g[j][0]) };
       }
     }
-    return { aberto: false, curto: "Fechado agora", texto: "Fechado agora" };
+    return { aberto: false, curto: fechado, texto: fechado };
   };
   function status() {
     var els = $$('[data-bc="status"]'); if (!els.length) return;
@@ -267,6 +298,12 @@
       (opts.eager ? "" : ' loading="lazy"') + ' decoding="async">';
   };
 
+  // Nome de modelo para títulos display: o que tem hífen ("G2-E", "BCK-30") não quebra no hífen
+  // e um final curto ("MIT 7", "Prix 3") não fica sozinho na última linha.
+  LV.nomeHTML = function (nome) {
+    return LV.esc(nome).replace(/(\S+-\S+)/g, '<span class="nobr">$1</span>').replace(/ \/ /g, "\u00a0/ ").replace(/ (\S{1,2})$/, "\u00a0$1");
+  };
+
   // Na página do catálogo o "Detalhes" abre o painel ali mesmo; nas outras, vai para produtos.html#p=ID
   function baseDetalhe() { return document.querySelector("[data-drawer]") ? "" : "produtos.html"; }
 
@@ -289,11 +326,11 @@
     var cls = "spec" + (opts.variante && opts.variante !== "ficha" ? " spec--" + opts.variante : "") + (opts.classe ? " " + opts.classe : "");
     return '<article class="' + cls + '" data-cat="' + esc(p.categoria) + '" data-id="' + esc(p.id) + '">' +
       '<span class="spec__tab">' + esc(LV.catCurto(p.categoria)) + "</span>" +
-      '<div class="spec__head"><span>Nº ' + LV.pad(n) + "</span></div>" +
+      '<div class="spec__head" aria-hidden="true"><span>Nº ' + LV.pad(n) + "</span></div>" +
       '<figure class="spec__fig' + (rec ? "" : " spec__fig--photo") + '">' + LV.imgProduto(p, opts) + "</figure>" +
       '<div class="spec__body">' +
         '<p class="spec__brand">' + esc(p.marca) + "</p>" +
-        "<" + h + ' class="spec__model"><span class="sr-only">' + esc(p.marca) + " </span>" + esc(p.nome) + "</" + h + ">" +
+        "<" + h + ' class="spec__model"><span class="sr-only">' + esc(p.marca) + " </span>" + LV.nomeHTML(p.nome) + "</" + h + ">" +
         (opts.resumo === false ? "" : '<p class="spec__sub">' + esc(p.resumo) + "</p>") +
         (rows.length ? '<dl class="spec__table">' + rows.map(function (r) {
           return "<div><dt>" + esc(r[0]) + "</dt><dd>" + esc(r[1]) + "</dd></div>";
@@ -483,7 +520,7 @@
       $$(".acc__b", acc).forEach(function (b) {
         var p = document.getElementById(b.getAttribute("aria-controls"));
         if (!p) return;
-        p.inert = true;
+        p.inert = b.getAttribute("aria-expanded") !== "true";   // item aberto no HTML continua aberto
         var t;
         var refresh = function () { clearTimeout(t); LV.refresh(); };
         p.addEventListener("transitionend", function (e) { if (e.target === p && e.propertyName === "grid-template-rows") refresh(); });
@@ -868,6 +905,8 @@
     renderProdutos();
   }
   navAtivo();
+  // Números decorativos do menu ("01 Início") e das fichas ("Nº 01") ficam fora do nome acessível
+  $$(".menu__list a .mono, .spec__head").forEach(function (el) { el.setAttribute("aria-hidden", "true"); });
   setupTickers();
   setupAccordion();
   setupKits();

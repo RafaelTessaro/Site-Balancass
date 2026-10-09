@@ -2,7 +2,7 @@
    Balanças.com — "Linha Verde" — página inicial, variação 3 "Painel"
    css/home-v3.css — só index-3.html (depois de base.css e paginas.css).
    Prefixo das classes próprias: .pn-
-     1. Hero compacto (.pn-hero)
+     1. Hero compacto (.pn-hero) + faixa de confiança (.trust, de paginas.css)
      2. Painel em mosaico (.pn-panel, .pn-grid, módulo .pn-t)
      3. Módulos: empresa (régua), assistência (carimbo), produtos (vitrine),
         BC System, BC Fichas, Google, contato
@@ -10,10 +10,10 @@
      5. Responsivo
    ===================================================================== */
 
-.pg-inicio--v3 { --sec-pad: clamp(72px, 7.4vw, 120px); }
+.pg-inicio--v3 { --sec-pad: clamp(60px, 7.4vw, 120px); }
 
 /* =====================================================================
-   1. HERO COMPACTO (~70% da tela)
+   1. HERO COMPACTO (~70% da tela) — a faixa de confiança fecha o hero
    ===================================================================== */
 .pn-hero {
   position: relative; overflow: clip; isolation: isolate;
@@ -26,7 +26,7 @@
   position: relative; flex: 1;
   display: grid; grid-template-columns: minmax(0, 1.14fr) minmax(0, .86fr);
   align-items: center; gap: clamp(16px, 3vw, 56px);
-  padding-block: clamp(28px, 5vh, 64px) clamp(32px, 5.5vh, 64px);
+  padding-block: clamp(24px, 3.2vh, 52px) clamp(24px, 3vh, 48px);
 }
 .pn-hero__copy { position: relative; z-index: 2; }
 .pn-hero__eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; color: var(--grey); margin-bottom: clamp(14px, 2.4vh, 26px); }
@@ -59,8 +59,9 @@
   font-size: 10.5px; line-height: 1.2; white-space: nowrap;
 }
 .pn-hero__call b { color: var(--volt); font-weight: 500; }
-.pn-hero__call--1 { left: 0; top: 16%; }
-.pn-hero__call--2 { right: 4%; bottom: 13%; }
+/* 01 fica junto da balança (embaixo, à esquerda); 02 junto do caixa/impressora (em cima, à direita) */
+.pn-hero__call--1 { left: 2%; bottom: 24%; }
+.pn-hero__call--2 { right: 4%; top: 14%; }
 .pn-hero__ref {
   position: absolute; right: 0; top: 50%; z-index: 1;
   writing-mode: vertical-rl; transform: translateY(-50%) rotate(180deg);
@@ -68,15 +69,22 @@
 }
 @media (prefers-reduced-motion: no-preference) {
   .is-loading .pn-hero__band { transform: scaleY(0); transform-origin: 50% 0; }
-  .is-loading .pn-hero__fig, .is-loading .pn-hero__call, .is-loading .pn-hero__ref { opacity: 0; }
-  .via-vt.is-loading .pn-hero__band { transform: none; }
-  .via-vt.is-loading .pn-hero__fig, .via-vt.is-loading .pn-hero__call, .via-vt.is-loading .pn-hero__ref { opacity: 1; }
+  /* A imagem (LCP) não some: só começa um pouco abaixo e sobe na abertura */
+  .is-loading .pn-hero__fig img { transform: translateY(8%); }
+  .is-loading .pn-hero__call, .is-loading .pn-hero__ref { opacity: 0; }
+  .via-vt.is-loading .pn-hero__band, .via-vt.is-loading .pn-hero__fig img { transform: none; }
+  .via-vt.is-loading .pn-hero__call, .via-vt.is-loading .pn-hero__ref { opacity: 1; }
 }
+/* Faixa de confiança no pé do hero (o CSS da .trust vem de paginas.css) */
+.pn-hero__strip { flex: none; }
 
 /* =====================================================================
    2. PAINEL EM MOSAICO — fios finos de 1px, abas cortadas a −12°
    ===================================================================== */
-.pn-head { margin-bottom: clamp(36px, 4.4vw, 64px); }
+/* Cabeçalho enxuto: a primeira fileira de quadros espia acima da dobra */
+.pn-sec.sec--first { padding-top: clamp(62px, 4.8vw, 92px); }
+.pn-head { margin-bottom: clamp(22px, 2vw, 36px); }
+.pn-head .sec__intro { max-width: 28em; }
 .pn-panel { position: relative; }
 /* Marcas de registro nos quatro cantos do painel */
 .pn-mark { position: absolute; width: 18px; height: 18px; pointer-events: none; }
@@ -125,14 +133,17 @@
 
 /* Título = link do módulo inteiro */
 .pn-t__h {
-  font: 900 clamp(36px, 3.1vw, 54px)/.94 var(--f-display); text-transform: uppercase;
+  /* 1.04: o acento de "TÉCNICA" não encosta na linha de cima (Big Shoulders em caixa alta) */
+  font: 900 clamp(36px, 3.1vw, 54px)/1.04 var(--f-display); text-transform: uppercase;
   letter-spacing: -.003em; text-wrap: balance;
 }
 .pn-t__a { color: inherit; text-decoration: none; }
 .pn-t__a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
 .pn-t__a:focus-visible { outline: none; }
 .pn-t__a:focus-visible::after { outline: 2px solid var(--volt); outline-offset: -6px; }
-.on-paper .pn-t__a:focus-visible::after, .on-green .pn-t__a:focus-visible::after { outline-color: var(--ink); }
+/* Cor do contorno presa ao próprio quadro (a seção-mãe também é .on-paper) */
+.on-paper.pn-t .pn-t__a:focus-visible::after, .on-green.pn-t .pn-t__a:focus-visible::after { outline-color: var(--ink); }
+.on-dark.pn-t .pn-t__a:focus-visible::after { outline-color: var(--volt); }
 .pn-t__p { margin-top: 12px; max-width: 30em; font-size: 15.5px; line-height: 1.5; text-wrap: pretty; }
 .on-paper .pn-t__p { color: var(--body-paper); }
 .on-dark .pn-t__p { color: var(--body-dark); }
@@ -170,7 +181,7 @@
   .on-paper.pn-t:hover .pn-t__arr { color: var(--ink); }
 }
 /* Elementos clicáveis dentro do módulo ficam acima do link que cobre tudo */
-.pn-t .btn, .pn-sat, .pn-goog__ext, .pn-cont__tel a, .pn-vit__name, .pn-vit__ctrl { position: relative; z-index: 2; }
+.pn-t .btn, .pn-sat, .pn-info, .pn-goog__ext, .pn-cont__tel a, .pn-cont__addr a, .pn-vit__ctrl { position: relative; z-index: 2; }
 
 /* =====================================================================
    3. MÓDULOS
@@ -204,7 +215,7 @@
 .pn-t--prod { padding-bottom: clamp(18px, 1.8vw, 26px); }
 .pn-t--prod .pn-t__p { max-width: 26em; }
 .pn-vit { --cap: 84px; position: relative; width: 100%; flex: 1 1 auto; display: flex; flex-direction: column; margin-top: clamp(14px, 1.6vw, 22px); }
-.pn-vit__stage { position: relative; flex: 1 1 auto; min-height: 300px; isolation: isolate; }
+.pn-vit__stage { position: relative; z-index: 2; flex: 1 1 auto; min-height: 300px; isolation: isolate; }
 .pn-vit__band { position: absolute; top: 0; bottom: var(--cap); left: 50%; width: 46%; margin-left: -23%; z-index: -1; }
 .pn-vit__band::before { content: ""; position: absolute; inset: 0; background: var(--green); transform: skewX(var(--slash)); }
 .pn-vit__band::after { content: ""; position: absolute; inset: 0 14px; border-inline: 1px solid rgba(10,10,10,.35); transform: skewX(var(--slash)); }
@@ -222,6 +233,7 @@
   transition: opacity .6s var(--ease-out) .12s, transform 1s var(--ease-out) .08s, visibility 0s;
 }
 .pn-vit__slide.is-out { transform: translateX(-9%); }
+.pn-vit__slide.is-on { z-index: 1; }
 .pn-vit__fig { position: relative; flex: 1 1 auto; min-height: 0; }
 .pn-vit__fig img { position: absolute; left: 6%; top: 7%; width: 88%; height: 86%; object-fit: contain; filter: drop-shadow(0 22px 20px rgba(0,0,0,.55)); }
 .pn-vit__cap { flex: none; height: var(--cap); display: grid; align-content: end; gap: 6px; justify-items: start; padding: 0 0 2px; }
@@ -233,6 +245,10 @@
   transition: background-size .5s var(--ease), color .3s;
 }
 .pn-vit__name .i { width: .62em; height: .62em; color: var(--green); }
+/* O link do nome cobre o palco do slide: clicar na foto abre o próprio produto */
+.pn-vit__name::after { content: ""; position: absolute; inset: 0; }
+.pn-vit__name:focus-visible { outline: none; }
+.pn-vit__name:focus-visible::after { outline: 2px solid var(--volt); outline-offset: -4px; }
 .pn-vit__name:hover, .pn-vit__name:focus-visible { background-size: 100% 2px; }
 .pn-vit__ctrl { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding-top: 12px; border-top: 1px solid #2A2A29; }
 .pn-vit__ctrl[hidden] { display: none !important; }
@@ -256,7 +272,7 @@
 .pn-vit__pause:hover::before { border-color: var(--green); }
 .pn-vit__pause[aria-pressed="true"]::before { background: var(--green); border-color: var(--green); }
 .pn-vit__pause[aria-pressed="true"] { color: var(--ink); }
-.pn-vit__pause .i { position: relative; width: 14px; height: 14px; }
+.pn-vit__pause .i { position: relative; width: 14px; height: 14px; pointer-events: none; }
 .pn-t--prod > .pn-t__go { padding-top: 16px; }
 
 /* 04 · BC System */
@@ -266,14 +282,26 @@
 .pn-sat__t { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat; padding-bottom: 2px; }
 .pn-sat__t .i { width: 14px; height: 14px; color: var(--green-deep); transition: transform .45s var(--ease); }
 .pn-sat:hover .pn-sat__t .i { transform: translateX(4px); }
+/* Link secundário: suporte em informática */
+.pn-info { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-top: 2px; color: var(--muted); font-size: 14px; text-decoration: none; }
+.pn-info .i { width: 13px; height: 13px; color: var(--green-deep); transition: transform .45s var(--ease); }
+.pn-info:hover { color: var(--ink); }
+.pn-info:hover .i { transform: translateX(4px); }
 .pn-sist__vis { position: relative; min-height: 220px; margin: calc(-34px - clamp(20px, 2.2vw, 32px)) calc(var(--pad) * -1) calc(clamp(18px, 1.8vw, 26px) * -1) 0; display: grid; align-items: end; overflow: hidden; }
-.pn-sist__band { position: absolute; top: 0; bottom: 0; left: 30%; width: 38%; background: var(--green); transform: skewX(var(--slash)); }
-.pn-sist__vis img { position: relative; width: 90%; max-width: 440px; height: auto; margin: 0 0 -2% 6%; align-self: end; justify-self: start; filter: drop-shadow(0 18px 24px rgba(0,0,0,.28)); }
+/* Faixa estreita que passa visível dos dois lados do tablet + celular */
+.pn-sist__band { position: absolute; top: 0; bottom: 0; left: 14%; width: 26%; background: var(--green); transform: skewX(var(--slash)); }
+/* A imagem já traz a sombra no chão; a do CSS é leve (no claro, uma sombra forte vira uma "caixa" cinza) */
+.pn-sist__vis img { position: relative; width: 92%; max-width: 440px; height: auto; margin: 0 0 7%; align-self: end; justify-self: center; filter: drop-shadow(0 12px 14px rgba(0,0,0,.16)); }
 
 /* 05 · BC Fichas — ficha impressa */
-.pn-t--fich .pn-t__p { max-width: 11.5em; }
-.pn-fich__vis { position: absolute; right: -18px; bottom: clamp(16px, 1.6vw, 26px); width: 48%; max-width: 232px; z-index: 0; pointer-events: none; }
+/* --fw: largura da ficha. O texto se estreita para nunca passar por baixo dela */
+.pn-t--fich { --fw: clamp(184px, 15vw, 216px); }
+.pn-t--fich .pn-t__p { max-width: min(11.5em, calc(100% + var(--pad) - var(--fw))); }
+/* O cabeçalho da ficha cabe numa linha; ela fica acima da linha "Ver BC Fichas" */
+.pn-fich__vis { position: absolute; right: -26px; bottom: clamp(64px, 5vw, 74px); width: var(--fw); z-index: 0; pointer-events: none; }
 .pn-fich__vis .ficha { width: 100%; padding: 16px 18px 13px; transform: rotate(-12deg); box-shadow: 0 22px 34px -18px rgba(0,0,0,.65); }
+.pn-fich__vis .ficha__top { font-size: 9px; letter-spacing: .02em; }
+.pn-fich__vis .ficha__top span { white-space: nowrap; }
 .pn-fich__vis .ficha__item { font-size: clamp(26px, 2.2vw, 34px); }
 
 /* 06 · Google */
@@ -293,13 +321,18 @@
 .pn-cont__status { margin-top: 14px; min-height: 15px; color: var(--ink); }
 .pn-cont__tel { margin-top: 14px; }
 .pn-cont__tel a {
-  display: inline-block; font: 900 clamp(40px, 3.3vw, 54px)/.9 var(--f-display); letter-spacing: -.005em;
+  display: inline-flex; align-items: center; min-height: 48px; font: 900 clamp(40px, 3.3vw, 54px)/.9 var(--f-display); letter-spacing: -.005em;
   text-decoration: none; white-space: nowrap; color: var(--ink);
   background: linear-gradient(var(--green), var(--green)) 0 100% / 0 3px no-repeat; padding-bottom: 4px;
   transition: background-size .5s var(--ease);
 }
 .pn-cont__tel a:hover, .pn-cont__tel a:focus-visible { background-size: 100% 3px; }
-.pn-cont__addr { margin-top: 10px; color: var(--muted); }
+.pn-cont__addr { margin-top: 6px; color: var(--muted); }
+/* Endereço leva ao mapa; alvo de toque ≥ 44 px */
+.pn-cont__addr a { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; min-height: 44px; padding-block: 4px; color: inherit; text-decoration: none; }
+.pn-cont__ref { color: var(--ink); background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat; padding-bottom: 1px; }
+.pn-cont__addr .i { width: 12px; height: 12px; color: var(--green-deep); }
+.pn-cont__addr a:hover .pn-cont__ref { color: var(--green-deep); }
 .pn-cont__wa { margin-right: -6px; }
 
 /* =====================================================================
@@ -331,9 +364,15 @@
   .pn-t__h { font-size: clamp(32px, 3.2vw, 46px); }
   /* Ficha do BC Fichas entra no fluxo (abaixo do texto), sem cobrir nada */
   .pn-t--fich .pn-t__p { max-width: 20em; }
-  .pn-fich__vis { position: relative; right: auto; bottom: auto; align-self: flex-end; width: 74%; max-width: 250px; margin: 16px -4px -4px 0; }
+  .pn-fich__vis { position: relative; right: auto; bottom: auto; align-self: flex-end; width: 216px; max-width: 100%; margin: 16px -4px 12px 0; }
   .pn-fich__vis .ficha { padding: 14px 14px 11px; }
   .pn-fich__vis .ficha__item { font-size: 26px; }
+}
+
+/* Fichas em destaque de 901 a 1180 px: a base (base.css) passa para 3 colunas e o 4º card
+   ficaria sozinho numa segunda linha. Aqui ficam 3 cards numa linha só. */
+@media (min-width: 901px) and (max-width: 1180px) {
+  .pn-feat__grid > li:nth-child(4) { display: none; }
 }
 
 /* Tablet: duas colunas; produtos e contato ocupam a largura toda */
@@ -363,47 +402,88 @@
   .pn-hero { min-height: 0; }
   .pn-hero__in { grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 22px; padding-bottom: 0; }
   .pn-hero__t { font-size: clamp(56px, 16.4vw, 128px); }
-  .pn-hero__visual { margin: clamp(26px, 6vw, 40px) calc(var(--gut) * -1) 0; min-height: 0; padding: 20px var(--gut) 18px; overflow: clip; }
+  .pn-hero__visual { margin: clamp(22px, 5vw, 34px) calc(var(--gut) * -1) 0; min-height: 0; padding: 16px var(--gut) 14px; overflow: clip; }
   .pn-hero__band { top: 0; bottom: 0; left: 22%; width: 56%; margin-left: 0; }
-  .pn-hero__fig { width: min(70%, 360px); }
-  .pn-hero__fig img { max-height: 250px; }
+  .pn-hero__fig { width: min(64%, 320px); }
+  .pn-hero__fig img { max-height: 210px; }
   .pn-hero__ref { display: none; }
   .pn-hero__call { font-size: 10px; padding: 4px 6px 3px; gap: 5px; }
-  .pn-hero__call--1 { left: var(--gut); top: 14px; }
-  .pn-hero__call--2 { right: var(--gut); bottom: 14px; }
+  .pn-hero__call--1 { left: var(--gut); top: auto; bottom: 14px; }
+  .pn-hero__call--2 { right: var(--gut); bottom: auto; top: 14px; }
 }
 
-/* Celular: um módulo por linha, na ordem 01 → 07 */
+/* Celular: hero curto (faixa de confiança e a aba "01 Resumo" já entram na primeira tela) */
+@media (max-width: 640px) {
+  .pn-hero__in { padding-top: 16px; }
+  .pn-hero__eyebrow { margin-bottom: 12px; }
+  .pn-hero__lead { margin-top: 14px; font-size: 15.5px; line-height: 1.48; }
+  .pn-hero__lead strong { margin-bottom: 4px; font-size: 1.14em; }
+  .pn-hero__ctas { flex-direction: column; align-items: stretch; gap: 10px; margin: 18px 0 0; }
+  .pn-hero__ctas .btn { --bh: 54px; width: 100%; margin: 0; justify-content: flex-start; }
+  .pn-hero__ctas .btn--line { justify-content: space-between; }
+  .pn-hero__strip .pn-trust__x { display: none; }
+  .pn-hero__visual { margin-top: 18px; padding-block: 12px 10px; }
+  .pn-hero__fig { width: min(58%, 260px); }
+  .pn-hero__fig img { max-height: 170px; }
+}
+
+/* Celular: mosaico de uma coluna, com o par BC Fichas | Google lado a lado */
 @media (max-width: 640px) {
   .pn-grid {
-    grid-template-columns: minmax(0, 1fr); grid-auto-rows: auto;
-    grid-template-areas: "quem" "assi" "prod" "sist" "fich" "goog" "cont";
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-auto-rows: auto;
+    grid-template-areas: "quem quem" "assi assi" "prod prod" "sist sist" "fich goog" "cont cont";
   }
   .pn-mark { display: none; }
-  .pn-t { --pad: 18px; padding: 56px var(--pad) 18px; }
+  .pn-t { --pad: 18px; padding: 54px var(--pad) 18px; }
+  .pn-head { gap: 16px; }
+  .pn-head .sec__intro { font-size: 16px; }
+  .pn-ruler { margin-bottom: 18px; }
   .pn-t__h { font-size: clamp(36px, 10.4vw, 46px); }
   .pn-t__p { font-size: 15px; }
   .pn-ruler__y b { font-size: clamp(56px, 17vw, 72px); }
   .pn-ruler__y--now b { font-size: clamp(28px, 8vw, 36px); }
-  .pn-t--assi { min-height: 290px; }
+  .pn-t--assi { min-height: 264px; }
   .pn-t--assi .pn-t__p { max-width: calc(100% - 96px); }
   .pn-stamp { width: 112px; right: 12px; bottom: 14px; }
   .pn-t--prod { display: flex; }
-  .pn-vit__stage { min-height: 250px; }
+  .pn-vit__stage { min-height: 210px; }
+  /* BC System: imagem baixa e centrada, sem a faixa solta */
   .pn-t--sist { display: flex; flex-direction: column; }
   .pn-sist__copy { display: contents; }
-  .pn-sist__vis { order: 1; width: calc(100% + var(--pad) * 2); margin: 22px calc(var(--pad) * -1) 0; min-height: 0; padding-top: 18px; }
+  .pn-sist__vis { order: 1; width: calc(100% + var(--pad) * 2); margin: 8px calc(var(--pad) * -1) 0; min-height: 0; padding-top: 4px; overflow: visible; }
   .pn-t--sist .pn-t__go { order: 2; margin-top: 0; }
-  .pn-sist__vis img { width: 86%; max-width: 420px; margin: 0 auto 14px; justify-self: center; }
-  .pn-sist__band { left: 30%; width: 40%; }
-  .pn-fich__vis { width: 64%; }
-  .pn-goog__n { font-size: clamp(96px, 30vw, 128px); }
+  .pn-sist__band { display: none; }
+  .pn-sist__vis img { width: auto; max-width: 84%; max-height: 156px; margin: 0 auto 10px; justify-self: center; }
+  /* Par compacto: BC Fichas e Google */
+  .pn-t--fich, .pn-t--goog { --pad: 14px; padding: 50px var(--pad) 14px; }
+  .pn-t--fich .pn-t__h, .pn-t--goog .pn-t__h { font-size: clamp(28px, 8.4vw, 34px); }
+  .pn-t--fich .pn-t__p, .pn-t--goog .pn-t__p { font-size: 13.5px; line-height: 1.45; }
+  .pn-t--fich .pn-t__p { margin-top: 8px; }
+  .pn-fich__vis { display: none; }
+  .pn-t--fich .pn-t__go, .pn-t--goog .pn-t__go { gap: 8px; font-size: 10px; line-height: 1.3; }
+  .pn-t--fich .pn-t__arr, .pn-t--goog .pn-t__arr { flex: none; width: 38px; }
+  .pn-goog__h .pn-t__a { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .pn-goog__n { font-size: clamp(64px, 20vw, 84px); line-height: .8; }
+  .pn-goog__lbl { font-size: 18px; line-height: 1; }
+  .pn-goog__stars { margin-top: 8px; gap: 2px; }
+  .pn-goog__stars .i { width: 15px; height: 15px; }
+  .pn-t--goog .pn-t__foot { padding-top: 12px; gap: 0; }
+  .pn-goog__ext { font-size: 10px; }
   .pn-t--cont { display: flex; }
   .pn-cont__tel a { font-size: clamp(38px, 11.6vw, 48px); }
+  /* Destaques */
+  .pn-feat__head .h2 { line-height: 1.06; }
   .pn-feat__foot { grid-template-columns: minmax(0, 1fr); }
-  .pn-cats { justify-content: flex-start; }
+  .pn-cats { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; border-bottom: 1px solid #2A2A29; }
+  .pn-cats li { border-top: 1px solid #2A2A29; }
+  .pn-cats a { display: flex; align-items: center; min-height: 52px; padding: 0; }
+  .pn-cats .i { margin-left: auto; }
 }
 @media (max-width: 380px) {
   .pn-hero__call--2 { display: none; }
   .pn-ruler { gap: 10px; }
+  /* Vitrine: cada traço com pelo menos 44 px de largura */
+  .pn-vit__ctrl { gap: 8px; }
+  .pn-vit__dots { gap: 0; }
+  .pn-vit__count { min-width: 3.6em; }
 }

@@ -4,10 +4,11 @@
    dos scripts do CDN. Tudo o que é produto vem de window.BC.
    1. Vitrine do hero: três peças — Pesa · Imprime · Vende — com abas,
       troca automática (pausável) e movimento de "esteira".
-   2. Produtos em destaque: BC.destaques(), misturando as categorias.
-   3. Atalhos de categoria com a contagem real do catálogo.
-   4. Animações (LV.onMotion): cota/régua do hero e contadores.
-   Sem JS: a página mostra a Prix 4 Uno parada e um link para o catálogo.
+   2. Produtos em destaque: BC.destaques(), uma peça de cada tipo, em
+      fichas leves (variante "compacta").
+   3. Seletor de variação (só na fase de escolha) some enquanto o hero está na tela.
+   4. Animações (LV.onMotion): cota/régua do hero, contadores e paralaxe.
+   Sem JS: a página mostra a Prix 4 Uno parada e os destaques escritos no HTML.
    ===================================================================== */
 (function () {
   "use strict";
@@ -21,13 +22,17 @@
   /* ------------------------------------------------------------------
      1. VITRINE DO HERO
      ------------------------------------------------------------------ */
+  // c1/c2: os dois rótulos técnicos do palco (frases curtas, no singular, sobre a peça mostrada)
+  function ate(v) { return String(v || "").replace(/^até\s+/i, ""); }
   var VITRINE = [
     { palavra: "Pesa", id: "toledo-prix-4-uno",
       alt: function (p) { return "Balança " + p.marca + " " + p.nome + " " + String(p.subcategoria || "").toLowerCase(); },
-      c1: function (p) { var c = LV.spec(p, "capacidade"); return c ? "Pesa até " + LV.curto(c, "capacidade") : p.subcategoria; } },
+      c1: function (p) { var c = LV.spec(p, "capacidade"); return c ? "Pesa até " + ate(LV.curto(c, "capacidade")) : "Balança"; },
+      c2: function () { return "Com impressora de etiquetas"; } },
     { palavra: "Imprime", id: "zebra-zt230",
       alt: function (p) { return "Impressora de etiquetas " + p.marca + " " + p.nome; },
-      c1: function (p) { var v = LV.spec(p, "velocidade"); return v ? LV.curto(v, "velocidade") : p.subcategoria; } },
+      c1: function (p) { var v = LV.spec(p, "velocidade"); return v ? "Imprime até " + ate(LV.curto(v, "velocidade")) : "Imprime etiquetas"; },
+      c2: function () { return "Impressora industrial"; } },
     { palavra: "Vende", sistema: "BC System" }
   ];
 
@@ -51,7 +56,7 @@
         palavra: v.palavra, id: p.id, nome: p.marca + " " + p.nome, href: "produtos.html#p=" + encodeURIComponent(p.id),
         src: BC.imgProduto(p, true),
         alt: v.alt(p),
-        c1: v.c1(p), c2: p.subcategoria
+        c1: v.c1(p), c2: v.c2(p)
       });
     });
     return itens;
@@ -66,8 +71,8 @@
     var stage = $("[data-vit-stage]", vit);
     var first = $(".vit__img", stage);
     var nameEl = $("[data-vit-name]", vit), link = $("[data-vit-link]", vit);
-    var c1 = $("[data-vit-c1]", vit), c2 = $("[data-vit-c2]", vit), nEl = $("[data-vit-n]", vit), ref = $("[data-vit-ref]", vit);
-    var imgs = [], cur = 0, busy = false;
+    var c1 = $("[data-vit-c1]", vit), c2 = $("[data-vit-c2]", vit);
+    var imgs = [], cur = 0, tlAtual = null;
 
     // O HTML já traz a primeira peça (sem JS); garante que ela corresponde ao item 0
     if (first) {
@@ -117,26 +122,27 @@
       }
       if (c1) c1.textContent = it.c1;
       if (c2) c2.textContent = it.c2;
-      if (nEl) nEl.textContent = LV.pad(i + 1);
-      if (ref) ref.textContent = "Ref. " + LV.pad(i + 1) + " — " + it.nome;
       tabs.forEach(function (t, k) { t.setAttribute("aria-pressed", String(k === i)); });
     }
     textos(0);
 
     function show(i, user) {
       i = (i + itens.length) % itens.length;
-      if (i === cur || busy) return;
+      // Troca ainda em andamento (clique rápido): termina a anterior na hora e segue para a nova
+      if (tlAtual) tlAtual.progress(1);
+      if (i === cur) return;
       var from = imgs[cur], to = img(i), dir = !user || i > cur ? 1 : -1;   // a esteira anda sempre para a esquerda
       cur = i;
       textos(i);
       if (user) live.textContent = itens[i].palavra + ": " + itens[i].nome;
+      // Sem GSAP (CDN fora do ar), a troca é um esmaecer em CSS (só sem "reduzir movimento")
+      vit.classList.toggle("vit--css", !LV.motionOK());
       if (LV.motionOK()) {
-        busy = true;
         to.classList.add("is-on");
-        var tl = gsap.timeline({ defaults: { ease: "expo.inOut" }, onComplete: function () {
+        var tl = tlAtual = gsap.timeline({ defaults: { ease: "expo.inOut" }, onComplete: function () {
           from.classList.remove("is-on");
           gsap.set([from, to], { clearProps: "transform,opacity,visibility" });
-          busy = false;
+          if (tlAtual === tl) tlAtual = null;
         } });
         tl.fromTo(from, { xPercent: 0, autoAlpha: 1 }, { xPercent: -30 * dir, autoAlpha: 0, duration: 0.6, ease: "power3.in" }, 0)
           .fromTo(to, { xPercent: 30 * dir, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 1.05, ease: "expo.out" }, 0.34)
@@ -177,9 +183,13 @@
       setStopped(!stopped);
       if (!stopped) hold("foco", false);
     });
-    // Pausa enquanto o mouse está na vitrine, o foco está nela ou o hero saiu da tela
-    vit.addEventListener("mouseenter", function () { hold("mouse", true); });
-    vit.addEventListener("mouseleave", function () { hold("mouse", false); });
+    // Pausa enquanto o mouse está na vitrine, o foco está nela ou o hero saiu da tela.
+    // Só o mouse de verdade: no toque, o "mouseenter" de compatibilidade nunca tem "mouseleave".
+    function ptr(on) { return function (e) { if (!e.pointerType || e.pointerType === "mouse") hold("mouse", on); }; }
+    if ("PointerEvent" in window) {
+      vit.addEventListener("pointerenter", ptr(true));
+      vit.addEventListener("pointerleave", ptr(false));
+    }
     vit.addEventListener("focusin", function () { hold("foco", true); });
     vit.addEventListener("focusout", function (e) { if (!vit.contains(e.relatedTarget)) hold("foco", false); });
     if ("IntersectionObserver" in window) {
@@ -193,26 +203,34 @@
   }
 
   /* ------------------------------------------------------------------
-     2. PRODUTOS EM DESTAQUE — mistura as categorias (balança, automação,
-        informática…) e não repete o que já está na vitrine do hero
+     2. PRODUTOS EM DESTAQUE — uma peça de cada tipo (subcategoria),
+        alternando as categorias, sem repetir o que já está no hero.
+        Primeiro os preferidos (se ainda forem destaque no catálogo):
+        balança de balcão, leitor de checkout, fatiador e impressora de cupom.
      ------------------------------------------------------------------ */
+  var PREFERIDOS = ["toledo-prix-3-fit", "elgin-el4200", "toledo-uni-350-ga", "elgin-i9"];
   function destaques(n) {
-    var naVitrine = itens.map(function (it) { return it.id; }).filter(Boolean);
-    var lista = BC.destaques().filter(function (p) { return naVitrine.indexOf(p.id) === -1; });
-    if (lista.length < n) lista = lista.concat(BC.produtos.filter(function (p) { return lista.indexOf(p) === -1 && naVitrine.indexOf(p.id) === -1; }));
-    var grupos = {}, ordem = [];
-    lista.forEach(function (p) {
-      if (!grupos[p.categoria]) { grupos[p.categoria] = []; ordem.push(p.categoria); }
-      grupos[p.categoria].push(p);
-    });
-    (BC.categorias || []).forEach(function (c) { if (ordem.indexOf(c.id) === -1) ordem.push(c.id); });
-    var out = [], resta = true;
-    while (out.length < n && resta) {
-      resta = false;
-      ordem.forEach(function (c) {
-        var g = grupos[c];
-        if (out.length < n && g && g.length) { out.push(g.shift()); resta = true; }
-      });
+    var noHero = itens.map(function (it) { return it.id; }).filter(Boolean);
+    var subsHero = noHero.map(function (id) { var p = BC.porId(id); return p && p.subcategoria; });
+    var base = BC.destaques().filter(function (p) { return noHero.indexOf(p.id) === -1; });
+    var out = [], subs = subsHero.slice();
+    function pega(p) {
+      if (out.length >= n || out.indexOf(p) !== -1 || subs.indexOf(p.subcategoria) !== -1) return;
+      out.push(p); subs.push(p.subcategoria);
+    }
+    PREFERIDOS.forEach(function (id) { var p = base.filter(function (x) { return x.id === id; })[0]; if (p) pega(p); });
+    // Completa alternando as categorias (balança, automação, informática…)
+    var resto = base.concat(BC.produtos.filter(function (p) { return base.indexOf(p) === -1 && noHero.indexOf(p.id) === -1; }));
+    var cats = (BC.categorias || []).map(function (c) { return c.id; });
+    for (var volta = 0; volta < 2 && out.length < n; volta++) {
+      if (volta === 1) subs = subsHero.slice();   // 2ª volta: aceita repetir subcategoria
+      for (var k = 0; k < resto.length && out.length < n; k++) {
+        var cat = cats[out.length % (cats.length || 1)];
+        var p = resto.filter(function (x) { return x.categoria === cat && out.indexOf(x) === -1 && subs.indexOf(x.subcategoria) === -1; })[0] ||
+                resto.filter(function (x) { return out.indexOf(x) === -1 && subs.indexOf(x.subcategoria) === -1; })[0];
+        if (!p) break;
+        pega(p);
+      }
     }
     return out;
   }
@@ -221,21 +239,28 @@
     if (!ul) return;
     var lista = destaques(4);
     if (!lista.length) return;
-    ul.innerHTML = LV.listaProdutos(lista, { sizes: "(max-width: 639px) 46vw, (max-width: 1180px) 30vw, 340px" });
+    // Ficha leve: foto, marca, modelo e resumo (sem nº, tabela, selo "consulte" e preço)
+    ul.innerHTML = lista.map(function (p, i) {
+      return '<li class="pgrid__i" data-id="' + LV.esc(p.id) + '">' +
+        LV.cardProduto(p, { n: i + 1, variante: "compacta", linhas: 0, sizes: "(max-width: 899px) 46vw, (max-width: 1519px) 23vw, 340px" }) + "</li>";
+    }).join("");
     $$(".pgrid__i > .spec", ul).forEach(function (c) { c.setAttribute("data-reveal", ""); });
   }
 
   /* ------------------------------------------------------------------
-     3. Atalhos de categoria (nome e contagem vindos do catálogo)
+     3. Seletor de variação (js/preview.js, só na fase de escolha):
+        some enquanto a primeira tela (hero + faixa) está visível, para
+        não cobrir o produto, a faixa de confiança e as marcas.
      ------------------------------------------------------------------ */
-  function renderCategorias() {
-    var ul = $("[data-vt-cats]");
-    if (!ul || !(BC.categorias || []).length) return;
-    ul.innerHTML = BC.categorias.map(function (c) {
-      var n = BC.filtrar({ categoria: c.id }).length;
-      return '<li><a href="produtos.html?cat=' + encodeURIComponent(c.id) + '"><span>' + LV.esc(c.nome) + '</span>' +
-        '<b>' + n + '<span class="sr-only"> produtos</span></b><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>';
-    }).join("");
+  var topo = [$(".phero--home"), $(".vt-ticker")].filter(Boolean);
+  if (topo.length && "IntersectionObserver" in window) {
+    var naTela = [];
+    var ioTopo = new IntersectionObserver(function (en) {
+      en.forEach(function (e) { naTela[topo.indexOf(e.target)] = e.isIntersecting; });
+      document.body.classList.toggle("vt-topo", naTela.some(Boolean));
+    });
+    topo.forEach(function (el) { ioTopo.observe(el); });
+    document.body.classList.add("vt-topo");
   }
 
   // Botão "Ligar": a largura reservada do texto acompanha o telefone dos dados
@@ -243,14 +268,29 @@
 
   setupVitrine();
   renderDestaques();
-  renderCategorias();
   LV.vitrine = vitAPI;
 
   /* ------------------------------------------------------------------
      4. Animações (só com GSAP e sem "reduzir movimento")
      ------------------------------------------------------------------ */
   LV.onMotion(function () {
-    var viaVT = document.documentElement.classList.contains("via-vt");
+    // via-vt: chegou pela transição entre páginas; lv-late: o CDN demorou e o conteúdo já apareceu
+    var doc = document.documentElement;
+    var viaVT = doc.classList.contains("via-vt") || doc.classList.contains("lv-late");
+
+    // Paralaxe da figura do hero em pixels (y), não em yPercent: o yPercent é da entrada do
+    // core.js, e as duas animações na mesma propriedade deixavam a figura fora do lugar
+    // quando se rolava durante a entrada.
+    var fig = $(".phero--home .phero__fig");
+    if (fig && window.ScrollTrigger) {
+      gsap.getTweensOf(fig).forEach(function (t) {
+        if (t.parent && t.parent.scrollTrigger && t.vars && t.vars.yPercent != null) t.kill();
+      });
+      gsap.to(fig, {
+        y: function () { return -fig.offsetHeight * 0.08; }, ease: "none",
+        scrollTrigger: { trigger: ".phero--home", start: "top top", end: "bottom top", scrub: true, invalidateOnRefresh: true }
+      });
+    }
 
     // Cota, régua e nome do produto entram depois da figura (o core anima faixa, título e figura)
     var tl = gsap.timeline({ defaults: { ease: "expo.inOut" } });
@@ -281,9 +321,10 @@
       LV.wipe(el, { tl: gsap.timeline({ scrollTrigger: LV.st(el, "top 92%"), delay: 0.15 }), at: 0, cor: "green" });
     });
 
-    // Imagens dos blocos "O que fazemos": sobem devagar com a rolagem
-    $$(".vt-do__fig img, .vt-do__disc").forEach(function (el) {
-      gsap.fromTo(el, { yPercent: 8 }, { yPercent: -8, ease: "none", scrollTrigger: { trigger: el.closest(".vt-do__c"), start: "top bottom", end: "bottom top", scrub: true } });
+    // Imagens dos blocos "O que fazemos": sobem devagar com a rolagem. O paralaxe vai no
+    // contêiner (.vt-do__fig); o zoom/giro do :hover fica livre na imagem e no disco.
+    $$(".vt-do__fig").forEach(function (el) {
+      gsap.fromTo(el, { yPercent: 6 }, { yPercent: -6, ease: "none", scrollTrigger: { trigger: el.closest(".vt-do__c"), start: "top bottom", end: "bottom top", scrub: true } });
     });
   });
 })();

@@ -32,7 +32,7 @@
 #tipos { overflow-x: clip; }
 .types { border-top: 1px solid var(--line); }
 .type {
-  position: relative; display: grid; grid-template-columns: 60px minmax(0, 1.1fr) minmax(0, 1.2fr) auto;
+  position: relative; display: grid; grid-template-columns: 60px minmax(0, 1.1fr) minmax(0, 1.2fr) 250px;
   gap: clamp(16px, 2.6vw, 44px); align-items: center; padding: clamp(22px, 2.4vw, 32px) 0; border-bottom: 1px solid var(--line);
 }
 .type::before {
@@ -44,13 +44,15 @@
 .type__t { font: 900 clamp(32px, 3.4vw, 54px)/1 var(--f-display); text-transform: uppercase; }
 .type p { color: var(--body-dark); font-size: 16px; }
 .type__go { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--green); text-decoration: none; white-space: nowrap; }
-.type__links { display: grid; justify-items: start; }
+.type__links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 22px; }
+.type > .type__go, .type > .type__links { justify-self: end; }   /* links alinhados pela direita em todas as linhas */
 .type__go .i { width: 14px; height: 14px; transition: transform .5s var(--ease); }
 .type:hover .type__go .i { transform: translateX(6px); }
 @media (max-width: 900px) {
   .type { grid-template-columns: 36px minmax(0, 1fr); row-gap: 10px; align-items: start; }
   .type p, .type__go, .type__links { grid-column: 2; }
-  .type__links { display: flex; flex-wrap: wrap; gap: 0 24px; }
+  .type__links { justify-content: flex-start; gap: 0 24px; }
+  .type > .type__go, .type > .type__links { justify-self: start; }
   .type__n { padding-top: .5em; }
 }
 
