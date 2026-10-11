@@ -69,10 +69,11 @@ window.EMPRESA = {
   ],
 
   // Clientes (logos ficam em compartilhado/img/clientes/)
+  // ATENÇÃO: quando existir o arquivo dados/clientes.js (gerado pelo painel,
+  // em "Clientes"), é ELE que vale no site. Esta lista é só a reserva.
   clientes: [
     { nome: "Brasil Frios Supermercados", logo: "brasil-frios.webp" },
     { nome: "Supermercados Camargo", logo: "camargo.webp" },
-    { nome: "Enxuto", logo: "enxuto.webp" },
     { nome: "Examine Supermercados", logo: "examine.webp" },
     { nome: "Mercado Qualidade", logo: "qualidade.webp" },
     { nome: "Quitandão Supermercados", logo: "quitandao.webp" }
@@ -90,9 +91,8 @@ window.EMPRESA = {
 
   equipe: [
     { nome: "Fábio Godoy", cargo: "Fundador e diretor", texto: "Mais de 25 anos de experiência em balanças e automação comercial." },
-    { nome: "Alexandre Silva", cargo: "Técnico de balanças", texto: "Departamento técnico de balanças comerciais e atendimento aos clientes." },
-    { nome: "Victor Gomes", cargo: "Técnico de balanças", texto: "Departamento técnico de balanças comerciais e atendimento aos clientes." },
-    { nome: "Tamires Oliveira", cargo: "Administrativo e vendas", texto: "Responsável pelo administrativo, vendas e financeiro." },
+    { nome: "Maurício Ritter", cargo: "Técnico de balanças", texto: "Departamento técnico de balanças comerciais e atendimento aos clientes." },
+    { nome: "Lizi Ellen", cargo: "Administrativo e vendas", texto: "Responsável pelo administrativo, vendas e financeiro." },
     { nome: "Rafael Tessaro", cargo: "Sistemas e suporte", texto: "Suporte técnico em sistemas, implantação e treinamento aos clientes." }
   ]
 };

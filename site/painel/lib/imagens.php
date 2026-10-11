@@ -25,10 +25,10 @@ function htaccessFotos(): string
         . "</FilesMatch>\n";
 }
 
-/** Cria o .htaccess de proteção nas pastas de fotos, se ainda não existir. */
+/** Cria o .htaccess de proteção nas pastas de fotos e de logos de clientes, se ainda não existir. */
 function protegerPastasFotos(): void
 {
-    foreach (['produtos', 'recortes'] as $tipo) {
+    foreach (['produtos', 'recortes', 'clientes'] as $tipo) {
         $dir = pastaFotos($tipo);
         if (!@is_dir($dir)) @mkdir($dir, 0755, true);
         if (@is_dir($dir) && !@is_file($dir . '/.htaccess')) @file_put_contents($dir . '/.htaccess', htaccessFotos());

@@ -581,7 +581,7 @@ html.hv2-cta-vis .float {
 /* Prova social discreta: os logos dos clientes em chapinhas brancas, sob a nota */
 .hv2-clients { margin-top: clamp(24px, 2.6vw, 34px); padding-top: 16px; border-top: 1.5px solid var(--ink); max-width: 30rem; }
 .hv2-clients__k { margin-bottom: 12px; color: var(--ink); }
-.hv2-clients__list { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; list-style: none; margin: 0; padding: 0; }
+.hv2-clients__list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; list-style: none; margin: 0; padding: 0; }
 .hv2-clients__i {
   --k: 7px;
   position: relative; display: grid; place-items: center; aspect-ratio: 5 / 3;

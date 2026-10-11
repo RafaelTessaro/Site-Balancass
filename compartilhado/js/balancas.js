@@ -1,15 +1,28 @@
 /* =====================================================================
    Balanças.com — funções compartilhadas pelos designs
-   Carregue DEPOIS de dados/empresa.js e dados/produtos.js:
+   Carregue DEPOIS de dados/empresa.js, dados/clientes.js e dados/produtos.js:
      <script src="../compartilhado/dados/empresa.js"></script>
+     <script src="../compartilhado/dados/clientes.js"></script>
      <script src="../compartilhado/dados/produtos.js"></script>
      <script src="../compartilhado/js/balancas.js"></script>
-   Não precisa editar este arquivo para adicionar produtos.
+   Não precisa editar este arquivo para adicionar produtos nem clientes.
    ===================================================================== */
 (function () {
   "use strict";
 
   var E = window.EMPRESA || {};
+
+  // Clientes: a lista de dados/clientes.js (gerada pelo painel, área Clientes) vale no lugar
+  // de EMPRESA.clientes — no MESMO objeto, então window.EMPRESA.clientes e BC.empresa.clientes
+  // enxergam a lista nova. Itens sem logo (ou com nome de arquivo estranho) ficam de fora.
+  // Sem o arquivo, continua valendo a lista de empresa.js.
+  if (Array.isArray(window.CLIENTES)) {
+    E.clientes = window.CLIENTES.filter(function (c) {
+      return !!c && typeof c.logo === "string" && /^[\w][\w.-]*$/.test(c.logo) && c.logo.indexOf("..") === -1;
+    }).map(function (c) {
+      return { nome: c.nome == null ? "" : String(c.nome), logo: c.logo };
+    });
+  }
   var C = window.CATEGORIAS || [];
   var TODOS = (window.PRODUTOS || []).filter(function (p) { return p && p.visivel !== false; });
 

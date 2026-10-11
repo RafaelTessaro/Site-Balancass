@@ -46,4 +46,12 @@ return [
     'foto_max_pixels'    => 20000000,      // até 20 megapixels (ex.: 5472 × 3648); mais que isso pede memória demais
     'foto_max_lado'      => 900,           // fotos salvas com no máximo 900 px no lado maior
     'foto_qualidade'     => 84,            // qualidade WebP/JPEG (0–100)
+
+    // Logos de clientes (área Clientes): PNG, JPG ou WebP (SVG não), salvos em WebP
+    // em compartilhado/img/clientes/, com a transparência preservada
+    'logo_max_bytes'     => 5 * 1024 * 1024,   // 5 MB
+    'logo_min_largura'   => 80,            // pelo menos 80 px de largura (sem contar as margens vazias)
+    'logo_max_largura'   => 600,           // logos salvos com no máximo 600 × 300 px
+    'logo_max_altura'    => 300,
+    'logo_qualidade'     => 90,            // qualidade WebP dos logos (0–100; letras pedem mais que fotos)
 ];

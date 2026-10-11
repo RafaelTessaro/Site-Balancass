@@ -11,6 +11,7 @@ require __DIR__ . '/lib/nucleo.php';
 require __DIR__ . '/lib/auth.php';
 require __DIR__ . '/lib/catalogo.php';
 require __DIR__ . '/lib/imagens.php';
+require __DIR__ . '/lib/clientes.php';
 require __DIR__ . '/lib/visoes.php';
 
 iniciarPainel();
@@ -35,8 +36,9 @@ if (chegouDeOutroSite()) {
 iniciarSessao();
 verificarSessao();
 
-const ACOES = ['lista', 'novo', 'editar', 'salvar', 'rapido', 'mover', 'excluir', 'desfazer', 'copias', 'restaurar', 'conta', 'senha', 'sair', 'entrar', 'instalar', 'sessao'];
-const SO_POST = ['salvar', 'rapido', 'mover', 'desfazer', 'senha', 'sair'];
+const ACOES = ['lista', 'novo', 'editar', 'salvar', 'rapido', 'mover', 'excluir', 'desfazer', 'copias', 'restaurar', 'conta', 'senha', 'sair', 'entrar', 'instalar', 'sessao',
+    'clientes', 'cliente-novo', 'cliente-editar', 'cliente-salvar', 'cliente-mover', 'cliente-excluir', 'cliente-desfazer'];
+const SO_POST = ['salvar', 'rapido', 'mover', 'desfazer', 'senha', 'sair', 'cliente-salvar', 'cliente-mover', 'cliente-desfazer'];
 $acao = is_string($_GET['a'] ?? null) && in_array($_GET['a'], ACOES, true) ? $_GET['a'] : 'lista';
 $post = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
 
@@ -48,11 +50,13 @@ if ($acao === 'sessao') {
 
 // Envio maior que o limite do PHP: o servidor descarta tudo ($_POST e $_FILES vazios)
 if ($post && !$_POST && !$_FILES && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
-    $msg = 'O envio ficou maior do que o servidor aceita (' . mb_(limiteEnvio()) . '). Use uma foto menor e tente de novo.';
+    $ehCliente = $acao === 'cliente-salvar';
+    $msg = 'O envio ficou maior do que o servidor aceita (' . mb_(limiteEnvio()) . '). Use ' . ($ehCliente ? 'um logo menor' : 'uma foto menor') . ' e tente de novo.';
     if (pedidoJson()) responderJson(['ok' => false, 'msg' => $msg], 413);
     if (usuarioLogado()) {
         avisar($msg, 'erro');
         $id = is_string($_GET['id'] ?? null) ? $_GET['id'] : '';
+        if ($ehCliente) redirecionar(linkFormCliente($_GET));
         redirecionar($acao === 'salvar' ? ($id !== '' ? link_('editar', ['id' => $id]) : link_('novo')) : 'index.php');
     }
     redirecionar('index.php');
@@ -109,6 +113,9 @@ if (usuarioLogado() === null) {
         if ($acao === 'salvar') {
             $_SESSION['voltar'] = $id !== '' ? link_('editar', ['id' => $id]) : link_('novo');
             avisar('Sua sessão terminou e o produto não foi salvo. Entre de novo: o painel volta para o formulário com o que você tinha digitado (a foto precisa ser escolhida de novo).', 'info');
+        } elseif ($acao === 'cliente-salvar') {
+            $_SESSION['voltar'] = linkFormCliente($_GET);
+            avisar('Sua sessão terminou e o cliente não foi salvo. Entre de novo: o painel volta para o formulário (escolha o logo de novo).', 'info');
         } else {
             avisar('Sua sessão terminou e a última ação não foi feita. Entre de novo para continuar.', 'info');
         }
@@ -137,6 +144,13 @@ if (!$post && in_array($acao, SO_POST, true)) redirecionar('index.php');
 
 try {
     match ($acao) {
+        'clientes'         => telaClientes(lerClientes()),
+        'cliente-novo'     => telaCliente(lerClientes(), null),
+        'cliente-editar'   => acaoClienteEditar(),
+        'cliente-salvar'   => acaoClienteSalvar(),
+        'cliente-mover'    => acaoClienteMover(),
+        'cliente-excluir'  => acaoClienteExcluir($post),
+        'cliente-desfazer' => acaoClienteDesfazer(),
         'lista'     => acaoLista(),
         'novo'      => telaProduto(catalogoOuTela(), null),
         'editar'    => acaoEditar(),
@@ -154,10 +168,13 @@ try {
 } catch (ErroCatalogo $e) {
     if (pedidoJson()) responderJson(['ok' => false, 'msg' => 'Não consegui ler o catálogo: ' . $e->getMessage()], 500);
     telaCatalogoIlegivel($e->getMessage());
+} catch (ErroClientes $e) {
+    if (pedidoJson()) responderJson(['ok' => false, 'msg' => 'Não consegui ler a lista de clientes: ' . $e->getMessage()], 500);
+    telaClientesIlegivel($e->getMessage());
 } catch (ErroUsuario $e) {
     if (pedidoJson()) responderJson(['ok' => false, 'msg' => $e->getMessage()], 409);
     avisar($e->getMessage(), 'erro');
-    redirecionar('index.php');
+    redirecionar(str_starts_with($acao, 'cliente') ? link_('clientes') : 'index.php');
 }
 exit;
 
@@ -167,7 +184,7 @@ exit;
 function destinoSeguro($url): ?string
 {
     if (!is_string($url) || strlen($url) > 300) return null;
-    if (!preg_match('/^index\.php\?a=(novo|editar|copias|conta)(&[A-Za-z0-9_=%.\-]*)*$/', $url)) return null;
+    if (!preg_match('/^index\.php\?a=(novo|editar|copias|conta|clientes|cliente-novo|cliente-editar)(&[A-Za-z0-9_=%.\-]*)*$/', $url)) return null;
     return $url;
 }
 
@@ -424,6 +441,12 @@ function acaoDesfazer(): void
 
 function acaoCopias(): void
 {
+    if (($_GET['de'] ?? '') === 'clientes') {
+        try { $atual = lerClientes()['clientes']; } catch (ErroClientes $e) { $atual = null; }
+        $logos = $atual === null ? [] : array_fill_keys(array_map(static fn($c) => (string) ($c['logo'] ?? ''), $atual), true);
+        telaCopiasClientes(listarCopiasClientes(), $atual === null ? null : count($atual), $logos);
+        return;
+    }
     try { $prods = lerCatalogo()['produtos']; } catch (ErroCatalogo $e) { $prods = null; }
     $ids = [];
     foreach ($prods ?? [] as $p) $ids[(string) ($p['id'] ?? '')] = true;
@@ -433,6 +456,7 @@ function acaoCopias(): void
 function acaoRestaurar(bool $post): void
 {
     $nome = is_string($_POST['copia'] ?? null) ? $_POST['copia'] : (is_string($_GET['copia'] ?? null) ? $_GET['copia'] : '');
+    if (preg_match(RE_COPIA_CLIENTES, $nome)) { acaoRestaurarClientes($post, $nome); return; }
     $copia = lerCopia($nome);
     $quando = quando((int) ($copia['criado'] ?? 0));
     if (!$post || ($_POST['confirmado'] ?? '') !== '1') {
@@ -478,4 +502,216 @@ function acaoSair(): void
     sair();
     avisar('Você saiu do painel.', 'info');
     redirecionar(link_('entrar'));
+}
+
+/* ==================================================================
+   Clientes (logos do site) — lib/clientes.php e telas em lib/visoes.php
+   ================================================================== */
+
+/** Endereço do formulário do cliente a partir de n/logo (novo, se não vierem). */
+function linkFormCliente(array $origem): string
+{
+    [$i, $logo] = refCliente($origem);
+    return $i >= 0 && $logo !== null && ($logo === '' || preg_match(RE_ARQUIVO_LOGO, $logo))
+        ? link_('cliente-editar', ['n' => $i + 1, 'logo' => $logo]) : link_('cliente-novo');
+}
+
+function linkSiteClientes(): array
+{
+    return ['link' => cfg('url_site') . 'empresa.html#clientes', 'textoLink' => 'Ver no site', 'externo' => true];
+}
+
+/** [posição, cliente] pelo n/logo do endereço (GET) ou do formulário (POST). */
+function clienteDaUrl(array $lista, string $fonte = 'get'): array
+{
+    [$n, $logo] = refCliente($fonte === 'get' ? $_GET : $_POST);
+    $i = acharCliente($lista, $n, $logo);
+    if ($i === null) throw new ErroUsuario('Cliente não encontrado. Ele pode ter sido excluído ou alterado em outro aparelho.');
+    return [$i, $lista[$i]];
+}
+
+function acaoClienteEditar(): void
+{
+    $dados = lerClientes();
+    [$i, $c] = clienteDaUrl($dados['clientes']);
+    telaCliente($dados, $c, [], ['n' => $i + 1, 'logo' => (string) ($c['logo'] ?? '')]);
+}
+
+function acaoClienteSalvar(): void
+{
+    $dados = lerClientes();
+    $lista = $dados['clientes'];
+    $atual = null; $ref = null; $pos = null;
+    if (isset($_GET['logo'])) {
+        [$pos, $atual] = clienteDaUrl($lista);
+        $ref = ['n' => $pos + 1, 'logo' => (string) ($atual['logo'] ?? '')];
+    }
+    [$nome, $erroNome] = nomeClienteValido($_POST['nome'] ?? '');
+    $erros = [];
+    if ($erroNome !== null) $erros['nome'] = $erroNome;
+    elseif (nomeRepetido($lista, $nome, $pos)) $erros['nome'] = 'Nome: já existe um cliente chamado “' . $nome . '”. Se for outra loja, acrescente a cidade ou o bairro.';
+
+    $arq = $_FILES['logo'] ?? null;
+    $temLogo = is_array($arq) && isset($arq['error']) && !is_array($arq['error']) && (int) $arq['error'] !== UPLOAD_ERR_NO_FILE;
+    if (!$temLogo && ($atual === null || (string) ($atual['logo'] ?? '') === '')) $erros['logo'] = 'Escolha o arquivo do logo (PNG, JPG ou WebP).';
+    $logo = null;
+    if (!$erros && $temLogo) {
+        try { $logo = processarLogo($arq, $nome); }
+        catch (ErroFoto $e) { $erros['logo'] = $e->getMessage(); }
+    } elseif ($erros && $temLogo && !isset($erros['logo'])) {
+        $erros['logo'] = 'Corrija o nome e escolha o logo de novo (por segurança, o navegador não guarda o arquivo escolhido).';
+    }
+    $novo = ['nome' => $nome, 'logo' => $logo ? $logo['logo'] : (string) ($atual['logo'] ?? '')] + ($atual ?? []);
+    if ($erros) {
+        http_response_code(422);
+        telaCliente($dados, $novo, $erros, $ref);
+        return;
+    }
+    $acao = $atual
+        ? ['tipo' => 'editar', 'antes' => 'Antes de: editar o cliente “' . $atual['nome'] . '”',
+           'feito' => 'Editou o cliente “' . $nome . '”' . ($logo ? ' (logo novo)' : ''), 'alvo' => $novo['logo'], 'alvoNome' => $nome]
+        : ['tipo' => 'cadastrar', 'antes' => 'Antes de: cadastrar o cliente “' . $nome . '”', 'feito' => 'Cadastrou o cliente “' . $nome . '”', 'alvo' => $novo['logo'], 'alvoNome' => $nome];
+    $posFinal = 0;
+    try {
+        alterarClientes($acao, static function (array $l) use ($novo, $ref, &$posFinal): array {
+            if ($ref !== null) {
+                $j = acharCliente($l, $ref['n'] - 1, $ref['logo']);
+                if ($j === null) throw new ErroUsuario('Esse cliente foi excluído (talvez em outro aparelho) enquanto você editava.');
+                $l[$j] = $novo;
+                $posFinal = $j + 1;
+            } else {
+                $l[] = $novo;
+                $posFinal = count($l);
+            }
+            return $l;
+        });
+    } catch (ErroUsuario $e) {
+        if ($logo) descartarLogo($logo);
+        http_response_code(409);
+        telaCliente($dados, $novo, ['geral' => $e->getMessage()], $ref);
+        return;
+    } catch (Throwable $t) {
+        if ($logo) descartarLogo($logo);
+        throw $t;
+    }
+    $msg = '“' . $nome . '” ' . ($atual ? 'foi salvo.' : 'foi cadastrado. Ele entrou no fim da lista: use as setas para mudar a posição no site.');
+    if (!$dados['existe']) $msg .= ' A lista de clientes foi criada agora, só com este cliente: cadastre também os outros clientes que devem continuar aparecendo no site.';
+    avisar($msg, 'ok', linkSiteClientes());
+    redirecionar(link_('clientes') . '#c-' . $posFinal);
+}
+
+function acaoClienteMover(): void
+{
+    $dir = ($_POST['dir'] ?? '') === 'cima' ? 'cima' : 'baixo';
+    [$i, $c] = clienteDaUrl(lerClientes()['clientes'], 'post');
+    [$n, $logo] = refCliente($_POST);
+    $nome = (string) $c['nome'];
+    $novaPos = 0;
+    alterarClientes(['tipo' => 'ordem', 'antes' => 'Antes de: mudar a ordem do cliente “' . $nome . '”', 'feito' => 'Mudou a ordem do cliente “' . $nome . '”', 'alvo' => (string) ($c['logo'] ?? ''), 'alvoNome' => $nome],
+        static function (array $l) use ($n, $logo, $dir, $nome, &$novaPos): array {
+            $j = acharCliente($l, $n, $logo);
+            if ($j === null) throw new ErroUsuario('Cliente não encontrado. Recarregue a página.');
+            $k = $dir === 'cima' ? $j - 1 : $j + 1;
+            if ($k < 0 || $k >= count($l)) throw new ErroUsuario('“' . $nome . '” já é o ' . ($dir === 'cima' ? 'primeiro' : 'último') . ' da lista.');
+            [$l[$j], $l[$k]] = [$l[$k], $l[$j]];
+            $novaPos = $k + 1;
+            return $l;
+        });
+    $txt = '“' . $nome . '” ' . ($dir === 'cima' ? 'subiu' : 'desceu') . ' para a ' . $novaPos . 'ª posição.';
+    if (pedidoJson()) responderJson(['ok' => true, 'msg' => $txt, 'dir' => $dir, 'pos' => $novaPos]);
+    avisar($txt);
+    redirecionar(link_('clientes') . '#c-' . $novaPos);
+}
+
+function acaoClienteExcluir(bool $post): void
+{
+    [$i, $c] = clienteDaUrl(lerClientes()['clientes'], $post ? 'post' : 'get');
+    $nome = (string) $c['nome'];
+    $logo = (string) ($c['logo'] ?? '');
+    if (!$post || ($_POST['confirmado'] ?? '') !== '1') {
+        telaConfirmar('Excluir cliente?', textoExcluirCliente($c), link_('cliente-excluir'), ['n' => (string) ($i + 1), 'logo' => $logo],
+            'Sim, excluir', link_('clientes') . '#c-' . ($i + 1), 'clientes');
+        return;
+    }
+    [$n, $ref] = refCliente($_POST);
+    $r = alterarClientes(['tipo' => 'excluir', 'antes' => 'Antes de: excluir o cliente “' . $nome . '”', 'feito' => 'Excluiu o cliente “' . $nome . '”', 'alvo' => $logo, 'alvoNome' => $nome],
+        static function (array $l) use ($n, $ref): array {
+            $j = acharCliente($l, $n, $ref);
+            if ($j === null) throw new ErroUsuario('Esse cliente já tinha sido excluído.');
+            array_splice($l, $j, 1);
+            return $l;
+        });
+    avisar('“' . $nome . '” foi excluído da lista de clientes.', 'ok',
+        ['form' => ['acao' => link_('cliente-desfazer'), 'campos' => ['copia' => $r['copia'], 'n' => (string) ($i + 1), 'logo' => $logo], 'botao' => 'Desfazer']]);
+    redirecionar(link_('clientes'));
+}
+
+/** Devolve à lista um cliente excluído, no mesmo lugar e com o logo (vindo da lixeira). */
+function acaoClienteDesfazer(): void
+{
+    $nomeCopia = is_string($_POST['copia'] ?? null) ? $_POST['copia'] : '';
+    $copia = lerCopiaClientes($nomeCopia);
+    [$n, $logo] = refCliente($_POST);
+    $i = acharCliente($copia['clientes'], $n, $logo);
+    if ($i === null) throw new ErroUsuario('Esse cliente não está nessa cópia de segurança.');
+    $c = $copia['clientes'][$i];
+    $nome = (string) $c['nome'];
+    $pos = 0;
+    alterarClientes(['tipo' => 'desfazer', 'antes' => 'Antes de: trazer de volta o cliente “' . $nome . '”', 'feito' => 'Trouxe de volta o cliente “' . $nome . '”', 'alvo' => (string) ($c['logo'] ?? ''), 'alvoNome' => $nome],
+        static function (array $l) use ($copia, $i, $c, $nome, &$pos): array {
+            $logo = (string) ($c['logo'] ?? '');
+            foreach ($l as $x) {
+                if (($logo !== '' && (string) ($x['logo'] ?? '') === $logo) || ($logo === '' && (string) ($x['nome'] ?? '') === $nome)) {
+                    throw new ErroUsuario('“' . $nome . '” já está na lista de clientes.');
+                }
+            }
+            // Mesmo lugar: logo depois do vizinho de cima que ainda existir, ou antes do de baixo; senão, no fim
+            $onde = null;
+            for ($j = $i - 1; $j >= 0 && $onde === null; $j--) {
+                $k = acharCliente($l, -1, (string) ($copia['clientes'][$j]['logo'] ?? ''));
+                if ($k !== null) $onde = $k + 1;
+            }
+            for ($j = $i + 1; $j < count($copia['clientes']) && $onde === null; $j++) {
+                $k = acharCliente($l, -1, (string) ($copia['clientes'][$j]['logo'] ?? ''));
+                if ($k !== null) $onde = $k;
+            }
+            $onde ??= count($l);
+            array_splice($l, $onde, 0, [$c]);
+            $pos = $onde + 1;
+            return $l;
+        });
+    $semLogo = (string) ($c['logo'] ?? '') !== '' && !@is_file(pastaFotos('clientes') . '/' . $c['logo']);
+    avisar('“' . $nome . '” voltou para a lista de clientes, na ' . $pos . 'ª posição' . ($semLogo ? '. O logo não estava mais na lixeira: escolha outro em Editar.' : ', com o logo.'),
+        $semLogo ? 'erro' : 'ok', $semLogo ? [] : linkSiteClientes());
+    redirecionar(link_('clientes') . '#c-' . $pos);
+}
+
+function acaoRestaurarClientes(bool $post, string $nome): void
+{
+    $copia = lerCopiaClientes($nome);
+    $quando = quando((int) ($copia['criado'] ?? 0));
+    if (!$post || ($_POST['confirmado'] ?? '') !== '1') {
+        $lista = listarCopiasClientes();
+        $i = array_search($nome, array_column($lista, 'nome'), true);
+        try { $total = count(lerClientes()['clientes']); } catch (ErroClientes $e) { $total = null; }
+        telaConfirmar('Restaurar esta cópia?', $i === false ? 'Voltar a lista de clientes inteira para como estava em ' . $quando . '? O estado atual vira uma cópia, então dá para desfazer.' : textoRestaurarClientes($lista, (int) $i, $total),
+            link_('restaurar'), ['copia' => $nome], 'Sim, restaurar', link_('copias', ['de' => 'clientes']), 'copias');
+        return;
+    }
+    $acao = ['tipo' => 'restaurar', 'antes' => 'Antes de: restaurar a cópia dos clientes de ' . $quando, 'feito' => 'Restaurou a cópia dos clientes de ' . $quando];
+    try {
+        alterarClientes($acao, static fn(array $l): array => $copia['clientes']);
+    } catch (ErroClientes $e) {
+        // O arquivo atual está ilegível: guarda o que havia e grava a cópia por cima
+        comTrava('clientes', static function () use ($copia, $acao): void {
+            $bruto = @file_get_contents(arquivoClientes());
+            if ($bruto !== false) gravarPrivado('copias/ilegivel-clientes-' . date('Ymd-His') . '.php', base64_encode($bruto));
+            gravarClientes($copia['clientes']);
+            protegerPastasFotos();
+            sincronizarLogos([], $copia['clientes']);
+            registrar('clientes', $acao['feito'] . ' (o arquivo atual estava ilegível)');
+        });
+    }
+    avisar('Pronto: a lista de clientes voltou para como estava em ' . $quando . '.', 'ok', linkSiteClientes());
+    redirecionar(link_('clientes'));
 }

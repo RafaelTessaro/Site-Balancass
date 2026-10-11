@@ -1,4 +1,4 @@
-# Pacote gerado por ferramentas/montar-site.py em 11/10/2026 01:11 (origem: hospedagem/.htaccess).
+# Pacote gerado por ferramentas/montar-site.py em 11/10/2026 02:33 (origem: hospedagem/.htaccess).
 # =====================================================================
 # .htaccess — Balanças.com (HostGator / cPanel)
 # Vai na raiz do site: public_html/.htaccess
@@ -71,9 +71,9 @@ AddType application/manifest+json .webmanifest
   Header always set X-Frame-Options "SAMEORIGIN"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
-  # HTML e dados (produtos/empresa) nunca ficam presos no cache:
-  # o que você editar aparece na hora.
-  <FilesMatch "(\.html|produtos\.js|empresa\.js)$">
+  # HTML e dados (produtos/clientes/empresa) nunca ficam presos no cache:
+  # o que você editar (no painel ou à mão) aparece na hora.
+  <FilesMatch "(\.html|produtos\.js|clientes\.js|empresa\.js)$">
     Header set Cache-Control "no-cache"
   </FilesMatch>
 </IfModule>

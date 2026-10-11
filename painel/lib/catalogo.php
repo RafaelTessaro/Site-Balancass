@@ -53,13 +53,15 @@ function arquivoCatalogo(): string
 {
     return cfg('compartilhado') . '/dados/produtos.js';
 }
+// Pastas de imagens que o painel grava (dentro de compartilhado/img/): fotos, recortes e logos de clientes
+const PASTAS_IMAGENS = ['produtos' => 'produtos', 'recortes' => 'produtos-recorte', 'clientes' => 'clientes'];
 function pastaFotos(string $tipo = 'produtos'): string
 {
-    return cfg('compartilhado') . '/img/' . ($tipo === 'recortes' ? 'produtos-recorte' : 'produtos');
+    return cfg('compartilhado') . '/img/' . (PASTAS_IMAGENS[$tipo] ?? 'produtos');
 }
 function urlFoto(string $arquivo, string $tipo = 'produtos'): string
 {
-    return cfg('url_compartilhado') . 'img/' . ($tipo === 'recortes' ? 'produtos-recorte' : 'produtos') . '/' . rawurlencode($arquivo);
+    return cfg('url_compartilhado') . 'img/' . (PASTAS_IMAGENS[$tipo] ?? 'produtos') . '/' . rawurlencode($arquivo);
 }
 
 /* ------------------------------------------------------------------
@@ -540,10 +542,10 @@ function fazerCopia(array $catalogo, array $acao): string
     return $nome;
 }
 
-/** Data (pelo nome do arquivo) e tipo de uma cópia. */
-function infoNomeCopia(string $nome): array
+/** Data (pelo nome do arquivo) e tipo de uma cópia ($re: RE_COPIA ou RE_COPIA_CLIENTES). */
+function infoNomeCopia(string $nome, string $re = RE_COPIA): array
 {
-    if (!preg_match(RE_COPIA, $nome, $m)) return ['criado' => 0, 'tipo' => ''];
+    if (!preg_match($re, $nome, $m)) return ['criado' => 0, 'tipo' => ''];
     $t = DateTime::createFromFormat('YmdHis', $m[1] . $m[2]);
     return ['criado' => $t ? $t->getTimestamp() : 0, 'tipo' => $m[3] ?? ''];
 }
@@ -551,17 +553,18 @@ function infoNomeCopia(string $nome): array
 /**
  * Apaga as cópias velhas: as N mais recentes ficam sempre; além delas, ficam as dos
  * últimos X dias (até o teto); as de excluir/restaurar ficam Y dias mesmo além do teto.
+ * Sem argumentos: cópias do catálogo de produtos. Os clientes têm as suas (lib/clientes.php).
  */
-function podarCopias(): void
+function podarCopias(?array $arquivos = null, string $re = RE_COPIA): void
 {
     $agora = time();
     $sempre = max(1, (int) cfg('copias_max'));
     $dias = max(0, (int) (cfg('copias_dias') ?? 14)) * 86400;
     $teto = max($sempre, (int) (cfg('copias_teto') ?? 200));
     $protegidas = max(0, (int) (cfg('copias_protegidas_dias') ?? 30)) * 86400;
-    foreach (arquivosCopias() as $i => $arq) {
+    foreach ($arquivos ?? arquivosCopias() as $i => $arq) {
         if ($i < $sempre) continue;
-        $info = infoNomeCopia(basename($arq));
+        $info = infoNomeCopia(basename($arq), $re);
         $idade = $agora - $info['criado'];
         if ($i < $teto && $idade < $dias) continue;
         if (in_array($info['tipo'], TIPOS_PROTEGIDOS, true) && $idade < $protegidas) continue;

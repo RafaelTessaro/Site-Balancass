@@ -1,9 +1,9 @@
 # Painel do site · Balanças.com
 
-Painel para **cadastrar, editar, esconder e excluir produtos e trocar as fotos** do site sozinho, pelo celular ou pelo computador. Feito em PHP puro (sem banco de dados, sem WordPress, sem plugins) e pensado para a HostGator/cPanel.
+Painel para **cadastrar, editar, esconder e excluir produtos e trocar as fotos** do site sozinho, pelo celular ou pelo computador, e para cuidar dos **logos dos clientes** (área **Clientes**). Feito em PHP puro (sem banco de dados, sem WordPress, sem plugins) e pensado para a HostGator/cPanel.
 
 - Endereço: **`https://balancass.com/painel/`**. No site, a entrada é o link discreto **“Área restrita”** no rodapé de todas as páginas (com `nofollow`; o painel não aparece no Google).
-- O painel grava direto no arquivo do catálogo (`compartilhado/dados/produtos.js`) e nas fotos (`compartilhado/img/produtos/`). O que você salva aparece no site na hora.
+- O painel grava direto no arquivo do catálogo (`compartilhado/dados/produtos.js`) e nas fotos (`compartilhado/img/produtos/`); os logos de clientes, em `compartilhado/dados/clientes.js` e `compartilhado/img/clientes/`. O que você salva aparece no site na hora.
 - Antes de cada alteração ele guarda uma **cópia de segurança**: as 30 mais recentes sempre, tudo dos últimos 14 dias (até 200) e as de **excluir** e **restaurar** por 30 dias. Excluiu por engano? Toque em **Desfazer** no aviso (ou **Cópias** → **Trazer de volta**): só aquele produto volta, no mesmo lugar e com a foto.
 
 ---
@@ -16,8 +16,10 @@ Painel para **cadastrar, editar, esconder e excluir produtos e trocar as fotos**
 │   ├── index.html, produtos.html…
 │   ├── compartilhado/
 │   │   ├── dados/produtos.js        ← catálogo (o painel lê e grava este arquivo)
+│   │   ├── dados/clientes.js        ← lista de clientes (logos; o painel lê e grava, área Clientes)
 │   │   └── img/produtos/            ← fotos (o painel salva aqui; tem .htaccess que bloqueia scripts)
 │   │   └── img/produtos-recorte/    ← fotos com fundo transparente (idem)
+│   │   └── img/clientes/            ← logos de clientes (idem)
 │   └── painel/                      ← ESTE painel
 │       ├── index.php                ← a única página
 │       ├── config.php               ← caminhos e limites (único lugar com configuração)
@@ -28,9 +30,9 @@ Painel para **cadastrar, editar, esconder e excluir produtos e trocar as fotos**
 └── painel-balancas-privado/         ← DADOS PRIVADOS (criada sozinha, FORA do public_html)
     ├── config.php                   ← usuário e senha (só o "hash"; a senha não fica escrita)
     ├── primeiro-acesso.php          ← código do primeiro acesso (some depois do cadastro)
-    ├── copias/                      ← cópias de segurança do catálogo
+    ├── copias/                      ← cópias de segurança do catálogo (copia-*.php) e da lista de clientes (clientes-*.php)
     ├── notas.php                    ← anotações internas dos produtos (não vão para o site)
-    ├── lixeira/                     ← fotos trocadas/excluídas (voltam se restaurar uma cópia)
+    ├── lixeira/                     ← fotos e logos trocados/excluídos (voltam se restaurar uma cópia)
     ├── sessoes/                     ← logins abertos
     ├── registro.php                 ← quem entrou e o que mudou (aparece em "Minha conta")
     └── tentativas.php, chave.php…   ← controle de senha errada
@@ -49,8 +51,8 @@ Se a hospedagem não deixar criar a pasta fora do `public_html`, o painel usa `p
 3. **Arquivos `.htaccess`.** Confira que existem (o Gerenciador de Arquivos esconde arquivos que começam com ponto: clique em **Configurações** → marque **Mostrar arquivos ocultos**):
    - `public_html/.htaccess` (o do site)
    - `public_html/painel/.htaccess` e `public_html/painel/lib/.htaccess`
-   - `public_html/compartilhado/img/produtos/.htaccess` e `.../produtos-recorte/.htaccess` (bloqueiam scripts na pasta de fotos; o painel cria se faltarem; cópia em `hospedagem/compartilhado/img/`)
-4. **Permissões** (normalmente já ficam assim): pastas **755**, arquivos **644**. O `produtos.js` e as pastas de fotos precisam poder ser gravados pela sua conta (é o padrão na HostGator).
+   - `public_html/compartilhado/img/produtos/.htaccess`, `.../produtos-recorte/.htaccess` e `.../clientes/.htaccess` (bloqueiam scripts nas pastas de fotos e de logos; o painel cria se faltarem; cópia em `hospedagem/compartilhado/img/`)
+4. **Permissões** (normalmente já ficam assim): pastas **755**, arquivos **644**. O `produtos.js`, o `clientes.js` e as pastas de fotos e de logos precisam poder ser gravados pela sua conta (é o padrão na HostGator).
 5. **HTTPS.** Deixe o certificado (AutoSSL) ativo e o redirecionamento para `https://` ligado no `.htaccess` do site. O painel só deve ser usado com o cadeado.
 
 ---
@@ -92,7 +94,15 @@ O código vale 24 horas. Se vencer, abra o painel de novo e leia o código novo 
 - PNG com **fundo transparente** também vira o “recorte” usado nas áreas escuras do site.
 - Ao trocar a foto, a antiga vai para a lixeira privada (volta se você restaurar uma cópia).
 
-**Cópias**: lista das cópias de segurança (data, hora, o que ia ser feito). Mudanças seguidas do mesmo tipo (ordem, estoque, destaque, no site) feitas em menos de 10 minutos ficam numa cópia só (“e mais 31 alterações do mesmo tipo”).
+**Clientes**: os logos da faixa “Quem confia na gente” (página inicial) e “Alguns clientes” (página Empresa), na ordem do site, cada um numa chapa branca igual à do site.
+- **Novo cliente**: nome + logo. Aceita **PNG, JPG ou WebP** (o melhor é PNG com fundo transparente), até **5 MB**, com pelo menos **80 px** de largura. **SVG não** (pode carregar código; peça o PNG). A prévia já mostra o logo na chapa, com as sobras cortadas, e avisa se o fundo é colorido, se o logo é quase todo branco ou se é pequeno demais.
+- O servidor confere o arquivo (tipo real + dimensões), **redesenha** com GD **mantendo a transparência**, corta as margens vazias (transparentes ou brancas), reduz para no máximo **600 × 300 px** e salva em **WebP** com nome aleatório (`<nome-do-cliente>-<10 hex>.webp`).
+- **↑ ↓** mudam a posição no site; **Editar** troca o nome e/ou o logo (o antigo vai para a lixeira); **🗑** pede confirmação e tem **Desfazer**.
+- O nome (até 80 caracteres, sem `<` e `>`) não aparece escrito no site: é o texto alternativo do logo.
+- Se o servidor ainda não tem `compartilhado/dados/clientes.js`, a tela mostra o aviso **“A lista de clientes ainda não foi instalada no servidor”**: instale o pacote de atualização (`docs/PUBLICAR-NO-CPANEL.md`, item 6) antes de cadastrar. Se cadastrar antes, o painel cria o arquivo só com o que for cadastrado.
+- Logos que vieram com o site (`brasil-frios.webp`, `camargo.webp`…) nunca saem da pasta, mesmo excluídos da lista: algumas páginas os trazem direto no HTML (para quem navega sem JavaScript). Só os logos enviados pelo painel vão para a lixeira.
+
+**Cópias**: lista das cópias de segurança (data, hora, o que ia ser feito), com as abas **Produtos** e **Clientes** (cada uma tem as suas cópias e restaurar uma não mexe na outra). Mudanças seguidas do mesmo tipo (ordem, estoque, destaque, no site) feitas em menos de 10 minutos ficam numa cópia só (“e mais 31 alterações do mesmo tipo”).
 - **Trazer de volta** (nas cópias de exclusão): devolve só aquele produto, no mesmo lugar e com a foto.
 - **Restaurar**: volta o catálogo **inteiro**, com as fotos, para aquele momento, e desfaz também tudo o que foi feito depois. A janela de confirmação diz quantas alterações serão desfeitas e quais. O estado atual também vira uma cópia, então dá para desfazer a restauração.
 
@@ -127,10 +137,10 @@ Bloqueado por errar a senha? Depois de **5 erros seguidos** o acesso daquela int
 - A anotação interna dos produtos fica na pasta privada (`notas.php`), nunca no `produtos.js` público.
 - `painel/.htaccess` nega `config.php`, `.user.ini`, `.htaccess` e qualquer `.md` (o `.htaccess` da raiz também). Isso depende do Apache, como na HostGator; num servidor que ignore `.htaccess` (nginx, `php -S`) é preciso repetir essas regras na configuração dele.
 - Fotos de até 20 megapixels (o site usa no máximo 900 px): o processamento cabe no limite de memória de 256 MB.
-- Fotos conferidas (tipo real do arquivo + dimensões) e **redesenhadas** pelo servidor: qualquer código escondido no arquivo é descartado; nome do arquivo sempre aleatório; pastas de fotos com `.htaccess` que impede rodar scripts.
+- Fotos e logos conferidos (tipo real do arquivo + dimensões) e **redesenhados** pelo servidor: qualquer código escondido no arquivo é descartado; nome do arquivo sempre aleatório; pastas de fotos e de logos com `.htaccess` que impede rodar scripts. Logo em SVG é recusado (mesmo disfarçado de `.png`).
 - Campos validados (tamanhos, listas fechadas, código só com `a-z 0-9 -`); nenhum caminho de arquivo vem do usuário.
 - Cabeçalhos: `Content-Security-Policy` restritiva, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `noindex`.
-- Gravação do catálogo “tudo ou nada” (arquivo temporário + troca) e com trava: dois aparelhos salvando ao mesmo tempo não corrompem o arquivo.
+- Gravação do catálogo e da lista de clientes “tudo ou nada” (arquivo temporário + troca) e com trava: dois aparelhos salvando ao mesmo tempo não corrompem o arquivo.
 
 ### Camada extra recomendada: “Privacidade de diretórios”
 
@@ -150,7 +160,9 @@ O navegador vai pedir essa senha uma vez por sessão; depois aparece a tela norm
 |---|---|
 | “A foto é maior do que o servidor aceita” | Normalmente o painel reduz a foto no próprio celular antes de enviar. Se mesmo assim aparecer, cPanel → **MultiPHP INI Editor** → seu domínio → `upload_max_filesize` = **10M** e `post_max_size` = **12M** (a pasta do painel já traz um `.user.ini` pedindo isso). |
 | “Não consegui ler o catálogo” | O `produtos.js` foi editado à mão ou substituído por uma versão antiga. Vá em **Cópias** → **Restaurar** a mais recente. Se o painel nunca foi usado, o arquivo precisa ser convertido (item 9). |
-| “O servidor não deixa gravar…” | Permissões: `compartilhado/dados/produtos.js` = 644 e as pastas `compartilhado/dados`, `img/produtos`, `img/produtos-recorte` = 755. |
+| “O servidor não deixa gravar…” | Permissões: `compartilhado/dados/produtos.js` e `clientes.js` = 644 e as pastas `compartilhado/dados`, `img/produtos`, `img/produtos-recorte`, `img/clientes` = 755. |
+| “A lista de clientes ainda não foi instalada no servidor” | Falta `compartilhado/dados/clientes.js`: instale o `atualizacao.zip` gerado com `--incluir-clientes` (`docs/PUBLICAR-NO-CPANEL.md`, item 6). |
+| “Não consegui ler a lista de clientes” | O `clientes.js` foi editado à mão ou substituído. **Cópias** → aba **Clientes** → **Restaurar** a mais recente. Os produtos não são afetados. |
 | “A página ficou desatualizada” | A página ficou aberta muito tempo ou veio de outro lugar. Recarregue e repita. |
 | Saí sozinho | Passou de 2 horas sem uso, ou a senha foi trocada em outro aparelho. Entre de novo: o painel volta para a tela em que você estava (no formulário do produto, ofereça **Recuperar** o rascunho). |
 | “Fora da página inicial” no destaque | A página inicial mostra até 8 destaques, revezando as categorias. Tire a estrela de outro produto ou suba este com as setas. |
@@ -161,7 +173,7 @@ Erros inesperados aparecem com um código (ex.: `ref. 3FA2C1`); o detalhe fica e
 
 ## 8. Configuração (`painel/config.php`)
 
-É o único lugar com caminhos e limites: pasta `compartilhado` (padrão: ao lado do painel), endereço do site, pasta privada (padrão automático), tempo de inatividade (2 h), tentativas (5) e bloqueio (15 min), validade do código (24 h), senha mínima (10), cópias (30 sempre, 14 dias até 200, exclusões e restaurações 30 dias, juntar ações seguidas em 10 min), produto da capa (`produto_capa`, o mesmo `data-hero-id` do `index.html`), foto (8 MB, de 300 px a 20 megapixels, salva com até 900 px) e qualidade (84).
+É o único lugar com caminhos e limites: pasta `compartilhado` (padrão: ao lado do painel), endereço do site, pasta privada (padrão automático), tempo de inatividade (2 h), tentativas (5) e bloqueio (15 min), validade do código (24 h), senha mínima (10), cópias (30 sempre, 14 dias até 200, exclusões e restaurações 30 dias, juntar ações seguidas em 10 min), produto da capa (`produto_capa`, o mesmo `data-hero-id` do `index.html`), foto (8 MB, de 300 px a 20 megapixels, salva com até 900 px) e qualidade (84), logos de clientes (`logo_max_bytes` 5 MB, `logo_min_largura` 80 px, salvos com até `logo_max_largura` × `logo_max_altura` = 600 × 300 px, qualidade `logo_qualidade` 90).
 
 ---
 
@@ -189,5 +201,16 @@ O conversor executa o arquivo antigo numa caixa de areia do Node, preserva todos
 **Página inicial e capa.** `js/home-v3.js` tira o produto da capa (`data-hero-id` em `.pn-hero__prod`) e mostra até 8 destaques revezando as categorias: 4 na vitrine do quadro 03 (preferindo recortes escuros; sem recorte, a foto entra num “palco” claro) e 4 nas fichas da seção 02. O painel calcula a mesma lista em `destaquesDaHome()` (`lib/catalogo.php`) para os selos: se mudar a regra num lugar, mude no outro. O `ferramentas/montar-site.py` confere que o `data-hero-id` existe no catálogo e é igual ao `produto_capa` do `config.php`.
 
 **Fotos.** Fotos novas: `compartilhado/img/produtos/<código>-<10 hex>.webp` (fallback `.jpg`), no máximo 900 px. Com transparência, também `compartilhado/img/produtos-recorte/<mesmo nome>` e o campo `recorte` no produto. Trocar a foto remove o `recorte` antigo do produto. Recortes antigos do site (que não foram criados pelo painel) nunca são movidos, porque algumas páginas usam esses arquivos direto.
+
+**Lista de clientes.** `compartilhado/dados/clientes.js`, no mesmo estilo do catálogo (gravado com as mesmas opções de `json_encode`):
+
+```js
+/* comentário de cabeçalho (gerado pelo painel) */
+window.CLIENTES = [ {"nome": "Brasil Frios Supermercados", "logo": "brasil-frios.webp"}, … ];
+```
+
+`logo` é só o nome do arquivo em `compartilhado/img/clientes/`; a ordem da lista é a ordem no site. Todas as páginas carregam `compartilhado/dados/clientes.js` logo depois de `empresa.js` e antes de `balancas.js`; o `balancas.js` usa `window.CLIENTES` no lugar de `EMPRESA.clientes` (ignorando itens sem logo) e, sem o arquivo, continua valendo a lista de `empresa.js`. O `.htaccess` da raiz manda `clientes.js` sem cache, como o `produtos.js`. O painel (`lib/clientes.php`) lê esse formato sem executar nada; outro formato mostra a tela “lista de clientes com problema”. As cópias ficam em `copias/clientes-AAAAMMDD-HHMMSS-…-<tipo>.php` (mesmas regras de retenção das do catálogo) e os logos tirados da lista, em `lixeira/clientes--<arquivo>.php`. O `ferramentas/montar-site.py` confere o formato, os logos e a ordem dos `<script>`.
+
+**Atualizar o site no ar sem perder o que o painel gravou:** `python3 ferramentas/montar-site.py --atualizacao` gera o `atualizacao.zip` sem `produtos.js`, sem as fotos de produtos e sem `clientes.js`/logos (estes só com `--incluir-clientes`, para quando o servidor ainda não tem `clientes.js`). Passo a passo em `docs/PUBLICAR-NO-CPANEL.md`, item 6.
 
 **Teste local:** `php -S 127.0.0.1:8090 -t <pasta-do-site>` com o painel em `<pasta-do-site>/painel/` e `compartilhado/` ao lado (o PHP embutido ignora `.htaccess`, e mesmo assim nada da pasta privada aparece, graças ao `<?php exit; ?>`).

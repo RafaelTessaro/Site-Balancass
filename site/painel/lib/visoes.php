@@ -40,6 +40,7 @@ function spriteIcones(): void
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
   <symbol id="i-box" viewBox="0 0 24 24"><path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5v-9zM3 7.5l9 4.5 9-4.5M12 12v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-loja" viewBox="0 0 24 24"><path d="M4 4h16l1.5 5a2.4 2.4 0 0 1-4.8 0 2.4 2.4 0 0 1-4.7 0 2.4 2.4 0 0 1-4.7 0 2.4 2.4 0 0 1-4.8 0L4 4zM4.5 11.5V20h15v-8.5M10 20v-5h4v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></symbol>
   <symbol id="i-show" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="currentColor"/></symbol>
 </svg>
 <?php
@@ -83,6 +84,7 @@ function pagina(string $titulo, callable $conteudo, array $o = []): void
     <nav class="menu" aria-label="Seções do painel">
       <a href="index.php"<?= $atual === 'produtos' ? ' aria-current="page"' : '' ?>><?= icone('box') ?><span>Produtos</span></a>
       <a class="menu__novo" href="<?= e(link_('novo')) ?>"<?= $atual === 'novo' ? ' aria-current="page"' : '' ?>><?= icone('plus') ?><span>Novo</span></a>
+      <a href="<?= e(link_('clientes')) ?>"<?= $atual === 'clientes' ? ' aria-current="page"' : '' ?>><?= icone('loja') ?><span>Clientes</span></a>
       <a href="<?= e(link_('copias')) ?>"<?= $atual === 'copias' ? ' aria-current="page"' : '' ?>><?= icone('restore') ?><span>Cópias</span></a>
       <a href="<?= e(link_('conta')) ?>"<?= $atual === 'conta' ? ' aria-current="page"' : '' ?>><?= icone('user') ?><span>Conta</span></a>
     </nav>
@@ -667,7 +669,7 @@ function linhaSpec(int $n, string $nome, string $valor): void
 /* ------------------------------------------------------------------
    Confirmação sem JavaScript (excluir / restaurar)
    ------------------------------------------------------------------ */
-function telaConfirmar(string $titulo, string $texto, string $acao, array $campos, string $botao, string $voltar): void
+function telaConfirmar(string $titulo, string $texto, string $acao, array $campos, string $botao, string $voltar, string $menu = 'produtos'): void
 {
     pagina($titulo, static function () use ($titulo, $texto, $acao, $campos, $botao, $voltar): void { ?>
   <section class="confirmar">
@@ -682,7 +684,7 @@ function telaConfirmar(string $titulo, string $texto, string $acao, array $campo
       <button class="btn btn--perigo" type="submit"><?= e($botao) ?></button>
     </form>
   </section>
-<?php }, ['menu' => 'produtos']);
+<?php }, ['menu' => $menu]);
 }
 
 /* ------------------------------------------------------------------
@@ -696,6 +698,7 @@ function telaCopias(array $copias, ?int $totalAtual, array $idsAtuais = []): voi
             . ' mais recentes e tudo dos últimos ' . (int) cfg('copias_dias') . ' dias; as de <b>excluir</b> e <b>restaurar</b> ficam ' . (int) cfg('copias_protegidas_dias') . ' dias. '
             . 'Mudanças seguidas do mesmo tipo (ordem, estoque, destaque, no site) feitas em menos de ' . (int) cfg('copias_juntar_min') . ' minutos ficam numa cópia só. '
             . '<b>Restaurar</b> volta o catálogo inteiro, com as fotos, e desfaz também o que foi feito depois. Para devolver só um produto excluído, use <b>Trazer de volta</b>.');
+        abasCopias('produtos');
         if (!$copias): ?>
   <div class="vazio"><p><b>Ainda não há cópias.</b> Elas aparecem aqui depois da primeira alteração no catálogo.</p></div>
   <?php else: ?>
@@ -776,7 +779,7 @@ function telaConta(string $erro = ''): void
             $quem = $a['usuario'] !== '-' ? $a['usuario'] : ''; ?>
         <li class="atv<?= $alerta ? ' atv--alerta' : '' ?>">
           <time datetime="<?= e(date('c', $a['quando'])) ?>"><?= e(date('d/m H:i', $a['quando'])) ?></time>
-          <?php if ($a['evento'] === 'catalogo'): ?>
+          <?php if ($a['evento'] === 'catalogo' || $a['evento'] === 'clientes'): ?>
           <span><b><?= e(frasePassado($a['detalhe'])) ?></b><?= $a['vezes'] > 1 ? ' (' . (int) $a['vezes'] . ' vezes)' : '' ?></span>
           <?php else: ?>
           <span><b><?= e($nomes[$a['evento']] ?? $a['evento']) ?></b><?= $alerta && $a['detalhe'] !== '' ? ' — ' . e($a['detalhe']) : '' ?><?= $a['vezes'] > 1 ? ' (' . (int) $a['vezes'] . ' vezes)' : '' ?></span>
@@ -815,4 +818,236 @@ function telaCatalogoIlegivel(string $motivo): void
     <p><a class="btn btn--verde" href="<?= e(link_('copias')) ?>"><?= icone('restore') ?>Ver cópias de segurança</a></p>
   </section>
 <?php }, ['menu' => 'produtos']);
+}
+
+/* ------------------------------------------------------------------
+   Clientes (logos que aparecem na página Empresa e na página inicial)
+   ------------------------------------------------------------------ */
+/** Aviso de que o clientes.js ainda não está no servidor (vem no pacote de atualização). */
+function avisoSemArquivoClientes(bool $curto = false): void
+{
+    ?>
+  <div class="aviso aviso--info aviso--fixo" role="status">
+    <?= icone('alert') ?>
+    <p><?php if ($curto): ?><b>A lista de clientes ainda não foi instalada no servidor.</b> Se cadastrar agora, o painel cria a lista só com o que você cadastrar aqui (veja o aviso da tela Clientes).<?php else: ?><b>A lista de clientes ainda não foi instalada no servidor.</b> Falta o arquivo <code>compartilhado/dados/clientes.js</code>, que vem no pacote de atualização do site (<code>atualizacao.zip</code>). Até ele ser instalado, o site continua mostrando os logos antigos. Instale a atualização antes de cadastrar logos aqui: se cadastrar agora, o painel cria a lista só com o que você cadastrar.<?php endif; ?></p>
+  </div>
+<?php
+}
+
+/** Chapa branca do mesmo formato do site (3:2, logo em cor centralizado). */
+function chapaLogo(?array $info, string $classe = ''): string
+{
+    if (!$info) return '<span class="chapa chapa--vazia ' . e($classe) . '">' . icone('camera') . '</span>';
+    $dim = $info['w'] > 0 ? ' width="' . (int) $info['w'] . '" height="' . (int) $info['h'] . '"' : '';
+    return '<span class="chapa' . ($info['sq'] ? ' chapa--sq' : '') . ' ' . e($classe) . '"><img src="' . e($info['url']) . '" alt="" loading="lazy" decoding="async"' . $dim . '></span>';
+}
+
+function telaClientes(array $dados): void
+{
+    $lista = $dados['clientes'];
+    $comLogo = count(array_filter($lista, static fn($c) => infoLogo((string) ($c['logo'] ?? '')) !== null));
+    pagina('Clientes', static function () use ($dados, $lista, $comLogo): void {
+        cabecalhoPagina('Logos no site', 'Clientes',
+            '<span><b data-n="clientes">' . $comLogo . '</b> ' . ($comLogo === 1 ? 'logo' : 'logos') . ' no site</span><span>página Empresa e página inicial</span>',
+            '<a class="btn btn--verde" href="' . e(link_('cliente-novo')) . '">' . icone('plus') . 'Novo cliente</a>');
+        if (!$dados['existe']) avisoSemArquivoClientes();
+        ?>
+  <div class="dica">
+    <?= icone('up') ?>
+    <p><span><b>Ordem no site:</b> a mesma desta lista. Use as setas para mudar.</span>
+    <span><b>Logo bom:</b> PNG com fundo transparente (ou fundo branco). O painel corta as sobras e reduz sozinho; a prévia mostra a chapa branca do site.</span></p>
+  </div>
+  <?php if (!$lista): ?>
+  <div class="vazio">
+    <p><b>Nenhum cliente cadastrado ainda.</b></p>
+    <p><a class="btn btn--verde btn--p" href="<?= e(link_('cliente-novo')) ?>"><?= icone('plus') ?>Cadastrar cliente</a></p>
+  </div>
+  <?php else: ?>
+  <ol class="clientes" role="list" data-clientes>
+    <?php foreach ($lista as $i => $c) itemCliente($c, $i, count($lista)); ?>
+  </ol>
+  <?php endif; ?>
+  <p class="clientes__rodape">
+    <a href="<?= e(link_('copias', ['de' => 'clientes'])) ?>"><?= icone('restore') ?>Cópias de segurança da lista de clientes</a>
+    <a href="<?= e(cfg('url_site') . 'empresa.html#clientes') ?>" target="_blank" rel="noopener"><?= icone('ext') ?>Ver os logos no site</a>
+  </p>
+<?php
+    }, ['menu' => 'clientes', 'classe' => 'pg-clientes']);
+}
+
+function itemCliente(array $c, int $i, int $total): void
+{
+    $n = $i + 1;
+    $nome = (string) ($c['nome'] ?? '');
+    $logo = (string) ($c['logo'] ?? '');
+    $info = infoLogo($logo);
+    $ref = ['n' => (string) $n, 'logo' => $logo];
+    $editar = link_('cliente-editar', $ref);
+    $campos = campoCsrf() . '<input type="hidden" name="n" value="' . $n . '"><input type="hidden" name="logo" value="' . e($logo) . '">';
+    ?>
+    <li class="cli" id="c-<?= $n ?>">
+      <a class="cli__chapa" href="<?= e($editar) ?>" tabindex="-1" aria-hidden="true"><?= chapaLogo($info) ?></a>
+      <div class="cli__txt">
+        <p class="cli__pos" data-pos><?= $n ?>º no site</p>
+        <h3 class="cli__nome"><a href="<?= e($editar) ?>"><?= e($nome) ?></a></h3>
+        <?php if (!$info): ?><p class="item__selos"><span class="selo selo--oculto"><?= $logo === '' ? 'Sem logo: não aparece no site' : 'Logo não encontrado no servidor' ?></span></p><?php endif; ?>
+      </div>
+      <div class="cli__acoes">
+        <form method="post" action="<?= e(link_('cliente-mover')) ?>" data-mover-cliente>
+          <?= $campos ?><input type="hidden" name="dir" value="cima">
+          <button type="submit" class="ic" aria-label="Subir <?= e($nome) ?>" title="Subir"<?= $i === 0 ? ' disabled' : '' ?> data-mover-cima><?= icone('up') ?></button>
+        </form>
+        <form method="post" action="<?= e(link_('cliente-mover')) ?>" data-mover-cliente>
+          <?= $campos ?><input type="hidden" name="dir" value="baixo">
+          <button type="submit" class="ic" aria-label="Descer <?= e($nome) ?>" title="Descer"<?= $i === $total - 1 ? ' disabled' : '' ?> data-mover-baixo><?= icone('down') ?></button>
+        </form>
+        <a class="btn btn--linha btn--p cli__editar" href="<?= e($editar) ?>"><?= icone('edit') ?><span>Editar</span><span class="sr-only"> <?= e($nome) ?></span></a>
+        <form method="post" action="<?= e(link_('cliente-excluir')) ?>" data-confirmar="<?= e(textoExcluirCliente($c)) ?>" data-confirmar-ok="Excluir" data-confirmar-tit="Excluir cliente?">
+          <?= $campos ?>
+          <button type="submit" class="ic ic--perigo" aria-label="Excluir <?= e($nome) ?>" title="Excluir"><?= icone('trash') ?></button>
+        </form>
+      </div>
+    </li>
+<?php
+}
+
+/** Formulário do cliente. $ref = ['n' => posição (1…), 'logo' => arquivo] ao editar; null = novo. */
+function telaCliente(array $dados, ?array $c, array $erros = [], ?array $ref = null): void
+{
+    $novo = $ref === null;
+    $c = $c ?? ['nome' => '', 'logo' => ''];
+    $info = infoLogo((string) ($c['logo'] ?? ''));
+    $titulo = $novo ? 'Novo cliente' : 'Editar cliente';
+    $acao = link_('cliente-salvar', $novo ? [] : ['n' => (string) $ref['n'], 'logo' => (string) $ref['logo']]);
+    $voltar = link_('clientes') . ($novo ? '' : '#c-' . (int) $ref['n']);
+    $err = static fn(string $k): string => isset($erros[$k]) ? '<p class="campo__erro" id="erro-' . e($k) . '">' . icone('alert') . e($erros[$k]) . '</p>' : '';
+    $inv = static fn(string $k): string => isset($erros[$k]) ? ' aria-invalid="true" aria-describedby="erro-' . e($k) . '"' : '';
+    $minL = (int) (cfg('logo_min_largura') ?? 80);
+    $maxB = (int) (cfg('logo_max_bytes') ?? 5242880);
+
+    pagina($titulo, static function () use ($dados, $c, $erros, $novo, $info, $titulo, $acao, $voltar, $err, $inv, $minL, $maxB): void { ?>
+  <p class="migalha"><a href="<?= e($voltar) ?>"><?= icone('up', 'i i--esq') ?>Clientes</a></p>
+  <?php cabecalhoPagina($novo ? 'Logos no site' : (string) $c['nome'], $titulo); ?>
+  <?php if ($erros): ?>
+  <div class="aviso aviso--erro" role="alert" tabindex="-1" data-erros>
+    <?= icone('alert') ?>
+    <div>
+      <p><b>O cliente não foi salvo.</b> Confira:</p>
+      <ul><?php foreach ($erros as $k => $m): ?><li><a href="#f-<?= e($k === 'geral' ? 'nome' : $k) ?>"><?= e($m) ?></a></li><?php endforeach; ?></ul>
+    </div>
+  </div>
+  <?php endif; ?>
+  <?php if (!$dados['existe']) avisoSemArquivoClientes(true); ?>
+  <form class="fp fc" method="post" action="<?= e($acao) ?>" enctype="multipart/form-data" data-form-cliente data-form-enviar>
+    <?= campoCsrf() ?>
+    <input type="hidden" name="MAX_FILE_SIZE" value="<?= $maxB ?>">
+    <div class="fp__lado">
+      <fieldset class="caixa caixa--foto">
+        <legend>Logo</legend>
+        <p class="foto__rot" id="logo-rot">Como fica no site</p>
+        <div class="palco" data-palco aria-describedby="logo-rot">
+          <div class="chapa chapa--grande<?= $info && $info['sq'] ? ' chapa--sq' : '' ?><?= $info ? '' : ' chapa--vazia' ?>" data-chapa>
+            <img src="<?= e($info['url'] ?? '') ?>" alt="<?= $info ? 'Logo atual de ' . e((string) $c['nome']) : '' ?>" data-chapa-img<?= $info ? '' : ' hidden' ?>>
+            <p class="foto__vazio" data-chapa-vazio<?= $info ? ' hidden' : '' ?>><?= icone('camera', 'i i--grande') ?><span>Nenhum logo ainda</span></p>
+          </div>
+        </div>
+        <label class="btn btn--linha btn--largo foto__btn" for="f-logo"><?= icone('camera') ?><span data-logo-rotulo><?= $info ? 'Trocar logo' : 'Escolher logo' ?></span></label>
+        <input class="foto__input" id="f-logo" type="file" name="logo" accept="image/png,image/jpeg,image/webp"<?= $info ? '' : ' required' ?><?= $inv('logo') ?> data-logo-input data-min="<?= $minL ?>" data-max-bytes="<?= $maxB ?>">
+        <?= $err('logo') ?>
+        <p class="ajuda" data-logo-info><b>PNG com fundo transparente</b> fica melhor; JPG ou WebP com <b>fundo branco</b> também servem. Até <?= e(mb_($maxB)) ?>, com pelo menos <?= $minL ?> px de largura. <b>SVG não é aceito</b>: peça o logo em PNG. O painel corta as sobras, reduz e otimiza sozinho.</p>
+      </fieldset>
+    </div>
+    <div class="fp__principal">
+      <fieldset class="caixa">
+        <legend>Cliente</legend>
+        <div class="campo">
+          <label for="f-nome">Nome do cliente</label>
+          <input id="f-nome" name="nome" required maxlength="<?= LIMITE_NOME_CLIENTE ?>" value="<?= e((string) $c['nome']) ?>" autocomplete="off" placeholder="Ex.: Supermercado Bom Preço"<?= $inv('nome') ?>>
+          <?= $err('nome') ?>
+          <p class="ajuda">Não aparece escrito no site: é o texto do logo para o Google, para leitores de tela e para quando a imagem não carrega. Até <?= LIMITE_NOME_CLIENTE ?> caracteres.</p>
+        </div>
+        <?php if (isset($erros['geral'])): ?><?= $err('geral') ?><?php endif; ?>
+        <?php if ($novo): ?><p class="ajuda">O cliente novo entra no <b>fim da lista</b>. Depois, use as setas da tela Clientes para escolher a posição no site.</p><?php endif; ?>
+      </fieldset>
+    </div>
+    <div class="barra-salvar">
+      <a class="btn btn--linha" href="<?= e($voltar) ?>">Cancelar</a>
+      <button class="btn btn--verde" type="submit" data-salvar><?= icone('check') ?><span><?= $novo ? 'Cadastrar' : 'Salvar' ?></span></button>
+    </div>
+  </form>
+<?php
+    }, ['menu' => 'clientes', 'classe' => 'pg-produto pg-cliente']);
+}
+
+/** Abas da tela de cópias: catálogo de produtos ou lista de clientes. */
+function abasCopias(string $atual): void
+{
+    ?>
+  <nav class="chips abas-copias" aria-label="Cópias de">
+    <a class="chip" href="<?= e(link_('copias')) ?>"<?= $atual === 'produtos' ? ' aria-current="page"' : '' ?>><?= icone('box') ?>Produtos</a>
+    <a class="chip" href="<?= e(link_('copias', ['de' => 'clientes'])) ?>"<?= $atual === 'clientes' ? ' aria-current="page"' : '' ?>><?= icone('loja') ?>Clientes</a>
+  </nav>
+<?php
+}
+
+function telaCopiasClientes(array $copias, ?int $totalAtual, array $logosAtuais = []): void
+{
+    pagina('Cópias de segurança', static function () use ($copias, $totalAtual, $logosAtuais): void {
+        cabecalhoPagina('Desfazer alterações', 'Cópias de segurança',
+            'Antes de cada mudança na lista de <b>clientes</b> o painel guarda uma cópia de como ela estava, com as mesmas regras das cópias do catálogo (as '
+            . (int) cfg('copias_max') . ' mais recentes, tudo dos últimos ' . (int) cfg('copias_dias') . ' dias; as de <b>excluir</b> e <b>restaurar</b> ficam ' . (int) cfg('copias_protegidas_dias') . ' dias). '
+            . '<b>Restaurar</b> volta a lista inteira, com os logos. Para devolver só um cliente excluído, use <b>Trazer de volta</b>.');
+        abasCopias('clientes');
+        if (!$copias): ?>
+  <div class="vazio"><p><b>Ainda não há cópias da lista de clientes.</b> Elas aparecem aqui depois da primeira alteração em Clientes.</p></div>
+  <?php else: ?>
+  <ol class="copias" role="list">
+    <?php foreach ($copias as $i => $c):
+        $titulo = $c['motivo'] !== '' ? $c['motivo'] : 'Antes de: ' . lcfirst($c['feitos'][0] ?? 'alteração');
+        $mais = (int) $c['juntou'] - 1;
+        $voltaSo = $c['tipo'] === 'excluir' && $c['alvo'] !== '' && !isset($logosAtuais[$c['alvo']]);
+        // Posição do cliente excluído na cópia (para o "Trazer de volta")
+        $pos = 0;
+        if ($voltaSo) {
+            $d = lerJsonPrivado('copias/' . $c['nome']);
+            $k = is_array($d['clientes'] ?? null) ? acharCliente($d['clientes'], -1, $c['alvo']) : null;
+            if ($k === null) $voltaSo = false; else $pos = $k + 1;
+        } ?>
+    <li class="copia">
+      <div class="copia__txt">
+        <p class="copia__quando"><?= e(quando($c['criado'])) ?><?php if ($c['ultimo'] - $c['criado'] >= 60): ?><span class="copia__ate"> até <?= e(date('H:i', $c['ultimo'])) ?></span><?php endif; ?><?php if ($i === 0): ?> <span class="selo selo--destaque">Mais recente</span><?php endif; ?></p>
+        <p class="copia__motivo"><?= e($titulo) ?><?php if ($mais > 0): ?> <span class="copia__mais">e mais <?= $mais ?> <?= $mais === 1 ? 'alteração' : 'alterações' ?> do mesmo tipo</span><?php endif; ?></p>
+        <p class="copia__meta"><?= (int) $c['total'] ?> <?= $c['total'] === 1 ? 'cliente' : 'clientes' ?><?= $c['existia'] ? '' : ' (a lista ainda não existia)' ?><?= $c['usuario'] !== '' ? ' · por ' . e($c['usuario']) : '' ?><?= in_array($c['tipo'], TIPOS_PROTEGIDOS, true) ? ' · guardada por ' . (int) cfg('copias_protegidas_dias') . ' dias' : '' ?></p>
+      </div>
+      <div class="copia__bts">
+        <?php if ($voltaSo): ?>
+        <form method="post" action="<?= e(link_('cliente-desfazer')) ?>" data-form-enviar>
+          <?= campoCsrf() ?><input type="hidden" name="copia" value="<?= e($c['nome']) ?>"><input type="hidden" name="n" value="<?= $pos ?>"><input type="hidden" name="logo" value="<?= e($c['alvo']) ?>">
+          <button class="btn btn--verde btn--p" type="submit"><?= icone('restore') ?>Trazer de volta<span class="sr-only"> “<?= e($c['alvoNome']) ?>”</span></button>
+        </form>
+        <?php endif; ?>
+        <form method="post" action="<?= e(link_('restaurar')) ?>" data-confirmar="<?= e(textoRestaurarClientes($copias, $i, $totalAtual)) ?>" data-confirmar-ok="Restaurar" data-confirmar-tit="Restaurar esta cópia?">
+          <?= campoCsrf() ?><input type="hidden" name="copia" value="<?= e($c['nome']) ?>">
+          <button class="btn btn--linha btn--p" type="submit"><?= icone('restore') ?>Restaurar</button>
+        </form>
+      </div>
+    </li>
+    <?php endforeach; ?>
+  </ol>
+  <?php endif;
+    }, ['menu' => 'copias', 'classe' => 'pg-copias']);
+}
+
+function telaClientesIlegivel(string $motivo): void
+{
+    http_response_code(500);
+    pagina('Lista de clientes com problema', static function () use ($motivo): void { ?>
+  <section class="vazio-grande">
+    <?= icone('alert', 'i i--grande') ?>
+    <h1>Não consegui ler a lista de clientes</h1>
+    <p>O arquivo <code>compartilhado/dados/clientes.js</code> não está no formato que o painel grava (<?= e($motivo) ?>). Isso acontece quando ele é editado à mão ou substituído por uma versão errada. Os produtos não foram afetados.</p>
+    <p>O jeito mais rápido de resolver é restaurar uma cópia de segurança da lista de clientes.</p>
+    <p><a class="btn btn--verde" href="<?= e(link_('copias', ['de' => 'clientes'])) ?>"><?= icone('restore') ?>Ver cópias dos clientes</a></p>
+  </section>
+<?php }, ['menu' => 'clientes']);
 }

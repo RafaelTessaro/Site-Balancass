@@ -124,6 +124,31 @@
       .replace(/IPEM-SP/g, '<span class="nobr">IPEM-SP</span>');
   }
 
+  /* Faixa de clientes: o CSS diz quantas colunas cabem (--cols-max, muda com a largura) e aqui
+     equilibramos as fileiras para a quantidade de logos que o painel tiver
+     (5 → 5; 7 → 4 + 3; 8 → 4 + 4; 10 → 5 + 5; 12 → 6 + 6; no celular, 2 ou 3 por fileira). */
+  var ro = null;
+  function calculaColunas(ul) {
+    var n = ul.children.length;
+    if (!n) return;
+    var max = parseInt(getComputedStyle(ul).getPropertyValue("--cols-max"), 10) || 6;
+    var cols = Math.ceil(n / Math.ceil(n / max));
+    // Poucos logos: as chapas não crescem demais (mínimo de 2/3 das colunas que cabem)
+    cols = Math.min(max, Math.max(cols, Math.ceil(max * 2 / 3)));
+    if (ul.style.getPropertyValue("--cols") !== String(cols)) ul.style.setProperty("--cols", cols);
+  }
+  function colunasClientes(ul) {
+    calculaColunas(ul);
+    if (ul.lvCols) return;
+    ul.lvCols = true;
+    if (window.ResizeObserver) {
+      ro = ro || new ResizeObserver(function (lista) { lista.forEach(function (r) { calculaColunas(r.target); }); });
+      ro.observe(ul);
+    } else {
+      window.addEventListener("resize", function () { calculaColunas(ul); });
+    }
+  }
+
   var LISTAS = {
     horarios: function (ul) {
       if (!E.horarios || !E.horarios.length) return;
@@ -136,13 +161,30 @@
       ul.innerHTML = E.marcas.map(function (m) { return "<li>" + LV.esc(m) + "</li>"; }).join("");
     },
     clientes: function (ul) {
-      if (!E.clientes || !E.clientes.length) return;
-      if (ul.children.length === E.clientes.length) return;   // o HTML já traz os logos com width/height
-      ul.innerHTML = E.clientes.map(function (c) {
-        var src = c.logo === "qualidade.webp" ? "img/clientes/qualidade.webp" : BC.img("clientes/" + c.logo);
-        var sq = /brasil-frios|camargo/.test(c.logo) ? " clients__i--sq" : "";
-        return '<li class="clients__i' + sq + '"><img src="' + src + '" alt="' + LV.esc(c.nome) + '" loading="lazy" decoding="async"></li>';
-      }).join("");
+      // E.clientes = dados/clientes.js (painel, área Clientes) ou, sem ele, a lista de empresa.js
+      var lista = Array.isArray(E.clientes) ? E.clientes : null;
+      if (!lista) return;
+      var bloco = ul.closest(".clients, .pn-prova__c") || ul;
+      if (!lista.length) { ul.innerHTML = ""; bloco.hidden = true; return; }   // o painel tirou todos
+      bloco.hidden = false;
+      // O HTML já traz os MESMOS logos na mesma ordem (com width/height)? Então fica como está.
+      var noHtml = $$("img", ul).map(function (im) { return (im.getAttribute("src") || "").split("/").pop() + "|" + im.alt; });
+      var nosDados = lista.map(function (c) { return c.logo + "|" + c.nome; });
+      if (noHtml.join("\n") !== nosDados.join("\n")) {
+        ul.innerHTML = lista.map(function (c) {
+          // qualidade.webp: a versão recortada (sem a margem branca) mora em img/clientes/
+          var src = c.logo === "qualidade.webp" ? "img/clientes/qualidade.webp" : BC.img("clientes/" + encodeURIComponent(c.logo));
+          var sq = /^(brasil-frios|camargo)\./.test(c.logo) ? " clients__i--sq" : "";
+          return '<li class="clients__i' + sq + '"><img src="' + LV.esc(src) + '" alt="' + LV.esc(c.nome) + '" loading="lazy" decoding="async"></li>';
+        }).join("");
+        // Logo novo (do painel): os quase quadrados ganham mais altura na chapa, como os do HTML
+        $$("img", ul).forEach(function (im) {
+          var li = im.parentNode;
+          function mede() { if (im.naturalWidth && im.naturalHeight && im.naturalWidth / im.naturalHeight < 1.35) li.classList.add("clients__i--sq"); }
+          if (im.complete) mede(); else im.addEventListener("load", mede, { once: true });
+        });
+      }
+      colunasClientes(ul);
     },
     depoimentos: function (ul) {
       if (!E.depoimentos || !E.depoimentos.length) return;

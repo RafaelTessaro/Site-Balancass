@@ -11,8 +11,8 @@ para a  public_html  da HostGator (cPanel):
     ├── assistencia.html  produtos.html  sistema.html  empresa.html  contato.html
     ├── 404.html                 ← página de erro (caminhos absolutos)
     ├── css/  js/  img/          ← só o que as 6 páginas usam
-    ├── compartilhado/           ← dados (empresa.js, produtos.js), balancas.js e fotos
-    ├── painel/                  ← painel de produtos (PHP), sem dados privados
+    ├── compartilhado/           ← dados (empresa.js, produtos.js, clientes.js), balancas.js, fotos e logos
+    ├── painel/                  ← painel de produtos e clientes (PHP), sem dados privados
     ├── .htaccess  robots.txt  sitemap.xml  favicon.ico
 
 O que o script faz nas páginas:
@@ -24,17 +24,30 @@ O que o script faz nas páginas:
     CSS/JS por 1 mês; com o ?v= cada publicação nova é baixada na hora).
 
 No fim, confere o resultado (arquivos que faltam, restos de "../",
-preview.js, variações antigas, formato do catálogo, dados privados no
-painel) e para com erro se algo estiver errado. A pasta site/ antiga só é
-substituída quando tudo deu certo.
+preview.js, variações antigas, formato do catálogo e da lista de clientes,
+clientes.js incluído antes de balancas.js em todas as páginas, dados
+privados no painel) e para com erro se algo estiver errado. A pasta site/
+antiga só é substituída quando tudo deu certo.
 
 Uso (Python 3.8+, sem instalar nada):
     python3 ferramentas/montar-site.py            # gera site/
-    python3 ferramentas/montar-site.py --zip      # gera site/ e site.zip (para Carregar + Extrair no cPanel)
+    python3 ferramentas/montar-site.py --zip      # gera site/ e site.zip (site COMPLETO, para a 1ª publicação)
+    python3 ferramentas/montar-site.py --atualizacao                     # gera site/ e atualizacao.zip
+    python3 ferramentas/montar-site.py --atualizacao --incluir-clientes  # idem, levando também os clientes
     python3 ferramentas/montar-site.py --saida /outra/pasta
 
+atualizacao.zip = o site completo MENOS os dados que o painel altera no
+servidor, para extrair por cima da public_html sem perder nada:
+  * nunca leva compartilhado/dados/produtos.js nem as fotos de
+    compartilhado/img/produtos/ e img/produtos-recorte/;
+  * só leva compartilhado/dados/clientes.js e os logos de img/clientes/
+    com --incluir-clientes (use quando o servidor ainda NÃO tem clientes.js,
+    ou seja, antes de o painel começar a cadastrar logos);
+  * os .htaccess dessas pastas (que bloqueiam scripts) vão sempre.
+O zip fica ao lado da pasta de saída (padrão: atualizacao.zip na raiz do projeto).
+
 Fontes: linha-verde/ (páginas, css, js, img, 404.html), compartilhado/,
-painel/ e hospedagem/ (.htaccess, .htaccess das pastas de fotos, favicon.ico).
+painel/ e hospedagem/ (.htaccess, .htaccess das pastas de fotos e logos, favicon.ico).
 Nada nas fontes é alterado.
 """
 import argparse
@@ -74,6 +87,10 @@ LIXO = [".DS_Store", "Thumbs.db", "desktop.ini", "*.log", "*.bak", "*.tmp", "*.t
 PAINEL_FORA = ["privado", "painel-balancas-privado", "erros.php", "sessoes", "copias", "lixeira"]
 PRIVADOS = {"config.php"}  # nome permitido só em painel/config.php (o de configuração, sem senha)
 SINAIS_PRIVADOS = ["primeiro-acesso.php", "tentativas.php", "registro.php", "chave.php", "erros.php"]
+# Pastas de imagens que o painel grava; cada uma leva um .htaccess que bloqueia scripts (hospedagem/compartilhado/img/<pasta>/)
+PASTAS_DO_PAINEL = ("produtos", "produtos-recorte", "clientes")
+# Logo de cliente: só o nome do arquivo (mesma regra do painel, lib/clientes.php)
+RE_ARQUIVO_LOGO = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(?:webp|png|jpe?g|svg)$")
 
 erros = []
 
@@ -190,6 +207,7 @@ def htaccess():
         "bloqueio de config.php/LEIA-ME.md/.user.ini do painel": r"RewriteRule ^painel/(config\.php|LEIA-ME\.md|\.user\.ini|\.htaccess)$",
         "bloqueio de .md/.ini/.log em qualquer pasta": r"\.(log|md|ini|sh)$",
         "bloqueio de .zip/.bak/.sql na raiz": r"RewriteRule ^[^/]+\.(zip|bak|sql)$ - [F,L,NC]",
+        "clientes.js sem cache (no-cache, como produtos.js)": r"clientes\.js",
     }
     for nome, trecho in obrigatorio.items():
         if trecho not in texto:
@@ -268,6 +286,67 @@ def conferir_catalogo(arquivo):
         if p.get("imagem") and not (fotos / p["imagem"]).is_file():
             erro(f"produtos.js: foto não encontrada para {p.get('id')}: img/produtos/{p['imagem']}")
     return len(cats), len(prods), sum(1 for p in prods if p.get("visivel") is not False)
+
+
+def conferir_clientes(arquivo):
+    """compartilhado/dados/clientes.js: existe e está no formato do painel (window.CLIENTES = [JSON];)."""
+    if not arquivo.is_file():
+        erro("compartilhado/dados/clientes.js não existe. É a lista de logos de clientes que o painel edita "
+             "(window.CLIENTES = [{\"nome\": \"…\", \"logo\": \"arquivo.webp\"}, …];). Crie o arquivo no formato do painel "
+             "(painel/LEIA-ME.md, item 9) com os clientes de compartilhado/dados/empresa.js.")
+        return None
+    try:
+        lista = json_depois(ler(arquivo), "CLIENTES")
+    except (ValueError, json.JSONDecodeError) as ex:
+        erro("compartilhado/dados/clientes.js não está no formato do painel (" + str(ex) + "). "
+             "O formato é: window.CLIENTES = [ {\"nome\": \"…\", \"logo\": \"arquivo.webp\"} ];  (JSON puro, aspas duplas).")
+        return None
+    if not isinstance(lista, list):
+        erro("clientes.js: window.CLIENTES precisa ser uma lista [ … ]")
+        return None
+    logos = arquivo.parent.parent / "img" / "clientes"   # compartilhado/img/clientes do pacote
+    sem_logo = 0
+    for n, c in enumerate(lista, 1):
+        if not isinstance(c, dict) or not isinstance(c.get("nome"), str) or not c["nome"].strip():
+            erro(f"clientes.js: o item {n} não tem \"nome\"")
+            continue
+        logo = c.get("logo", "")
+        if not isinstance(logo, str):
+            erro(f"clientes.js: o \"logo\" de {c['nome']} não é texto")
+        elif not logo:
+            sem_logo += 1  # o site ignora (não aparece)
+        elif not RE_ARQUIVO_LOGO.match(logo):
+            erro(f"clientes.js: nome de arquivo inválido no logo de {c['nome']}: {logo!r}")
+        elif not (logos / logo).is_file():
+            erro(f"clientes.js: logo não encontrado para {c['nome']}: img/clientes/{logo}")
+    return len(lista), sem_logo
+
+
+RE_SCRIPT = re.compile(r"<script\b([^>]*)>", re.I)
+
+
+def conferir_scripts_clientes(rel, texto):
+    """A página carrega compartilhado/dados/clientes.js depois de empresa.js e antes de balancas.js."""
+    ordem = []
+    for m in RE_SCRIPT.finditer(texto):
+        src = re.search(r'\bsrc="([^"]+)"', m.group(1))
+        if src:
+            ordem.append((src.group(1).split("?")[0], m.group(1)))
+    nomes = [s for s, _ in ordem]
+    if "compartilhado/js/balancas.js" not in nomes:
+        return False
+    alvo = "compartilhado/dados/clientes.js"
+    if alvo not in nomes:
+        erro(f"{rel}: não carrega {alvo}. Acrescente <script src=\"../compartilhado/dados/clientes.js\"></script> "
+             "logo depois de empresa.js e antes de balancas.js (em linha-verde/).")
+        return False
+    i_cli, i_bal = nomes.index(alvo), nomes.index("compartilhado/js/balancas.js")
+    i_emp = nomes.index("compartilhado/dados/empresa.js") if "compartilhado/dados/empresa.js" in nomes else -1
+    if not (i_emp < i_cli < i_bal):
+        erro(f"{rel}: clientes.js precisa vir depois de empresa.js e antes de balancas.js")
+    if re.search(r"\basync\b", ordem[i_cli][1]):
+        erro(f"{rel}: clientes.js não pode ser async (balancas.js precisa dele antes)")
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -354,9 +433,16 @@ def conferir(site):
     for obrig in ("index.php", "config.php", ".htaccess", ".user.ini", "lib/.htaccess", "assets/painel.css", "assets/painel.js"):
         if not (pnl / obrig).is_file():
             erro(f"painel/{obrig} faltando no pacote")
-    for pasta in ("produtos", "produtos-recorte"):
+    for pasta in PASTAS_DO_PAINEL:
         if not (site / "compartilhado" / "img" / pasta / ".htaccess").is_file():
-            erro(f"compartilhado/img/{pasta}/.htaccess faltando (bloqueia scripts na pasta de fotos)")
+            erro(f"compartilhado/img/{pasta}/.htaccess faltando (bloqueia scripts na pasta de fotos/logos; "
+                 f"modelo em hospedagem/compartilhado/img/{pasta}/.htaccess)")
+
+    # Lista de clientes do painel: todas as páginas a carregam antes de balancas.js
+    for publicado, _ in PAGINAS:
+        conferir_scripts_clientes(publicado, ler(site / publicado))
+    if "balancas.js" in ler(site / "404.html"):
+        conferir_scripts_clientes("404.html", ler(site / "404.html"))
     for obrig in (".htaccess", "robots.txt", "sitemap.xml", "404.html", "favicon.ico"):
         if not (site / obrig).is_file():
             erro(f"{obrig} faltando no pacote")
@@ -400,9 +486,10 @@ def montar(destino):
 
         # compartilhado/ inteiro (o painel precisa de todas as fotos e dos dados)
         copiar_arvore(COMPARTILHADO, site / "compartilhado")
-        for pasta in ("produtos", "produtos-recorte"):
+        for pasta in PASTAS_DO_PAINEL:
             regra = HOSPEDAGEM / "compartilhado" / "img" / pasta / ".htaccess"
             if regra.is_file():
+                (site / "compartilhado" / "img" / pasta).mkdir(parents=True, exist_ok=True)
                 shutil.copy2(regra, site / "compartilhado" / "img" / pasta / ".htaccess")
         for f in (site / "compartilhado").rglob("*"):
             if f.is_file() and f.suffix in (".js", ".css", ".html"):
@@ -410,6 +497,7 @@ def montar(destino):
                 if "../compartilhado/" in t:
                     gravar(f, t.replace("../compartilhado/", "compartilhado/"))
         resumo_catalogo = conferir_catalogo(site / "compartilhado" / "dados" / "produtos.js")
+        resumo_clientes = conferir_clientes(site / "compartilhado" / "dados" / "clientes.js")
 
         # Páginas
         paginas = {pub: montar_pagina(pub, org) for pub, org in PAGINAS}
@@ -471,6 +559,10 @@ def montar(destino):
     if resumo_catalogo:
         c, p, v = resumo_catalogo
         print(f"  Catálogo: {c} categorias, {p} produtos ({v} no site), formato do painel ✓")
+    if resumo_clientes:
+        n, sem = resumo_clientes
+        print(f"  Clientes: {n} na lista (clientes.js no formato do painel ✓, incluído antes de balancas.js em todas as páginas ✓)"
+              + (f"; {sem} sem logo (não aparecem no site)" if sem else ""))
     print("  Painel: painel/ (primeiro acesso pelo código gravado no cPanel; veja painel/LEIA-ME.md)")
     print("  Próximo passo: enviar o CONTEÚDO de site/ para public_html (docs/PUBLICAR-NO-CPANEL.md).")
 
@@ -491,14 +583,78 @@ def compactar(site):
     print(f"  ZIP: {destino} ({destino.stat().st_size / 1024 / 1024:.1f} MB, {len(nomes)} arquivos, {ht} .htaccess)")
 
 
+def fica_fora_da_atualizacao(rel, incluir_clientes):
+    """Arquivos que o painel altera no servidor (não podem ser sobrescritos por uma atualização)."""
+    arquivos = {"compartilhado/dados/produtos.js"}
+    pastas = ["compartilhado/img/produtos/", "compartilhado/img/produtos-recorte/"]
+    if not incluir_clientes:
+        arquivos.add("compartilhado/dados/clientes.js")
+        pastas.append("compartilhado/img/clientes/")
+    if rel in arquivos:
+        return True
+    # O .htaccess dessas pastas (bloqueia scripts) vai sempre: é igual ao do servidor
+    return any(rel.startswith(p) and rel != p + ".htaccess" for p in pastas)
+
+
+def compactar_atualizacao(site, incluir_clientes):
+    """atualizacao.zip: o site completo MENOS os dados que o painel altera no servidor."""
+    site = site.resolve()
+    destino = site.parent / "atualizacao.zip"
+    tmp = destino.with_name(destino.name + ".tmp")
+    fora = []
+    with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+        for f in sorted(site.rglob("*")):
+            if not f.is_file():
+                continue
+            rel = f.relative_to(site).as_posix()
+            if fica_fora_da_atualizacao(rel, incluir_clientes):
+                fora.append(rel)
+                continue
+            z.write(f, rel)
+    # Confere o zip antes de trocar o anterior
+    with zipfile.ZipFile(tmp) as z:
+        nomes = z.namelist()
+    problemas = [n for n in nomes if fica_fora_da_atualizacao(n, incluir_clientes)]
+    for obrig in ["index.html", ".htaccess", "painel/index.php", "compartilhado/js/balancas.js"] + \
+                 [f"compartilhado/img/{p}/.htaccess" for p in PASTAS_DO_PAINEL]:
+        if obrig not in nomes:
+            problemas.append("faltou " + obrig)
+    if incluir_clientes and "compartilhado/dados/clientes.js" not in nomes:
+        problemas.append("faltou compartilhado/dados/clientes.js (--incluir-clientes)")
+    if problemas:
+        tmp.unlink()
+        sys.exit("atualizacao.zip NÃO gerado: " + "; ".join(problemas))
+    tmp.replace(destino)
+    fotos = sum(1 for r in fora if r.startswith(("compartilhado/img/produtos/", "compartilhado/img/produtos-recorte/")))
+    logos = sum(1 for r in fora if r.startswith("compartilhado/img/clientes/"))
+    print(f"  ATUALIZAÇÃO: {destino} ({destino.stat().st_size / 1024 / 1024:.1f} MB, {len(nomes)} arquivos)")
+    print(f"    fora do zip (o servidor mantém o que o painel gravou): compartilhado/dados/produtos.js, {fotos} fotos de produtos"
+          + ("" if incluir_clientes else f", compartilhado/dados/clientes.js e {logos} logos de clientes"))
+    if incluir_clientes:
+        print("    COM a lista de clientes (clientes.js + img/clientes/): use só se o servidor ainda não tem")
+        print("    compartilhado/dados/clientes.js — senão os logos cadastrados no painel seriam substituídos.")
+    print("    Como instalar: docs/PUBLICAR-NO-CPANEL.md → “Atualizar o site já publicado”.")
+
+
 def main():
     ap = argparse.ArgumentParser(description="Monta a pasta site/ para publicar na HostGator.")
     ap.add_argument("--saida", default=str(RAIZ / "site"), help="pasta de saída (padrão: site/ na raiz do projeto)")
-    ap.add_argument("--zip", action="store_true", help="também gera <saida>.zip com o conteúdo da pasta, pronto para o cPanel")
+    ap.add_argument("--zip", action="store_true", help="também gera <saida>.zip com o site COMPLETO, para a primeira publicação")
+    ap.add_argument("--atualizacao", action="store_true",
+                    help="também gera atualizacao.zip (ao lado da saída): o site completo MENOS produtos.js e as fotos "
+                         "de produtos (e, sem --incluir-clientes, sem clientes.js e os logos), para extrair por cima "
+                         "do site já publicado")
+    ap.add_argument("--incluir-clientes", action="store_true",
+                    help="com --atualizacao: leva também compartilhado/dados/clientes.js e img/clientes/ "
+                         "(só quando o servidor ainda não tem clientes.js)")
     args = ap.parse_args()
+    if args.incluir_clientes and not args.atualizacao:
+        ap.error("--incluir-clientes só vale junto com --atualizacao")
     montar(Path(args.saida))
     if args.zip:
         compactar(Path(args.saida))
+    if args.atualizacao:
+        compactar_atualizacao(Path(args.saida), args.incluir_clientes)
 
 
 if __name__ == "__main__":

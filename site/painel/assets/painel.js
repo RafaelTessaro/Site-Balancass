@@ -714,6 +714,199 @@
   }
 
   /* ------------------------------------------------------------------
+     Clientes: ordem (troca com o vizinho) e formulário com prévia do logo
+     ------------------------------------------------------------------ */
+  // Depois de mudar a ordem: posição, campos n= dos formulários, links e setas
+  function numerarClientes(lista) {
+    var itens = Array.prototype.filter.call(lista.children, function (x) { return x.matches(".cli"); });
+    itens.forEach(function (li, i) {
+      var n = String(i + 1);
+      li.id = "c-" + n;
+      var pos = $("[data-pos]", li);
+      if (pos) pos.textContent = n + "º no site";
+      $$("input[name=n]", li).forEach(function (inp) { inp.value = n; });
+      $$("a[href*='n=']", li).forEach(function (a) { a.setAttribute("href", a.getAttribute("href").replace(/([?&]n=)\d+/, "$1" + n)); });
+      var c = $("[data-mover-cima]", li), b = $("[data-mover-baixo]", li);
+      if (c) c.disabled = i === 0;
+      if (b) b.disabled = i === itens.length - 1;
+    });
+  }
+  document.addEventListener("submit", function (e) {
+    var f = e.target;
+    if (!f.matches || !f.matches("[data-mover-cliente]")) return;
+    e.preventDefault();
+    var bt = $("button", f), li = f.closest(".cli"), lista = li && li.parentNode;
+    if (!li) return;
+    bt.setAttribute("aria-busy", "true");
+    enviar(f).then(function (d) {
+      var viz = d.dir === "cima" ? li.previousElementSibling : li.nextElementSibling;
+      if (viz) {
+        if (d.dir === "cima") lista.insertBefore(li, viz);
+        else lista.insertBefore(viz, li);
+      }
+      numerarClientes(lista);
+      li.classList.add("is-movendo");
+      setTimeout(function () { li.classList.remove("is-movendo"); }, 900);
+      if (!bt.disabled) bt.focus({ preventScroll: true });
+      else { var outro = $(d.dir === "cima" ? "[data-mover-baixo]" : "[data-mover-cima]", li); if (outro && !outro.disabled) outro.focus({ preventScroll: true }); }
+      if (li.scrollIntoView) li.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      toast(d.msg);
+    }).catch(function (err) {
+      if (err.message !== "login") toast(err.message, true);
+    }).then(function () { bt.removeAttribute("aria-busy"); });
+  });
+
+  var fc = $("[data-form-cliente]");
+  if (fc) {
+    var cSujo = false, cEnviando = false, logoPronto = null;
+    fc.addEventListener("input", function () { cSujo = true; });
+    fc.addEventListener("change", function () { cSujo = true; });
+    window.addEventListener("beforeunload", function (e) {
+      if (cSujo && !cEnviando) { e.preventDefault(); e.returnValue = ""; }
+    });
+    var lInput = $("[data-logo-input]", fc), palco = $("[data-palco]", fc), chapa = $("[data-chapa]", fc);
+    var lImg = $("[data-chapa-img]", fc), lVazio = $("[data-chapa-vazio]", fc), lRot = $("[data-logo-rotulo]", fc), lInfo = $("[data-logo-info]", fc);
+    var LMAX = +lInput.getAttribute("data-max-bytes") || 5 * 1048576, LMIN = +lInput.getAttribute("data-min") || 80;
+    var lEstado = document.createElement("p");
+    lEstado.className = "foto-estado"; lEstado.setAttribute("aria-live", "polite"); lEstado.hidden = true;
+    lInfo.insertAdjacentElement("beforebegin", lEstado);
+    var lDica = document.createElement("p");
+    lDica.className = "foto-dica"; lDica.hidden = true;
+    lEstado.insertAdjacentElement("afterend", lDica);
+    var tamanho = function (b) { return b > 1048576 ? (b / 1048576).toFixed(1).replace(".", ",") + " MB" : Math.max(1, Math.round(b / 1024)) + " KB"; };
+    var estadoLogo = function (txt, erro) { lEstado.hidden = !txt; lEstado.textContent = txt || ""; lEstado.classList.toggle("is-erro", !!erro); };
+    var dicaLogo = function (txt) { lDica.hidden = !txt; lDica.textContent = txt || ""; chapa.classList.toggle("is-pequena", !!txt); };
+
+    var formatoLogo = function (file) {
+      var nome = (file.name || "").toLowerCase(), tipo = (file.type || "").toLowerCase();
+      if (tipo === "image/svg+xml" || /\.svgz?$/.test(nome)) return "Logo em SVG não é aceito (por segurança). Peça ao cliente o logo em PNG, de preferência com fundo transparente, ou abra o SVG no navegador, tire um print e use o print.";
+      if (/hei[cf]/.test(tipo) || /\.hei[cf]$/.test(nome)) return "Esse arquivo está em HEIC, formato que o site não usa. Salve o logo como PNG ou JPG e escolha de novo.";
+      if (tipo === "application/pdf" || /\.pdf$/.test(nome)) return "Esse arquivo é um PDF. Salve o logo como PNG (ou tire um print dele) e escolha de novo.";
+      if (!/^image\/(jpeg|png|webp)$/.test(tipo)) return "Formato não aceito (" + (file.type || nome.split(".").pop() || "desconhecido") + "). Use o logo em PNG, JPG ou WebP.";
+      if (file.size > LMAX) return "O logo tem " + tamanho(file.size) + "; o máximo é " + tamanho(LMAX) + ". Use um arquivo menor (logo não precisa ser grande).";
+      return "";
+    };
+    // Mesma conta do servidor (lib/imagens.php → analisarFoto): corta as sobras transparentes
+    // (ou brancas, se não houver transparência) com 3% de folga, e reduz para até 600 × 300.
+    var prepararLogo = function (file) {
+      var ruim = formatoLogo(file);
+      if (ruim) return Promise.reject(new Error(ruim));
+      return new Promise(function (ok, falha) {
+        var url = URL.createObjectURL(file), img = new Image();
+        img.onload = function () { ok({ img: img, url: url }); };
+        img.onerror = function () { URL.revokeObjectURL(url); falha(new Error("Não consegui abrir esse arquivo. Salve o logo de novo como PNG e tente outra vez.")); };
+        img.src = url;
+      }).then(function (r) {
+        var w = r.img.naturalWidth, h = r.img.naturalHeight;
+        if (w < LMIN || h < 20) { URL.revokeObjectURL(r.url); throw new Error("O logo é pequeno demais (" + w + " × " + h + " px). Use um com pelo menos " + LMIN + " px de largura (o ideal é 300 px ou mais)."); }
+        var res = { url: r.url, w: w, h: h, cw: w, ch: h, transp: false, fundo: true, claro: false };
+        try {
+          var f = Math.min(1, 320 / Math.max(w, h)), tw = Math.max(1, Math.round(w * f)), th = Math.max(1, Math.round(h * f));
+          var cv = document.createElement("canvas"); cv.width = tw; cv.height = th;
+          var cx = cv.getContext("2d"); cx.drawImage(r.img, 0, 0, tw, th);
+          var d = cx.getImageData(0, 0, tw, th).data, transp = 0, a = [tw, th, -1, -1], b = [tw, th, -1, -1], borda = 0, bom = 0, somaLum = 0, nOp = 0;
+          var m = Math.max(1, Math.round(Math.min(tw, th) * 0.05));
+          for (var y = 0; y < th; y++) for (var x = 0; x < tw; x++) {
+            var i = (y * tw + x) * 4, al = d[i + 3], op = al / 255;
+            if (al < 62) transp++;
+            if (al > 62) { if (x < a[0]) a[0] = x; if (y < a[1]) a[1] = y; if (x > a[2]) a[2] = x; if (y > a[3]) a[3] = y; somaLum += (d[i] * .3 + d[i + 1] * .59 + d[i + 2] * .11); nOp++; }
+            var mn = Math.min(d[i], d[i + 1], d[i + 2]) * op + 255 * (1 - op);
+            if (mn < 238) { if (x < b[0]) b[0] = x; if (y < b[1]) b[1] = y; if (x > b[2]) b[2] = x; if (y > b[3]) b[3] = y; }
+            if (y < m || y >= th - m || x < m || x >= tw - m) { borda++; if (al < 200 || Math.min(d[i], d[i + 1], d[i + 2]) >= 226) bom++; }
+          }
+          res.transp = transp / (tw * th) > 0.01;
+          res.fundo = bom / borda > 0.7;
+          // Logo branco sobre fundo transparente some na chapa branca (com fundo branco, o desenho já é o que não é branco)
+          res.claro = res.transp && nOp > 0 && somaLum / nOp > 232;
+          var c = res.transp ? a : b;
+          if (c[2] >= 0) {
+            var sx = w / tw, sy = h / th;
+            var x0 = Math.floor(c[0] * sx), y0 = Math.floor(c[1] * sy), x1 = Math.ceil((c[2] + 1) * sx), y1 = Math.ceil((c[3] + 1) * sy);
+            var mg = Math.round(0.03 * Math.max(x1 - x0, y1 - y0));
+            x0 = Math.max(0, x0 - mg); y0 = Math.max(0, y0 - mg); x1 = Math.min(w, x1 + mg); y1 = Math.min(h, y1 + mg);
+            if (!((x1 - x0) > w * 0.98 && (y1 - y0) > h * 0.98)) {
+              res.cw = x1 - x0; res.ch = y1 - y0;
+              var k = Math.min(1, 600 / res.cw, 300 / res.ch), ow = Math.max(1, Math.round(res.cw * k)), oh = Math.max(1, Math.round(res.ch * k));
+              var out = document.createElement("canvas"); out.width = ow; out.height = oh;
+              var ox = out.getContext("2d"); ox.imageSmoothingQuality = "high";
+              ox.drawImage(r.img, x0, y0, res.cw, res.ch, 0, 0, ow, oh);
+              res.previa = out.toDataURL("image/png");
+            }
+          } else if (res.transp) {
+            URL.revokeObjectURL(r.url);
+            throw new Error("O logo parece estar vazio (todo transparente). Confira o arquivo e escolha de novo.");
+          }
+        } catch (err) {
+          if (/vazio/.test(err.message)) throw err;   // sem acesso aos pixels: a prévia usa a imagem inteira
+        }
+        if (res.cw < LMIN * 0.75) { URL.revokeObjectURL(r.url); throw new Error("Sem as margens vazias, o logo fica com só " + res.cw + " × " + res.ch + " px. Use um logo maior (pelo menos " + LMIN + " px de largura de desenho)."); }
+        return res;
+      });
+    };
+    var trocarLogo = function (file) {
+      if (!file) return;
+      estadoLogo("Preparando a prévia…");
+      dicaLogo("");
+      chapa.setAttribute("aria-busy", "true");
+      logoPronto = prepararLogo(file).then(function (r) {
+        if (lImg.src && lImg.src.indexOf("blob:") === 0) URL.revokeObjectURL(lImg.src);
+        lImg.src = r.previa || r.url; lImg.alt = "Prévia do logo novo"; lImg.hidden = false;
+        if (r.previa) URL.revokeObjectURL(r.url);
+        lVazio.hidden = true;
+        chapa.classList.remove("chapa--vazia");
+        chapa.classList.toggle("chapa--sq", r.cw / r.ch < 1.35);   // mesma regra do site (js/core.js)
+        lRot.textContent = "Trocar logo";
+        estadoLogo("Logo novo pronto (" + r.w + " × " + r.h + " px" + (r.cw !== r.w || r.ch !== r.h ? ", sobras cortadas" : "") + "). Salve para publicar.");
+        var avisos = [];
+        if (r.claro) avisos.push("o logo é quase todo branco e fica apagado na chapa branca do site. Prefira a versão colorida ou escura do logo");
+        else if (!r.transp && !r.fundo) avisos.push("o fundo deste logo não é branco nem transparente, então ele aparece como um retângulo colorido dentro da chapa branca. Se o cliente tiver o logo em PNG com fundo transparente, fica melhor");
+        if (r.cw < 200) avisos.push("o logo é pequeno (" + r.cw + " px de largura) e pode ficar sem nitidez. Se tiver uma versão maior, prefira");
+        dicaLogo(avisos.length ? "Atenção: " + avisos.join("; e ") + ". Pode salvar assim mesmo." : "");
+        lInput.removeAttribute("aria-invalid");
+      }).catch(function (err) {
+        lInput.value = "";
+        estadoLogo(err.message, true);
+      }).then(function () {
+        chapa.removeAttribute("aria-busy");
+        logoPronto = null;
+      });
+    };
+    lInput.addEventListener("change", function () { trocarLogo(lInput.files && lInput.files[0]); });
+    ["dragenter", "dragover"].forEach(function (t) { palco.addEventListener(t, function (e) { e.preventDefault(); palco.classList.add("is-arrastando"); }); });
+    ["dragleave", "drop"].forEach(function (t) { palco.addEventListener(t, function () { palco.classList.remove("is-arrastando"); }); });
+    palco.addEventListener("drop", function (e) {
+      e.preventDefault();
+      var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!file) return;
+      try { var dt = new DataTransfer(); dt.items.add(file); lInput.files = dt.files; } catch (err) { return; }
+      cSujo = true;
+      trocarLogo(file);
+    });
+    // Antes de enviar: espera a prévia e confere se a sessão ainda vale (senão pede a senha numa janela)
+    fc.addEventListener("submit", function (e) {
+      var bt = e.submitter;
+      if (logoPronto) {
+        e.preventDefault();
+        logoPronto.then(function () { if (fc.requestSubmit) fc.requestSubmit(bt || undefined); else { cEnviando = true; fc.submit(); } });
+        return;
+      }
+      if (fc.dataset.liberado !== "1") {
+        e.preventDefault();
+        sessaoOk().then(function (ok) {
+          if (!ok) return;
+          fc.dataset.liberado = "1";
+          if (fc.requestSubmit) fc.requestSubmit(bt || undefined); else { cEnviando = true; fc.submit(); }
+          fc.dataset.liberado = "";
+        });
+        return;
+      }
+      cEnviando = true;
+    });
+    var errosC = $("[data-erros]");
+    if (errosC) errosC.focus();
+  }
+
+  /* ------------------------------------------------------------------
      Formulários comuns: impede envio duplo
      ------------------------------------------------------------------ */
   document.addEventListener("submit", function (e) {
@@ -767,7 +960,7 @@
   });
   // Depois de salvar, a lista abre no produto (#p-ID), longe do aviso do topo: o aviso aparece
   // também fixo na tela (com o link "Ver no site", por 30 s) e o cartão fica marcado
-  var alvoHash = /^#p-[a-z0-9-]+$/.test(location.hash) ? document.getElementById(location.hash.slice(1)) : null;
+  var alvoHash = /^#(p-[a-z0-9-]+|c-\d+)$/.test(location.hash) ? document.getElementById(location.hash.slice(1)) : null;
   var primeiro = $("[data-avisos] .aviso");
   if (alvoHash && primeiro) {
     alvoHash.classList.add("is-novo");

@@ -1,7 +1,7 @@
 # Como adicionar e atualizar produtos no site
 
 O jeito principal é o **painel do site**: **`https://balancass.com/painel/`**.
-Pelo celular ou pelo computador você cadastra, edita, esconde e exclui produtos, troca o estoque e envia fotos, **sem mexer em código**. O que você salva aparece no site na hora.
+Pelo celular ou pelo computador você cadastra, edita, esconde e exclui produtos, troca o estoque e envia fotos, **sem mexer em código**. Na área **Clientes** você também coloca, troca e reordena os **logos dos clientes** (item 8). O que você salva aparece no site na hora.
 
 Editar o arquivo do catálogo à mão continua possível, mas virou **plano B** (fim desta página).
 
@@ -105,9 +105,36 @@ Detalhes técnicos e problemas comuns: `painel/LEIA-ME.md`.
 
 ---
 
-## 8. O que o painel não edita
+## 8. Logos de clientes
 
-- **Telefone, WhatsApp, e-mail, endereço, horários, clientes, depoimentos:** ficam em `public_html/compartilhado/dados/empresa.js` (cPanel → Gerenciador de Arquivos → botão direito → **Editar**). Mude só o texto entre aspas e salve. Antes, faça uma cópia do arquivo (botão direito → **Copiar** → `empresa-backup.js`).
+Os logos da faixa **“Quem confia na gente”** (página inicial) e de **“Alguns clientes”** (página Empresa) são cadastrados no painel, em **Clientes** (no celular, o ícone de loja na barra de baixo; no computador, no menu do alto). O que você salva aparece nas duas páginas na hora.
+
+**Antes de começar, consiga o logo:** o melhor é um **PNG com fundo transparente** (peça ao cliente, à gráfica ou à agência dele, ou salve do site do cliente). PNG, JPG ou WebP com **fundo branco** também servem. Até 5 MB e com pelo menos 80 px de largura (o ideal é 300 px ou mais). **SVG não é aceito** (por segurança): peça o PNG, ou abra o SVG no navegador, tire um print e use o print.
+
+### Adicionar um cliente
+
+1. No painel, toque em **Clientes** → **Novo cliente**.
+2. Toque em **Escolher logo** e escolha o arquivo (no computador, também dá para arrastar o arquivo para a prévia).
+3. Confira a prévia **“Como fica no site”**: é a mesma chapa branca do site, com as sobras vazias já cortadas. A tela avisa (em amarelo) quando o logo vai ficar ruim: fundo colorido (vira um retângulo dentro da chapa), logo quase todo branco (some na chapa branca) ou logo pequeno demais (fica sem nitidez). Dá para salvar assim mesmo, mas vale procurar uma versão melhor.
+4. Escreva o **nome do cliente** (ex.: `Supermercado Bom Preço`). Ele não aparece escrito no site: é o texto do logo para o Google, para leitores de tela e para quando a imagem não carrega.
+5. **Cadastrar.** O cliente novo entra no **fim da lista**.
+
+O painel confere o arquivo, corta as sobras transparentes ou brancas, reduz para no máximo 600 × 300 px e salva em WebP, com a transparência.
+
+### Mudar a ordem, trocar o logo, excluir
+
+Na tela **Clientes** aparecem todos, na **ordem do site** (“1º no site”, “2º no site”…), cada um com o logo na chapa branca.
+
+- **↑ ↓**: muda a posição do logo no site (a mesma ordem vale para a página inicial e para a página Empresa).
+- **Editar**: troca o nome e/ou o logo (escolha o arquivo novo e **Salvar**). O logo antigo vai para a lixeira do painel.
+- **🗑 Excluir**: pede confirmação; o logo sai do site na hora. Logo depois, o aviso “foi excluído” tem o botão **Desfazer**: o cliente volta no mesmo lugar e com o logo.
+- **Errou mais de uma coisa?** **Cópias** → aba **Clientes**: as mesmas cópias de segurança dos produtos, só que da lista de clientes (**Trazer de volta** um cliente excluído ou **Restaurar** a lista inteira de um momento). As cópias de produtos e de clientes são separadas: restaurar uma não mexe na outra.
+
+> **Aviso “A lista de clientes ainda não foi instalada no servidor”**: o site no ar ainda não recebeu a atualização que traz a lista (`compartilhado/dados/clientes.js`). Instale a atualização primeiro (`docs/PUBLICAR-NO-CPANEL.md` → “Atualizar o site já publicado”) e só depois cadastre logos. Se cadastrar antes, o painel cria a lista só com o que você cadastrar, e os logos antigos deixam de aparecer.
+
+## 9. O que o painel não edita
+
+- **Telefone, WhatsApp, e-mail, endereço, horários, depoimentos, equipe:** ficam em `public_html/compartilhado/dados/empresa.js` (cPanel → Gerenciador de Arquivos → botão direito → **Editar**). Mude só o texto entre aspas e salve. Antes, faça uma cópia do arquivo (botão direito → **Copiar** → `empresa-backup.js`).
 - **Feriados** (aviso “Aberto agora / Fechado agora”): os nacionais e o 9 de julho já estão no site. Feriado municipal, Carnaval, Corpus Christi ou recesso: lista `FERIADOS` no arquivo `linha-verde/js/core.js` do projeto; depois gere o pacote de novo (`python3 ferramentas/montar-site.py`) e envie o `js/core.js` novo. Não edite o `core.js` direto no servidor: o navegador dos clientes guarda os arquivos CSS/JS por até um mês, e só o pacote novo avisa que o arquivo mudou.
 - **Lista para quem navega sem JavaScript:** o `produtos.html` tem uma lista curta e fixa de destaques dentro de `<noscript>` (quase ninguém vê; o Google lê a lista completa, que é gerada sozinha). Se trocar muito os destaques, atualize essa lista no projeto quando gerar o próximo pacote.
 

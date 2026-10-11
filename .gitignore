@@ -8,3 +8,4 @@ painel-balancas-privado/
 painel/privado/
 site/painel/privado/
 .site-montando-*/
+__pycache__/

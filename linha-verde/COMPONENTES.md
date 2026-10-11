@@ -190,6 +190,7 @@ e troque só o `<main>`. Ajuste:
 </script>
 <!-- Scripts locais primeiro (dados, fichas e links funcionam enquanto o CDN carrega); depois GSAP/Lenis -->
 <script defer src="../compartilhado/dados/empresa.js"></script>
+<script defer src="../compartilhado/dados/clientes.js"></script>   <!-- logos de clientes (gerado pelo painel) -->
 <script defer src="../compartilhado/dados/produtos.js"></script>
 <script defer src="../compartilhado/js/balancas.js"></script>
 <script defer src="js/core.js"></script>
@@ -214,7 +215,7 @@ Scripts do CDN disponíveis (todos `defer`, sempre DEPOIS dos locais):
 <script defer src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
 ```
 
-Ordem obrigatória: `empresa.js` → `produtos.js` → `balancas.js` → `core.js` → (`home-N.js`) → `preview.js` → CDN.
+Ordem obrigatória: `empresa.js` → `clientes.js` → `produtos.js` → `balancas.js` → `core.js` → (`home-N.js`) → `preview.js` → CDN.
 Nada de `type="module"` nem `fetch` (o site precisa abrir por `file://`).
 
 ### 2.2 Sprite de ícones (logo of + ícones) — primeiro filho do `<body>`
@@ -433,7 +434,9 @@ O HTML **sempre** traz o texto/URL real (SEO e sem JS); o `core.js` reescreve a 
 **WhatsApp com mensagem pronta:** `<a data-wa="Olá! Vim pelo site e quero…" href="https://wa.me/551930239050?text=…" target="_blank" rel="noopener">` (vazio = mensagem padrão). O core põe `target`, `rel` e o aviso "(abre em nova aba)".
 
 **Listas — `data-bc-list="…"`:** `horarios` (`<ul class="hours">`), `marcas` (`<ul class="ticker__list">`),
-`clientes` (`<ul class="clients__list">`), `depoimentos` (`<ul class="quotes__list">`, aceita `data-limite="3"` e `data-inicio="3"`),
+`clientes` (`<ul class="clients__list">`; a lista vem de `compartilhado/dados/clientes.js`, que o painel gera — sem ele, de
+`EMPRESA.clientes`; se os logos do HTML forem os mesmos, na mesma ordem, o HTML fica; senão a lista é refeita; as colunas se
+equilibram sozinhas pela quantidade: o CSS define `--cols-max` por largura e o `core.js` põe `--cols`; lista vazia esconde o bloco), `depoimentos` (`<ul class="quotes__list">`, aceita `data-limite="3"` e `data-inicio="3"`),
 `equipe` (`<ul class="team__list">`, monogramas). Escreva os itens também no HTML (copie de `empresa.html`).
 
 Exemplos:

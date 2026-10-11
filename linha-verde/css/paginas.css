@@ -464,7 +464,16 @@
 .on-dark .clients { border-top-color: var(--line); }
 .clients__lbl { color: var(--muted); }
 .on-dark .clients__lbl { color: var(--grey); }
-.clients__list { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: clamp(8px, 1vw, 14px); list-style: none; margin: 0; padding: 0; }
+/* A quantidade de logos muda pelo painel (área Clientes). --cols-max = colunas que cabem
+   em cada largura (o CSS decide); o js/core.js conta os logos e põe em --cols o número de
+   colunas que deixa as fileiras equilibradas (5 → 5; 8 → 4 + 4; 10 → 5 + 5; 11 → 6 + 5).
+   A última fileira, se ficar menor, fica centralizada. Sem JS: --cols = --cols-max. */
+.clients__list {
+  --cols-max: 6; --gap: clamp(8px, 1vw, 14px);
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: var(--gap);
+  list-style: none; margin: 0; padding: 0;
+}
+.clients__list > * { flex: 0 0 calc((100% - (var(--cols, var(--cols-max)) - 1) * var(--gap)) / var(--cols, var(--cols-max))); min-width: 0; }
 .clients__i {
   position: relative; overflow: hidden; display: grid; place-items: center;
   aspect-ratio: 3 / 2; padding: 12px; background: var(--white); border: 1px solid #D3D3CC;
@@ -484,8 +493,8 @@
   .clients__i:hover::after { transform: scaleX(1); }
   .clients__i:hover img { transform: scale(1.04); }
 }
-@media (max-width: 1000px) { .clients__list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 640px) { .clients__list { grid-template-columns: repeat(2, minmax(0, 1fr)); } .clients__i { padding: 10px; } }
+@media (max-width: 1000px) { .clients__list { --cols-max: 3; } }
+@media (max-width: 640px) { .clients__list { --gap: 8px; } .clients__i { padding: 8px; } }
 .brands { padding-top: 4px; }
 .brands__lbl { color: var(--muted); margin-bottom: 14px; }
 .on-dark .brands__lbl { color: var(--grey); }
@@ -523,30 +532,43 @@
 .on-paper .prose strong { color: var(--ink); }
 .on-dark .prose strong { color: var(--paper); }
 
-/* Valores / como trabalhamos (fundo escuro) */
-.values { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line); }
-.value { position: relative; display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px 18px; padding: clamp(26px, 3vw, 40px) clamp(16px, 2.6vw, 40px) clamp(26px, 3vw, 40px) 0; border-bottom: 1px solid var(--line); overflow: hidden; }
-.value:nth-child(even) { padding-left: clamp(16px, 2.6vw, 40px); border-left: 1px solid var(--line); }
+/* Valores / como trabalhamos (fundo escuro)
+   As 4 células têm o MESMO recuo à esquerda (--vp). A lâmina verde do hover mora
+   dentro desse recuo (largura fixa em px, borda inclinada ~12°), então nunca passa
+   por cima do número nem do texto — nas duas colunas (antes, na coluna da esquerda
+   o recuo era 0 e a lâmina cobria o "01"/"03"). */
+.values { --vp: clamp(46px, 4vw, 64px); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+.value { position: relative; display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px 18px; padding: clamp(26px, 3vw, 40px) clamp(16px, 2.6vw, 40px) clamp(26px, 3vw, 40px) var(--vp); border-bottom: 1px solid var(--line); overflow: hidden; }
+.value:nth-child(even) { border-left: 1px solid var(--line); }
 .value::before {
-  content: ""; position: absolute; top: 0; bottom: 0; left: -8%; width: 12%; z-index: 0;
-  background: var(--green); transform: skewX(var(--slash)) scaleX(0); transform-origin: 0 50%; transition: transform .7s var(--ease);
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: calc(var(--vp) - 18px); z-index: 0;
+  background: var(--green); clip-path: polygon(0 0, 100% 0, 20% 100%, 0 100%);
+  transform: scaleX(0); transform-origin: 0 50%; transition: transform .7s var(--ease);
 }
 .value > * { position: relative; }
 .value__n { grid-row: span 2; font: 900 56px/.8 var(--f-display); color: var(--green); }
 .value__t { font: 900 clamp(30px, 2.8vw, 44px)/1.06 var(--f-display); text-transform: uppercase; }
 .value p { color: var(--body-dark); font-size: 16px; max-width: 32em; }
 @media (hover: hover) and (pointer: fine) {
-  .value:hover::before { transform: skewX(var(--slash)) scaleX(1); }
+  .value:hover::before { transform: scaleX(1); }
 }
 @media (max-width: 800px) {
-  .values { grid-template-columns: minmax(0, 1fr); }
-  .value:nth-child(even) { padding-left: 0; border-left: 0; }
+  /* Uma coluna: no celular não há hover → sem recuo (o texto usa a largura toda) */
+  .values { --vp: 0px; grid-template-columns: minmax(0, 1fr); }
+  .value:nth-child(even) { border-left: 0; }
+  .value::before { display: none; }
   .value { grid-template-columns: 48px minmax(0, 1fr); }
   .value__n { font-size: 44px; }
 }
+@media (max-width: 800px) and (hover: hover) and (pointer: fine) {
+  /* Janela estreita com mouse: volta o recuo e a lâmina */
+  .values { --vp: 42px; }
+  .value::before { display: block; }
+}
 
-/* Equipe (monogramas, sem fotos) */
-.team__list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+/* Equipe (monogramas, sem fotos) — 4 pessoas: 4 colunas no computador, 2 × 2 no tablet
+   e, no celular, uma ficha deitada por pessoa (monograma ao lado, com o texto) */
+.team__list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .member { position: relative; padding: 22px 20px 24px; background: var(--ink-2); border: 1px solid #222221; display: grid; gap: 8px; align-content: start; transition: border-color .4s, background .4s; }
 .member:hover { border-color: var(--green); background: #101410; }
 .member__mono {
@@ -565,17 +587,12 @@
 .on-paper .member__txt { color: var(--muted); }
 .on-paper .member:first-child .member__mono::before { background: var(--ink); }
 .on-paper .member:first-child .member__mono { color: var(--green); }
-@media (max-width: 1180px) { .team__list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 1000px) { .team__list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) {
-  .team__list { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .member { padding: 18px 14px; }
-  .member__mono { width: 62px; height: 52px; font-size: 28px; }
-  .member__txt { display: none; }
+  .team__list { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .member { padding: 18px 16px 18px 14px; grid-template-columns: auto minmax(0, 1fr); column-gap: 18px; row-gap: 6px; align-items: center; }
+  .member__mono { grid-row: span 3; width: 62px; height: 52px; margin: 0 0 0 8px; font-size: 28px; }
   .member__role { font-size: 11px; }
-  /* Fundador em destaque na linha inteira (com o texto) + 2 × 2: nenhum card fica sozinho */
-  .member:first-child { grid-column: 1 / -1; grid-template-columns: auto minmax(0, 1fr); column-gap: 18px; align-items: center; }
-  .member:first-child .member__mono { grid-row: span 3; margin: 0 0 0 8px; }
-  .member:first-child .member__txt { display: block; }
 }
 
 /* =====================================================================

@@ -126,13 +126,13 @@ code { font: 500 .86em/1.4 var(--f-mono); background: var(--paper-2); padding: .
   font: 600 13px/1 var(--f-text); text-decoration: none; letter-spacing: .02em;
 }
 .topo__site:hover, .topo__sair button:hover { color: var(--volt); }
-.topo__site span { display: none; }
+.topo__site span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }   /* só o ícone; o nome fica para leitores de tela */
 .topo__sair button { gap: 6px; padding: 0 8px 0 10px; border: 1px solid #3A3A37; min-height: 38px; }
 
 /* Menu: barra inferior no celular */
 .menu {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
-  display: grid; grid-template-columns: repeat(4, 1fr);
+  display: grid; grid-template-columns: repeat(5, 1fr);
   background: var(--ink); border-top: 1px solid var(--ink-3);
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -179,6 +179,10 @@ h1 { font: 800 clamp(38px, 10vw, 60px)/.92 var(--f-display); text-transform: upp
 .aviso > .i { flex: none; }
 .aviso__form { display: flex; margin: -4px 0; }
 .aviso__form .btn { min-height: 40px; }
+/* Celular: o botão (Desfazer) vai para a linha de baixo, e o texto usa a largura toda */
+@media (max-width: 599px) {
+  .aviso__form { order: 3; flex: 1 0 100%; margin: 2px 0 0; padding-left: 32px; }
+}
 .aviso__fechar {
   flex: none; display: grid; place-items: center; width: 36px; height: 36px; margin: -8px -8px -8px 0;
   border: 0; background: none; color: var(--muted);
@@ -472,6 +476,69 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
 .copia__mais { font-weight: 500; color: var(--muted); }
 .copia__bts { display: flex; flex-wrap: wrap; gap: 8px; }
 
+/* ---------- Clientes (logos do site) ---------- */
+/* Chapa branca igual à do site (compartilhado: .clients__i em paginas.css): 3:2, logo em cor
+   centralizado, até 82% da largura e 62% da altura (78% quando o logo é quase quadrado) */
+.chapa {
+  position: relative; display: grid; place-items: center; aspect-ratio: 3 / 2; width: 100%;
+  background: var(--white); border: 1px solid #D3D3CC; overflow: hidden; color: var(--line-2);
+}
+.chapa img {
+  position: absolute; inset: 0; margin: auto; width: auto; height: auto; max-width: 82%; max-height: 62%;
+  object-fit: contain; mix-blend-mode: multiply;
+}
+.chapa--sq img { max-height: 78%; }
+.chapa--vazia { border: 2px dashed var(--line-2); background: var(--paper); }
+.palco {
+  display: grid; place-items: center; padding: clamp(18px, 6vw, 30px) clamp(18px, 8vw, 44px);
+  background:
+    linear-gradient(90deg, rgba(10,10,10,.06) 1px, transparent 1px) 0 0 / 20px 20px,
+    linear-gradient(rgba(10,10,10,.06) 1px, transparent 1px) 0 0 / 20px 20px,
+    var(--paper-2);
+  border: 1px solid var(--line);
+}
+.palco.is-arrastando { outline: 2px dashed var(--green); outline-offset: -6px; background: var(--green-soft); }
+.chapa--grande { max-width: 300px; }
+.chapa--grande.is-pequena { box-shadow: 0 0 0 3px #F2C94C; }
+.chapa--grande .foto__vazio { font-size: 14px; }
+.pg-clientes .cab__acoes { display: flex; }
+.aviso--fixo { margin-bottom: 18px; }
+.aviso--fixo code { font-size: .8em; }
+
+.clientes { display: grid; gap: 10px; counter-reset: cli; }
+.cli {
+  display: grid; align-items: center;
+  grid-template-columns: 116px minmax(0, 1fr);
+  grid-template-areas: "chapa txt" "acoes acoes";
+  gap: 12px; padding: 12px;
+  background: var(--white); border: 1px solid var(--line);
+  scroll-margin: calc(var(--topo) + 16px);
+  transition: border-color .3s, box-shadow .3s;
+}
+.cli:target, .cli.is-novo { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.cli.is-movendo { box-shadow: 0 0 0 3px var(--volt); }
+.cli__chapa { grid-area: chapa; display: block; }
+.cli__chapa .chapa { border-color: #E1E1DA; }
+.cli__txt { grid-area: txt; min-width: 0; }
+.cli__pos { font: 500 10.5px/1.35 var(--f-mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.cli__nome { font: 800 23px/1 var(--f-display); text-transform: uppercase; margin: 4px 0 0; overflow-wrap: anywhere; }
+.cli__nome a { color: var(--ink); text-decoration: none; }
+.cli__nome a:hover { color: var(--green-deep); text-decoration: underline; }
+.cli__txt .item__selos { margin-top: 8px; }
+.cli__acoes { grid-area: acoes; display: grid; grid-template-columns: 44px 44px minmax(0, 1fr) 44px; gap: 8px; align-items: center; }
+.cli__acoes form { margin: 0; }
+.cli__editar { width: 100%; }
+.clientes__rodape { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 22px; font-size: 14.5px; }
+.clientes__rodape a { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; font-weight: 600; }
+.clientes__rodape .i { width: 17px; height: 17px; }
+
+/* Cópias: abas Produtos / Clientes */
+.chips.abas-copias { margin: 0 0 18px; padding: 2px 0; flex-wrap: wrap; overflow: visible; }
+.abas-copias .chip { text-decoration: none; }
+.abas-copias .chip .i { width: 17px; height: 17px; }
+.abas-copias .chip[aria-current="page"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.abas-copias .chip[aria-current="page"] .i { color: var(--volt); }
+
 /* ---------- Conta ---------- */
 .conta { display: grid; gap: 16px; }
 .caixa__tit { float: none; }
@@ -581,7 +648,7 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
   .menu a .i { width: 19px; height: 19px; }
   .menu a[aria-current="page"] { box-shadow: inset 0 -4px 0 var(--green); }
   .menu__novo .i { width: 24px !important; height: 24px !important; padding: 4px; }
-  .topo__site span { display: inline; }
+  .topo__site span { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
   .topo__sair button { border-color: transparent; }
   .pagina, .com-menu .pagina { padding: 34px var(--gut) 90px; }
   .pg-lista .cab__acoes { display: flex; }
@@ -594,7 +661,23 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
   .pg-produto .menu { display: flex; }
 }
 
+/* 900–1199 px: menu de 5 itens no topo sem encostar na marca */
+@media (min-width: 900px) and (max-width: 1099px) {
+  .menu { margin-left: 8px; }
+  .menu a { padding: 0 9px; gap: 6px; font-size: 14px; }
+  .marca__tag { display: none; }
+}
+@media (min-width: 900px) and (max-width: 1199px) {
+  .topo__site span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+
 @media (min-width: 1000px) {
+  .cli {
+    grid-template-columns: 150px minmax(0, 1fr) auto;
+    grid-template-areas: "chapa txt acoes";
+    gap: 18px; padding: 10px 12px;
+  }
+  .cli__acoes { grid-template-columns: 44px 44px auto 44px; }
   .item {
     grid-template-columns: 76px minmax(0, 1fr) 200px auto auto 44px 44px auto 44px;
     grid-template-areas: "foto txt est dest vis up down edit del";
