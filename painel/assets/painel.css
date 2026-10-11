@@ -114,6 +114,9 @@ code { font: 500 .86em/1.4 var(--f-mono); background: var(--paper-2); padding: .
 .marca img { width: 34px; height: 34px; flex: none; }
 .marca__nome { font: 800 23px/1 var(--f-display); text-transform: uppercase; letter-spacing: .01em; white-space: nowrap; }
 .marca__nome span { color: var(--green); }
+/* O topo é escuro: no hover, a marca e o menu não podem herdar o "a:hover" preto do resto do painel */
+.marca:hover, .marca:focus-visible { color: var(--paper); }
+.marca:hover .marca__nome span { color: var(--volt); }
 .marca__tag {
   position: relative; isolation: isolate; padding: 5px 8px 4px; margin-left: 2px;
   font: 500 10px/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink);
@@ -143,6 +146,7 @@ code { font: 500 .86em/1.4 var(--f-mono); background: var(--paper-2); padding: .
   -webkit-tap-highlight-color: transparent;
 }
 .menu a .i { width: 22px; height: 22px; }
+.menu a:hover { color: var(--paper); }
 .menu a[aria-current="page"] { color: var(--paper); box-shadow: inset 0 3px 0 var(--green); }
 .menu a[aria-current="page"] .i { color: var(--green); }
 .menu__novo .i { color: var(--ink); background: var(--green); width: 30px !important; height: 30px !important; padding: 5px; transform: skewX(var(--slash)); }
