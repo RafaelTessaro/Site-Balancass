@@ -41,6 +41,13 @@ function spriteIcones(): void
   <symbol id="i-box" viewBox="0 0 24 24"><path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5v-9zM3 7.5l9 4.5 9-4.5M12 12v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
   <symbol id="i-loja" viewBox="0 0 24 24"><path d="M4 4h16l1.5 5a2.4 2.4 0 0 1-4.8 0 2.4 2.4 0 0 1-4.7 0 2.4 2.4 0 0 1-4.7 0 2.4 2.4 0 0 1-4.8 0L4 4zM4.5 11.5V20h15v-8.5M10 20v-5h4v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.5 20c.9-3.5 3.4-5.5 6.5-5.5s5.6 2 6.5 5.5M15.5 4.8a3.5 3.5 0 0 1 0 6.4M17.5 14.8c2 .6 3.4 2.4 4 5.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-empresa" viewBox="0 0 24 24"><path d="M4 21V5.5L13 3v18M13 8.5l7 2V21M2.5 21h19M7.5 8v.01M7.5 11.5v.01M7.5 15v.01M9.8 8v.01M9.8 11.5v.01M9.8 15v.01M16.5 13.5v.01M16.5 17v.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-lista" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-copiar" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="12" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.5 8.5V5a1.5 1.5 0 0 0-1.5-1.5H5A1.5 1.5 0 0 0 3.5 5v9A1.5 1.5 0 0 0 5 15.5h3.5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-chave" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M11.2 11.8L20 3M16.5 6.5l2.5 2.5M14 9l2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-seta" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-pausa" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9v6M14 9v6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
   <symbol id="i-show" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="currentColor"/></symbol>
 </svg>
 <?php
@@ -49,11 +56,28 @@ function spriteIcones(): void
 /* ------------------------------------------------------------------
    Moldura das páginas
    ------------------------------------------------------------------ */
+/** Itens do menu (no celular, a barra de baixo comporta no máximo 5). Cópias, Usuários e
+ *  Atividades ficam dentro de Conta. */
+function itensMenu(bool $admin): array
+{
+    $itens = [
+        'produtos' => ['index.php', 'box', 'Produtos'],
+        'novo'     => [link_('novo'), 'plus', 'Novo'],
+        'clientes' => [link_('clientes'), 'loja', 'Clientes'],
+    ];
+    if ($admin) $itens['empresa'] = [link_('empresa'), 'empresa', 'Empresa'];
+    $itens['conta'] = [link_('conta'), 'user', 'Conta'];
+    return $itens;
+}
+
 function pagina(string $titulo, callable $conteudo, array $o = []): void
 {
     $usuario = usuarioLogado();
+    $eu = $usuario !== null ? usuarioAtual() : null;
+    $comMenu = $eu !== null && empty($o['semMenu']);
     $atual = $o['menu'] ?? '';
-    $classe = trim(($o['classe'] ?? '') . ($usuario ? ' com-menu' : ''));
+    if (in_array($atual, ['copias', 'usuarios', 'atividades'], true)) $atual = 'conta';   // telas que ficam dentro de Conta
+    $classe = trim(($o['classe'] ?? '') . ($comMenu ? ' com-menu' : ''));
     $avisos = pegarAvisos();
     ?><!doctype html>
 <html lang="pt-BR">
@@ -73,7 +97,7 @@ function pagina(string $titulo, callable $conteudo, array $o = []): void
 <body class="<?= e($classe) ?>"<?= $usuario ? ' data-usuario="' . e($usuario) . '"' : '' ?>>
 <?php spriteIcones(); ?>
 <a class="pular" href="#conteudo">Pular para o conteúdo</a>
-<?php if ($usuario): ?>
+<?php if ($comMenu): ?>
 <header class="topo">
   <div class="topo__in">
     <a class="marca" href="index.php" aria-label="Painel Balanças.com — produtos">
@@ -82,13 +106,12 @@ function pagina(string $titulo, callable $conteudo, array $o = []): void
       <span class="marca__tag">Painel</span>
     </a>
     <nav class="menu" aria-label="Seções do painel">
-      <a href="index.php"<?= $atual === 'produtos' ? ' aria-current="page"' : '' ?>><?= icone('box') ?><span>Produtos</span></a>
-      <a class="menu__novo" href="<?= e(link_('novo')) ?>"<?= $atual === 'novo' ? ' aria-current="page"' : '' ?>><?= icone('plus') ?><span>Novo</span></a>
-      <a href="<?= e(link_('clientes')) ?>"<?= $atual === 'clientes' ? ' aria-current="page"' : '' ?>><?= icone('loja') ?><span>Clientes</span></a>
-      <a href="<?= e(link_('copias')) ?>"<?= $atual === 'copias' ? ' aria-current="page"' : '' ?>><?= icone('restore') ?><span>Cópias</span></a>
-      <a href="<?= e(link_('conta')) ?>"<?= $atual === 'conta' ? ' aria-current="page"' : '' ?>><?= icone('user') ?><span>Conta</span></a>
+      <?php foreach (itensMenu($eu['papel'] === 'admin') as $k => [$href, $ic, $rot]): ?>
+      <a<?= $k === 'novo' ? ' class="menu__novo"' : '' ?> href="<?= e($href) ?>"<?= $atual === $k ? ' aria-current="page"' : '' ?>><?= icone($ic) ?><span><?= e($rot) ?></span></a>
+      <?php endforeach; ?>
     </nav>
     <div class="topo__acoes">
+      <span class="topo__quem" title="<?= e('Você entrou como ' . $eu['nome'] . ' (' . PAPEIS[$eu['papel']] . ')') ?>"><span><?= e($eu['nome']) ?></span><small><?= e(PAPEIS[$eu['papel']]) ?></small></span>
       <a class="topo__site" href="<?= e(cfg('url_site')) ?>" target="_blank" rel="noopener"><?= icone('ext') ?><span>Ver site</span></a>
       <form method="post" action="<?= e(link_('sair')) ?>" class="topo__sair">
         <?= campoCsrf() ?>
@@ -120,11 +143,11 @@ function pagina(string $titulo, callable $conteudo, array $o = []): void
 <?php $conteudo(); ?>
 </main>
 <div class="toast" data-toast role="status" aria-live="polite" hidden></div>
-<?php if ($usuario): ?>
+<?php if ($comMenu): ?>
 <dialog class="dialogo dialogo--login" data-relogin aria-labelledby="relogin-tit">
   <form class="dialogo__in form-acesso" data-relogin-form novalidate>
     <h2 id="relogin-tit">Entre de novo</h2>
-    <p>Sua sessão terminou (mais de 2 horas sem uso). Digite a senha para continuar: nada do que está nesta tela se perde.</p>
+    <p data-relogin-motivo>Sua sessão terminou. Digite a senha para continuar: nada do que está nesta tela se perde.</p>
     <div class="aviso aviso--erro" role="alert" data-relogin-erro hidden><?= icone('alert') ?><p></p></div>
     <div class="campo">
       <label for="rl-usuario">Usuário</label>
@@ -187,9 +210,10 @@ function cabecalhoPagina(string $sobre, string $titulo, string $texto = '', stri
 /* ------------------------------------------------------------------
    Entrar / primeiro acesso (sem menu, fundo da marca)
    ------------------------------------------------------------------ */
-function molduraAcesso(string $titulo, callable $miolo): void
+function molduraAcesso(string $titulo, callable $miolo, array $o = []): void
 {
-    pagina($titulo, static function () use ($miolo): void { ?>
+    $rodape = $o['rodape'] ?? null;
+    pagina($titulo, static function () use ($miolo, $rodape): void { ?>
   <div class="acesso">
     <div class="acesso__faixa" aria-hidden="true"></div>
     <div class="acesso__cartao">
@@ -200,9 +224,11 @@ function molduraAcesso(string $titulo, callable $miolo): void
       </p>
       <?php $miolo(); ?>
     </div>
+    <?php if ($rodape): $rodape(); else: ?>
     <p class="acesso__rodape"><a href="<?= e(cfg('url_site')) ?>">← Voltar ao site</a></p>
+    <?php endif; ?>
   </div>
-<?php }, ['classe' => 'pg-acesso', 'main' => 'principal-acesso']);
+<?php }, ['classe' => 'pg-acesso', 'main' => 'principal-acesso', 'semMenu' => true]);
 }
 
 function campoSenha(string $id, string $nome, string $rotulo, string $auto, string $ajuda = '', bool $foco = false): void
@@ -241,19 +267,21 @@ function telaEntrar(string $erro = '', string $usuario = ''): void
 <?php });
 }
 
-/** Passo a passo para criar a senha de novo (quem entra no cPanel). */
+/** Esqueci a senha: pedir a um administrador; ou, último recurso de quem entra no cPanel, o recuperar.txt. */
 function passosEsqueciSenha(): void
 {
     $onde = ondeFicaPastaPrivada();
     $fora = privadaForaDoSite();
     ?>
-        <p class="ajuda">Quem entra no <b>cPanel</b> da hospedagem resolve em 1 minuto:</p>
+        <p class="ajuda"><b>Tem outro administrador no painel?</b> Peça a um administrador para redefinir a sua senha (Conta → Usuários). Você recebe uma senha temporária e cria a sua no primeiro acesso.</p>
+        <p class="ajuda"><b>É o único administrador, ou ninguém consegue entrar?</b> Quem entra no <b>cPanel</b> da hospedagem resolve em 2 minutos:</p>
         <ol class="passos passos--p">
           <li>cPanel → <b>Gerenciador de Arquivos</b>.</li>
           <li>Abra a pasta <code><?= e($onde) ?></code><?= $fora ? ' (na pasta inicial da conta, ao lado da <b>public_html</b>)' : '' ?>. Não é a pasta <code>painel</code> do site.</li>
-          <li>Apague só o arquivo <code>config.php</code> dessa pasta. As cópias de segurança e o resto continuam.</li>
-          <li>Abra o painel de novo e siga o <b>Primeiro acesso</b> (o código novo fica em <code>primeiro-acesso.php</code>, na mesma pasta).</li>
+          <li>Clique em <b>+ Arquivo</b> e crie nessa pasta um arquivo vazio chamado <code>recuperar.txt</code>.</li>
+          <li>Abra o painel de novo: aparece a tela <b>Recuperar acesso</b>. O código fica no arquivo <code>primeiro-acesso.php</code>, na mesma pasta.</li>
         </ol>
+        <p class="ajuda">Os outros usuários, as cópias de segurança e o resto continuam como estão. No fim, o painel apaga o <code>recuperar.txt</code> sozinho.</p>
 <?php
 }
 
@@ -263,7 +291,8 @@ function telaInstalar(string $erro = '', array $v = []): void
     $fora = privadaForaDoSite();
     molduraAcesso('Primeiro acesso', static function () use ($erro, $v, $onde, $fora): void { ?>
       <h1 class="acesso__tit">Primeiro acesso</h1>
-      <p class="acesso__sub">Crie o usuário e a senha do painel. Para provar que é você, use o código que o painel acabou de gravar na hospedagem.</p>
+      <p class="acesso__sub">Crie o seu usuário de <b>Administrador</b> do painel. Para provar que é você, use o código que o painel acabou de gravar na hospedagem.</p>
+      <?php if (usuariosDanificado()): ?><div class="aviso aviso--info" role="status"><?= icone('alert') ?><p>O arquivo de usuários (<code>usuarios.php</code>) está danificado e não pôde ser lido. Crie um acesso novo: o arquivo antigo fica guardado na pasta privada, com “danificado” no nome.</p></div><?php endif; ?>
       <ol class="passos">
         <li>Entre no <b>cPanel</b> da hospedagem e abra o <b>Gerenciador de Arquivos</b>.</li>
         <li><?php if ($fora): ?>Na pasta inicial da sua conta (a mesma que tem a <b>public_html</b>), abra a pasta <code><?= e($onde) ?></code>.<?php else: ?>Abra a pasta <code><?= e($onde) ?></code>.<?php endif; ?></li>
@@ -278,9 +307,14 @@ function telaInstalar(string $erro = '', array $v = []): void
           <p class="ajuda">Vale por 24 horas. Só quem entra no cPanel consegue ler.</p>
         </div>
         <div class="campo">
+          <label for="f-nome">Seu nome</label>
+          <input id="f-nome" name="nome" autocomplete="name" required maxlength="60" value="<?= e($v['nome'] ?? '') ?>" aria-describedby="f-nome-ajuda" data-sugerir-login>
+          <p class="ajuda" id="f-nome-ajuda">Como você aparece para os outros usuários do painel (ex.: Fábio Godoy).</p>
+        </div>
+        <div class="campo">
           <label for="f-usuario">Usuário</label>
-          <input id="f-usuario" name="usuario" autocomplete="username" autocapitalize="off" spellcheck="false" required maxlength="40" pattern="[A-Za-z0-9._\-]{3,40}" value="<?= e($v['usuario'] ?? '') ?>" aria-describedby="f-usuario-ajuda">
-          <p class="ajuda" id="f-usuario-ajuda">De 3 a 40 letras sem acento ou números (ex.: fabio).</p>
+          <input id="f-usuario" name="usuario" autocomplete="username" autocapitalize="off" spellcheck="false" required maxlength="40" pattern="[A-Za-z0-9._\-]{3,40}" value="<?= e($v['usuario'] ?? '') ?>" aria-describedby="f-usuario-ajuda" data-login>
+          <p class="ajuda" id="f-usuario-ajuda">É o que você digita para entrar. De 3 a 40 letras sem acento ou números (ex.: fabio).</p>
         </div>
         <?php campoSenha('f-senha', 'senha', 'Senha', 'new-password', 'Pelo menos ' . (int) cfg('senha_minimo') . ' caracteres. Dica: junte 3 ou 4 palavras que só você saiba, com um número (não use exemplos de guias).'); ?>
         <?php campoSenha('f-senha2', 'senha2', 'Repita a senha', 'new-password'); ?>
@@ -692,7 +726,9 @@ function telaConfirmar(string $titulo, string $texto, string $acao, array $campo
    ------------------------------------------------------------------ */
 function telaCopias(array $copias, ?int $totalAtual, array $idsAtuais = []): void
 {
-    pagina('Cópias de segurança', static function () use ($copias, $totalAtual, $idsAtuais): void {
+    $nomes = nomesDosUsuarios();
+    pagina('Cópias de segurança', static function () use ($copias, $totalAtual, $idsAtuais, $nomes): void {
+        migalhaConta();
         cabecalhoPagina('Desfazer alterações', 'Cópias de segurança',
             'Antes de cada mudança no catálogo o painel guarda uma cópia de como ele estava. Ficam sempre as ' . (int) cfg('copias_max')
             . ' mais recentes e tudo dos últimos ' . (int) cfg('copias_dias') . ' dias; as de <b>excluir</b> e <b>restaurar</b> ficam ' . (int) cfg('copias_protegidas_dias') . ' dias. '
@@ -711,7 +747,7 @@ function telaCopias(array $copias, ?int $totalAtual, array $idsAtuais = []): voi
       <div class="copia__txt">
         <p class="copia__quando"><?= e(quando($c['criado'])) ?><?php if ($c['ultimo'] - $c['criado'] >= 60): ?><span class="copia__ate"> até <?= e(date('H:i', $c['ultimo'])) ?></span><?php endif; ?><?php if ($i === 0): ?> <span class="selo selo--destaque">Mais recente</span><?php endif; ?></p>
         <p class="copia__motivo"><?= e($titulo) ?><?php if ($mais > 0): ?> <span class="copia__mais">e mais <?= $mais ?> <?= $mais === 1 ? 'alteração' : 'alterações' ?> do mesmo tipo</span><?php endif; ?></p>
-        <p class="copia__meta"><?= (int) $c['total'] ?> produtos · <?= (int) $c['visiveis'] ?> no site<?= $c['usuario'] !== '' ? ' · por ' . e($c['usuario']) : '' ?><?= in_array($c['tipo'], TIPOS_PROTEGIDOS, true) ? ' · guardada por ' . (int) cfg('copias_protegidas_dias') . ' dias' : '' ?></p>
+        <p class="copia__meta"><?= (int) $c['total'] ?> produtos · <?= (int) $c['visiveis'] ?> no site<?= $c['usuario'] !== '' ? ' · por ' . e(nomeDe($c['usuario'], $nomes)) : '' ?><?= in_array($c['tipo'], TIPOS_PROTEGIDOS, true) ? ' · guardada por ' . (int) cfg('copias_protegidas_dias') . ' dias' : '' ?></p>
       </div>
       <div class="copia__bts">
         <?php if ($voltaSo): ?>
@@ -732,80 +768,6 @@ function telaCopias(array $copias, ?int $totalAtual, array $idsAtuais = []): voi
     }, ['menu' => 'copias', 'classe' => 'pg-copias']);
 }
 
-/* ------------------------------------------------------------------
-   Conta
-   ------------------------------------------------------------------ */
-function telaConta(string $erro = ''): void
-{
-    $conf = configConta() ?? [];
-    // Linhas técnicas (fotos indo e voltando da lixeira) ficam de fora; repetições seguidas
-    // (ex.: 30 toques nas setas) viram uma linha só, com "(30 vezes)"
-    $atividades = [];
-    foreach (ultimasAtividades(300) as $a) {
-        if (in_array($a['evento'], ['foto-lixeira', 'foto-restaurada'], true)) continue;
-        $u = count($atividades) - 1;
-        if ($u >= 0 && $atividades[$u]['evento'] === $a['evento'] && $atividades[$u]['detalhe'] === $a['detalhe'] && $atividades[$u]['usuario'] === $a['usuario']) {
-            $atividades[$u]['vezes']++;
-            continue;
-        }
-        if (count($atividades) >= 15) break;
-        $atividades[] = $a + ['vezes' => 1];
-    }
-    $nomes = ['entrou' => 'Entrou no painel', 'saiu' => 'Saiu do painel', 'senha-errada' => 'Senha errada', 'trocou-senha' => 'Trocou a senha',
-        'instalou' => 'Criou o acesso', 'codigo-gerado' => 'Gerou o código de primeiro acesso', 'codigo-errado' => 'Código de primeiro acesso errado',
-        'bloqueado' => 'Bloqueio por tentativas', 'csrf' => 'Pedido recusado'];
-    pagina('Minha conta', static function () use ($conf, $atividades, $nomes, $erro): void {
-        cabecalhoPagina('Acesso', 'Minha conta', 'Usuário <b>' . e($conf['usuario'] ?? '') . '</b>. Por segurança, o painel sai sozinho depois de 2 horas sem uso.');
-        ?>
-  <div class="conta">
-    <section class="caixa">
-      <h2 class="caixa__tit">Trocar senha</h2>
-      <?php if ($erro !== ''): ?><div class="aviso aviso--erro" role="alert"><?= icone('alert') ?><p><?= e($erro) ?></p></div><?php endif; ?>
-      <form method="post" action="<?= e(link_('senha')) ?>" class="form-acesso" data-form-enviar>
-        <?= campoCsrf() ?>
-        <input type="text" name="usuario" value="<?= e($conf['usuario'] ?? '') ?>" autocomplete="username" hidden>
-        <?php campoSenha('f-atual', 'atual', 'Senha atual', 'current-password'); ?>
-        <?php campoSenha('f-nova', 'nova', 'Senha nova', 'new-password', 'Pelo menos ' . (int) cfg('senha_minimo') . ' caracteres. Ao trocar, outros aparelhos conectados saem.'); ?>
-        <?php campoSenha('f-nova2', 'nova2', 'Repita a senha nova', 'new-password'); ?>
-        <button class="btn btn--verde" type="submit"><?= icone('lock') ?>Trocar senha</button>
-      </form>
-    </section>
-    <section class="caixa">
-      <h2 class="caixa__tit">Últimas atividades</h2>
-      <?php if (!$atividades): ?><p class="ajuda">Nada registrado ainda.</p><?php else: ?>
-      <ol class="atividades" role="list">
-        <?php foreach ($atividades as $a):
-            $alerta = in_array($a['evento'], ['senha-errada', 'codigo-errado', 'bloqueado', 'csrf'], true);
-            $quem = $a['usuario'] !== '-' ? $a['usuario'] : ''; ?>
-        <li class="atv<?= $alerta ? ' atv--alerta' : '' ?>">
-          <time datetime="<?= e(date('c', $a['quando'])) ?>"><?= e(date('d/m H:i', $a['quando'])) ?></time>
-          <?php if ($a['evento'] === 'catalogo' || $a['evento'] === 'clientes'): ?>
-          <span><b><?= e(frasePassado($a['detalhe'])) ?></b><?= $a['vezes'] > 1 ? ' (' . (int) $a['vezes'] . ' vezes)' : '' ?></span>
-          <?php else: ?>
-          <span><b><?= e($nomes[$a['evento']] ?? $a['evento']) ?></b><?= $alerta && $a['detalhe'] !== '' ? ' — ' . e($a['detalhe']) : '' ?><?= $a['vezes'] > 1 ? ' (' . (int) $a['vezes'] . ' vezes)' : '' ?></span>
-          <?php endif; ?>
-          <?php if ($quem !== '' || $alerta): ?><small><?= e($quem) ?><?= $alerta ? ($quem !== '' ? ' · ' : '') . 'IP ' . e($a['ip']) : '' ?></small><?php endif; ?>
-        </li>
-        <?php endforeach; ?>
-      </ol>
-      <?php endif; ?>
-    </section>
-    <section class="caixa caixa--info">
-      <h2 class="caixa__tit">Sobre este painel</h2>
-      <ul class="info">
-        <li>Dados privados (senha, cópias, lixeira de fotos): <code><?= e(ondeFicaPastaPrivada()) ?></code><?= privadaForaDoSite() ? ' — fora da pasta do site.' : ' — dentro do site, protegida.' ?></li>
-        <li>Maior foto aceita agora: <b><?= e(mb_(limiteEnvio())) ?></b>.</li>
-      </ul>
-      <details class="acesso__ajuda conta__senha">
-        <summary>Esqueceu a senha?</summary>
-        <?php passosEsqueciSenha(); ?>
-      </details>
-    </section>
-  </div>
-<?php
-    }, ['menu' => 'conta', 'classe' => 'pg-conta']);
-}
-
 function telaCatalogoIlegivel(string $motivo): void
 {
     http_response_code(500);
@@ -814,8 +776,12 @@ function telaCatalogoIlegivel(string $motivo): void
     <?= icone('alert', 'i i--grande') ?>
     <h1>Não consegui ler o catálogo</h1>
     <p>O arquivo <code>compartilhado/dados/produtos.js</code> não está no formato que o painel grava (<?= e($motivo) ?>). Isso acontece quando ele é editado à mão ou substituído por uma versão antiga.</p>
+    <?php if (ehAdmin()): ?>
     <p>O jeito mais rápido de resolver é restaurar uma cópia de segurança. Se for a primeira vez que o painel roda, o arquivo precisa ser convertido (veja o LEIA-ME do painel).</p>
     <p><a class="btn btn--verde" href="<?= e(link_('copias')) ?>"><?= icone('restore') ?>Ver cópias de segurança</a></p>
+    <?php else: ?>
+    <p>Avise um administrador do painel: ele resolve restaurando uma cópia de segurança (Conta → Cópias de segurança).</p>
+    <?php endif; ?>
   </section>
 <?php }, ['menu' => 'produtos']);
 }
@@ -868,7 +834,7 @@ function telaClientes(array $dados): void
   </ol>
   <?php endif; ?>
   <p class="clientes__rodape">
-    <a href="<?= e(link_('copias', ['de' => 'clientes'])) ?>"><?= icone('restore') ?>Cópias de segurança da lista de clientes</a>
+    <?php if (ehAdmin()): ?><a href="<?= e(link_('copias', ['de' => 'clientes'])) ?>"><?= icone('restore') ?>Cópias de segurança da lista de clientes</a><?php endif; ?>
     <a href="<?= e(cfg('url_site') . 'empresa.html#clientes') ?>" target="_blank" rel="noopener"><?= icone('ext') ?>Ver os logos no site</a>
   </p>
 <?php
@@ -979,20 +945,23 @@ function telaCliente(array $dados, ?array $c, array $erros = [], ?array $ref = n
     }, ['menu' => 'clientes', 'classe' => 'pg-produto pg-cliente']);
 }
 
-/** Abas da tela de cópias: catálogo de produtos ou lista de clientes. */
+/** Abas da tela de cópias: catálogo de produtos, lista de clientes ou dados da empresa. */
 function abasCopias(string $atual): void
 {
     ?>
   <nav class="chips abas-copias" aria-label="Cópias de">
     <a class="chip" href="<?= e(link_('copias')) ?>"<?= $atual === 'produtos' ? ' aria-current="page"' : '' ?>><?= icone('box') ?>Produtos</a>
     <a class="chip" href="<?= e(link_('copias', ['de' => 'clientes'])) ?>"<?= $atual === 'clientes' ? ' aria-current="page"' : '' ?>><?= icone('loja') ?>Clientes</a>
+    <a class="chip" href="<?= e(link_('copias', ['de' => 'empresa'])) ?>"<?= $atual === 'empresa' ? ' aria-current="page"' : '' ?>><?= icone('empresa') ?>Empresa</a>
   </nav>
 <?php
 }
 
 function telaCopiasClientes(array $copias, ?int $totalAtual, array $logosAtuais = []): void
 {
-    pagina('Cópias de segurança', static function () use ($copias, $totalAtual, $logosAtuais): void {
+    $nomes = nomesDosUsuarios();
+    pagina('Cópias de segurança', static function () use ($copias, $totalAtual, $logosAtuais, $nomes): void {
+        migalhaConta();
         cabecalhoPagina('Desfazer alterações', 'Cópias de segurança',
             'Antes de cada mudança na lista de <b>clientes</b> o painel guarda uma cópia de como ela estava, com as mesmas regras das cópias do catálogo (as '
             . (int) cfg('copias_max') . ' mais recentes, tudo dos últimos ' . (int) cfg('copias_dias') . ' dias; as de <b>excluir</b> e <b>restaurar</b> ficam ' . (int) cfg('copias_protegidas_dias') . ' dias). '
@@ -1017,7 +986,7 @@ function telaCopiasClientes(array $copias, ?int $totalAtual, array $logosAtuais 
       <div class="copia__txt">
         <p class="copia__quando"><?= e(quando($c['criado'])) ?><?php if ($c['ultimo'] - $c['criado'] >= 60): ?><span class="copia__ate"> até <?= e(date('H:i', $c['ultimo'])) ?></span><?php endif; ?><?php if ($i === 0): ?> <span class="selo selo--destaque">Mais recente</span><?php endif; ?></p>
         <p class="copia__motivo"><?= e($titulo) ?><?php if ($mais > 0): ?> <span class="copia__mais">e mais <?= $mais ?> <?= $mais === 1 ? 'alteração' : 'alterações' ?> do mesmo tipo</span><?php endif; ?></p>
-        <p class="copia__meta"><?= (int) $c['total'] ?> <?= $c['total'] === 1 ? 'cliente' : 'clientes' ?><?= $c['existia'] ? '' : ' (a lista ainda não existia)' ?><?= $c['usuario'] !== '' ? ' · por ' . e($c['usuario']) : '' ?><?= in_array($c['tipo'], TIPOS_PROTEGIDOS, true) ? ' · guardada por ' . (int) cfg('copias_protegidas_dias') . ' dias' : '' ?></p>
+        <p class="copia__meta"><?= (int) $c['total'] ?> <?= $c['total'] === 1 ? 'cliente' : 'clientes' ?><?= $c['existia'] ? '' : ' (a lista ainda não existia)' ?><?= $c['usuario'] !== '' ? ' · por ' . e(nomeDe($c['usuario'], $nomes)) : '' ?><?= in_array($c['tipo'], TIPOS_PROTEGIDOS, true) ? ' · guardada por ' . (int) cfg('copias_protegidas_dias') . ' dias' : '' ?></p>
       </div>
       <div class="copia__bts">
         <?php if ($voltaSo): ?>
@@ -1046,8 +1015,12 @@ function telaClientesIlegivel(string $motivo): void
     <?= icone('alert', 'i i--grande') ?>
     <h1>Não consegui ler a lista de clientes</h1>
     <p>O arquivo <code>compartilhado/dados/clientes.js</code> não está no formato que o painel grava (<?= e($motivo) ?>). Isso acontece quando ele é editado à mão ou substituído por uma versão errada. Os produtos não foram afetados.</p>
+    <?php if (ehAdmin()): ?>
     <p>O jeito mais rápido de resolver é restaurar uma cópia de segurança da lista de clientes.</p>
     <p><a class="btn btn--verde" href="<?= e(link_('copias', ['de' => 'clientes'])) ?>"><?= icone('restore') ?>Ver cópias dos clientes</a></p>
+    <?php else: ?>
+    <p>Avise um administrador do painel: ele resolve restaurando uma cópia de segurança da lista de clientes (Conta → Cópias de segurança).</p>
+    <?php endif; ?>
   </section>
 <?php }, ['menu' => 'clientes']);
 }

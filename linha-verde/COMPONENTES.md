@@ -190,6 +190,7 @@ e troque só o `<main>`. Ajuste:
 </script>
 <!-- Scripts locais primeiro (dados, fichas e links funcionam enquanto o CDN carrega); depois GSAP/Lenis -->
 <script defer src="../compartilhado/dados/empresa.js"></script>
+<script defer src="../compartilhado/dados/ajustes.js"></script>    <!-- dados mudados no painel (área Empresa) -->
 <script defer src="../compartilhado/dados/clientes.js"></script>   <!-- logos de clientes (gerado pelo painel) -->
 <script defer src="../compartilhado/dados/produtos.js"></script>
 <script defer src="../compartilhado/js/balancas.js"></script>
@@ -215,7 +216,8 @@ Scripts do CDN disponíveis (todos `defer`, sempre DEPOIS dos locais):
 <script defer src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
 ```
 
-Ordem obrigatória: `empresa.js` → `clientes.js` → `produtos.js` → `balancas.js` → `core.js` → (`home-N.js`) → `preview.js` → CDN.
+Ordem obrigatória: `empresa.js` → `ajustes.js` → `clientes.js` → `produtos.js` → `balancas.js` → `core.js` → (`home-N.js`) → `preview.js` → CDN.
+(O `ferramentas/montar-site.py` confere essa ordem em todas as páginas.)
 Nada de `type="module"` nem `fetch` (o site precisa abrir por `file://`).
 
 ### 2.2 Sprite de ícones (logo of + ícones) — primeiro filho do `<body>`
@@ -422,15 +424,32 @@ Z-index: skip 200 · painel do catálogo 150 · cabeçalho 100 · menu 99 · flu
 ## 5. Dados da empresa no HTML (`data-bc`)
 
 O HTML **sempre** traz o texto/URL real (SEO e sem JS); o `core.js` reescreve a partir de
-`compartilhado/dados/empresa.js`. Nunca escreva telefone/endereço sem o atributo.
+`compartilhado/dados/empresa.js` com os ajustes do painel por cima (`compartilhado/dados/ajustes.js`,
+área Empresa: contato, endereço, mapa, horário, feriados, aviso, Google, redes, equipe, depoimentos e
+marcas — o `balancas.js` confere e aplica no mesmo `EMPRESA`). Nunca escreva telefone/endereço/horário
+sem o atributo: o que estiver solto no HTML não muda quando o dono mexe no painel.
 
 **Textos — `data-bc="chave"`:** `telefone`, `email`, `endereco` (Rua 13, 650 – Boa Morte, Rio Claro/SP · CEP 13500-120),
 `referencia` (Entre as Avenidas 9 e 11), `rua`, `bairro`, `cidade`, `cep`, `ipem` (Oficina autorizada pelo IPEM-SP),
+`cidade-nome` (Rio Claro), `cidade-uf` (Rio Claro-SP), `bairro-frase` ("no bairro da Boa Morte": o HTML fica enquanto o
+bairro for o mesmo; outro bairro → "no bairro X"), `dias-abertos` ("de segunda a sábado", da grade de horários; a 1ª letra
+segue a do HTML, como em `referencia`), `whatsapp` (número do WhatsApp; igual ao telefone enquanto forem o mesmo),
+`whatsapp-mesmo` ("O mesmo número" ou o número do WhatsApp),
 `cnpj`, `razao`, `frase`, `desde` (2010), `experiencia` (25), `ano` (ano atual), `anos` (anos desde 2010),
 `google-nota` (5,0), `google-qtd` (56), `total-produtos`, `total-categorias`, `total-marcas`,
 `status` (Aberto/Fechado agora · fecha/abre às…; use `hidden` no HTML e `data-curto` para só "Aberto agora").
 
-**Links — `data-bc-href="chave"`:** `whatsapp`, `tel`, `email`, `mapa`, `google`, `facebook`, `bcfichas`.
+**Links — `data-bc-href="chave"`:** `whatsapp`, `tel`, `email`, `mapa`, `google`, `facebook`, `instagram`, `bcfichas`.
+Rede vazia no painel esconde o link (o `<li>` em volta); rede preenchida mostra — por isso o Instagram já está no HTML
+com `hidden`: `<li hidden><a data-bc-href="instagram" href="https://www.instagram.com/" …>Instagram</a></li>`.
+**Trechos condicionais — `data-bc-se="condição"`:** `google-5` (só com nota 5,0: ", todas com 5 estrelas"),
+`referencia` (só com referência: `<span data-bc-se="referencia">, <span data-bc="referencia">entre as…</span></span>`),
+`mesmo-numero` / `outro-numero` (telefone e WhatsApp iguais ou não; o de "outro" vem com `hidden` no HTML).
+Envolva a frase INTEIRA quando ela for o único texto de um flex (ex.: `.kicker`), senão o `gap` separa os pedaços.
+**Faixa de aviso:** o `core.js` cria `.lv-aviso` (primeiro filho do `<main>`, logo abaixo do cabeçalho) quando o
+painel liga o aviso e hoje está no período; o hero sobe por baixo dela (`.lv-aviso + .phero/.pn-hero/.hv2-hero`).
+Um hero novo de primeira seção precisa entrar nessa regra do `base.css`. **JSON-LD:** o `core.js` atualiza telefone,
+e-mail, endereço, mapa, horários (`openingHoursSpecification`), redes (`sameAs`) e equipe (`employee`) quando mudam.
 **WhatsApp com mensagem pronta:** `<a data-wa="Olá! Vim pelo site e quero…" href="https://wa.me/551930239050?text=…" target="_blank" rel="noopener">` (vazio = mensagem padrão). O core põe `target`, `rel` e o aviso "(abre em nova aba)".
 
 **Listas — `data-bc-list="…"`:** `horarios` (`<ul class="hours">`), `marcas` (`<ul class="ticker__list">`),

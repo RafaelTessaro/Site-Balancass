@@ -1,7 +1,7 @@
 # Como adicionar e atualizar produtos no site
 
 O jeito principal é o **painel do site**: **`https://balancass.com/painel/`**.
-Pelo celular ou pelo computador você cadastra, edita, esconde e exclui produtos, troca o estoque e envia fotos, **sem mexer em código**. Na área **Clientes** você também coloca, troca e reordena os **logos dos clientes** (item 8). O que você salva aparece no site na hora.
+Pelo celular ou pelo computador você cadastra, edita, esconde e exclui produtos, troca o estoque e envia fotos, **sem mexer em código**. Na área **Clientes** você também coloca, troca e reordena os **logos dos clientes** (item 8), e na área **Empresa** muda telefone, horário, feriados, aviso no site, equipe e outros dados da empresa (item 10). Cada pessoa entra com o seu usuário, como **Administrador** ou **Editor** (item 9). O que você salva aparece no site na hora.
 
 Editar o arquivo do catálogo à mão continua possível, mas virou **plano B** (fim desta página).
 
@@ -16,8 +16,10 @@ Feito por quem tem a senha do **cPanel** da HostGator, logo depois de o site ir 
 1. Abra **`https://balancass.com/painel/`**. Aparece a tela **Primeiro acesso**.
 2. Nesse momento o painel grava um **código** num arquivo que só quem entra no cPanel consegue ler.
 3. Em outra aba: **cPanel → Gerenciador de Arquivos** → pasta **inicial da conta** (a mesma que tem a `public_html`) → abra **`painel-balancas-privado`** → botão direito em **`primeiro-acesso.php`** → **Ver**. Copie o código (ex.: `7KQ4-M9TX-2HPA`).
-4. Volte ao painel, cole o código, escolha o **usuário** (ex.: `fabio`) e uma **senha com pelo menos 10 caracteres**. Dica: junte 3 ou 4 palavras que só você saiba, com um número. Não copie exemplos de guias (o painel recusa).
-5. Pronto, você já entra. O arquivo do código some sozinho.
+4. Volte ao painel, cole o código, escreva **seu nome**, escolha o **usuário** (ex.: `fabio`) e uma **senha com pelo menos 10 caracteres**. Dica: junte 3 ou 4 palavras que só você saiba, com um número. Não copie exemplos de guias (o painel recusa).
+5. Pronto, você já entra, como **Administrador**. O arquivo do código some sozinho.
+
+**Painel que já estava em uso:** não precisa fazer o primeiro acesso de novo. Depois da atualização, o usuário de antes vira **Administrador** sozinho, com a mesma senha (quem estava com o painel aberto continua logado). Para pôr o seu nome: **Conta → Mudar o meu nome**.
 
 O código vale 24 horas. Se vencer, abra o painel de novo e leia o código novo no mesmo arquivo.
 
@@ -90,6 +92,8 @@ O catálogo sempre mostra a nota “Estoque sujeito à disponibilidade. Confirme
 
 ## 6. Errou? Desfaça em “Cópias”
 
+As cópias ficam em **Conta → Cópias de segurança** (só administradores), com as abas **Produtos**, **Clientes** e **Empresa**. Quem é editor tem o **Desfazer** logo depois de excluir; para o resto, peça a um administrador.
+
 Antes de **cada** alteração o painel guarda uma **cópia de segurança** do catálogo: as 30 mais recentes sempre, tudo dos últimos 14 dias (até 200) e as de **excluir** e **restaurar** por 30 dias. Mudanças seguidas do mesmo tipo (setas, estoque, destaque, no site) feitas em menos de 10 minutos ficam numa cópia só.
 
 - **Trazer de volta** (nas cópias de exclusão): devolve só aquele produto, no mesmo lugar e com a foto. É o mesmo que o **Desfazer** do aviso.
@@ -98,8 +102,9 @@ Antes de **cada** alteração o painel guarda uma **cópia de segurança** do ca
 ## 7. Senha
 
 - **Trocar a senha:** **Conta** → Trocar senha (os outros aparelhos conectados saem).
-- **Esqueci a senha:** cPanel → Gerenciador de Arquivos → `painel-balancas-privado` (ao lado da `public_html`; não é a pasta `painel` do site) → apague **só** o `config.php` → abra o painel e faça o **Primeiro acesso** de novo (item 1). Produtos, fotos e cópias continuam lá. O passo a passo também aparece no painel, em **Esqueci a senha** e em **Minha conta**.
-- **Bloqueado?** Depois de 5 senhas erradas seguidas, aquela internet fica bloqueada por 15 minutos. É só esperar.
+- **Esqueci a senha:** peça a um administrador para redefinir a sua senha (**Conta → Usuários → Redefinir senha**); você recebe uma senha temporária e cria a sua no primeiro acesso.
+- **É o único administrador?** cPanel → Gerenciador de Arquivos → `painel-balancas-privado` (ao lado da `public_html`; não é a pasta `painel` do site) → **+ Arquivo** → crie um arquivo vazio chamado **`recuperar.txt`** → abra o painel: aparece **Recuperar acesso**. Leia o código em `primeiro-acesso.php` (mesma pasta, como no item 1), digite o código, o seu usuário de administrador e a senha nova. O painel apaga o `recuperar.txt` sozinho. Usuários, produtos, fotos e cópias continuam como estavam. Não apague mais o `config.php`: ele não guarda mais a senha. O passo a passo também aparece no painel, em **Esqueci a senha** e em **Conta**.
+- **Bloqueado?** Depois de 5 senhas erradas seguidas, aquele usuário fica bloqueado por 15 minutos (quem usa outro usuário, mesmo no Wi-Fi da loja, continua entrando). É só esperar.
 
 Detalhes técnicos e problemas comuns: `painel/LEIA-ME.md`.
 
@@ -132,10 +137,40 @@ Na tela **Clientes** aparecem todos, na **ordem do site** (“1º no site”, �
 
 > **Aviso “A lista de clientes ainda não foi instalada no servidor”**: o site no ar ainda não recebeu a atualização que traz a lista (`compartilhado/dados/clientes.js`). Instale a atualização primeiro (`docs/PUBLICAR-NO-CPANEL.md` → “Atualizar o site já publicado”) e só depois cadastre logos. Se cadastrar antes, o painel cria a lista só com o que você cadastrar, e os logos antigos deixam de aparecer.
 
-## 9. O que o painel não edita
+## 9. Usuários e permissões
 
-- **Telefone, WhatsApp, e-mail, endereço, horários, depoimentos, equipe:** ficam em `public_html/compartilhado/dados/empresa.js` (cPanel → Gerenciador de Arquivos → botão direito → **Editar**). Mude só o texto entre aspas e salve. Antes, faça uma cópia do arquivo (botão direito → **Copiar** → `empresa-backup.js`).
-- **Feriados** (aviso “Aberto agora / Fechado agora”): os nacionais e o 9 de julho já estão no site. Feriado municipal, Carnaval, Corpus Christi ou recesso: lista `FERIADOS` no arquivo `linha-verde/js/core.js` do projeto; depois gere o pacote de novo (`python3 ferramentas/montar-site.py`) e envie o `js/core.js` novo. Não edite o `core.js` direto no servidor: o navegador dos clientes guarda os arquivos CSS/JS por até um mês, e só o pacote novo avisa que o arquivo mudou.
+Cada pessoa que mexe no site tem o **seu usuário e a sua senha** (não compartilhe a sua). Há dois papéis:
+
+- **Administrador**: faz tudo. Produtos, Clientes, **Empresa**, **Cópias de segurança**, **Usuários** e **Atividades** (o que cada um fez).
+- **Editor**: Produtos e Clientes (inclusive o **Desfazer** logo depois de excluir) e a própria senha. Não vê Empresa, Cópias, Usuários nem as atividades dos outros.
+
+**Dar acesso a alguém** (administrador): **Conta → Usuários → Novo usuário** → nome, usuário (o painel sugere) e papel → **Salvar**. Aparece uma **senha temporária**, uma vez só: toque em **Copiar mensagem** e mande pelo WhatsApp. No primeiro acesso, a pessoa cria a própria senha.
+
+- **Esqueceu a senha?** **Redefinir senha** gera outra senha temporária.
+- **Saiu da empresa?** **Desativar** (dá para reativar depois) ou **Excluir**. A pessoa sai do painel na hora; o que ela fez no site continua.
+- **Mudar o papel:** **Editar** → papel → **Salvar**. Vale na hora.
+- O painel nunca fica sem administrador: ninguém tira o próprio papel de administrador nem se desativa.
+
+## 10. Dados da empresa
+
+Em **Empresa** (só administradores), o que o site mostra sobre a loja, em 9 partes. Cada parte tem o seu **Salvar**, diz onde aparece no site e tem o link **Ver no site**. Salvou, o site já mostra.
+
+- **Contato e WhatsApp:** telefone, WhatsApp, a mensagem que já vem escrita no WhatsApp e o e-mail. Digite o número com o DDD, do jeito que quiser (`(19) 99999-9999`).
+- **Endereço e mapa:** rua, referência, bairro, cidade, estado, CEP e o link do Google Maps (no Maps: **Compartilhar → Copiar link**).
+- **Telefone ou endereço novos:** o site muda na hora, mas a busca do Google pode levar alguns dias para mostrar o dado novo. O resumo que aparece quando alguém compartilha o link do site (no WhatsApp, no Facebook) é um texto fixo das páginas: o painel não muda (veja o item 11).
+- **Horário:** até 2 horários por dia ou **Fechado**. **Repetir o horário de segunda de terça a sexta** poupa digitação. O texto do site (“Segunda a sexta — 8h às 11h · 13h às 18h”) e o selo **Aberto agora / Fechado agora** saem daqui.
+- **Feriados e dias fechados:** os feriados nacionais e o 9 de julho o site já conta sozinho. Acrescente os da cidade (dia/mês), marque Carnaval ou Corpus Christi, e cadastre dias avulsos (ponte, recesso, inventário). As **Sugestões para Rio Claro** só valem depois de salvas: confira no calendário da Prefeitura.
+- **Aviso no site:** uma faixa no topo de todas as páginas (verde para novidade, amarela para atenção), com começo e fim opcionais (ex.: “Fechados de 24/12 a 01/01 para férias coletivas”). Para tirar, desligue e salve.
+- **Google e redes sociais:** nota e número de avaliações, link das avaliações, Facebook e Instagram (pode ser só `@perfil`; em branco, o link some do site).
+- **Equipe** e **Depoimentos:** uma linha por pessoa ou depoimento, com ↑ ↓ para a ordem do site. Use depoimentos reais, com a autorização do cliente.
+- **Marcas:** uma por linha, na ordem da faixa de marcas.
+
+Mudou e se arrependeu? **Conta → Cópias de segurança → aba Empresa → Restaurar**. As mudanças ficam no arquivo `compartilhado/dados/ajustes.js`, que as atualizações do site **não** substituem.
+
+## 11. O que o painel não edita
+
+- **Nome, frase, CNPJ, razão social, “desde 2010”** e os valores originais da empresa: ficam em `compartilhado/dados/empresa.js`, no projeto (gere o pacote de novo depois de mudar). O que for mudado na área **Empresa** vale por cima desse arquivo.
+- **Textos das páginas** (títulos, explicações, história da empresa, e o resumo que o Google e as prévias de link mostram, com o telefone e o endereço): no HTML das páginas, no projeto (`linha-verde/`).
 - **Lista para quem navega sem JavaScript:** o `produtos.html` tem uma lista curta e fixa de destaques dentro de `<noscript>` (quase ninguém vê; o Google lê a lista completa, que é gerada sozinha). Se trocar muito os destaques, atualize essa lista no projeto quando gerar o próximo pacote.
 
 ---

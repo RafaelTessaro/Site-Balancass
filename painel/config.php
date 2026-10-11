@@ -17,7 +17,7 @@ return [
     // Endereço do site a partir do painel (para os links "Ver no site")
     'url_site'           => '../',
 
-    // Dados privados (senha, cópias de segurança, lixeira, sessões, registro).
+    // Dados privados (usuários e senhas, cópias de segurança, lixeira, sessões, registro).
     // null = automático: uma pasta FORA do public_html (na pasta inicial da conta),
     // e, se não der para criar lá, a pasta painel/privado/ (protegida).
     // Para escolher outro lugar, troque null por um caminho absoluto entre aspas.
@@ -26,8 +26,9 @@ return [
 
     'fuso'               => 'America/Sao_Paulo',
     'inatividade'        => 2 * 60 * 60,   // sai sozinho após 2 h sem uso
-    'tentativas_max'     => 5,             // erros de senha seguidos por endereço de internet (IP)…
-    'bloqueio'           => 15 * 60,       // …bloqueiam esse IP por 15 min
+    'tentativas_max'     => 5,             // erros de senha seguidos de um usuário, na mesma internet (IP)…
+    'bloqueio'           => 15 * 60,       // …bloqueiam esse usuário nessa internet por 15 min (os outros continuam entrando)
+    'tentativas_max_ip'  => 20,            // somando todos os usuários, 20 erros bloqueiam a internet inteira (robôs)
     'codigo_validade'    => 24 * 60 * 60,  // código de primeiro acesso vale 24 h
     'senha_minimo'       => 10,            // tamanho mínimo da senha
     // Cópias de segurança: as 30 mais recentes ficam sempre; além delas, tudo dos últimos 14 dias

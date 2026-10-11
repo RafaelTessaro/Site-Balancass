@@ -11,7 +11,7 @@ para a  public_html  da HostGator (cPanel):
     ├── assistencia.html  produtos.html  sistema.html  empresa.html  contato.html
     ├── 404.html                 ← página de erro (caminhos absolutos)
     ├── css/  js/  img/          ← só o que as 6 páginas usam
-    ├── compartilhado/           ← dados (empresa.js, produtos.js, clientes.js), balancas.js, fotos e logos
+    ├── compartilhado/           ← dados (empresa.js, ajustes.js, clientes.js, produtos.js), balancas.js, fotos e logos
     ├── painel/                  ← painel de produtos e clientes (PHP), sem dados privados
     ├── .htaccess  robots.txt  sitemap.xml  favicon.ico
 
@@ -24,16 +24,19 @@ O que o script faz nas páginas:
     CSS/JS por 1 mês; com o ?v= cada publicação nova é baixada na hora).
 
 No fim, confere o resultado (arquivos que faltam, restos de "../",
-preview.js, variações antigas, formato do catálogo e da lista de clientes,
-clientes.js incluído antes de balancas.js em todas as páginas, dados
-privados no painel) e para com erro se algo estiver errado. A pasta site/
-antiga só é substituída quando tudo deu certo.
+preview.js, variações antigas, formato do catálogo, da lista de clientes,
+dos dados da empresa (empresa.js) e dos ajustes do painel (ajustes.js),
+a ordem dos dados em todas as páginas — empresa.js → ajustes.js →
+clientes.js → produtos.js → balancas.js —, dados privados no painel) e
+para com erro se algo estiver errado. A pasta site/ antiga só é
+substituída quando tudo deu certo.
 
 Uso (Python 3.8+, sem instalar nada):
     python3 ferramentas/montar-site.py            # gera site/
     python3 ferramentas/montar-site.py --zip      # gera site/ e site.zip (site COMPLETO, para a 1ª publicação)
     python3 ferramentas/montar-site.py --atualizacao                     # gera site/ e atualizacao.zip
     python3 ferramentas/montar-site.py --atualizacao --incluir-clientes  # idem, levando também os clientes
+    python3 ferramentas/montar-site.py --atualizacao --incluir-ajustes   # idem, levando também o ajustes.js
     python3 ferramentas/montar-site.py --saida /outra/pasta
 
 atualizacao.zip = o site completo MENOS os dados que o painel altera no
@@ -43,6 +46,10 @@ servidor, para extrair por cima da public_html sem perder nada:
   * só leva compartilhado/dados/clientes.js e os logos de img/clientes/
     com --incluir-clientes (use quando o servidor ainda NÃO tem clientes.js,
     ou seja, antes de o painel começar a cadastrar logos);
+  * só leva compartilhado/dados/ajustes.js (o que o painel mudou na área
+    Empresa: contato, horário, feriados, aviso…) com --incluir-ajustes —
+    quase nunca é preciso: no servidor que ainda não tem o arquivo, o painel
+    cria o vazio ("window.AJUSTES = {};") na primeira vez que alguém entra;
   * os .htaccess dessas pastas (que bloqueiam scripts) vão sempre.
 O zip fica ao lado da pasta de saída (padrão: atualizacao.zip na raiz do projeto).
 
@@ -85,14 +92,18 @@ PAGINAS = [
 LIXO = [".DS_Store", "Thumbs.db", "desktop.ini", "*.log", "*.bak", "*.tmp", "*.tmp-*", "*~", "*.swp", ".git*"]
 # Do painel: dados privados de teste (a pasta privada é criada pelo próprio painel no servidor)
 PAINEL_FORA = ["privado", "painel-balancas-privado", "erros.php", "sessoes", "copias", "lixeira"]
-PRIVADOS = {"config.php"}  # nome permitido só em painel/config.php (o de configuração, sem senha)
-SINAIS_PRIVADOS = ["primeiro-acesso.php", "tentativas.php", "registro.php", "chave.php", "erros.php"]
+# Nomes que só podem estar nestes lugares do painel: painel/config.php (configuração, sem senha) e
+# painel/lib/usuarios.php (código); em outro lugar, são da pasta privada (senhas, usuários)
+PRIVADOS = {"config.php": "painel", "usuarios.php": "painel/lib"}
+SINAIS_PRIVADOS = ["primeiro-acesso.php", "tentativas.php", "registro.php", "registro-anterior.php", "chave.php", "erros.php",
+                   "recuperar.txt", "recuperar"]
 # Pastas de imagens que o painel grava; cada uma leva um .htaccess que bloqueia scripts (hospedagem/compartilhado/img/<pasta>/)
 PASTAS_DO_PAINEL = ("produtos", "produtos-recorte", "clientes")
 # Logo de cliente: só o nome do arquivo (mesma regra do painel, lib/clientes.php)
 RE_ARQUIVO_LOGO = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(?:webp|png|jpe?g|svg)$")
 
 erros = []
+avisos = []   # não impedem a montagem; aparecem no resumo
 
 
 def erro(msg):
@@ -208,6 +219,8 @@ def htaccess():
         "bloqueio de .md/.ini/.log em qualquer pasta": r"\.(log|md|ini|sh)$",
         "bloqueio de .zip/.bak/.sql na raiz": r"RewriteRule ^[^/]+\.(zip|bak|sql)$ - [F,L,NC]",
         "clientes.js sem cache (no-cache, como produtos.js)": r"clientes\.js",
+        # sem esta regra, uma mudança na área Empresa (telefone, aviso, horário) ficaria 1 mês no cache
+        "ajustes.js sem cache (no-cache, como produtos.js)": r"ajustes\.js)$",
     }
     for nome, trecho in obrigatorio.items():
         if trecho not in texto:
@@ -243,13 +256,13 @@ def hoje_br():
 # ---------------------------------------------------------------------------
 # Catálogo: precisa estar no formato do painel (JSON dentro de window.X = …;)
 # ---------------------------------------------------------------------------
-def json_depois(src, nome):
+def json_depois(src, nome, abre="["):
     m = re.search(r"(?:^|\n)window\." + nome + r"\s*=\s*", src)
     if not m:
         raise ValueError(f'não achei "window.{nome} ="')
     ini = i = m.end()
-    if src[ini:ini + 1] != "[":
-        raise ValueError(f"window.{nome} não começa com [")
+    if src[ini:ini + 1] != abre:
+        raise ValueError(f"window.{nome} não começa com {abre}")
     prof, dentro = 0, False
     while i < len(src):
         c = src[i]
@@ -322,30 +335,166 @@ def conferir_clientes(arquivo):
     return len(lista), sem_logo
 
 
+def dados_js(src, nome, abre):
+    """Arquivo de dados do painel: comentário(s) /* … */ + window.NOME = <JSON>; e nada mais.
+    Retorna o JSON. Qualquer outra coisa (código solto, vírgula sobrando, aspas simples) → ValueError."""
+    resto = src.lstrip("﻿")
+    while True:
+        resto = resto.lstrip()
+        if not resto.startswith("/*"):
+            break
+        fim = resto.find("*/")
+        if fim < 0:
+            raise ValueError("comentário /* sem o */ de fechamento")
+        resto = resto[fim + 2:]
+    m = re.match(r"window\." + nome + r"\s*=\s*", resto)
+    if not m:
+        raise ValueError(f'depois do comentário do topo precisa vir "window.{nome} = …"')
+    corpo = resto[m.end():].rstrip()
+    if not corpo.endswith(";"):
+        raise ValueError(f"window.{nome} precisa terminar com ;")
+    corpo = corpo[:-1].rstrip()
+    if not corpo.startswith(abre):
+        raise ValueError(f"window.{nome} não começa com {abre}")
+    try:
+        return json.loads(corpo)
+    except json.JSONDecodeError as ex:
+        raise ValueError(f"o conteúdo de window.{nome} não é JSON puro ({ex.msg}, linha {ex.lineno} do bloco)")
+
+
+def texto_ok(v, vazio=False):
+    return isinstance(v, str) and (vazio or bool(v.strip()))
+
+
+def conferir_empresa(arquivo):
+    """compartilhado/dados/empresa.js: window.EMPRESA = {JSON}; com os campos que o site e o painel usam."""
+    try:
+        d = dados_js(ler(arquivo), "EMPRESA", "{")
+    except (OSError, ValueError) as ex:
+        erro("compartilhado/dados/empresa.js não está no formato JSON (" + str(ex) + "). O formato é: comentário no topo + "
+             "window.EMPRESA = { \"nome\": \"…\", … };  (aspas duplas em tudo, sem comentários lá dentro). "
+             "O painel (área Empresa) lê este arquivo para mostrar os valores atuais.")
+        return None
+    problemas = []
+    for k in ("nome", "telefone", "email", "mapa", "whatsappMensagemPadrao"):
+        if not texto_ok(d.get(k)):
+            problemas.append(f'"{k}" (texto)')
+    if not re.fullmatch(r"\+55\d{10,11}", str(d.get("telefoneLink", ""))):
+        problemas.append('"telefoneLink" (+55 DDD número, só dígitos)')
+    if not re.fullmatch(r"55\d{10,11}", str(d.get("whatsapp", ""))):
+        problemas.append('"whatsapp" (55 DDD número, só dígitos)')
+    end = d.get("endereco")
+    if not isinstance(end, dict) or not all(texto_ok(end.get(k)) for k in ("rua", "bairro", "cidade", "uf", "cep")):
+        problemas.append('"endereco" (rua, bairro, cidade, uf, cep)')
+    g = d.get("google")
+    if not isinstance(g, dict) or not texto_ok(g.get("nota")) or not isinstance(g.get("avaliacoes"), int):
+        problemas.append('"google" (nota em texto, avaliacoes em número)')
+    if not isinstance(d.get("redes"), dict):
+        problemas.append('"redes" ({ "facebook": "…", "instagram": "…" })')
+    listas = {"horarios": ("dias", "horas"), "equipe": ("nome", "cargo"), "depoimentos": ("texto", "nome"), "clientes": ("nome",)}
+    for k, campos in listas.items():
+        v = d.get(k)
+        if not isinstance(v, list) or not v or not all(isinstance(x, dict) and all(texto_ok(x.get(c)) for c in campos) for x in v):
+            problemas.append(f'"{k}" (lista de {{ {", ".join(campos)} }})')
+    if not isinstance(d.get("marcas"), list) or not all(texto_ok(x) for x in d["marcas"]):
+        problemas.append('"marcas" (lista de textos)')
+    if problemas:
+        erro("compartilhado/dados/empresa.js: campo faltando ou com tipo errado: " + "; ".join(problemas))
+    return d
+
+
+# Ajustes do painel (área Empresa): chaves e o tipo de cada uma (contrato com painel/lib/ajustes.php)
+AJUSTES_CHAVES = {"versao": int, "contato": dict, "endereco": dict, "mapa": str, "horario": dict, "feriados": dict,
+                  "aviso": dict, "google": dict, "redes": dict, "equipe": list, "depoimentos": list, "marcas": list}
+RE_DIA = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def conferir_ajustes(arquivo):
+    """compartilhado/dados/ajustes.js: existe e está no formato do painel (window.AJUSTES = {JSON};).
+    Retorna a lista das partes preenchidas ([] = sem ajustes) ou None se houver problema."""
+    if not arquivo.is_file():
+        erro("compartilhado/dados/ajustes.js não existe. É o arquivo que o painel grava na área Empresa; "
+             "crie-o com um comentário no topo e a linha  window.AJUSTES = {};  (sem ajustes, o site usa empresa.js).")
+        return None
+    try:
+        a = dados_js(ler(arquivo), "AJUSTES", "{")
+    except ValueError as ex:
+        erro("compartilhado/dados/ajustes.js não está no formato do painel (" + str(ex) + "). "
+             "O formato é: comentário no topo + window.AJUSTES = { … };  (JSON puro; vazio = {}).")
+        return None
+    problemas = []
+    for k, v in a.items():
+        tipo = AJUSTES_CHAVES.get(k)
+        if tipo is None:
+            problemas.append(f'chave desconhecida "{k}"')
+        elif not isinstance(v, tipo) or (tipo is int and isinstance(v, bool)):
+            problemas.append(f'"{k}" precisa ser {dict(zip((dict, list, str, int), ("um objeto {…}", "uma lista […]", "um texto", "um número")))[tipo]}')
+    h = a.get("horario")
+    if isinstance(h, dict) and "grade" in h:
+        g = h["grade"]
+        ok = isinstance(g, dict) and all(isinstance(g.get(str(d)), list) and len(g[str(d)]) <= 3 for d in range(7))
+        if ok:
+            for d in range(7):
+                fim = -1
+                for f in g[str(d)]:
+                    if not (isinstance(f, list) and len(f) == 2 and all(isinstance(x, int) and 0 <= x <= 1440 for x in f)
+                            and f[0] < f[1] and f[0] >= fim):
+                        ok = False
+                        break
+                    fim = f[1]
+        if not ok:
+            problemas.append('"horario.grade" fora do formato ({"0": [[início, fim], …], …, "6": […]}, minutos de 0 a 1440)')
+    av = a.get("aviso")
+    if isinstance(av, dict):
+        # Desligado, o texto pode ficar vazio: é o que o painel grava ao salvar "Aviso no site" sem aviso
+        if not texto_ok(av.get("texto", ""), vazio=True):
+            problemas.append('"aviso.texto" precisa ser um texto')
+        elif av.get("ativo") is True and not texto_ok(av.get("texto")):
+            problemas.append('"aviso.texto" vazio com o aviso ligado')
+        for k in ("inicio", "fim"):
+            if av.get(k) not in (None, "") and not (isinstance(av[k], str) and RE_DIA.fullmatch(av[k])):
+                problemas.append(f'"aviso.{k}" precisa ser AAAA-MM-DD')
+        if av.get("tom", "info") not in ("info", "alerta"):
+            problemas.append('"aviso.tom" precisa ser "info" ou "alerta"')
+    for k in ("mapa",):
+        if isinstance(a.get(k), str) and not a[k].startswith("https://"):
+            problemas.append(f'"{k}" precisa começar com https://')
+    if problemas:
+        erro("compartilhado/dados/ajustes.js: " + "; ".join(problemas))
+        return None
+    return [k for k in a if k != "versao"]
+
+
 RE_SCRIPT = re.compile(r"<script\b([^>]*)>", re.I)
+# Ordem dos dados em todas as páginas: cada um precisa do anterior (balancas.js junta tudo)
+ORDEM_DADOS = ["compartilhado/dados/empresa.js", "compartilhado/dados/ajustes.js", "compartilhado/dados/clientes.js",
+               "compartilhado/dados/produtos.js", "compartilhado/js/balancas.js"]
 
 
-def conferir_scripts_clientes(rel, texto):
-    """A página carrega compartilhado/dados/clientes.js depois de empresa.js e antes de balancas.js."""
+def conferir_scripts_dados(rel, texto, completa=True):
+    """A página carrega os dados na ordem empresa.js → ajustes.js → clientes.js → produtos.js → balancas.js,
+    nenhum com async. completa=False (404.html): clientes.js e produtos.js são opcionais."""
     ordem = []
     for m in RE_SCRIPT.finditer(texto):
         src = re.search(r'\bsrc="([^"]+)"', m.group(1))
         if src:
-            ordem.append((src.group(1).split("?")[0], m.group(1)))
+            ordem.append((src.group(1).split("?")[0].lstrip("/"), m.group(1)))
     nomes = [s for s, _ in ordem]
     if "compartilhado/js/balancas.js" not in nomes:
         return False
-    alvo = "compartilhado/dados/clientes.js"
-    if alvo not in nomes:
-        erro(f"{rel}: não carrega {alvo}. Acrescente <script src=\"../compartilhado/dados/clientes.js\"></script> "
-             "logo depois de empresa.js e antes de balancas.js (em linha-verde/).")
+    exigidos = ORDEM_DADOS if completa else [ORDEM_DADOS[0], ORDEM_DADOS[1], ORDEM_DADOS[4]]
+    faltam = [a for a in exigidos if a not in nomes]
+    if faltam:
+        erro(f"{rel}: não carrega {', '.join(faltam)}. A ordem certa (em linha-verde/) é: "
+             + " → ".join(a.split("/")[-1] for a in ORDEM_DADOS) + ' (<script defer src="../compartilhado/dados/ajustes.js"></script> '
+             "logo depois de empresa.js).")
         return False
-    i_cli, i_bal = nomes.index(alvo), nomes.index("compartilhado/js/balancas.js")
-    i_emp = nomes.index("compartilhado/dados/empresa.js") if "compartilhado/dados/empresa.js" in nomes else -1
-    if not (i_emp < i_cli < i_bal):
-        erro(f"{rel}: clientes.js precisa vir depois de empresa.js e antes de balancas.js")
-    if re.search(r"\basync\b", ordem[i_cli][1]):
-        erro(f"{rel}: clientes.js não pode ser async (balancas.js precisa dele antes)")
+    pos = [nomes.index(a) for a in ORDEM_DADOS if a in nomes]
+    if pos != sorted(pos):
+        erro(f"{rel}: os dados estão fora de ordem; precisa ser " + " → ".join(a.split("/")[-1] for a in ORDEM_DADOS))
+    for a in ORDEM_DADOS:
+        if a in nomes and re.search(r"\basync\b", ordem[nomes.index(a)][1]):
+            erro(f"{rel}: {a.split('/')[-1]} não pode ser async (balancas.js precisa dele antes)")
     return True
 
 
@@ -426,7 +575,7 @@ def conferir(site):
         rel = f.relative_to(site).as_posix()
         if f.is_dir() and f.name in PAINEL_FORA:
             erro(f"{rel}: pasta privada de teste no pacote")
-        if f.is_file() and (f.name in SINAIS_PRIVADOS or (f.name in PRIVADOS and f.parent != pnl)):
+        if f.is_file() and (f.name in SINAIS_PRIVADOS or (f.name in PRIVADOS and f.parent.relative_to(site).as_posix() != PRIVADOS[f.name])):
             erro(f"{rel}: arquivo privado de teste no pacote")
         if f.is_file() and f.suffix == ".php" and f.read_bytes().startswith(b"<?php exit; ?>"):
             erro(f"{rel}: arquivo da pasta privada (começa com <?php exit; ?>) no pacote")
@@ -438,11 +587,13 @@ def conferir(site):
             erro(f"compartilhado/img/{pasta}/.htaccess faltando (bloqueia scripts na pasta de fotos/logos; "
                  f"modelo em hospedagem/compartilhado/img/{pasta}/.htaccess)")
 
-    # Lista de clientes do painel: todas as páginas a carregam antes de balancas.js
+    # Dados na ordem certa em todas as páginas: empresa.js → ajustes.js → clientes.js → produtos.js → balancas.js
     for publicado, _ in PAGINAS:
-        conferir_scripts_clientes(publicado, ler(site / publicado))
+        if not conferir_scripts_dados(publicado, ler(site / publicado)):
+            if "balancas.js" not in ler(site / publicado):
+                erro(f"{publicado}: não carrega compartilhado/js/balancas.js (nem os dados da empresa)")
     if "balancas.js" in ler(site / "404.html"):
-        conferir_scripts_clientes("404.html", ler(site / "404.html"))
+        conferir_scripts_dados("404.html", ler(site / "404.html"), completa=False)
     for obrig in (".htaccess", "robots.txt", "sitemap.xml", "404.html", "favicon.ico"):
         if not (site / obrig).is_file():
             erro(f"{obrig} faltando no pacote")
@@ -498,6 +649,8 @@ def montar(destino):
                     gravar(f, t.replace("../compartilhado/", "compartilhado/"))
         resumo_catalogo = conferir_catalogo(site / "compartilhado" / "dados" / "produtos.js")
         resumo_clientes = conferir_clientes(site / "compartilhado" / "dados" / "clientes.js")
+        conferir_empresa(site / "compartilhado" / "dados" / "empresa.js")
+        resumo_ajustes = conferir_ajustes(site / "compartilhado" / "dados" / "ajustes.js")
 
         # Páginas
         paginas = {pub: montar_pagina(pub, org) for pub, org in PAGINAS}
@@ -561,8 +714,13 @@ def montar(destino):
         print(f"  Catálogo: {c} categorias, {p} produtos ({v} no site), formato do painel ✓")
     if resumo_clientes:
         n, sem = resumo_clientes
-        print(f"  Clientes: {n} na lista (clientes.js no formato do painel ✓, incluído antes de balancas.js em todas as páginas ✓)"
+        print(f"  Clientes: {n} na lista (clientes.js no formato do painel ✓)"
               + (f"; {sem} sem logo (não aparecem no site)" if sem else ""))
+    print("  Empresa: empresa.js em JSON ✓; ajustes.js no formato do painel ✓ ("
+          + ("sem ajustes: vale empresa.js" if not resumo_ajustes else "ajustes em: " + ", ".join(resumo_ajustes)) + ")")
+    print("  Ordem dos dados em todas as páginas ✓ (empresa.js → ajustes.js → clientes.js → produtos.js → balancas.js)")
+    for a in avisos:
+        print("  AVISO: " + a)
     print("  Painel: painel/ (primeiro acesso pelo código gravado no cPanel; veja painel/LEIA-ME.md)")
     print("  Próximo passo: enviar o CONTEÚDO de site/ para public_html (docs/PUBLICAR-NO-CPANEL.md).")
 
@@ -583,10 +741,12 @@ def compactar(site):
     print(f"  ZIP: {destino} ({destino.stat().st_size / 1024 / 1024:.1f} MB, {len(nomes)} arquivos, {ht} .htaccess)")
 
 
-def fica_fora_da_atualizacao(rel, incluir_clientes):
+def fica_fora_da_atualizacao(rel, incluir_clientes, incluir_ajustes=False):
     """Arquivos que o painel altera no servidor (não podem ser sobrescritos por uma atualização)."""
     arquivos = {"compartilhado/dados/produtos.js"}
     pastas = ["compartilhado/img/produtos/", "compartilhado/img/produtos-recorte/"]
+    if not incluir_ajustes:
+        arquivos.add("compartilhado/dados/ajustes.js")
     if not incluir_clientes:
         arquivos.add("compartilhado/dados/clientes.js")
         pastas.append("compartilhado/img/clientes/")
@@ -596,7 +756,7 @@ def fica_fora_da_atualizacao(rel, incluir_clientes):
     return any(rel.startswith(p) and rel != p + ".htaccess" for p in pastas)
 
 
-def compactar_atualizacao(site, incluir_clientes):
+def compactar_atualizacao(site, incluir_clientes, incluir_ajustes=False):
     """atualizacao.zip: o site completo MENOS os dados que o painel altera no servidor."""
     site = site.resolve()
     destino = site.parent / "atualizacao.zip"
@@ -607,20 +767,24 @@ def compactar_atualizacao(site, incluir_clientes):
             if not f.is_file():
                 continue
             rel = f.relative_to(site).as_posix()
-            if fica_fora_da_atualizacao(rel, incluir_clientes):
+            if fica_fora_da_atualizacao(rel, incluir_clientes, incluir_ajustes):
                 fora.append(rel)
                 continue
             z.write(f, rel)
     # Confere o zip antes de trocar o anterior
     with zipfile.ZipFile(tmp) as z:
         nomes = z.namelist()
-    problemas = [n for n in nomes if fica_fora_da_atualizacao(n, incluir_clientes)]
+    problemas = [n for n in nomes if fica_fora_da_atualizacao(n, incluir_clientes, incluir_ajustes)]
     for obrig in ["index.html", ".htaccess", "painel/index.php", "compartilhado/js/balancas.js"] + \
                  [f"compartilhado/img/{p}/.htaccess" for p in PASTAS_DO_PAINEL]:
         if obrig not in nomes:
             problemas.append("faltou " + obrig)
     if incluir_clientes and "compartilhado/dados/clientes.js" not in nomes:
         problemas.append("faltou compartilhado/dados/clientes.js (--incluir-clientes)")
+    if incluir_ajustes and "compartilhado/dados/ajustes.js" not in nomes:
+        problemas.append("faltou compartilhado/dados/ajustes.js (--incluir-ajustes)")
+    if not incluir_ajustes and "compartilhado/dados/ajustes.js" in nomes:
+        problemas.append("compartilhado/dados/ajustes.js entrou sem --incluir-ajustes")
     if problemas:
         tmp.unlink()
         sys.exit("atualizacao.zip NÃO gerado: " + "; ".join(problemas))
@@ -629,10 +793,23 @@ def compactar_atualizacao(site, incluir_clientes):
     logos = sum(1 for r in fora if r.startswith("compartilhado/img/clientes/"))
     print(f"  ATUALIZAÇÃO: {destino} ({destino.stat().st_size / 1024 / 1024:.1f} MB, {len(nomes)} arquivos)")
     print(f"    fora do zip (o servidor mantém o que o painel gravou): compartilhado/dados/produtos.js, {fotos} fotos de produtos"
-          + ("" if incluir_clientes else f", compartilhado/dados/clientes.js e {logos} logos de clientes"))
+          + ("" if incluir_clientes else f", compartilhado/dados/clientes.js e {logos} logos de clientes")
+          + ("" if incluir_ajustes else ", compartilhado/dados/ajustes.js (área Empresa)"))
     if incluir_clientes:
         print("    COM a lista de clientes (clientes.js + img/clientes/): use só se o servidor ainda não tem")
         print("    compartilhado/dados/clientes.js — senão os logos cadastrados no painel seriam substituídos.")
+    if incluir_ajustes:
+        print("    COM o ajustes.js (área Empresa): raramente necessário (o painel cria o vazio sozinho)")
+        print("    — senão o que foi mudado no painel (telefone, horário, aviso…) volta ao original.")
+        try:
+            vazio = not dados_js(ler(site / "compartilhado" / "dados" / "ajustes.js"), "AJUSTES", "{")
+        except ValueError:
+            vazio = False
+        if not vazio:
+            print("    ATENÇÃO: o ajustes.js do projeto NÃO está vazio: o que estiver nele vai para o site.")
+    else:
+        print("    Sem ajustes.js: se o servidor ainda não tem compartilhado/dados/ajustes.js, o painel cria o vazio")
+        print("    na primeira vez que alguém entrar. Até lá o site funciona, com os dados de empresa.js.")
     print("    Como instalar: docs/PUBLICAR-NO-CPANEL.md → “Atualizar o site já publicado”.")
 
 
@@ -642,19 +819,24 @@ def main():
     ap.add_argument("--zip", action="store_true", help="também gera <saida>.zip com o site COMPLETO, para a primeira publicação")
     ap.add_argument("--atualizacao", action="store_true",
                     help="também gera atualizacao.zip (ao lado da saída): o site completo MENOS produtos.js e as fotos "
-                         "de produtos (e, sem --incluir-clientes, sem clientes.js e os logos), para extrair por cima "
-                         "do site já publicado")
+                         "de produtos (e, sem --incluir-clientes, sem clientes.js e os logos; sem --incluir-ajustes, "
+                         "sem ajustes.js), para extrair por cima do site já publicado")
     ap.add_argument("--incluir-clientes", action="store_true",
                     help="com --atualizacao: leva também compartilhado/dados/clientes.js e img/clientes/ "
                          "(só quando o servidor ainda não tem clientes.js)")
+    ap.add_argument("--incluir-ajustes", action="store_true",
+                    help="com --atualizacao: leva também compartilhado/dados/ajustes.js, os ajustes da área Empresa "
+                         "do painel (só quando o servidor ainda não tem ajustes.js: a 1ª atualização com a área Empresa)")
     args = ap.parse_args()
     if args.incluir_clientes and not args.atualizacao:
         ap.error("--incluir-clientes só vale junto com --atualizacao")
+    if args.incluir_ajustes and not args.atualizacao:
+        ap.error("--incluir-ajustes só vale junto com --atualizacao")
     montar(Path(args.saida))
     if args.zip:
         compactar(Path(args.saida))
     if args.atualizacao:
-        compactar_atualizacao(Path(args.saida), args.incluir_clientes)
+        compactar_atualizacao(Path(args.saida), args.incluir_clientes, args.incluir_ajustes)
 
 
 if __name__ == "__main__":

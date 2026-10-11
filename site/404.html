@@ -43,7 +43,78 @@
   /* Celular: a faixa vira uma aba curta ao lado do "404", sem passar por trás dos textos */
   @media (max-width: 640px) { main::before { top: 0; bottom: auto; height: clamp(150px, 46vw, 200px); right: -4%; width: 32%; } .big { -webkit-text-stroke-width: 1.5px; } }
   .nw { white-space: nowrap; }
+  footer { overflow-wrap: anywhere; }
+  /* Faixa de aviso do painel (Empresa → Aviso no site), como nas outras páginas */
+  .lv-aviso { position: relative; z-index: 1; background: var(--green); color: var(--ink); border-bottom: 1px solid rgba(10,10,10,.28); }
+  .lv-aviso--alerta { background: var(--volt); }
+  .lv-aviso__in { display: flex; align-items: center; gap: 10px 16px; min-height: 54px; padding: 9px var(--gut); }
+  .lv-aviso__txt { flex: 1; min-width: 0; max-width: none; color: inherit; font: 600 15px/1.45 var(--f-text); letter-spacing: .005em; overflow-wrap: anywhere; }
+  .lv-aviso__tag { position: relative; isolation: isolate; display: inline-block; margin: 0 14px 0 4px; padding: 5px 11px 4px; font: 500 10.5px/1.2 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--paper); vertical-align: 1px; }
+  .lv-aviso__tag::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--ink); transform: skewX(-12deg); }
+  .lv-aviso--alerta .lv-aviso__tag { color: var(--volt); }
+  .lv-aviso__x { flex: none; display: grid; place-items: center; width: 44px; height: 44px; margin: -4px -10px -4px 0; padding: 0; border: 0; background: none; color: var(--ink); cursor: pointer; }
+  .lv-aviso__x:hover { background: rgba(10,10,10,.14); }
+  .lv-aviso__x svg { width: 20px; height: 20px; }
+  .lv-aviso :focus-visible { outline-color: var(--ink); outline-offset: -2px; }
+  @media (max-width: 600px) { .lv-aviso__in { padding-block: 8px; gap: 8px; align-items: flex-start; } .lv-aviso__txt { font-size: 14px; line-height: 1.5; padding-top: 3px; } .lv-aviso__tag { margin-right: 10px; } }
 </style>
+<!-- Telefone, WhatsApp e faixa de aviso atuais: dados da empresa + ajustes do painel (área Empresa).
+     Sem os scripts (ou com erro neles) fica o que está escrito na página. -->
+<script defer src="/compartilhado/dados/empresa.js"></script>
+<script defer src="/compartilhado/dados/ajustes.js"></script>
+<script defer src="/compartilhado/js/balancas.js"></script>
+<script>
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    try {
+      var BC = window.BC, E = BC && BC.empresa, end = (E && E.endereco) || {};
+      if (!E) return;
+      var wa = document.querySelector("[data-wa]");
+      if (wa && E.whatsapp) wa.href = BC.whatsLink();
+      var tel = document.querySelector("[data-tel]");
+      if (tel && E.telefone) tel.textContent = E.telefone;
+      var cid = document.querySelector("[data-cidade]");
+      if (cid && end.cidade && end.uf) {
+        cid.textContent = end.cidade + "-" + end.uf;
+        if (cid.textContent.length > 24) cid.className = "";   // nome longo pode quebrar (sem rolagem lateral)
+      }
+    } catch (e) { /* fica o texto da página */ }
+    try { aviso(window.BC && window.BC.empresa && window.BC.empresa.aviso); } catch (e) { /* sem faixa */ }
+  });
+  // Faixa de aviso: mesma regra do core.js das outras páginas (ligado e hoje, em Rio Claro,
+  // entre o começo e o fim). Texto puro; fechou, some até fechar o navegador (por texto).
+  function aviso(a) {
+    var texto = a && a.ativo === true && typeof a.texto === "string" ? a.texto.trim() : "";
+    if (!texto || document.querySelector(".lv-aviso")) return;
+    var hoje, d = new Date(), dois = function (n) { return ("0" + n).slice(-2); };
+    try {
+      var o = {};
+      new Intl.DateTimeFormat("en-US", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" })
+        .formatToParts(d).forEach(function (p) { o[p.type] = p.value; });
+      hoje = o.year + "-" + o.month + "-" + o.day;
+    } catch (e) { hoje = d.getFullYear() + "-" + dois(d.getMonth() + 1) + "-" + dois(d.getDate()); }
+    var re = /^\d{4}-\d{2}-\d{2}$/;
+    if ((re.test(a.inicio || "") && hoje < a.inicio) || (re.test(a.fim || "") && hoje > a.fim)) return;
+    try { if (sessionStorage.getItem("lv-aviso-fechado") === texto) return; } catch (e) { /* sem armazenamento: mostra */ }
+    var alerta = a.tom === "alerta", box = document.createElement("div");
+    box.className = "lv-aviso" + (alerta ? " lv-aviso--alerta" : "");
+    box.setAttribute("role", "region");
+    box.setAttribute("aria-label", "Aviso");
+    box.innerHTML = '<div class="lv-aviso__in"><p class="lv-aviso__txt"><span class="lv-aviso__tag" aria-hidden="true">' + (alerta ? "Atenção" : "Aviso") +
+      '</span><span class="lv-aviso__msg"></span></p><button class="lv-aviso__x" type="button" aria-label="Fechar o aviso">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
+    box.querySelector(".lv-aviso__msg").textContent = texto;
+    box.querySelector(".lv-aviso__x").addEventListener("click", function () {
+      try { sessionStorage.setItem("lv-aviso-fechado", texto); } catch (e) { /* fecha só nesta página */ }
+      var main = document.getElementById("conteudo"), foco = box.contains(document.activeElement);
+      box.parentNode.removeChild(box);
+      if (foco && main) { main.setAttribute("tabindex", "-1"); main.focus({ preventScroll: true }); }   // o foco não se perde
+    });
+    var hdr = document.querySelector(".hdr");
+    hdr.parentNode.insertBefore(box, hdr.nextSibling);
+  }
+})();
+</script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -78,9 +149,9 @@
       <li><a href="/contato.html">Contato</a></li>
     </ul>
   </nav>
-  <a class="btn" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg>Falar no WhatsApp<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"> (abre em nova aba)</span></a>
+  <a class="btn" data-wa href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg>Falar no WhatsApp<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"> (abre em nova aba)</span></a>
 </main>
 
-<footer class="mono">Balanças.com · <span class="nw">(19) 3023-9050</span> · <span class="nw">Rio Claro-SP</span></footer>
+<footer class="mono">Balanças.com · <span class="nw" data-tel>(19) 3023-9050</span> · <span class="nw" data-cidade>Rio Claro-SP</span></footer>
 </body>
 </html>

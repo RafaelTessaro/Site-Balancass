@@ -29,8 +29,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders:opsz,wght@10..72,700..900&family=Archivo:wdth,wght@62..125,400..800&family=Martian+Mono:wght@400..500&display=swap">
-<link rel="stylesheet" href="css/base.css?v=3cf9f02ea4">
-<link rel="stylesheet" href="css/paginas.css?v=7071a82905">
+<link rel="stylesheet" href="css/base.css?v=e7d376f301">
+<link rel="stylesheet" href="css/paginas.css?v=b4e5efa7a0">
 <script>
   /* Marca o documento antes de pintar: as animações de entrada só escondem
      o conteúdo enquanto o JS não assume. Se algo falhar, tudo reaparece. */
@@ -223,10 +223,11 @@
 </script>
 <!-- Scripts locais primeiro (dados, fichas e links funcionam enquanto o CDN carrega); depois GSAP/Lenis -->
 <script defer src="compartilhado/dados/empresa.js"></script>
+<script defer src="compartilhado/dados/ajustes.js"></script>
 <script defer src="compartilhado/dados/clientes.js"></script>
 <script defer src="compartilhado/dados/produtos.js"></script>
-<script defer src="compartilhado/js/balancas.js?v=10aff77872"></script>
-<script defer src="js/core.js?v=b614c37974"></script>
+<script defer src="compartilhado/js/balancas.js?v=336d55fb23"></script>
+<script defer src="js/core.js?v=ae84d34dc0"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
@@ -304,7 +305,7 @@
   </nav>
   <div class="menu__foot">
     <a class="btn btn--green" data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Falar no WhatsApp">Falar no WhatsApp</span></a>
-    <p class="mono menu__info"><span class="nobr" data-bc="telefone">(19) 3023-9050</span> · <span class="nobr">Rio Claro-SP</span></p>
+    <p class="mono menu__info"><span class="nobr" data-bc="telefone">(19) 3023-9050</span> · <span class="nobr" data-bc="cidade-uf">Rio Claro-SP</span></p>
   </div>
 </div>
 
@@ -349,7 +350,7 @@
       </div>
       <p class="phero__call phero__call--1 mono" aria-hidden="true"><b>01</b> Fundador com <span data-bc="experiencia">25</span>+ anos</p>
       <p class="phero__call phero__call--2 mono" aria-hidden="true"><b>02</b> Nota <span data-bc="google-nota">5,0</span> no Google</p>
-      <p class="phero__ref mono" aria-hidden="true">Rio Claro-SP — Rua 13, 650 — Desde 2010</p>
+      <p class="phero__ref mono" aria-hidden="true"><span data-bc="cidade-uf">Rio Claro-SP</span> — <span data-bc="rua">Rua 13, 650</span> — Desde 2010</p>
     </div>
   </div>
   <div class="phero__strip" data-intro>
@@ -399,7 +400,7 @@
       <div class="delta" data-reveal>
         <p class="delta__lbl mono">Nota no Google</p>
         <p class="delta__nums"><span class="delta__to" data-bc="google-nota">5,0</span><svg class="i delta__star" aria-hidden="true"><use href="#i-star"/></svg></p>
-        <p class="delta__tag"><span class="tag tag--ink"><span data-bc="google-qtd">56</span> avaliações</span> todas com 5 estrelas</p>
+        <p class="delta__tag"><span class="tag tag--ink"><span data-bc="google-qtd">56</span> avaliações</span><span data-bc-se="google-5"> todas com 5 estrelas</span></p>
       </div>
     </div>
   </div>
@@ -468,7 +469,7 @@
         <p class="gscore__lbl mono">Google · Avaliações</p>
         <p class="gscore__n" data-bc="google-nota">5,0</p>
         <p class="gscore__stars" aria-hidden="true"><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg><svg class="i"><use href="#i-star"/></svg></p>
-        <p class="gscore__txt"><strong><span data-bc="google-qtd">56</span> avaliações</strong>, todas com 5 estrelas.</p>
+        <p class="gscore__txt"><strong><span data-bc="google-qtd">56</span> avaliações</strong><span data-bc-se="google-5">, todas com 5 estrelas</span>.</p>
         <p class="gscore__lbl mono">O que mais elogiam</p>
         <ul class="chips chips--dark" role="list"><li>Agilidade</li><li>Profissionalismo</li><li>Equipe atenciosa</li><li>Parceria de anos</li></ul>
         <a class="btn btn--line btn--sm" data-bc-href="google" href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener"><span class="st" data-t="Ver no Google">Ver no Google</span><svg class="i" aria-hidden="true"><use href="#i-out"/></svg></a>
@@ -511,7 +512,7 @@
   <div class="wrap ask__in">
     <h2 class="ask__t" id="ask-t" data-reveal="split">Passe na loja ou chame no WhatsApp.</h2>
     <div class="ask__side">
-      <p data-reveal>Estamos na Rua 13, 650, entre as Avenidas 9 e 11, no bairro da Boa Morte, em Rio Claro. De segunda a sábado.</p>
+      <p data-reveal>Estamos na <span data-bc="rua">Rua 13, 650</span><span data-bc-se="referencia">, <span data-bc="referencia">entre as Avenidas 9 e 11</span></span>, <span data-bc="bairro-frase">no bairro da Boa Morte</span>, em <span data-bc="cidade-nome">Rio Claro</span>. <span data-bc="dias-abertos">De segunda a sábado</span>.</p>
       <div class="ask__btns" data-reveal>
         <a class="btn btn--green btn--lg" data-wa="Olá! Vim pela página da empresa e gostaria de atendimento." href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pela%20p%C3%A1gina%20da%20empresa%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Falar no WhatsApp">Falar no WhatsApp</span></a>
         <a class="link-u" href="contato.html">Todos os contatos</a>
@@ -540,10 +541,11 @@
       <div class="ftr__col">
         <p class="ftr__h mono">Contato</p>
         <ul role="list">
-          <li><a data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener">WhatsApp <span data-bc="telefone">(19) 3023-9050</span></a></li>
+          <li><a data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener">WhatsApp <span data-bc="whatsapp">(19) 3023-9050</span></a></li>
           <li><a data-bc-href="email" href="mailto:balancas.com@gmail.com"><span data-bc="email">balancas.com@gmail.com</span></a></li>
           <li><a data-bc-href="mapa" href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener"><span data-bc="endereco">Rua 13, 650 – Boa Morte, <span class="nobr">Rio Claro/SP</span> · <span class="nobr">CEP 13500-120</span></span><br><span class="ftr__ref" data-bc="referencia">Entre as Avenidas 9 e 11</span></a></li>
           <li><a data-bc-href="facebook" href="https://www.facebook.com/balancas.comrc/" target="_blank" rel="noopener">Facebook</a></li>
+          <li hidden><a data-bc-href="instagram" href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a></li>
         </ul>
       </div>
       <div class="ftr__col">
@@ -554,7 +556,7 @@
     </div>
     <div class="ftr__legal mono">
       <p>© <span data-bc="ano">2026</span> <span data-bc="razao">Fabio de Godoy Lima Ltda</span><span class="ftr__sep"> · </span><span class="nobr">CNPJ <span data-bc="cnpj">12.403.843/0001-18</span></span></p>
-      <p><span data-bc="ipem">Oficina autorizada pelo <span class="nobr">IPEM-SP</span></span><span class="ftr__sep"> · </span><span class="nobr">Rio Claro-SP</span></p>
+      <p><span data-bc="ipem">Oficina autorizada pelo <span class="nobr">IPEM-SP</span></span><span class="ftr__sep"> · </span><span class="nobr" data-bc="cidade-uf">Rio Claro-SP</span></p>
       <!-- Entrada do painel da equipe (produtos e fotos). nofollow: o painel não aparece no Google -->
       <p><a class="ftr__adm" href="painel/" rel="nofollow">Área restrita</a></p>
     </div>

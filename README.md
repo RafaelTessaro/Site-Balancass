@@ -13,11 +13,11 @@ A pasta **`site/`** é o pacote pronto para a HostGator: o conteúdo dela vai in
 | `balancass.com/` | Início (variação 3 · Painel) |
 | `/assistencia.html` · `/produtos.html` · `/sistema.html` · `/empresa.html` · `/contato.html` | Abas do site |
 | `/produtos.html#p=toledo-prix-7e` | Link direto de um produto (abre os detalhes) |
-| `/painel/` | **Painel com login** para adicionar, editar, esconder e excluir produtos, mudar o estoque e trocar fotos, e para cuidar dos **logos de clientes** (área **Clientes**: incluir, trocar, reordenar, excluir). Entrada pelo link discreto **“Área restrita”** no rodapé (fora do Google) |
+| `/painel/` | **Painel com login** para adicionar, editar, esconder e excluir produtos, mudar o estoque e trocar fotos, para cuidar dos **logos de clientes** (área **Clientes**: incluir, trocar, reordenar, excluir) e dos **dados da empresa** que o site mostra (área **Empresa**: contato, endereço, horário, feriados, aviso no site, Google e redes, equipe, depoimentos, marcas). Cada pessoa com o seu usuário, como **Administrador** ou **Editor**. Entrada pelo link discreto **“Área restrita”** no rodapé (fora do Google) |
 | qualquer endereço inexistente | Página 404 no estilo do site |
 
 **Publicar:** [`docs/PUBLICAR-NO-CPANEL.md`](docs/PUBLICAR-NO-CPANEL.md) (PHP 8.3, envio do `site.zip`, primeiro acesso ao painel, testes).
-**Produtos e logos de clientes no dia a dia:** [`docs/COMO-ADICIONAR-PRODUTOS.md`](docs/COMO-ADICIONAR-PRODUTOS.md) (pelo painel; edição manual como plano B).
+**Produtos, logos de clientes, usuários e dados da empresa no dia a dia:** [`docs/COMO-ADICIONAR-PRODUTOS.md`](docs/COMO-ADICIONAR-PRODUTOS.md) (pelo painel; edição manual como plano B).
 **Atualizar o site que já está no ar:** `atualizacao.zip` (guia de publicação, item 6).
 
 **Gerar o pacote de novo** (depois de mudar `linha-verde/`, `compartilhado/`, `painel/` ou `hospedagem/`):
@@ -25,13 +25,14 @@ A pasta **`site/`** é o pacote pronto para a HostGator: o conteúdo dela vai in
 ```bash
 python3 ferramentas/montar-site.py          # recria site/ (Python 3, sem instalar nada)
 python3 ferramentas/montar-site.py --zip    # recria site/ e gera site.zip (site COMPLETO, 1ª publicação)
-python3 ferramentas/montar-site.py --atualizacao                     # site/ + atualizacao.zip (sem produtos, fotos e clientes)
+python3 ferramentas/montar-site.py --atualizacao                     # site/ + atualizacao.zip (sem produtos, fotos, clientes e ajustes.js)
 python3 ferramentas/montar-site.py --atualizacao --incluir-clientes  # idem, levando clientes.js e logos (só se o servidor ainda não tem clientes.js)
+python3 ferramentas/montar-site.py --atualizacao --incluir-ajustes   # idem, levando ajustes.js (raramente: o painel cria o vazio sozinho)
 ```
 
-O script usa `linha-verde/index-3.html` como `index.html`, leva só o CSS/JS que as 6 páginas usam, tira o seletor de variações da fase de escolha, troca `../compartilhado/` por `compartilhado/`, acerta canonical e `og:url`, põe `?v=…` nos CSS/JS, monta `.htaccess` (de `hospedagem/.htaccess`), `robots.txt`, `sitemap.xml`, `404.html` e `favicon.ico`, copia o painel sem dados privados e **confere tudo** (referências quebradas, restos de `../`, formato do catálogo e da lista de clientes, `clientes.js` carregado antes do `balancas.js` em todas as páginas). Se algo estiver errado, ele para e a `site/` anterior fica como estava.
+O script usa `linha-verde/index-3.html` como `index.html`, leva só o CSS/JS que as 6 páginas usam, tira o seletor de variações da fase de escolha, troca `../compartilhado/` por `compartilhado/`, acerta canonical e `og:url`, põe `?v=…` nos CSS/JS, monta `.htaccess` (de `hospedagem/.htaccess`), `robots.txt`, `sitemap.xml`, `404.html` e `favicon.ico`, copia o painel sem dados privados e **confere tudo** (referências quebradas, restos de `../`, formato do catálogo, da lista de clientes, do `empresa.js` e do `ajustes.js`, a ordem `empresa.js` → `ajustes.js` → `clientes.js` → `produtos.js` → `balancas.js` em todas as páginas, nenhum arquivo da pasta privada no pacote). Se algo estiver errado, ele para e a `site/` anterior fica como estava.
 
-> Depois que o painel estiver em uso, o catálogo e a lista de clientes que valem são os do servidor. Para publicar uma versão nova, use o `atualizacao.zip`, que não leva `produtos.js`, as fotos de produtos nem (sem `--incluir-clientes`) o `clientes.js` e os logos (detalhes no guia de publicação, item 6).
+> Depois que o painel estiver em uso, o catálogo, a lista de clientes e os ajustes da área Empresa que valem são os do servidor. Para publicar uma versão nova, use o `atualizacao.zip`, que não leva `produtos.js`, as fotos de produtos, (sem `--incluir-clientes`) o `clientes.js` e os logos, nem (sem `--incluir-ajustes`) o `ajustes.js` (detalhes no guia de publicação, item 6).
 
 ## Estrutura
 
@@ -42,12 +43,13 @@ linha-verde/               fontes do site escolhido: páginas, css/, js/, img/, 
   index.html, index-2.html variações 1 e 2 (só para histórico; não vão para o ar)
   COMPONENTES.md           documentação dos componentes visuais
 compartilhado/
-  dados/empresa.js         telefone, WhatsApp, endereço, horários, equipe, clientes (reserva, se faltar clientes.js)…
+  dados/empresa.js         valores ORIGINAIS da empresa: telefone, WhatsApp, endereço, horários, equipe… (JSON)
+  dados/ajustes.js         o que a área Empresa do painel mudou (gerado pelo painel; vale por cima de empresa.js)
   dados/produtos.js        catálogo de produtos (formato JSON do painel)
   dados/clientes.js        logos de clientes, na ordem do site (gerado pelo painel; vale no lugar da lista de empresa.js)
-  js/balancas.js           funções comuns (WhatsApp por produto, filtros, busca)
+  js/balancas.js           funções comuns (junta empresa.js + ajustes.js, WhatsApp por produto, filtros, busca)
   img/                     logo em SVG, fotos de produtos, logos de clientes, telas do sistema
-painel/                    painel de produtos e clientes em PHP (LEIA-ME.md com instalação e segurança)
+painel/                    painel em PHP: produtos, clientes, área Empresa, usuários e papéis (LEIA-ME.md com instalação e segurança)
 hospedagem/                .htaccess do site e das pastas de fotos, favicon.ico
 ferramentas/
   montar-site.py           gera a pasta site/ (e o site.zip ou o atualizacao.zip)
@@ -67,7 +69,7 @@ index.html                 página que apresenta as 3 propostas da 1ª rodada
 
 ## Tecnologia
 
-Páginas 100% estáticas (HTML, CSS e JavaScript), sem banco de dados e sem WordPress. Animações com GSAP e Lenis, carregados por CDN. Sem cookies nem rastreadores no site. O painel é PHP puro (8.1 a 8.3), também sem banco de dados: grava direto no `compartilhado/dados/produtos.js`, no `compartilhado/dados/clientes.js` e nas pastas de fotos e de logos, com login, cópias de segurança automáticas e proteção contra os ataques comuns.
+Páginas 100% estáticas (HTML, CSS e JavaScript), sem banco de dados e sem WordPress. Animações com GSAP e Lenis, carregados por CDN. Sem cookies nem rastreadores no site. O painel é PHP puro (8.1 a 8.3), também sem banco de dados: grava direto no `compartilhado/dados/produtos.js`, no `compartilhado/dados/clientes.js`, no `compartilhado/dados/ajustes.js` e nas pastas de fotos e de logos, com usuários (Administrador ou Editor), cópias de segurança automáticas e proteção contra os ataques comuns.
 
 ## Histórico das propostas
 

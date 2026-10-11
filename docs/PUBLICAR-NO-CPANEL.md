@@ -10,7 +10,7 @@ site/                      ← o CONTEÚDO desta pasta vai para public_html/
 ├── assistencia.html  produtos.html  sistema.html  empresa.html  contato.html  404.html
 ├── css/  js/  img/
 ├── compartilhado/         (catálogo, lista de clientes, dados da empresa, fotos e logos)
-├── painel/                (painel de produtos e de logos de clientes, PHP)
+├── painel/                (painel: produtos, logos de clientes, dados da empresa e usuários; PHP)
 └── .htaccess  robots.txt  sitemap.xml  favicon.ico
 ```
 
@@ -45,9 +45,9 @@ Logo depois de publicar, crie o usuário do painel:
 
 1. Abra **`https://balancass.com/painel/`** → tela **Primeiro acesso**.
 2. cPanel → Gerenciador de Arquivos → pasta **inicial da conta** (a que tem a `public_html`) → **`painel-balancas-privado`** → botão direito em **`primeiro-acesso.php`** → **Ver** → copie o código (ex.: `7KQ4-M9TX-2HPA`).
-3. No painel: cole o código, escolha usuário e uma senha de **10 caracteres ou mais** → **Criar acesso e entrar**.
+3. No painel: cole o código, escreva seu nome, escolha usuário e uma senha de **10 caracteres ou mais** → **Criar acesso e entrar**. Você entra como **Administrador**; os usuários das outras pessoas são criados depois, em **Conta → Usuários**.
 
-O código vale 24 horas e só quem entra no cPanel consegue ler. A pasta `painel-balancas-privado` (fora da `public_html`, criada sozinha) guarda a senha (só o *hash*), as cópias de segurança do catálogo, as anotações internas dos produtos e o registro de acessos: **não apague** essa pasta. O uso do painel no dia a dia está em [`COMO-ADICIONAR-PRODUTOS.md`](COMO-ADICIONAR-PRODUTOS.md).
+O código vale 24 horas e só quem entra no cPanel consegue ler. A pasta `painel-balancas-privado` (fora da `public_html`, criada sozinha) guarda os usuários e senhas (só o *hash*), as cópias de segurança, as anotações internas dos produtos e o registro de acessos: **não apague** essa pasta. O uso do painel no dia a dia está em [`COMO-ADICIONAR-PRODUTOS.md`](COMO-ADICIONAR-PRODUTOS.md).
 
 ## 4. Opcional: segunda senha no painel (“Privacidade de diretórios”)
 
@@ -69,6 +69,7 @@ O cPanel acrescenta algumas linhas no `painel/.htaccess`; não apague as que já
 - [ ] O link **“Área restrita”** no rodapé abre o painel.
 - [ ] No painel, troque o estoque de um produto e veja o selo mudar no site (depois volte).
 - [ ] No painel, abra **Clientes**: a lista aparece sem o aviso “ainda não foi instalada” e com os mesmos logos do site.
+- [ ] No painel, abra **Empresa**: os campos mostram o que o site mostra (telefone, horário, equipe…).
 - [ ] Botão do WhatsApp testado **num celular que não tenha o número salvo**.
 - [ ] (Recomendado) **Google Search Console** → adicionar `balancass.com` → *Sitemaps* → enviar `sitemap.xml`.
 
@@ -76,33 +77,37 @@ O cPanel acrescenta algumas linhas no `painel/.htaccess`; não apague as que já
 
 ## 6. Atualizar o site já publicado
 
-Depois que o painel começa a ser usado, **o que vale é o que está no servidor**: o catálogo (`compartilhado/dados/produtos.js`), as fotos de `compartilhado/img/produtos/` e `produtos-recorte/`, a lista de clientes (`compartilhado/dados/clientes.js`) e os logos de `compartilhado/img/clientes/` são alterados pelo painel lá na HostGator. Por isso, para atualizar o site **não use o `site.zip`** (ele traria o catálogo do projeto por cima): use o **`atualizacao.zip`**.
+Depois que o painel começa a ser usado, **o que vale é o que está no servidor**: o catálogo (`compartilhado/dados/produtos.js`), as fotos de `compartilhado/img/produtos/` e `produtos-recorte/`, a lista de clientes (`compartilhado/dados/clientes.js`), os logos de `compartilhado/img/clientes/` e os dados da empresa mudados na área Empresa (`compartilhado/dados/ajustes.js`) são alterados pelo painel lá na HostGator. Por isso, para atualizar o site **não use o `site.zip`** (ele traria o catálogo do projeto por cima): use o **`atualizacao.zip`**.
 
-**O que é o `atualizacao.zip`:** o site completo (páginas, `css/`, `js/`, `img/`, `painel/`, `.htaccess`…) **menos** os dados que o painel altera. Ele **nunca** leva `produtos.js` nem as fotos dos produtos, então os produtos, o estoque, os destaques e as fotos que você mudou no painel **não são tocados**. A lista de clientes e os logos só vão junto quando o pacote é gerado com `--incluir-clientes` (veja abaixo). Os `.htaccess` das pastas de fotos e de logos vão sempre (são iguais aos do servidor e bloqueiam scripts).
+**O que é o `atualizacao.zip`:** o site completo (páginas, `css/`, `js/`, `img/`, `painel/`, `.htaccess`…) **menos** os dados que o painel altera. Ele **nunca** leva `produtos.js` nem as fotos dos produtos, então os produtos, o estoque, os destaques e as fotos que você mudou no painel **não são tocados**. A lista de clientes e os logos só vão junto quando o pacote é gerado com `--incluir-clientes`, e o `ajustes.js` (área Empresa), com `--incluir-ajustes` (veja abaixo). O `empresa.js` (os dados originais da empresa) vai sempre: o que foi mudado no painel fica no `ajustes.js` e continua valendo por cima dele. Os `.htaccess` das pastas de fotos e de logos vão sempre (são iguais aos do servidor e bloqueiam scripts).
 
 ### Quem mantém o projeto: gerar o pacote
 
 ```bash
-python3 ferramentas/montar-site.py --atualizacao                     # o normal: sem a lista de clientes
+python3 ferramentas/montar-site.py --atualizacao                     # o normal: sem clientes.js e sem ajustes.js
 python3 ferramentas/montar-site.py --atualizacao --incluir-clientes  # só quando o servidor ainda não tem clientes.js
+python3 ferramentas/montar-site.py --atualizacao --incluir-ajustes   # raramente necessário (veja abaixo)
 ```
 
-- **`--incluir-clientes`** leva também `compartilhado/dados/clientes.js` e os logos de `img/clientes/`. Use **só** se o servidor ainda **não** tem `compartilhado/dados/clientes.js` (ou seja, o painel ainda mostra o aviso “A lista de clientes ainda não foi instalada no servidor”). É o caso da **primeira atualização** depois da área Clientes. Depois que alguém cadastrar logos pelo painel, gere sempre **sem** essa opção, senão a lista do servidor seria substituída pela do projeto (se acontecer: painel → **Cópias** → aba **Clientes** → **Restaurar** a mais recente).
+- **`ajustes.js` (área Empresa):** gere **sem** `--incluir-ajustes`, inclusive na atualização que traz os **usuários** e a área **Empresa**. O servidor que ainda não tem `compartilhado/dados/ajustes.js` ganha o arquivo vazio (`window.AJUSTES = {};`) **sozinho, na primeira vez que alguém entra no painel** depois de atualizar; até lá o site funciona normalmente com os dados de `empresa.js` (só fica um aviso de "arquivo não encontrado" no console do navegador). Assim nenhum pacote leva um `ajustes.js` que poderia apagar o que foi salvo na área Empresa. Se um pacote com `--incluir-ajustes` for extraído por cima depois de usar a área Empresa: painel → **Conta → Cópias de segurança** → aba **Empresa** → **Restaurar** a mais recente traz tudo de volta **menos a última mudança** (a cópia é feita antes de cada mudança), que precisa ser feita de novo.
+
+- **`--incluir-clientes`** leva também `compartilhado/dados/clientes.js` e os logos de `img/clientes/`. Use **só** se o servidor ainda **não** tem `compartilhado/dados/clientes.js` (ou seja, o painel ainda mostra o aviso “A lista de clientes ainda não foi instalada no servidor”). É o caso da **primeira atualização** depois da área Clientes. Depois que alguém cadastrar logos pelo painel, gere sempre **sem** essa opção, senão a lista do servidor seria substituída pela do projeto (se acontecer: painel → **Conta → Cópias de segurança** → aba **Clientes** → **Restaurar** a mais recente, que traz tudo de volta menos a última mudança feita antes da atualização).
 - O pacote também leva o `painel/config.php`. Se um dia você mudou algo nele direto no servidor, refaça a mudança depois de atualizar.
-- O script confere tudo antes (formato do catálogo e da lista de clientes, `clientes.js` incluído antes do `balancas.js` em todas as páginas) e diz no fim o que ficou de fora do zip.
+- O script confere tudo antes (formato do catálogo, da lista de clientes, do `empresa.js` e do `ajustes.js`; a ordem `empresa.js` → `ajustes.js` → `clientes.js` → `produtos.js` → `balancas.js` em todas as páginas; o `.htaccess` mandando esses arquivos sem cache) e diz no fim o que ficou de fora do zip.
 
 ### No cPanel: instalar a atualização
 
 1. **Antes, por garantia, um backup:** Gerenciador de Arquivos → `public_html` → **Selecionar tudo** → **Compactar** → baixe o `.zip` e depois apague-o do servidor. (As cópias de segurança do painel ficam na pasta privada, fora da `public_html`; a atualização não mexe nelas.)
 2. cPanel → **Gerenciador de Arquivos** → **Configurações** → marque **Mostrar arquivos ocultos (dotfiles)** (para ver os `.htaccess`).
 3. Abra a pasta **`public_html`** → **Carregar** → escolha o **`atualizacao.zip`** → espere chegar a 100% → volte.
-4. Botão direito no **`atualizacao.zip`** → **Extrair** → confirme **`/public_html`** → **Extrair arquivo(s)**. O cPanel **substitui** os arquivos com o mesmo nome (páginas, CSS, JS, painel) e não apaga nada que não esteja no zip: produtos, fotos e (sem `--incluir-clientes`) clientes e logos continuam como estavam.
+4. Botão direito no **`atualizacao.zip`** → **Extrair** → confirme **`/public_html`** → **Extrair arquivo(s)**. O cPanel **substitui** os arquivos com o mesmo nome (páginas, CSS, JS, painel) e não apaga nada que não esteja no zip: produtos, fotos, (sem `--incluir-clientes`) clientes e logos e (sem `--incluir-ajustes`) os dados da área Empresa continuam como estavam.
 5. **Apague o `atualizacao.zip`** da `public_html` (botão direito → **Excluir**). Ele não fica acessível pela internet (o `.htaccess` bloqueia `.zip` na raiz), mas não tem por que ficar lá.
 6. Abra o site numa **aba anônima** e confira as páginas que mudaram; abra o painel e veja **Produtos** e **Clientes**.
+7. **Depois desta atualização (usuários e área Empresa), entre no painel** com o usuário e a senha de sempre (é nessa hora que o painel cria o `ajustes.js`). O seu usuário vira **Administrador** sozinho, com a mesma senha (se o painel já estava aberto, continua logado). No menu aparece **Empresa**; em **Conta** ficam **Usuários**, **Atividades** e **Cópias de segurança**. Para pôr o seu nome: **Conta → Mudar o meu nome**. Para outras pessoas usarem o painel, crie um usuário para cada uma em **Conta → Usuários** (veja `COMO-ADICIONAR-PRODUTOS.md`, item 9).
 
 O `montar-site.py` acrescenta um `?v=…` nos CSS/JS de cada pacote, para o navegador dos clientes baixar a versão nova na hora (CSS e JS ficam guardados no navegador por até um mês). Por isso, gere sempre o pacote pelo script, em vez de enviar arquivos soltos.
 
-**Para trazer para o projeto o que foi feito no painel** (por exemplo, antes de uma mudança grande): baixe pelo Gerenciador de Arquivos o `produtos.js`, o `clientes.js`, as fotos novas de `img/produtos/` e `img/produtos-recorte/` e os logos novos de `img/clientes/`, e coloque nas mesmas pastas de `compartilhado/`.
+**Para trazer para o projeto o que foi feito no painel** (por exemplo, antes de uma mudança grande): baixe pelo Gerenciador de Arquivos o `produtos.js`, o `clientes.js`, o `ajustes.js`, as fotos novas de `img/produtos/` e `img/produtos-recorte/` e os logos novos de `img/clientes/`, e coloque nas mesmas pastas de `compartilhado/`.
 
 ## 7. Checklist do conteúdo
 

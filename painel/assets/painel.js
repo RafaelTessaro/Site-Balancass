@@ -99,7 +99,8 @@
     $$("input[name=csrf]").forEach(function (i) { i.value = tk; });
   }
   var loginAberto = null;
-  function pedirLogin(csrf) {
+  // motivo: por que a sessão terminou (senha redefinida, acesso desativado…), vindo do servidor
+  function pedirLogin(csrf, motivo) {
     if (!relogin || typeof relogin.showModal !== "function") {
       window.location.href = "index.php?a=entrar";
       return Promise.resolve(false);
@@ -109,6 +110,11 @@
       var form = $("[data-relogin-form]", relogin), erro = $("[data-relogin-erro]", relogin);
       var senha = $("#rl-senha", relogin), usuario = $("#rl-usuario", relogin), ok = $("[data-relogin-ok]", relogin);
       var token = csrf || "";
+      var txt = $("[data-relogin-motivo]", relogin);
+      if (txt) {
+        if (!txt.dataset.padrao) txt.dataset.padrao = txt.textContent;
+        txt.textContent = typeof motivo === "string" && motivo ? motivo + " Nada do que está nesta tela se perde." : txt.dataset.padrao;
+      }
       erro.hidden = true; senha.value = "";
       var fim = function (r) {
         form.removeEventListener("submit", enviarLogin);
@@ -152,7 +158,7 @@
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (d && d.logado) { atualizarCsrf(d.csrf); return true; }
-        return pedirLogin(d && d.csrf);
+        return pedirLogin(d && d.csrf, d && d.motivo);
       }, function () { return true; });   // sem resposta: o envio normal segue (o servidor confere)
   }
 
@@ -171,7 +177,7 @@
         .then(function (d) {
           if (d && d.login) {
             if (segunda) throw new Error("login");
-            return pedirLogin(d.csrf).then(function (entrou) {
+            return pedirLogin(d.csrf, d.motivo).then(function (entrou) {
               if (!entrou) throw new Error("login");
               return enviar(form, true);
             });
@@ -924,6 +930,65 @@
   });
 
   /* ------------------------------------------------------------------
+     Usuários: copiar a senha temporária, sugerir o login pelo nome
+     ------------------------------------------------------------------ */
+  // Copiar: área de transferência; sem ela (navegador antigo, http), seleciona o texto para copiar à mão
+  function selecionar(el) {
+    try {
+      var r = document.createRange(); r.selectNodeContents(el);
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      return true;
+    } catch (e) { return false; }
+  }
+  $$("[data-copiar]").forEach(function (b) {
+    var alvo = document.getElementById(b.getAttribute("data-copiar"));
+    if (!alvo) return;
+    b.hidden = false;
+    var rot = $("span", b), original = rot ? rot.textContent : "";
+    b.addEventListener("click", function () {
+      var txt = alvo.textContent;
+      var feito = function () {
+        if (rot) { rot.textContent = "Copiado!"; setTimeout(function () { rot.textContent = original; }, 2500); }
+        toast(b.getAttribute("data-copiar") === "senha-temp" ? "Senha copiada. Agora cole na conversa com a pessoa." : "Mensagem copiada. Agora cole na conversa com a pessoa.");
+      };
+      var manual = function () {
+        var ok = false;
+        if (selecionar(alvo)) { try { ok = document.execCommand("copy"); } catch (e) { ok = false; } }
+        if (ok) feito(); else toast("Não deu para copiar sozinho: o texto ficou selecionado. Toque e segure nele para copiar.", true);
+      };
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(feito, manual);
+      else manual();
+    });
+  });
+
+  // Novo usuário: sugere o login a partir do nome ("Lizi Ellen" → lizi), até a pessoa mexer no campo
+  var nomeU = $("[data-sugerir-login]"), loginU = $("[data-login]");
+  if (nomeU && loginU) {
+    var ocupados = (loginU.getAttribute("data-ocupados") || "").split(" ").filter(Boolean);
+    var loginAuto = loginU.value === "";
+    var limpa = function (s) { return String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, ""); };
+    var sugerir = function () {
+      var p = nomeU.value.trim().split(/\s+/).map(limpa).filter(Boolean);
+      if (!p.length) return "";
+      var opcoes = [p[0]];
+      if (p.length > 1) opcoes.push(p[0] + "." + p[p.length - 1]);
+      for (var i = 2; i < 10; i++) opcoes.push(p[0] + i);
+      for (var j = 0; j < opcoes.length; j++) {
+        var o = opcoes[j].slice(0, 40);
+        if (o.length >= 3 && ocupados.indexOf(o) === -1) return o;
+      }
+      return "";
+    };
+    loginU.addEventListener("input", function () { loginAuto = loginU.value === ""; });
+    nomeU.addEventListener("input", function () { if (loginAuto) loginU.value = sugerir(); });
+  }
+
+  // Filtro de pessoa (Atividades): troca na hora, sem botão
+  $$("select[data-auto-enviar]").forEach(function (sel) {
+    sel.addEventListener("change", function () { if (sel.form) sel.form.submit(); });
+  });
+
+  /* ------------------------------------------------------------------
      Mostrar/ocultar senha
      ------------------------------------------------------------------ */
   $$("[data-ver-senha]").forEach(function (b) {
@@ -969,4 +1034,383 @@
     var msg = pTxt ? (pTxt.firstChild && pTxt.firstChild.nodeType === 3 ? pTxt.firstChild.nodeValue : pTxt.textContent).trim() : "";
     if (msg) toast(msg, primeiro.classList.contains("aviso--erro"), { link: link ? link.cloneNode(true) : null, tempo: link ? 30000 : 10000 });
   }
+
+  /* ------------------------------------------------------------------
+     Área Empresa (ajustes do site): usa $, $$, toast, confirmar e
+     sessaoOk daqui de cima. Sem isto a tela funciona igual (linhas vazias para acrescentar,
+     botões que mostram a tela de novo); com isto: prévias ao vivo,
+     acrescentar/tirar/mover linhas na hora, aviso de parte não salva e
+     conferência da sessão antes de enviar.
+     ------------------------------------------------------------------ */
+  (function empresa() {
+    var forms = $$("[data-emp-form]");
+    if (!forms.length) return;
+    var enviando = false, novaChave = 1000;
+
+    function titulo(f) { var h = $(".emp-sec__tit", f.closest(".emp-sec")); return h ? h.textContent.trim() : ""; }
+    // Estado do formulário (sem o csrf e sem campos vazios: linha nova em branco não conta como mudança)
+    function estado(f) {
+      var out = [];
+      new FormData(f).forEach(function (v, k) { if (k !== "csrf" && v !== "") out.push(k + "=" + v); });
+      return out.join("&");
+    }
+    function sujo(f) { return f.dataset.empVoltou != null || estado(f) !== f.empInicial; }
+    function marcarSujo(f) {
+      var s = sujo(f), sec = f.closest(".emp-sec"), selo = sec && $("[data-emp-sujo]", sec);
+      if (selo) selo.hidden = !s;
+      var chip = $('[data-emp-indice="' + f.getAttribute("data-emp-form") + '"]');
+      if (chip) chip.classList.toggle("is-sujo", s);
+    }
+
+    /* Contador de caracteres */
+    $$("[data-emp-contador]").forEach(function (t) {
+      var max = +t.getAttribute("maxlength"), p = document.createElement("p");
+      p.className = "contador"; p.setAttribute("aria-hidden", "true");
+      t.insertAdjacentElement("afterend", p);
+      var at = function () { p.textContent = t.value.length + "/" + max; p.classList.toggle("is-perto", t.value.length > max * 0.9); };
+      t.addEventListener("input", at); at();
+    });
+
+    /* Caixas de texto crescem com o texto (onde o CSS field-sizing ainda não existe) */
+    if (!(window.CSS && CSS.supports && CSS.supports("field-sizing", "content"))) {
+      var crescer = function (t) { t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight + 4, window.innerHeight * 0.6) + "px"; };
+      document.addEventListener("input", function (e) { if (e.target.matches && e.target.matches(".emp-form textarea")) crescer(e.target); });
+      $$(".emp-form textarea").forEach(crescer);
+    }
+
+    /* ---------- Horário: Fechado, Repetir e prévia (mesma regra de lib/ajustes.php) ---------- */
+    var ORDEM = [1, 2, 3, 4, 5, 6, 0], NOMES = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+    function minutos(t, fim) {
+      var m = /^(\d{1,2})(?:[:h](\d{2})?)?$/.exec(String(t).toLowerCase().replace(/ /g, ""));
+      if (!m) return null;
+      var h = +m[1], mi = +(m[2] || 0);
+      if (mi > 59 || h > 24 || (h === 24 && (mi > 0 || !fim))) return null;
+      return h * 60 + mi;
+    }
+    function horaTxt(m) { var h = Math.floor(m / 60), mi = m % 60; return h + "h" + (mi ? (mi < 10 ? "0" : "") + mi : ""); }
+    function horasTxt(iv) { return iv.length ? iv.map(function (x) { return horaTxt(x[0]) + " às " + horaTxt(x[1]); }).join(" · ") : "Fechado"; }
+    function nomeGrupo(pos, feriados) {
+      var itens = [], n = pos.length, i = 0, j, k;
+      while (i < n) {
+        j = i; while (j + 1 < n && pos[j + 1] === pos[j] + 1) j++;
+        if (j - i >= 2) itens.push(NOMES[ORDEM[pos[i]]] + " a " + NOMES[ORDEM[pos[j]]]);
+        else for (k = i; k <= j; k++) itens.push(NOMES[ORDEM[pos[k]]]);
+        i = j + 1;
+      }
+      if (feriados) itens.push("feriados");
+      var ult = itens.pop(), t = itens.length ? itens.join(", ") + " e " + ult : ult;
+      return t.charAt(0).toUpperCase() + t.slice(1);
+    }
+    function linhasHorario(grade) {
+      var grupos = [], idx = {}, linhas = [], fechados = null;
+      ORDEM.forEach(function (d, p) {
+        var k = JSON.stringify(grade[d]);
+        if (!(k in idx)) { idx[k] = grupos.length; grupos.push({ iv: grade[d], pos: [] }); }
+        grupos[idx[k]].pos.push(p);
+      });
+      grupos.forEach(function (g) {
+        if (!g.iv.length && g.pos.indexOf(6) >= 0) { fechados = g.pos; return; }
+        linhas.push([nomeGrupo(g.pos), horasTxt(g.iv)]);
+      });
+      linhas.push(fechados ? [nomeGrupo(fechados, true), "Fechado"] : ["Feriados", "Fechado"]);
+      return linhas;
+    }
+    // Grade a partir da tela; null se algum dia estiver incompleto (a prévia espera a correção)
+    function gradeDaTela(fh) {
+      var grade = {}, algum = false, ok = true;
+      $$("[data-emp-dia]", fh).forEach(function (dia) {
+        var d = +dia.getAttribute("data-emp-dia"), iv = [];
+        if (!$("[data-emp-fechado]", dia).checked) {
+          $$(".emp-iv", dia).forEach(function (p) {
+            var ins = $$("input", p), a = ins[0].value.trim(), b = ins[1].value.trim();
+            if (!a && !b) return;
+            var ma = minutos(a, false), mb = minutos(b, true);
+            if (ma == null || mb == null || ma >= mb) { ok = false; return; }
+            iv.push([ma, mb]);
+          });
+          iv.sort(function (x, y) { return x[0] - y[0]; });
+          for (var i = 1; i < iv.length; i++) if (iv[i][0] < iv[i - 1][1]) ok = false;
+          if (!iv.length) ok = false;
+        }
+        if (iv.length) algum = true;
+        grade[d] = iv;
+      });
+      return ok && algum ? grade : null;
+    }
+    var fh = $('[data-emp-form="horario"]');
+    if (fh) {
+      var lista = $("[data-emp-previa-horas]", fh), erroPrevia = $("[data-emp-previa-erro]", fh);
+      var previaHoras = function () {
+        var g = gradeDaTela(fh);
+        erroPrevia.hidden = !!g;
+        lista.hidden = !g;
+        if (!g) return;
+        lista.textContent = "";
+        linhasHorario(g).forEach(function (l) {
+          var li = document.createElement("li"), a = document.createElement("span"), b = document.createElement("span");
+          a.textContent = l[0]; b.textContent = l[1];
+          li.appendChild(a); li.appendChild(b); lista.appendChild(li);
+        });
+      };
+      var acertarFechado = function (dia) {
+        var f = $("[data-emp-fechado]", dia).checked;
+        dia.classList.toggle("is-fechado", f);
+        $("[data-emp-int]", dia).hidden = f;
+      };
+      // Relógio de 12 h (AM/PM, mais largo): o "às [ ]" desce para a linha de baixo; aí os rótulos
+      // ficam da mesma largura, para os campos de hora alinharem um embaixo do outro
+      var acertarQuebras = function () {
+        $$(".emp-iv", fh).forEach(function (p) {
+          var par = $$(".emp-iv__par", p);
+          p.classList.remove("is-quebrado");
+          if (par.length === 2 && par[1].offsetTop > par[0].offsetTop + 4) p.classList.add("is-quebrado");
+        });
+      };
+      $$("[data-emp-dia]", fh).forEach(acertarFechado);
+      acertarQuebras();
+      window.addEventListener("resize", acertarQuebras);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(acertarQuebras);
+      fh.addEventListener("change", function (e) { var dia = e.target.closest("[data-emp-dia]"); if (dia && e.target.matches("[data-emp-fechado]")) { acertarFechado(dia); acertarQuebras(); } previaHoras(); });
+      fh.addEventListener("input", previaHoras);
+      var rep = $("[data-emp-repetir]", fh);
+      if (rep) rep.addEventListener("click", function (e) {
+        e.preventDefault();
+        var seg = $('[data-emp-dia="1"]', fh), vals = $$(".emp-iv input", seg).map(function (i) { return i.value; });
+        var fechado = $("[data-emp-fechado]", seg).checked;
+        [2, 3, 4, 5].forEach(function (d) {
+          var dia = $('[data-emp-dia="' + d + '"]', fh);
+          $("[data-emp-fechado]", dia).checked = fechado;
+          $$(".emp-iv input", dia).forEach(function (inp, i) { inp.value = vals[i] || ""; });
+          acertarFechado(dia);
+        });
+        acertarQuebras();
+        previaHoras();
+        fh.dispatchEvent(new Event("input", { bubbles: true }));
+        toast("Horário de segunda copiado para terça, quarta, quinta e sexta. Toque em Salvar horário para gravar.");
+      });
+    }
+
+    /* ---------- Listas: acrescentar, tirar e mover linhas (equipe, depoimentos, feriados) ---------- */
+    function prepararLinha(li) {
+      $$("[data-emp-rm-sem-js]", li).forEach(function (l) { l.hidden = true; var c = $("input", l); if (c) c.checked = false; });
+      $$("[data-emp-rm]", li).forEach(function (b) { b.hidden = false; });
+    }
+    function renumerar(ol) {
+      var rot = ol.getAttribute("data-emp-rotulo") || "Item", itens = $$("[data-emp-item]:not([data-emp-extra])", ol);
+      itens.forEach(function (li, i) {
+        var n = $("[data-emp-n]", li), nome = rot + " " + (i + 1);
+        if (n) n.textContent = nome;
+        var c = $('[data-emp-mover="cima"]', li), b = $('[data-emp-mover="baixo"]', li), r = $("[data-emp-rm]", li);
+        if (c) { c.disabled = i === 0; c.setAttribute("aria-label", "Subir " + nome); }
+        if (b) { b.disabled = i === itens.length - 1; b.setAttribute("aria-label", "Descer " + nome); }
+        if (r) r.setAttribute("aria-label", "Remover " + nome);
+      });
+      var mais = ol.parentNode.querySelector(".emp-mais");
+      var max = +ol.getAttribute("data-emp-max") || 0;
+      if (mais) { mais.hidden = false; $("button", mais).disabled = !!max && itens.length >= max; }
+    }
+    function novaLinha(ol) {
+      var modelo = ol.parentNode.querySelector("template[data-emp-modelo]");
+      if (!modelo) return null;
+      var k = "n" + (novaChave++), box = document.createElement("div");
+      box.innerHTML = modelo.innerHTML.replace(/__K__/g, k);
+      var li = box.firstElementChild;
+      prepararLinha(li);
+      ol.appendChild(li);
+      renumerar(ol);
+      return li;
+    }
+    $$("[data-emp-lista]").forEach(function (ol) {
+      // Linhas vazias que só servem sem JavaScript saem; o botão "Acrescentar" toma o lugar delas
+      $$("[data-emp-extra]", ol).forEach(function (li) {
+        if ($$("input, textarea", li).every(function (i) { return i.type === "checkbox" || !i.value.trim(); })) li.remove();
+      });
+      $$("[data-emp-item]", ol).forEach(prepararLinha);
+      renumerar(ol);
+    });
+    document.addEventListener("click", function (e) {
+      var add = e.target.closest("[data-emp-adicionar]");
+      if (add) {
+        var ol = $('[data-emp-lista="' + add.getAttribute("data-emp-adicionar") + '"]');
+        var li = ol && novaLinha(ol);
+        if (li) { var p = $("input, textarea", li); if (p) p.focus(); li.closest("form").dispatchEvent(new Event("input", { bubbles: true })); }
+        return;
+      }
+      var rm = e.target.closest("[data-emp-rm]");
+      if (rm) {
+        var item = rm.closest("[data-emp-item]"), lista = item.parentNode, f = item.closest("form");
+        var prox = item.nextElementSibling || item.previousElementSibling;
+        item.remove();
+        renumerar(lista);
+        marcarSujo(f);
+        atualizarSugestoes();
+        var foco = prox && $("input, textarea", prox);
+        if (foco) foco.focus(); else { var b = lista.parentNode.querySelector(".emp-mais button"); if (b) b.focus(); }
+        toast("Linha removida. Toque em " + ($("[data-salvar] span", f) || {}).textContent + " para gravar.");
+        return;
+      }
+      var mv = e.target.closest("[data-emp-mover]");
+      if (mv) {
+        e.preventDefault();
+        var li2 = mv.closest("[data-emp-item]"), ol2 = li2.parentNode, cima = mv.getAttribute("data-emp-mover") === "cima";
+        var vizinho = cima ? li2.previousElementSibling : li2.nextElementSibling;
+        if (!vizinho || vizinho.hasAttribute("data-emp-extra")) return;
+        if (cima) ol2.insertBefore(li2, vizinho); else ol2.insertBefore(vizinho, li2);
+        renumerar(ol2);
+        li2.classList.add("is-movendo");
+        setTimeout(function () { li2.classList.remove("is-movendo"); }, 700);
+        if (mv.disabled) { var outro = $('[data-emp-mover="' + (cima ? "baixo" : "cima") + '"]', li2); if (outro) outro.focus(); } else mv.focus();
+        marcarSujo(li2.closest("form"));
+      }
+    });
+
+    /* ---------- Feriados: sugestões para Rio Claro ---------- */
+    var ff = $('[data-emp-form="feriados"]');
+    function normalDiaMes(t) { var m = /^(\d{1,2})[\/.\-](\d{1,2})$/.exec(String(t).trim()); return m ? ("0" + m[1]).slice(-2) + "/" + ("0" + m[2]).slice(-2) : ""; }
+    function atualizarSugestoes() {
+      if (!ff) return;
+      $$("[data-emp-sugerir]", ff).forEach(function (b) {
+        var ja;
+        if (b.hasAttribute("data-movel")) { var c = $('[data-emp-movel="' + b.getAttribute("data-movel") + '"]', ff); ja = !!(c && c.checked); }
+        else ja = $$('[data-emp-lista="mun"] input[name$="[data]"]', ff).some(function (i) { return normalDiaMes(i.value) === b.getAttribute("data-data"); });
+        b.disabled = ja;
+        $("span", b).textContent = ja ? "Já está na lista" : "Colocar na lista";
+        var ic = $("use", b); if (ic) ic.setAttribute("href", ja ? "#i-check" : "#i-plus");
+      });
+    }
+    if (ff) {
+      ff.addEventListener("input", atualizarSugestoes);
+      ff.addEventListener("change", atualizarSugestoes);
+      $$("[data-emp-sugerir]", ff).forEach(function (b) {
+        b.addEventListener("click", function (e) {
+          e.preventDefault();
+          if (b.hasAttribute("data-movel")) {
+            var c = $('[data-emp-movel="' + b.getAttribute("data-movel") + '"]', ff);
+            if (c) { c.checked = true; c.focus(); }
+          } else {
+            var li = novaLinha($('[data-emp-lista="mun"]', ff));
+            if (li) {
+              $('input[name$="[data]"]', li).value = b.getAttribute("data-data");
+              $('input[name$="[nome]"]', li).value = b.getAttribute("data-nome");
+              $('input[name$="[nome]"]', li).focus();
+            }
+          }
+          atualizarSugestoes();
+          marcarSujo(ff);
+          toast("Colocado na lista, mas ainda não salvo. Confira e toque em Salvar feriados.");
+        });
+      });
+    }
+
+    /* ---------- Aviso: prévia no estilo do site e quando ele aparece ---------- */
+    var fa = $('[data-emp-form="aviso"]');
+    function hojeSP() {
+      try { return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
+      catch (e) { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+    }
+    function dataBr(iso) { return iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(0, 4); }
+    if (fa) {
+      var previaAviso = function () {
+        var ativo = $("[data-emp-aviso-ativo]", fa).checked, txt = $("textarea[name=texto]", fa).value.trim();
+        var tom = ($("input[name=tom]:checked", fa) || {}).value, ini = $("input[name=inicio]", fa).value, fim = $("input[name=fim]", fa).value;
+        var faixa = $("[data-emp-previa-aviso]", fa), est = $("[data-emp-aviso-estado]", fa), hoje = hojeSP(), ok = /^\d{4}-\d{2}-\d{2}$/;
+        $("[data-emp-previa-texto]", fa).textContent = txt || "Escreva o texto do aviso.";
+        faixa.classList.toggle("emp-faixa--alerta", tom === "alerta");
+        faixa.classList.toggle("is-desligado", !ativo);
+        var t;
+        if (!ativo) t = "Desligado: não aparece no site.";
+        else if (ok.test(fim) && fim < hoje) t = "Já terminou em " + dataBr(fim) + ": não aparece mais no site.";
+        else if (ok.test(ini) && ini > hoje) t = "Aparece no site de " + dataBr(ini) + (ok.test(fim) ? " a " + dataBr(fim) : " em diante") + ".";
+        else t = "Aparece no site agora" + (ok.test(fim) ? ", até " + dataBr(fim) : "") + ".";
+        est.textContent = t;
+        est.classList.toggle("is-off", !ativo);
+      };
+      fa.addEventListener("input", previaAviso);
+      fa.addEventListener("change", previaAviso);
+      previaAviso();
+    }
+
+    /* ---------- Marcas: contagem; WhatsApp: link de teste ---------- */
+    var fmar = $('[data-emp-form="marcas"]');
+    if (fmar) fmar.addEventListener("input", function () {
+      var n = $("textarea", fmar).value.split(/[\r\n,;]+/).filter(function (x) { return x.trim(); }).length, b = $("[data-emp-marcas-n]", fmar);
+      if (b) { b.textContent = n; b.nextSibling.nodeValue = n === 1 ? " marca agora." : " marcas agora."; }
+    });
+    var fc2 = $('[data-emp-form="contato"]');
+    if (fc2) fc2.addEventListener("input", function () {
+      var a = $("[data-emp-testar-wa]", fc2), d = $("input[name=whatsapp]", fc2).value.replace(/\D+/g, "").replace(/^0+/, "");
+      if (/^55\d{10,11}$/.test(d)) d = d.slice(2);
+      if (a) { a.hidden = !/^\d{10,11}$/.test(d); a.href = "https://wa.me/55" + d; }
+    });
+
+    /* ---------- Parte não salva, sessão e envio ---------- */
+    forms.forEach(function (f) {
+      f.empInicial = estado(f);
+      marcarSujo(f);
+      f.addEventListener("input", function () { marcarSujo(f); });
+      f.addEventListener("change", function () { marcarSujo(f); });
+      f.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (f.dataset.enviado === "1") return;
+        var outros = forms.filter(function (x) { return x !== f && sujo(x); }).map(function (x) { return "“" + titulo(x) + "”"; });
+        var pergunta = outros.length
+          ? confirmar("Você também mudou " + (outros.length > 1 ? outros.slice(0, -1).join(", ") + " e " + outros[outros.length - 1] : outros[0]) +
+            " e ainda não salvou. Se salvar só “" + titulo(f) + "” agora, essas outras mudanças se perdem.", "Salvar só esta parte", "Mudanças não salvas")
+          : Promise.resolve(true);
+        pergunta.then(function (sim) { return sim ? sessaoOk() : false; }).then(function (ok) {
+          if (!ok) return;
+          enviando = true;
+          f.dataset.enviado = "1";
+          var b = $("[data-salvar]", f), sp = b && $("span", b);
+          if (b) b.setAttribute("aria-busy", "true");
+          if (sp) sp.textContent = "Salvando…";
+          HTMLFormElement.prototype.submit.call(f);
+        });
+      });
+    });
+    window.addEventListener("pageshow", function (e) {
+      if (!e.persisted) return;
+      enviando = false;
+      forms.forEach(function (f) { f.dataset.enviado = ""; var b = $("[data-salvar]", f); if (b) b.removeAttribute("aria-busy"); });
+    });
+    window.addEventListener("beforeunload", function (e) {
+      if (enviando || !forms.some(sujo)) return;
+      e.preventDefault();
+      e.returnValue = "";
+    });
+
+    /* ---------- Índice: parte visível marcada; depois de salvar, aviso preso na tela ---------- */
+    var chips = $$("[data-emp-indice]");
+    if ("IntersectionObserver" in window && chips.length) {
+      var visiveis = {};
+      var io = new IntersectionObserver(function (ents) {
+        ents.forEach(function (en) { visiveis[en.target.id.slice(2)] = en.isIntersecting ? en.intersectionRect.top : null; });
+        var atual = null;
+        chips.forEach(function (c) { var s = c.getAttribute("data-emp-indice"); if (atual === null && visiveis[s] != null) atual = s; });
+        if (!atual) return;
+        chips.forEach(function (c) {
+          var on = c.getAttribute("data-emp-indice") === atual;
+          c.classList.toggle("is-atual", on);
+          if (on) c.setAttribute("aria-current", "true"); else c.removeAttribute("aria-current");
+          if (on) { var ol = c.closest("ol"); if (ol && ol.scrollWidth > ol.clientWidth) ol.scrollLeft = c.offsetLeft - ol.clientWidth / 2 + c.offsetWidth / 2; }
+        });
+      }, { rootMargin: "-130px 0px -55% 0px" });
+      $$(".emp-sec").forEach(function (s) { io.observe(s); });
+    }
+    var m = /^#e-([a-z]+)$/.exec(location.hash), sec = m && document.getElementById("e-" + m[1]);
+    var erros = $(".emp-sec [data-emp-erros]");
+    // Voltou com erro (ou nota): foco no resumo. Depois do "load": o navegador, ao rolar até a
+    // âncora #e-…, tira o foco do que não é a própria âncora
+    if (erros) window.addEventListener("load", function () { setTimeout(function () { erros.focus(); }, 60); });
+    else if (sec) {
+      var av = $("[data-avisos] .aviso");
+      sec.classList.add("is-novo");
+      setTimeout(function () { sec.classList.remove("is-novo"); }, 8000);
+      if (av) {
+        var pTxt = $("p", av), link = pTxt && $("a", pTxt);
+        var msg = pTxt ? (pTxt.firstChild && pTxt.firstChild.nodeType === 3 ? pTxt.firstChild.nodeValue : pTxt.textContent).trim() : "";
+        if (msg) toast(msg, av.classList.contains("aviso--erro"), { link: link ? link.cloneNode(true) : null, tempo: link ? 30000 : 10000 });
+      }
+    }
+  })();
 })();

@@ -1,9 +1,12 @@
 /* =====================================================================
    Balanças.com — "Linha Verde" — núcleo (js/core.js)
-   Incluído em TODAS as páginas, depois de empresa.js, produtos.js e
-   balancas.js (todos com "defer").
+   Incluído em TODAS as páginas, depois de empresa.js, ajustes.js,
+   clientes.js, produtos.js e balancas.js (todos com "defer").
    - Preenche os dados da empresa no HTML (data-bc, data-bc-href, data-wa,
-     data-bc-list) e o status "aberto agora".
+     data-bc-list, data-bc-se) e o status "aberto agora". Os dados já vêm
+     com os ajustes do painel (área Empresa) aplicados pelo balancas.js.
+   - Faixa de aviso no topo (aviso do painel) e dados estruturados
+     (JSON-LD) atualizados com telefone, e-mail, endereço e horários.
    - Ficha de produto LV.cardProduto(p) e listas automáticas (data-produtos).
    - Cabeçalho, menu mobile, âncoras, faixas (ticker), acordeão, formulário
      de WhatsApp, abas de kits, botões flutuantes.
@@ -77,14 +80,21 @@
   function valor(k) {
     var end = E.endereco || {};
     switch (k) {
-      case "telefone": case "whatsapp": return E.telefone;
+      case "telefone": return E.telefone;
+      case "whatsapp": return mesmoNumero() ? E.telefone : foneWhats();
+      case "whatsapp-mesmo": return mesmoNumero() ? "O mesmo número" : foneWhats();
       case "email": return E.email;
       case "endereco": return BC.enderecoTexto();
       case "rua": return end.rua;
+      case "rua-numero": var n = /,\s*(\d{1,6})\b/.exec(end.rua || ""); return n ? n[1] : null;   // "Rua 13, 650" → "650"
       case "bairro": return end.bairro;
       case "cidade": return end.cidade && end.uf ? end.cidade + "/" + end.uf : end.cidade;
+      case "cidade-nome": return end.cidade;
+      case "bairro-frase": return end.bairro;
+      case "cidade-uf": return end.cidade && end.uf ? end.cidade + "-" + end.uf : end.cidade;
       case "cep": return end.cep;
       case "referencia": return BC.referenciaEndereco ? BC.referenciaEndereco() : end.referencia;
+      case "dias-abertos": return diasAbertos();
       case "ipem": return E.ipem;
       case "cnpj": return E.cnpj;
       case "razao": return E.razaoSocial;
@@ -187,20 +197,25 @@
       colunasClientes(ul);
     },
     depoimentos: function (ul) {
-      if (!E.depoimentos || !E.depoimentos.length) return;
+      var D = E.depoimentos;
+      if (!D || !D.length) return;
       var ini = parseInt(ul.getAttribute("data-inicio"), 10) || 0;
-      var lim = parseInt(ul.getAttribute("data-limite"), 10) || E.depoimentos.length;
+      var lim = parseInt(ul.getAttribute("data-limite"), 10) || D.length;
       var rv = ul.hasAttribute("data-sem-reveal") ? "" : " data-reveal";
-      ul.innerHTML = E.depoimentos.slice(ini, ini + lim).map(function (d) {
+      // Poucos depoimentos (painel): a lista que começa no 4º ("data-inicio") dá a volta e
+      // recomeça do 1º, em vez de ficar vazia; com até "data-limite" itens, mostra todos.
+      var qtd = Math.min(lim, D.length), de = D.length > lim ? ini % D.length : 0, sel = [];
+      for (var i = 0; i < qtd; i++) sel.push(D[(de + i) % D.length]);
+      ul.innerHTML = sel.map(function (d) {
         return '<li class="quote"' + rv + '><blockquote><p>' + LV.esc(d.texto) + "</p></blockquote>" +
-          '<p class="quote__by"><b>' + LV.esc(d.nome) + "</b> · " + LV.esc(d.empresa) + "</p></li>";
+          '<p class="quote__by"><b>' + LV.esc(d.nome) + "</b>" + (d.empresa ? " · " + LV.esc(d.empresa) : "") + "</p></li>";
       }).join("");
     },
     equipe: function (ul) {
       if (!E.equipe || !E.equipe.length) return;
       var rv = ul.hasAttribute("data-sem-reveal") ? "" : " data-reveal";
       ul.innerHTML = E.equipe.map(function (p) {
-        var ini = p.nome.split(/\s+/).filter(Boolean);
+        var ini = String(p.nome || "").split(/\s+/).filter(Boolean);
         ini = (ini[0] || "").charAt(0) + (ini.length > 1 ? ini[ini.length - 1].charAt(0) : "");
         return '<li class="member"' + rv + '><span class="member__mono" aria-hidden="true">' + LV.esc(ini.toUpperCase()) + "</span>" +
           '<p class="member__name">' + LV.esc(p.nome) + '</p><p class="member__role mono">' + LV.esc(p.cargo) + "</p>" +
@@ -209,27 +224,103 @@
     }
   };
 
+  // WhatsApp e telefone são o mesmo número? (o painel pode separar os dois)
+  function mesmoNumero() {
+    var w = String(E.whatsapp || "").replace(/\D/g, "");
+    return !w || w === String(E.telefoneLink || "").replace(/\D/g, "");
+  }
+  // "5519999999999" → "(19) 99999-9999"
+  function foneWhats() {
+    var m = /^55(\d{2})(\d{4,5})(\d{4})$/.exec(String(E.whatsapp || ""));
+    return m ? "(" + m[1] + ") " + m[2] + "-" + m[3] : E.telefone;
+  }
+
+  // data-bc-se="condição": o trecho só aparece quando a condição vale (ex.: ", todas com 5 estrelas")
+  function condicao(k) {
+    switch (k) {
+      case "google-5": return !!(E.google && E.google.nota === "5,0");
+      case "referencia": return !!valor("referencia");
+      case "mesmo-numero": return mesmoNumero();
+      case "outro-numero": return !mesmoNumero();
+    }
+    return true;
+  }
+
+  // "de segunda a sábado": os dias em que a loja abre, pela grade de horários (seg…sáb, dom)
+  var DIAS_ORDEM = [1, 2, 3, 4, 5, 6, 0];
+  function diasAbertos() {
+    var g = GRADE, nomes = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+    var abre = DIAS_ORDEM.filter(function (d) { return (g[d] || []).length > 0; });
+    if (!abre.length) return null;
+    if (abre.length === 7) return "todos os dias";
+    var pos = abre.map(function (d) { return DIAS_ORDEM.indexOf(d); });
+    var seguidos = pos[pos.length - 1] - pos[0] === pos.length - 1;
+    if (seguidos && abre.length > 2) return "de " + nomes[abre[0]] + " a " + nomes[abre[abre.length - 1]];
+    var n = abre.map(function (d) { return nomes[d]; });
+    return n.length === 1 ? "só " + n[0] : n.slice(0, -1).join(", ") + " e " + n[n.length - 1];
+  }
+
+  // Primeira letra na mesma caixa do texto que já está no HTML ("Entre as…" / "entre as…")
+  function mesmaCaixa(v, antes) {
+    var c = (antes || "").trim().charAt(0);
+    if (!c || c.toLowerCase() === c.toUpperCase()) return v;
+    return (c === c.toUpperCase() ? v.charAt(0).toUpperCase() : v.charAt(0).toLowerCase()) + v.slice(1);
+  }
+
   function fill() {
     $$("[data-wa]").forEach(function (a) {
       a.href = BC.whatsLink(a.getAttribute("data-wa") || undefined);
       a.target = "_blank"; a.rel = "noopener";
     });
     $$("[data-bc-href]").forEach(function (a) {
-      var k = a.getAttribute("data-bc-href"), url = destino(k);
-      if (url) a.href = url;
-      else if (k === "facebook" || k === "instagram") { var li = a.closest("li"); (li || a).hidden = true; }
+      var k = a.getAttribute("data-bc-href"), url = destino(k), rede = k === "facebook" || k === "instagram";
+      var li = rede ? a.closest("li") || a : null;
+      if (url) { a.href = url; if (li) li.hidden = false; }   // rede que o painel preencheu aparece
+      else if (li) li.hidden = true;                          // rede vazia: o link some
     });
     $$("[data-bc]").forEach(function (el) {
       var k = el.getAttribute("data-bc");
       if (k === "status") return;   // ver statusAgora()
       var v = valor(k);
+      if (k === "referencia" && v === "") {
+        // O painel apagou a referência: some o texto (e a quebra de linha antes dele)
+        el.hidden = true;
+        var br = el.previousElementSibling;
+        if (br && br.tagName === "BR") br.hidden = true;
+        return;
+      }
       if (v == null || v === "") return;
+      v = String(v);
+      if (k === "referencia" || k === "dias-abertos") v = mesmaCaixa(v, el.textContent);
+      if (k === "bairro-frase") {
+        // "no bairro da Boa Morte": o HTML fica enquanto o bairro for o mesmo; outro bairro → "no bairro X"
+        if (el.textContent.trim().slice(-v.length) === v) return;
+        v = "no bairro " + v;
+      }
       el.textContent = v;
       if (k === "endereco" || k === "ipem") nobr(el);
     });
+    $$("[data-bc-se]").forEach(function (el) { el.hidden = !condicao(el.getAttribute("data-bc-se")); });
     $$("[data-bc-list]").forEach(function (ul) {
       var fn = LISTAS[ul.getAttribute("data-bc-list")];
       if (fn) fn(ul);
+    });
+    // Texto que estica no hover (.st): a largura reservada (data-t) acompanha o texto novo
+    $$(".st[data-t]").forEach(function (st) {
+      if ((st.hasAttribute("data-bc") || $("[data-bc]", st)) && st.getAttribute("data-t") !== st.textContent) st.setAttribute("data-t", st.textContent);
+    });
+    // Aba do navegador: "Contato: WhatsApp (19) 3023-9050 | …" com o número atual do WhatsApp
+    // (o mesmo telefone, ou o celular, quando o painel cadastrou um WhatsApp diferente)
+    var RE_FONE = /\(\d{2}\)\s?\d{4,5}-\d{4}/, fone = valor("whatsapp");
+    if (fone) document.title = document.title.replace(RE_FONE, fone);
+    // Resumo da página (description, og, twitter) com o telefone e a nota do Google atuais.
+    // A busca do Google lê a página já montada; as prévias de link (WhatsApp, Facebook) leem o HTML como veio.
+    var g = E.google || {};
+    $$('meta[name="description"], meta[property="og:description"], meta[name="twitter:description"]').forEach(function (m) {
+      var c = m.getAttribute("content") || "", n = c;
+      if (E.telefone) n = n.replace(RE_FONE, E.telefone);
+      if (g.nota && g.avaliacoes != null) n = n.replace(/nota \d,\d no Google \(\d+ avaliaç(ões|ão)\)/, "nota " + g.nota + " no Google (" + g.avaliacoes + (+g.avaliacoes === 1 ? " avaliação" : " avaliações") + ")");
+      if (n !== c) m.setAttribute("content", n);
     });
     // Leitor de tela: avisa que o link abre em outra aba (por último, para não ser apagado pelos textos acima)
     $$('a[target="_blank"]').forEach(newTabHint);
@@ -237,15 +328,17 @@
 
   /* ------------------------------------------------------------------
      2. "Aberto agora" — horário de Rio Claro (America/Sao_Paulo)
-     Mesma grade de EMPRESA.horarios (em minutos desde 0h). Se mudar o
-     horário da loja, atualize também esta tabela.
+     Grade em minutos desde 0h (0 = domingo … 6 = sábado). Vale a grade
+     do painel (área Empresa → Horário: EMPRESA.grade, vinda do ajustes.js)
+     quando ela é válida; senão, esta, que é a mesma de EMPRESA.horarios.
      ------------------------------------------------------------------ */
-  var GRADE = {
+  var GRADE_PADRAO = {
     0: [],                                   // domingo
     1: [[480, 660], [780, 1080]], 2: [[480, 660], [780, 1080]], 3: [[480, 660], [780, 1080]],
     4: [[480, 660], [780, 1080]], 5: [[480, 660], [780, 1080]],
     6: [[480, 720]]                          // sábado
   };
+  var GRADE = (BC && BC.gradeValida && BC.gradeValida(E.grade)) || GRADE_PADRAO;
   LV.GRADE_HORARIOS = GRADE;
   var DIAS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 
@@ -258,18 +351,37 @@
        25/12 Natal · Sexta-feira Santa (móvel, 2 dias antes da Páscoa).
      ESTADUAL (SP): 09/07 Revolução Constitucionalista — já incluído.
 
-     >>> FERIADOS MUNICIPAIS DE RIO CLARO: o DONO ACRESCENTA AQUI, em MUNICIPAIS. <<<
-       - data fixa: "MM-DD" entre aspas, ex. "06-24" (confirme no calendário oficial da Prefeitura);
-       - data móvel: em MOVEIS, dias contados a partir da Páscoa, ex. 60 = Corpus Christi,
-         −47 = terça de Carnaval, −48 = segunda de Carnaval (só se a loja fechar nesses dias);
-       - dia avulso (ponte, recesso, inventário): em DATAS, "AAAA-MM-DD", ex. "2026-12-24".
-     Depois de mudar, confira com LV.statusAgora() no console do navegador. */
+     >>> FERIADOS MUNICIPAIS DE RIO CLARO, Carnaval, Corpus Christi e dias avulsos
+         (ponte, recesso, inventário): agora o DONO CADASTRA NO PAINEL, área Empresa →
+         Feriados e dias fechados (gravado em compartilhado/dados/ajustes.js). <<<
+     O painel manda EMPRESA.feriados = { municipais: [{data:"MM-DD"}], moveis: [60, -47…],
+     datas: [{data:"AAAA-MM-DD"}] }, que entra abaixo em MUNICIPAIS, MOVEIS e DATAS
+     (móveis = dias contados a partir da Páscoa: −48 segunda e −47 terça de Carnaval,
+     −46 Quarta-feira de Cinzas, 60 Corpus Christi). Não precisa mexer aqui.
+     Para conferir: LV.statusAgora() e LV.FERIADOS no console do navegador. */
   var FERIADOS = {
     FIXOS: ["01-01", "04-21", "05-01", "07-09", "09-07", "10-12", "11-02", "11-15", "11-20", "12-25"],
-    MUNICIPAIS: [],          // ← feriados municipais de Rio Claro ("MM-DD")
-    MOVEIS: [-2],            // −2 = Sexta-feira Santa (nacional); Corpus Christi = 60
-    DATAS: []                // dias avulsos "AAAA-MM-DD"
+    MUNICIPAIS: [],          // feriados municipais ("MM-DD") — vêm do painel
+    MOVEIS: [-2],            // −2 = Sexta-feira Santa (nacional); os do painel entram depois
+    DATAS: []                // dias avulsos "AAAA-MM-DD" — vêm do painel
   };
+  (function (F) {
+    if (!F || typeof F !== "object") return;
+    function junta(lista, alvo, re) {
+      if (!Array.isArray(lista)) return;
+      lista.forEach(function (f) {
+        var d = f && typeof f === "object" ? f.data : f;
+        if (typeof d === "string" && re.test(d) && alvo.indexOf(d) === -1) alvo.push(d);
+      });
+    }
+    try {
+      junta(F.municipais, FERIADOS.MUNICIPAIS, /^\d{2}-\d{2}$/);
+      junta(F.datas, FERIADOS.DATAS, /^\d{4}-\d{2}-\d{2}$/);
+      if (Array.isArray(F.moveis)) F.moveis.forEach(function (n) {
+        if ([-48, -47, -46, 60].indexOf(n) !== -1 && FERIADOS.MOVEIS.indexOf(n) === -1) FERIADOS.MOVEIS.push(n);
+      });
+    } catch (e) { /* feriados do painel com problema: ficam só os nacionais/estaduais */ }
+  })(E.feriados);
   LV.FERIADOS = FERIADOS;
   function pascoa(y) {   // algoritmo de Meeus/Jones/Butcher → Date (UTC)
     var a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4,
@@ -326,6 +438,139 @@
       el.textContent = el.hasAttribute("data-curto") ? s.curto : s.texto;
       el.classList.toggle("is-aberto", s.aberto); el.classList.toggle("is-fechado", !s.aberto);
       el.hidden = false;
+    });
+  }
+
+  /* ------------------------------------------------------------------
+     2b. Faixa de aviso (painel → área Empresa → Aviso no site)
+     Aparece no topo de todas as páginas enquanto o aviso está ligado e
+     hoje (America/Sao_Paulo) está entre "inicio" e "fim" (cada um opcional).
+     Texto puro (textContent). Fechou: some até fechar o navegador
+     (sessionStorage, por texto: um aviso novo volta a aparecer).
+     ------------------------------------------------------------------ */
+  function hojeISO() {
+    var d = new Date(agora().t);
+    return d.getUTCFullYear() + "-" + LV.pad(d.getUTCMonth() + 1) + "-" + LV.pad(d.getUTCDate());
+  }
+  LV.avisoAtivo = function () {
+    var a = E.aviso;
+    if (!a || a.ativo !== true || typeof a.texto !== "string" || !a.texto.trim()) return null;
+    var hoje = hojeISO(), re = /^\d{4}-\d{2}-\d{2}$/;
+    if (re.test(a.inicio || "") && hoje < a.inicio) return null;
+    if (re.test(a.fim || "") && hoje > a.fim) return null;
+    return a;
+  };
+  var AVISO_CHAVE = "lv-aviso-fechado";
+  function aviso() {
+    var a = LV.avisoAtivo(), main = $("main");
+    if (!a || !main || $(".lv-aviso")) return;
+    var texto = a.texto.trim();
+    try { if (sessionStorage.getItem(AVISO_CHAVE) === texto) return; } catch (e) { /* sem armazenamento: mostra */ }
+    var alerta = a.tom === "alerta";
+    var box = document.createElement("div");
+    box.className = "lv-aviso" + (alerta ? " lv-aviso--alerta" : "");
+    box.setAttribute("role", "region");
+    box.setAttribute("aria-label", "Aviso");
+    box.innerHTML = '<div class="lv-aviso__in">' +
+      '<p class="lv-aviso__txt"><span class="lv-aviso__tag" aria-hidden="true">' + (alerta ? "Atenção" : "Aviso") + "</span>" +
+        '<span class="lv-aviso__msg"></span></p>' +
+      '<button class="lv-aviso__x" type="button" aria-label="Fechar o aviso">' +
+        '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" d="M6 6l12 12M18 6L6 18"/></svg>' +
+      "</button></div>";
+    $(".lv-aviso__msg", box).textContent = texto;
+    $(".lv-aviso__x", box).addEventListener("click", function () {
+      try { sessionStorage.setItem(AVISO_CHAVE, texto); } catch (e) { /* ok: fecha só nesta página */ }
+      var foco = box.contains(document.activeElement);
+      box.parentNode.removeChild(box);
+      if (foco) {   // o foco não se perde: vai para o começo do conteúdo
+        if (!main.hasAttribute("tabindex")) main.setAttribute("tabindex", "-1");
+        main.focus({ preventScroll: true });
+      }
+      LV.refresh();
+    });
+    main.insertBefore(box, main.firstChild);
+    LV.refresh();   // GSAP já ativo (raro: o aviso entra antes dele): recalcula as posições
+  }
+
+  /* ------------------------------------------------------------------
+     2c. Dados estruturados (JSON-LD do <head>) com os dados atuais:
+     telefone, e-mail, endereço, mapa, horários, redes e equipe. Só
+     reescreve o bloco quando algo mudou (sem ajustes, fica como veio).
+     ------------------------------------------------------------------ */
+  var DIAS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  function horaLD(min) { min = Math.min(min, 1439); return LV.pad(Math.floor(min / 60)) + ":" + LV.pad(min % 60); }
+  function horariosLD() {
+    // Dias com as mesmas faixas viram um grupo (seg…sex juntos), na ordem seg…sáb, dom
+    var grupos = [];
+    DIAS_ORDEM.forEach(function (d) {
+      var g = GRADE[d] || [];
+      if (!g.length) return;
+      var chave = JSON.stringify(g), grupo = grupos.filter(function (x) { return x.chave === chave; })[0];
+      if (grupo) grupo.dias.push(DIAS_EN[d]); else grupos.push({ chave: chave, faixas: g, dias: [DIAS_EN[d]] });
+    });
+    var out = [];
+    grupos.forEach(function (gr) {
+      gr.faixas.forEach(function (f) {
+        out.push({ "@type": "OpeningHoursSpecification", dayOfWeek: gr.dias.length > 1 ? gr.dias.slice() : gr.dias[0], opens: horaLD(f[0]), closes: horaLD(f[1]) });
+      });
+    });
+    return out;
+  }
+  function telLD() {   // "+551930239050" → "+55-19-3023-9050"
+    var m = /^\+55(\d{2})(\d{4,5})(\d{4})$/.exec(E.telefoneLink || "");
+    return m ? "+55-" + m[1] + "-" + m[2] + "-" + m[3] : null;
+  }
+  function atualizaLD(o) {
+    var mudou = false;
+    function poe(alvo, k, v) {
+      if (v == null || v === "" || JSON.stringify(alvo[k]) === JSON.stringify(v)) return;
+      alvo[k] = v; mudou = true;
+    }
+    var tel = telLD(), end = E.endereco || {};
+    (function visita(x) {
+      if (Array.isArray(x)) { x.forEach(visita); return; }
+      if (!x || typeof x !== "object") return;
+      if (typeof x.telephone === "string" && tel) poe(x, "telephone", tel);
+      if (typeof x.email === "string" && E.email) poe(x, "email", E.email);
+      if (x.address && typeof x.address === "object" && !Array.isArray(x.address)) {
+        var a = x.address;
+        poe(a, "streetAddress", end.rua); poe(a, "addressLocality", end.cidade);
+        poe(a, "addressRegion", end.uf); poe(a, "postalCode", end.cep);
+        // "Endereço: Rua 13, 650, entre as Avenidas 9 e 11 – Boa Morte, Rio Claro-SP." no fim da descrição
+        if (typeof x.description === "string" && /Endereço: /.test(x.description) && end.rua && end.bairro && end.cidade && end.uf) {
+          var ref = valor("referencia");
+          poe(x, "description", x.description.replace(/Endereço: [^]*$/, "Endereço: " + end.rua +
+            (ref ? ", " + mesmaCaixa(ref, "e") : "") + " – " + end.bairro + ", " + end.cidade + "-" + end.uf + "."));
+        }
+      }
+      if (typeof x.hasMap === "string" && E.mapa) poe(x, "hasMap", E.mapa);
+      if (Array.isArray(x.openingHoursSpecification)) poe(x, "openingHoursSpecification", horariosLD());
+      if (Array.isArray(x.sameAs)) {
+        var r = E.redes || {}, s = [];
+        x.sameAs.forEach(function (u) {
+          var rede = /facebook\.com|fb\.com/i.test(u) ? "facebook" : /instagram\.com/i.test(u) ? "instagram" : null;
+          if (!rede) s.push(u); else if (r[rede]) s.push(r[rede]);
+        });
+        ["facebook", "instagram"].forEach(function (k) { if (r[k] && s.indexOf(r[k]) === -1) s.push(r[k]); });
+        poe(x, "sameAs", s);
+      }
+      if (Array.isArray(x.employee) && Array.isArray(E.equipe) && E.equipe.length) {
+        poe(x, "employee", E.equipe.map(function (p) {
+          var o = { "@type": "Person", name: p.nome };
+          if (p.cargo) o.jobTitle = p.cargo;
+          return o;
+        }));
+      }
+      Object.keys(x).forEach(function (k) { if (k !== "address" && x[k] && typeof x[k] === "object") visita(x[k]); });
+    })(o);
+    return mudou;
+  }
+  function jsonLD() {
+    $$('script[type="application/ld+json"]').forEach(function (s) {
+      try {
+        var j = JSON.parse(s.textContent);
+        if (atualizaLD(j)) s.textContent = JSON.stringify(j, null, 1);
+      } catch (e) { /* bloco ilegível: fica como está */ }
     });
   }
 
@@ -1004,9 +1249,11 @@
      Início
      ------------------------------------------------------------------ */
   if (BC) {
+    try { aviso(); } catch (e) { if (window.console) console.warn(e); }   // antes do resto: a página já nasce com a faixa
     fill();
     status(); setInterval(status, 60000);
     renderProdutos();
+    try { jsonLD(); } catch (e) { /* dados estruturados: ficam como vieram */ }
   }
   navAtivo();
   // Números decorativos do menu ("01 Início") e das fichas ("Nº 01") ficam fora do nome acessível

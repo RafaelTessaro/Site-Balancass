@@ -9,10 +9,14 @@ define('PAINEL', true);
 
 require __DIR__ . '/lib/nucleo.php';
 require __DIR__ . '/lib/auth.php';
+require __DIR__ . '/lib/usuarios.php';
 require __DIR__ . '/lib/catalogo.php';
 require __DIR__ . '/lib/imagens.php';
 require __DIR__ . '/lib/clientes.php';
+require __DIR__ . '/lib/ajustes.php';
 require __DIR__ . '/lib/visoes.php';
+require __DIR__ . '/lib/visoes-usuarios.php';
+require __DIR__ . '/lib/visoes-empresa.php';
 
 iniciarPainel();
 
@@ -34,18 +38,28 @@ if (chegouDeOutroSite()) {
 }
 
 iniciarSessao();
+migrarContaAntiga();   // config.php antigo (um usuário só) → usuarios.php, sem derrubar a sessão aberta
 verificarSessao();
 
 const ACOES = ['lista', 'novo', 'editar', 'salvar', 'rapido', 'mover', 'excluir', 'desfazer', 'copias', 'restaurar', 'conta', 'senha', 'sair', 'entrar', 'instalar', 'sessao',
-    'clientes', 'cliente-novo', 'cliente-editar', 'cliente-salvar', 'cliente-mover', 'cliente-excluir', 'cliente-desfazer'];
-const SO_POST = ['salvar', 'rapido', 'mover', 'desfazer', 'senha', 'sair', 'cliente-salvar', 'cliente-mover', 'cliente-desfazer'];
+    'clientes', 'cliente-novo', 'cliente-editar', 'cliente-salvar', 'cliente-mover', 'cliente-excluir', 'cliente-desfazer',
+    'usuarios', 'usuario-novo', 'usuario-editar', 'usuario-salvar', 'usuario-senha', 'usuario-ativo', 'usuario-excluir', 'senha-temporaria',
+    'atividades', 'criar-senha', 'recuperar', 'empresa', 'empresa-salvar'];
+const SO_POST = ['salvar', 'rapido', 'mover', 'desfazer', 'senha', 'sair', 'cliente-salvar', 'cliente-mover', 'cliente-desfazer', 'usuario-salvar', 'empresa-salvar'];
+// Só administradores. O papel é lido do usuarios.php a cada pedido (mudou, vale na hora).
+// Vale para GET, POST e fetch (JSON): editor recebe 403.
+const SO_ADMIN = ['usuarios', 'usuario-novo', 'usuario-editar', 'usuario-salvar', 'usuario-senha', 'usuario-ativo', 'usuario-excluir', 'senha-temporaria',
+    'atividades', 'copias', 'restaurar', 'empresa', 'empresa-salvar'];
+// Enquanto a pessoa não cria a própria senha (entrou com a senha temporária), só estas
+const SEM_SENHA_PROPRIA = ['criar-senha', 'sair'];
 $acao = is_string($_GET['a'] ?? null) && in_array($_GET['a'], ACOES, true) ? $_GET['a'] : 'lista';
 $post = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
 
 // A tela do produto confere a sessão antes de enviar (e, se ela venceu, pede a senha
 // numa janela, sem sair da página e sem perder o que foi digitado nem a foto)
 if ($acao === 'sessao') {
-    responderJson(['ok' => true, 'logado' => instalado() && usuarioLogado() !== null, 'csrf' => tokenCsrf()]);
+    $logado = usuarioLogado() !== null;   // verificarSessao() já conferiu o usuário
+    responderJson(['ok' => true, 'logado' => $logado, 'csrf' => tokenCsrf()] + ($logado ? [] : ['motivo' => motivoSaida()]));
 }
 
 // Envio maior que o limite do PHP: o servidor descarta tudo ($_POST e $_FILES vazios)
@@ -63,15 +77,15 @@ if ($post && !$_POST && !$_FILES && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0)
 }
 
 /* ------------------------------------------------------------------
-   Sem usuário criado: só o primeiro acesso
+   Nenhum usuário ainda (instalação nova): só o primeiro acesso
    ------------------------------------------------------------------ */
-if (!instalado()) {
+if (lerUsuarios() === []) {
     if ($post && $acao === 'instalar') {
-        if (!csrfValido()) { http_response_code(403); telaInstalar('A página ficou aberta tempo demais e expirou. Confira os dados e envie de novo.', ['usuario' => (string) ($_POST['usuario'] ?? '')]); exit; }
-        $v = ['codigo' => (string) ($_POST['codigo'] ?? ''), 'usuario' => trim((string) ($_POST['usuario'] ?? ''))];
-        $erro = instalar($v['codigo'], $v['usuario'], (string) ($_POST['senha'] ?? ''), (string) ($_POST['senha2'] ?? ''));
+        $v = ['codigo' => (string) ($_POST['codigo'] ?? ''), 'nome' => (string) ($_POST['nome'] ?? ''), 'usuario' => trim((string) ($_POST['usuario'] ?? ''))];
+        if (!csrfValido()) { http_response_code(403); telaInstalar('A página ficou aberta tempo demais e expirou. Confira os dados e envie de novo.', ['nome' => $v['nome'], 'usuario' => $v['usuario']]); exit; }
+        $erro = instalar($v['codigo'], $v['nome'], $v['usuario'], (string) ($_POST['senha'] ?? ''), (string) ($_POST['senha2'] ?? ''));
         if ($erro === null) {
-            avisar('Pronto! Seu acesso foi criado. Guarde a senha num lugar seguro.');
+            avisar('Pronto! Seu acesso foi criado, como Administrador. Guarde a senha num lugar seguro. Para outras pessoas usarem o painel, crie um usuário para cada uma em Conta → Usuários.');
             redirecionar('index.php');
         }
         http_response_code(bloqueioRestante() ? 429 : 422);
@@ -85,9 +99,25 @@ if (!instalado()) {
 }
 
 /* ------------------------------------------------------------------
-   Sem login: só a tela de entrar
+   Sem login: só a tela de entrar (ou "Recuperar acesso", se o dono
+   criou o arquivo recuperar.txt na pasta privada pelo cPanel)
    ------------------------------------------------------------------ */
 if (usuarioLogado() === null) {
+    // Também quando há usuários mas nenhum administrador ativo (ninguém mais conseguiria dar acesso)
+    $recuperando = arquivosRecuperacao() !== [] || !instalado();
+    if ($post && $acao === 'recuperar' && $recuperando) {
+        $v = ['codigo' => (string) ($_POST['codigo'] ?? ''), 'usuario' => trim((string) ($_POST['usuario'] ?? ''))];
+        if (!csrfValido()) { http_response_code(403); telaRecuperar('A página ficou aberta tempo demais e expirou. Confira os dados e envie de novo.', ['usuario' => $v['usuario']]); exit; }
+        [$erro, $sobrou] = recuperarAcesso($v['codigo'], cortar($v['usuario'], 60), (string) ($_POST['senha'] ?? ''), (string) ($_POST['senha2'] ?? ''));
+        if ($erro === null) {
+            avisar('Pronto! O acesso foi recuperado e você já entrou como Administrador. Os outros usuários continuam como estavam.');
+            if ($sobrou) avisar('Não consegui apagar o arquivo ' . implode(' e ', $sobrou) . ' da pasta privada. Apague pelo Gerenciador de Arquivos do cPanel: enquanto ele existir, quem não está logado vê a tela “Recuperar acesso” em vez da tela de entrar.', 'erro');
+            redirecionar('index.php');
+        }
+        http_response_code(bloqueioRestante() ? 429 : 422);
+        telaRecuperar($erro, $v);
+        exit;
+    }
     if ($post && $acao === 'entrar') {
         $usuario = trim((string) ($_POST['usuario'] ?? ''));
         if (!csrfValido()) {
@@ -101,13 +131,14 @@ if (usuarioLogado() === null) {
             if (pedidoJson()) responderJson(['ok' => true, 'csrf' => tokenCsrf()]);
             redirecionar($voltar ?? 'index.php');
         }
-        if (pedidoJson()) responderJson(['ok' => false, 'msg' => $erro, 'csrf' => tokenCsrf()], bloqueioRestante() ? 429 : 401);
-        http_response_code(bloqueioRestante() ? 429 : 401);
+        $bloqueado = bloqueioRestante(cortar($usuario, 60)) > 0;
+        if (pedidoJson()) responderJson(['ok' => false, 'msg' => $erro, 'csrf' => tokenCsrf()], $bloqueado ? 429 : 401);
+        http_response_code($bloqueado ? 429 : 401);
         telaEntrar($erro, $usuario);
         exit;
     }
     if ($post) {
-        if (pedidoJson()) responderJson(['ok' => false, 'login' => true, 'msg' => 'Sua sessão terminou. Entre de novo.', 'csrf' => tokenCsrf()], 401);
+        if (pedidoJson()) responderJson(['ok' => false, 'login' => true, 'msg' => 'Sua sessão terminou. Entre de novo.', 'motivo' => motivoSaida(), 'csrf' => tokenCsrf()], 401);
         // Depois de entrar, volta para a tela de onde veio (o formulário do produto, com o rascunho)
         $id = is_string($_GET['id'] ?? null) && preg_match(RE_ID, $_GET['id']) ? $_GET['id'] : '';
         if ($acao === 'salvar') {
@@ -116,10 +147,18 @@ if (usuarioLogado() === null) {
         } elseif ($acao === 'cliente-salvar') {
             $_SESSION['voltar'] = linkFormCliente($_GET);
             avisar('Sua sessão terminou e o cliente não foi salvo. Entre de novo: o painel volta para o formulário (escolha o logo de novo).', 'info');
+        } elseif ($acao === 'empresa-salvar') {
+            $_SESSION['voltar'] = link_('empresa');
+            avisar('Sua sessão terminou e os dados da empresa não foram salvos. Entre de novo e salve outra vez.', 'info');
         } else {
             avisar('Sua sessão terminou e a última ação não foi feita. Entre de novo para continuar.', 'info');
         }
         redirecionar(link_('entrar'));
+    }
+    if ($recuperando) {
+        codigoInstalacao('recuperar');   // garante que o arquivo com o código exista
+        telaRecuperar();
+        exit;
     }
     if ($acao !== 'entrar' && $acao !== 'lista') {
         $_SESSION['voltar'] = 'index.php?' . http_build_query(array_map('strval', array_filter($_GET, 'is_string')));
@@ -132,12 +171,27 @@ if (usuarioLogado() === null) {
 /* ------------------------------------------------------------------
    Logado
    ------------------------------------------------------------------ */
-if ($acao === 'entrar' || $acao === 'instalar') redirecionar('index.php');
+if ($acao === 'entrar' || $acao === 'instalar' || $acao === 'recuperar') redirecionar('index.php');
+garantirArquivoAjustes();
 if ($post && !csrfValido()) {
     registrar('csrf', 'pedido recusado (token ausente ou inválido) em ' . $acao);
     if (pedidoJson()) responderJson(['ok' => false, 'msg' => 'A página ficou desatualizada. Recarregue e tente de novo.'], 403);
     http_response_code(403);
     paginaErro('Ação recusada', 'A página ficou desatualizada (ou o pedido não veio do painel) e nada foi alterado. Volte, recarregue a página e tente de novo.');
+    exit;
+}
+$eu = usuarioAtual();
+if ($eu === null) { sair(); redirecionar(link_('entrar')); }   // excluído no meio do caminho
+// Entrou com a senha temporária: antes de qualquer coisa, cria a própria senha
+if (precisaCriarSenha($eu) && !in_array($acao, SEM_SENHA_PROPRIA, true)) {
+    if (pedidoJson()) responderJson(['ok' => false, 'msg' => 'Antes de continuar, crie a sua senha: recarregue a página.'], 403);
+    redirecionar(link_('criar-senha'));
+}
+if (in_array($acao, SO_ADMIN, true) && $eu['papel'] !== 'admin') {
+    registrar('negado', nomeDaArea($acao));
+    $msg = 'Esta área é só para administradores do painel.';
+    if (pedidoJson()) responderJson(['ok' => false, 'msg' => $msg], 403);
+    paginaErro('Só para administradores', $msg . ' Se precisar dela, fale com um administrador (ele pode mudar o seu papel em Conta → Usuários).', 403);
     exit;
 }
 if (!$post && in_array($acao, SO_POST, true)) redirecionar('index.php');
@@ -164,6 +218,19 @@ try {
         'conta'     => telaConta(),
         'senha'     => acaoSenha(),
         'sair'      => acaoSair(),
+        'criar-senha'      => acaoCriarSenha($post),
+        'usuarios'         => acaoUsuarios(),
+        'usuario-novo'     => telaUsuarioForm(null),
+        'usuario-editar'   => acaoUsuarioEditar(),
+        'usuario-salvar'   => acaoUsuarioSalvar(),
+        'usuario-senha'    => acaoUsuarioSenha($post),
+        'usuario-ativo'    => acaoUsuarioAtivo($post),
+        'usuario-excluir'  => acaoUsuarioExcluir($post),
+        'senha-temporaria' => acaoSenhaTemporaria(),
+        'atividades'       => acaoAtividades(),
+        // Área Empresa (ajustes do site): lib/ajustes.php e lib/visoes-empresa.php
+        'empresa'          => acaoEmpresa(),
+        'empresa-salvar'   => acaoEmpresaSalvar(),
     };
 } catch (ErroCatalogo $e) {
     if (pedidoJson()) responderJson(['ok' => false, 'msg' => 'Não consegui ler o catálogo: ' . $e->getMessage()], 500);
@@ -171,10 +238,13 @@ try {
 } catch (ErroClientes $e) {
     if (pedidoJson()) responderJson(['ok' => false, 'msg' => 'Não consegui ler a lista de clientes: ' . $e->getMessage()], 500);
     telaClientesIlegivel($e->getMessage());
+} catch (ErroAjustes $e) {
+    if (pedidoJson()) responderJson(['ok' => false, 'msg' => 'Não consegui ler os ajustes do site: ' . $e->getMessage()], 500);
+    telaAjustesIlegivel($e->getMessage());
 } catch (ErroUsuario $e) {
     if (pedidoJson()) responderJson(['ok' => false, 'msg' => $e->getMessage()], 409);
     avisar($e->getMessage(), 'erro');
-    redirecionar(str_starts_with($acao, 'cliente') ? link_('clientes') : 'index.php');
+    redirecionar(voltarDepoisDoErro($acao));
 }
 exit;
 
@@ -184,8 +254,28 @@ exit;
 function destinoSeguro($url): ?string
 {
     if (!is_string($url) || strlen($url) > 300) return null;
-    if (!preg_match('/^index\.php\?a=(novo|editar|copias|conta|clientes|cliente-novo|cliente-editar)(&[A-Za-z0-9_=%.\-]*)*$/', $url)) return null;
+    if (!preg_match('/^index\.php\?a=(novo|editar|copias|conta|clientes|cliente-novo|cliente-editar|usuarios|usuario-novo|usuario-editar|atividades|empresa)(&[A-Za-z0-9_=%.\-]*)*$/', $url)) return null;
     return $url;
+}
+
+/** Nome da área de administrador, para o registro ("Tentou abrir… — Usuários"). */
+function nomeDaArea(string $acao): string
+{
+    if (str_starts_with($acao, 'usuario') || $acao === 'senha-temporaria') return 'Usuários';
+    if (str_starts_with($acao, 'empresa')) return 'Empresa';
+    return ['copias' => 'Cópias de segurança', 'restaurar' => 'Cópias de segurança (restaurar)', 'atividades' => 'Atividades'][$acao] ?? $acao;
+}
+
+/** Para onde volta quando uma ação dá erro (ErroUsuario): a lista da mesma área. */
+function voltarDepoisDoErro(string $acao): string
+{
+    if (str_starts_with($acao, 'cliente')) return link_('clientes');
+    if (str_starts_with($acao, 'usuario') || $acao === 'usuarios' || $acao === 'senha-temporaria') return link_('usuarios');
+    if ($acao === 'criar-senha') return link_('criar-senha');
+    if (in_array($acao, ['conta', 'senha', 'atividades'], true)) return link_('conta');
+    if (in_array($acao, ['copias', 'restaurar'], true)) return link_('copias');
+    if (str_starts_with($acao, 'empresa')) return link_('empresa');
+    return 'index.php';
 }
 
 function catalogoOuTela(): array
@@ -397,6 +487,7 @@ function acaoExcluir(bool $post): void
             array_splice($prods, $i, 1);
             return ['produtos' => $prods];
         });
+    guardarDesfazer($r['copia']);
     avisar('“' . $nome . '” foi excluído.' . ($ehCapa ? ' Atenção: era o produto da capa; a foto da capa continua, mas o link dela agora abre o catálogo com o aviso “produto fora do catálogo”.' : ''), 'ok',
         ['form' => ['acao' => link_('desfazer'), 'campos' => ['copia' => $r['copia'], 'id' => (string) $p['id']], 'botao' => 'Desfazer']]);
     redirecionar('index.php');
@@ -408,6 +499,7 @@ function acaoDesfazer(): void
     $nomeCopia = is_string($_POST['copia'] ?? null) ? $_POST['copia'] : '';
     $id = is_string($_POST['id'] ?? null) && preg_match(RE_ID, $_POST['id']) ? $_POST['id'] : '';
     $copia = lerCopia($nomeCopia);
+    exigirCopiaPropria($copia, $nomeCopia, $id);
     $i = $id !== '' ? indicePorId($copia['produtos'], $id) : null;
     if ($i === null) throw new ErroUsuario('Esse produto não está nessa cópia de segurança.');
     $p = $copia['produtos'][$i];
@@ -433,6 +525,7 @@ function acaoDesfazer(): void
             array_splice($prods, $pos ?? posicaoNaCategoria($prods, (string) $p['categoria']), 0, [$p]);
             return ['produtos' => $prods];
         });
+    unset($_SESSION['desfazer'][$nomeCopia]);
     $semFoto = is_string($p['imagem'] ?? null) && $p['imagem'] !== '' && !@is_file(pastaFotos() . '/' . $p['imagem']);
     avisar('“' . $nome . '” voltou para o catálogo, no mesmo lugar' . ($semFoto ? '. A foto não estava mais na lixeira: escolha outra em Editar.' : ' e com a foto.'), $semFoto ? 'erro' : 'ok',
         ($p['visivel'] ?? true) === false ? [] : linkSite($id));
@@ -441,6 +534,7 @@ function acaoDesfazer(): void
 
 function acaoCopias(): void
 {
+    if (($_GET['de'] ?? '') === 'empresa') { acaoCopiasAjustes(); return; }
     if (($_GET['de'] ?? '') === 'clientes') {
         try { $atual = lerClientes()['clientes']; } catch (ErroClientes $e) { $atual = null; }
         $logos = $atual === null ? [] : array_fill_keys(array_map(static fn($c) => (string) ($c['logo'] ?? ''), $atual), true);
@@ -457,6 +551,7 @@ function acaoRestaurar(bool $post): void
 {
     $nome = is_string($_POST['copia'] ?? null) ? $_POST['copia'] : (is_string($_GET['copia'] ?? null) ? $_GET['copia'] : '');
     if (preg_match(RE_COPIA_CLIENTES, $nome)) { acaoRestaurarClientes($post, $nome); return; }
+    if (preg_match(RE_COPIA_AJUSTES, $nome)) { acaoRestaurarAjustes($post, $nome); return; }
     $copia = lerCopia($nome);
     $quando = quando((int) ($copia['criado'] ?? 0));
     if (!$post || ($_POST['confirmado'] ?? '') !== '1') {
@@ -464,7 +559,7 @@ function acaoRestaurar(bool $post): void
         $i = array_search($nome, array_column($lista, 'nome'), true);
         try { $total = count(lerCatalogo()['produtos']); } catch (ErroCatalogo $e) { $total = null; }
         telaConfirmar('Restaurar esta cópia?', $i === false ? 'Voltar o catálogo inteiro para como estava em ' . $quando . '? O estado atual vira uma cópia, então dá para desfazer.' : textoRestaurar($lista, (int) $i, $total),
-            link_('restaurar'), ['copia' => $nome], 'Sim, restaurar', link_('copias'));
+            link_('restaurar'), ['copia' => $nome], 'Sim, restaurar', link_('copias'), 'copias');
         return;
     }
     $acaoCat = ['tipo' => 'restaurar', 'antes' => 'Antes de: restaurar a cópia de ' . $quando, 'feito' => 'Restaurou a cópia de ' . $quando];
@@ -484,12 +579,57 @@ function acaoRestaurar(bool $post): void
     redirecionar('index.php');
 }
 
+/** O "Desfazer" logo depois de excluir vale para todos, mas só para o item daquela exclusão
+ *  ($alvo: código do produto ou logo do cliente; sem logo, confere também o nome). Toda cópia
+ *  guarda a lista inteira: trazer de volta o que OUTRA pessoa excluiu (ou outro item da cópia)
+ *  é coisa das Cópias de segurança, que são só dos administradores. */
+/** Guarda na sessão a cópia de uma exclusão: o Desfazer dela vale uma vez, nesta sessão. */
+function guardarDesfazer(string $nomeCopia): void
+{
+    $d = is_array($_SESSION['desfazer'] ?? null) ? $_SESSION['desfazer'] : [];
+    $d[$nomeCopia] = time();
+    $_SESSION['desfazer'] = array_slice($d, -20, null, true);
+}
+
+function exigirCopiaPropria(array $copia, string $nomeCopia, string $alvo, ?string $alvoNome = null): void
+{
+    if (ehAdmin()) return;
+    // Editor: só o Desfazer da exclusão que ele mesmo acabou de fazer, uma vez (reenviar um Desfazer
+    // antigo traria de volta algo que um administrador excluiu depois)
+    if (!isset($_SESSION['desfazer'][$nomeCopia])) {
+        throw new ErroUsuario('Esse Desfazer já foi usado ou expirou. Para trazer o item de volta, fale com um administrador (Conta → Cópias de segurança).');
+    }
+    if (strcasecmp((string) ($copia['usuario'] ?? ''), (string) usuarioLogado()) !== 0) {
+        throw new ErroUsuario('Só um administrador pode trazer de volta o que outra pessoa excluiu (Conta → Cópias de segurança).');
+    }
+    if (($copia['tipo'] ?? '') !== 'excluir' || $alvo === '' && $alvoNome === null || (string) ($copia['alvo'] ?? '') !== $alvo
+        || ($alvoNome !== null && (string) ($copia['alvoNome'] ?? '') !== $alvoNome)) {
+        throw new ErroUsuario('Esse Desfazer só traz de volta o que você acabou de excluir. Para trazer outro item, fale com um administrador (Conta → Cópias de segurança).');
+    }
+}
+
+/** Primeiro acesso de quem recebeu senha temporária (ou teve a senha redefinida). */
+function acaoCriarSenha(bool $post): void
+{
+    if (!precisaCriarSenha(usuarioAtual())) redirecionar('index.php');
+    if (!$post) { telaCriarSenha(); return; }
+    $erro = criarSenhaPropria((string) ($_POST['nova'] ?? ''), (string) ($_POST['nova2'] ?? ''));
+    if ($erro !== null) {
+        http_response_code(422);
+        telaCriarSenha($erro);
+        return;
+    }
+    avisar('Pronto! Sua senha foi criada. Use ela nas próximas vezes que entrar no painel.');
+    redirecionar('index.php');
+}
+
 function acaoSenha(): void
 {
     $erro = trocarSenha((string) ($_POST['atual'] ?? ''), (string) ($_POST['nova'] ?? ''), (string) ($_POST['nova2'] ?? ''));
     if ($erro !== null) {
-        http_response_code(bloqueioRestante() ? 429 : 422);
-        if (bloqueioRestante()) { sair(); avisar($erro, 'erro'); redirecionar(link_('entrar')); }
+        $bloqueado = bloqueioRestante(usuarioLogado() ?? '') > 0;
+        http_response_code($bloqueado ? 429 : 422);
+        if ($bloqueado) { sair(); avisar($erro, 'erro'); redirecionar(link_('entrar')); }
         telaConta($erro);
         return;
     }
@@ -641,6 +781,7 @@ function acaoClienteExcluir(bool $post): void
             array_splice($l, $j, 1);
             return $l;
         });
+    guardarDesfazer($r['copia']);
     avisar('“' . $nome . '” foi excluído da lista de clientes.', 'ok',
         ['form' => ['acao' => link_('cliente-desfazer'), 'campos' => ['copia' => $r['copia'], 'n' => (string) ($i + 1), 'logo' => $logo], 'botao' => 'Desfazer']]);
     redirecionar(link_('clientes'));
@@ -656,6 +797,7 @@ function acaoClienteDesfazer(): void
     if ($i === null) throw new ErroUsuario('Esse cliente não está nessa cópia de segurança.');
     $c = $copia['clientes'][$i];
     $nome = (string) $c['nome'];
+    exigirCopiaPropria($copia, $nomeCopia, (string) ($c['logo'] ?? ''), (string) ($c['logo'] ?? '') === '' ? $nome : null);
     $pos = 0;
     alterarClientes(['tipo' => 'desfazer', 'antes' => 'Antes de: trazer de volta o cliente “' . $nome . '”', 'feito' => 'Trouxe de volta o cliente “' . $nome . '”', 'alvo' => (string) ($c['logo'] ?? ''), 'alvoNome' => $nome],
         static function (array $l) use ($copia, $i, $c, $nome, &$pos): array {
@@ -680,6 +822,7 @@ function acaoClienteDesfazer(): void
             $pos = $onde + 1;
             return $l;
         });
+    unset($_SESSION['desfazer'][$nomeCopia]);
     $semLogo = (string) ($c['logo'] ?? '') !== '' && !@is_file(pastaFotos('clientes') . '/' . $c['logo']);
     avisar('“' . $nome . '” voltou para a lista de clientes, na ' . $pos . 'ª posição' . ($semLogo ? '. O logo não estava mais na lixeira: escolha outro em Editar.' : ', com o logo.'),
         $semLogo ? 'erro' : 'ok', $semLogo ? [] : linkSiteClientes());

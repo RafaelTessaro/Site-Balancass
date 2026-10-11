@@ -2,8 +2,8 @@
    Balanças.com — "Linha Verde" (site multipágina)
    css/base.css — usado em TODAS as páginas.
    Tokens, tipografia, utilitários, botões, etiquetas, cabeçalho, menu,
-   moldura das seções, faixas (ticker), ficha de produto, rodapé,
-   botões flutuantes, transições e estados iniciais das animações.
+   faixa de aviso, moldura das seções, faixas (ticker), ficha de produto,
+   rodapé, botões flutuantes, transições e estados iniciais das animações.
    Um único ângulo para tudo: −12° (a barra "/" das faixas verdes).
    Documentação: COMPONENTES.md
    ===================================================================== */
@@ -376,6 +376,59 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 }
 
 /* =====================================================================
+   FAIXA DE AVISO (painel → Empresa → Aviso no site; criada pelo core.js)
+   Logo abaixo do cabeçalho fixo, antes do hero. O hero sobe por baixo
+   da faixa (margem −hdr): continua com a mesma altura, só desce o
+   tanto da faixa. Verde = informação; volt (amarelo) = alerta.
+   ===================================================================== */
+.lv-aviso {
+  position: relative; z-index: 3; margin-top: var(--hdr);
+  background: var(--green); color: var(--ink);
+  border-bottom: 1px solid rgba(10,10,10,.28);
+}
+.lv-aviso + .phero, .lv-aviso + .pn-hero, .lv-aviso + .hv2-hero { margin-top: calc(-1 * var(--hdr)); }
+.lv-aviso--alerta { background: var(--volt); }
+.lv-aviso__in {
+  max-width: var(--max); margin-inline: auto; padding: 9px var(--gut);
+  display: flex; align-items: center; gap: 10px 16px; min-height: 54px;
+}
+.lv-aviso__txt { flex: 1; min-width: 0; font: 600 15px/1.45 var(--f-text); letter-spacing: .005em; text-wrap: pretty; overflow-wrap: anywhere; }
+/* Etiqueta "AVISO" em paralelogramo (−12°), na mesma linha do texto */
+.lv-aviso__tag {
+  position: relative; isolation: isolate; display: inline-block; margin: 0 14px 0 4px; padding: 5px 11px 4px;
+  font: 500 10.5px/1.2 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--paper);
+  vertical-align: 1px;
+}
+.lv-aviso__tag::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--ink); transform: skewX(var(--slash)); }
+.lv-aviso--alerta .lv-aviso__tag { color: var(--volt); }
+.lv-aviso__x {
+  position: relative; isolation: isolate; flex: none; display: grid; place-items: center;
+  width: 44px; height: 44px; margin: -4px -10px -4px 0; padding: 0; border: 0; background: none; color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+}
+.lv-aviso__x::before {
+  content: ""; position: absolute; inset: 6px 4px; z-index: -1; background: rgba(10,10,10,.14);
+  transform: skewX(var(--slash)) scaleX(0); transition: transform .4s var(--ease);
+}
+.lv-aviso__x:hover::before, .lv-aviso__x:focus-visible::before { transform: skewX(var(--slash)) scaleX(1); }
+.lv-aviso__x .i { width: 20px; height: 20px; }
+.lv-aviso :focus-visible { outline-color: var(--ink); outline-offset: -2px; }
+@media (max-width: 600px) {
+  .lv-aviso__in { padding-block: 8px; gap: 8px; align-items: flex-start; }
+  .lv-aviso__txt { font-size: 14px; line-height: 1.5; padding-top: 3px; }
+  .lv-aviso__tag { margin-right: 10px; }
+  .lv-aviso__x { margin-top: -2px; }
+}
+/* Entrada: a faixa corta a tela na diagonal (sem mexer na altura da página) */
+@media (prefers-reduced-motion: no-preference) {
+  .lv-aviso { animation: lv-aviso-in .7s var(--ease) backwards; }
+}
+@keyframes lv-aviso-in {
+  from { clip-path: polygon(0 0, 0 0, -60px 100%, -60px 100%); }
+  to   { clip-path: polygon(0 0, calc(100% + 60px) 0, 100% 100%, -60px 100%); }
+}
+
+/* =====================================================================
    SEÇÕES: aba numerada e corte em −12° na emenda
    ===================================================================== */
 .sec { position: relative; padding-block: var(--sec-pad); scroll-margin-top: calc(var(--hdr) + var(--tab)); overflow-x: clip; }
@@ -636,7 +689,7 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .ftr__phrase { margin-top: 18px; color: var(--grey); max-width: 18em; }
 .ftr__h { color: var(--grey); margin-bottom: 14px; }
 .ftr__col ul { display: grid; gap: 0; }
-.ftr__col a { display: block; width: fit-content; max-width: 100%; padding-block: 11px; line-height: 1.5; text-decoration: none; color: #D7D7D2; font-size: 15px; }
+.ftr__col a { display: block; width: fit-content; max-width: 100%; padding-block: 11px; line-height: 1.5; text-decoration: none; color: #D7D7D2; font-size: 15px; overflow-wrap: anywhere; }
 .ftr__col a[aria-current] { color: var(--paper); text-decoration: underline; text-decoration-color: var(--green); text-decoration-thickness: 2px; text-underline-offset: 5px; }
 .ftr__ref { color: var(--grey); }
 .ftr__col a:hover { color: var(--green); }

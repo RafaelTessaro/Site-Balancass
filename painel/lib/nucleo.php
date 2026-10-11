@@ -432,25 +432,26 @@ function pegarAvisos(): array
 /* ------------------------------------------------------------------
    Registro de atividades (privado) e de erros
    ------------------------------------------------------------------ */
-function registrar(string $evento, string $detalhe = ''): void
+/** $quem: login de quem fez (padrão: quem está logado; "-" quando ninguém). */
+function registrar(string $evento, string $detalhe = '', ?string $quem = null): void
 {
     try {
         $arq = caminhoPrivado('registro.php');
         if (@is_file($arq) && @filesize($arq) > 512 * 1024) @rename($arq, caminhoPrivado('registro-anterior.php'));
         if (!@is_file($arq)) { @file_put_contents($arq, PREFIXO_PRIVADO, LOCK_EX); @chmod($arq, 0600); }
         $limpa = static fn(string $s): string => trim(preg_replace('/[\x00-\x1F\x7F]+/', ' ', $s) ?? '');
-        $linha = implode("\t", [date('Y-m-d H:i:s'), $limpa((string) ($_SESSION['usuario'] ?? '-')), ip(), $limpa($evento), $limpa(cortar($detalhe, 300))]) . "\n";
+        $linha = implode("\t", [date('Y-m-d H:i:s'), $limpa($quem ?? (string) ($_SESSION['usuario'] ?? '-')), ip(), $limpa($evento), $limpa(cortar($detalhe, 300))]) . "\n";
         @file_put_contents($arq, $linha, FILE_APPEND | LOCK_EX);
     } catch (Throwable $t) {
         error_log('painel: registro: ' . $t->getMessage());
     }
 }
 
-/** Últimas $n linhas do registro, mais novas primeiro. */
-function ultimasAtividades(int $n = 20): array
+/** Últimas $n linhas do registro, mais novas primeiro ($anterior: inclui registro-anterior.php). */
+function ultimasAtividades(int $n = 20, bool $anterior = false): array
 {
-    $c = lerPrivado('registro.php');
-    if ($c === null) return [];
+    $c = lerPrivado('registro.php') ?? '';
+    if ($anterior) $c = (lerPrivado('registro-anterior.php') ?? '') . "\n" . $c;
     $linhas = array_slice(array_filter(explode("\n", $c)), -$n);
     $out = [];
     foreach (array_reverse($linhas) as $l) {

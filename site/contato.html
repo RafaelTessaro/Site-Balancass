@@ -29,8 +29,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders:opsz,wght@10..72,700..900&family=Archivo:wdth,wght@62..125,400..800&family=Martian+Mono:wght@400..500&display=swap">
-<link rel="stylesheet" href="css/base.css?v=3cf9f02ea4">
-<link rel="stylesheet" href="css/paginas.css?v=7071a82905">
+<link rel="stylesheet" href="css/base.css?v=e7d376f301">
+<link rel="stylesheet" href="css/paginas.css?v=b4e5efa7a0">
 <script>
   /* Marca o documento antes de pintar: as animações de entrada só escondem
      o conteúdo enquanto o JS não assume. Se algo falhar, tudo reaparece. */
@@ -214,10 +214,11 @@
 </script>
 <!-- Scripts locais primeiro (dados, fichas e links funcionam enquanto o CDN carrega); depois GSAP/Lenis -->
 <script defer src="compartilhado/dados/empresa.js"></script>
+<script defer src="compartilhado/dados/ajustes.js"></script>
 <script defer src="compartilhado/dados/clientes.js"></script>
 <script defer src="compartilhado/dados/produtos.js"></script>
-<script defer src="compartilhado/js/balancas.js?v=10aff77872"></script>
-<script defer src="js/core.js?v=b614c37974"></script>
+<script defer src="compartilhado/js/balancas.js?v=336d55fb23"></script>
+<script defer src="js/core.js?v=ae84d34dc0"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
@@ -247,6 +248,7 @@
     <symbol id="i-pin" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
     <symbol id="i-mail" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" d="M3 5.5h18v13H3zM3.5 6l8.5 7 8.5-7"/></symbol>
     <symbol id="i-fb" viewBox="0 0 24 24"><path fill="currentColor" d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.8v3h2.6V21z"/></symbol>
+    <symbol id="i-ig" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.1" cy="6.9" r="1.2" fill="currentColor"/></symbol>
     <symbol id="i-search" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M10.5 18a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15zM16 16l5.5 5.5"/></symbol>
     <symbol id="i-link" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/></symbol>
     <symbol id="i-pause" viewBox="0 0 24 24"><path fill="currentColor" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></symbol>
@@ -295,7 +297,7 @@
   </nav>
   <div class="menu__foot">
     <a class="btn btn--green" data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Falar no WhatsApp">Falar no WhatsApp</span></a>
-    <p class="mono menu__info"><span class="nobr" data-bc="telefone">(19) 3023-9050</span> · <span class="nobr">Rio Claro-SP</span></p>
+    <p class="mono menu__info"><span class="nobr" data-bc="telefone">(19) 3023-9050</span> · <span class="nobr" data-bc="cidade-uf">Rio Claro-SP</span></p>
   </div>
 </div>
 
@@ -313,7 +315,7 @@
         <span class="phero__l phero__l--green"><span class="phero__w" data-intro>conversar.</span><span class="phero__bar" aria-hidden="true"></span></span>
         <span class="sr-only"> Contato da Balanças.com em Rio Claro-SP.</span>
       </h1>
-      <p class="phero__lead" data-intro><strong>WhatsApp, telefone ou balcão: escolha o seu jeito.</strong> Estamos na Rua 13, 650, entre as Avenidas 9 e 11, em Rio Claro. Atendemos Rio Claro e região.</p>
+      <p class="phero__lead" data-intro><strong>WhatsApp, telefone ou balcão: escolha o seu jeito.</strong> Estamos na <span data-bc="rua">Rua 13, 650</span><span data-bc-se="referencia">, <span data-bc="referencia">entre as Avenidas 9 e 11</span></span>, em <span data-bc="cidade-nome">Rio Claro</span>. Atendemos Rio Claro e região.</p>
       <div class="btns phero__ctas" data-intro data-float-off>
         <a class="btn btn--green btn--lg" data-magnet data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Falar no WhatsApp">Falar no WhatsApp</span></a>
         <a class="btn btn--line btn--lg" data-magnet data-bc-href="tel" href="tel:+551930239050"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg><span class="st" data-t="Ligar agora">Ligar agora</span></a>
@@ -322,13 +324,13 @@
     <div class="phero__visual">
       <div class="phero__band" aria-hidden="true"></div>
       <div class="phero__fig pcard" aria-hidden="true" data-tilt>
-        <p class="pcard__top mono"><span>Ficha de atendimento</span><span>Nº 650</span></p>
+        <p class="pcard__top mono"><span>Ficha de atendimento</span><span>Nº <span data-bc="rua-numero">650</span></span></p>
         <p class="pcard__tel" data-bc="telefone">(19) 3023-9050</p>
-        <p class="pcard__row mono"><span>WhatsApp</span><span>O mesmo número</span></p>
+        <p class="pcard__row mono"><span>WhatsApp</span><span data-bc="whatsapp-mesmo">O mesmo número</span></p>
         <p class="pcard__status"><span class="status" data-bc="status" hidden></span></p>
         <span class="pcard__bars"></span>
       </div>
-      <p class="phero__ref mono" aria-hidden="true">Rio Claro-SP — CEP 13500-120</p>
+      <p class="phero__ref mono" aria-hidden="true"><span data-bc="cidade-uf">Rio Claro-SP</span> — CEP <span data-bc="cep">13500-120</span></p>
     </div>
   </div>
 </section>
@@ -398,16 +400,16 @@
   <div class="wrap contact">
     <div class="contact__info">
       <div>
-        <p class="kicker">Telefone e WhatsApp</p>
+        <p class="kicker"><span data-bc-se="mesmo-numero">Telefone e WhatsApp</span><span data-bc-se="outro-numero" hidden>Telefone</span></p>
         <h2 class="sr-only" id="canais-t">Canais de atendimento</h2>
         <a class="contact__big" data-bc-href="tel" href="tel:+551930239050" data-reveal>
           <span class="contact__v" data-bc="telefone">(19) 3023-9050</span>
-          <span class="contact__hint mono"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg>Ligue ou chame no WhatsApp: é o mesmo número</span>
+          <span class="contact__hint mono"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg><span data-bc-se="mesmo-numero">Ligue ou chame no WhatsApp: é o mesmo número</span><span data-bc-se="outro-numero" hidden>Ligue para a loja</span></span>
         </a>
       </div>
       <div class="btns" data-reveal>
         <a class="btn btn--green" data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Abrir o WhatsApp">Abrir o WhatsApp</span></a>
-        <a class="btn btn--line btn--sm" data-bc-href="facebook" href="https://www.facebook.com/balancas.comrc/" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-fb"/></svg><span class="st" data-t="Facebook">Facebook</span></a>
+        <a class="btn btn--line btn--sm" data-bc-href="facebook" href="https://www.facebook.com/balancas.comrc/" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-fb"/></svg><span class="st" data-t="Facebook">Facebook</span></a><a class="btn btn--line btn--sm" data-bc-href="instagram" href="https://www.instagram.com/" target="_blank" rel="noopener" hidden><svg class="i" aria-hidden="true"><use href="#i-ig"/></svg><span class="st" data-t="Instagram">Instagram</span></a>
       </div>
       <dl class="contact__list" data-reveal>
         <div><dt class="mono">E-mail</dt><dd><a data-bc-href="email" href="mailto:balancas.com@gmail.com"><span data-bc="email">balancas.com@gmail.com</span></a></dd></div>
@@ -493,10 +495,11 @@
       <div class="ftr__col">
         <p class="ftr__h mono">Contato</p>
         <ul role="list">
-          <li><a data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener">WhatsApp <span data-bc="telefone">(19) 3023-9050</span></a></li>
+          <li><a data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener">WhatsApp <span data-bc="whatsapp">(19) 3023-9050</span></a></li>
           <li><a data-bc-href="email" href="mailto:balancas.com@gmail.com"><span data-bc="email">balancas.com@gmail.com</span></a></li>
           <li><a data-bc-href="mapa" href="https://maps.google.com/?cid=12422356528564941318" target="_blank" rel="noopener"><span data-bc="endereco">Rua 13, 650 – Boa Morte, <span class="nobr">Rio Claro/SP</span> · <span class="nobr">CEP 13500-120</span></span><br><span class="ftr__ref" data-bc="referencia">Entre as Avenidas 9 e 11</span></a></li>
           <li><a data-bc-href="facebook" href="https://www.facebook.com/balancas.comrc/" target="_blank" rel="noopener">Facebook</a></li>
+          <li hidden><a data-bc-href="instagram" href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a></li>
         </ul>
       </div>
       <div class="ftr__col">
@@ -507,7 +510,7 @@
     </div>
     <div class="ftr__legal mono">
       <p>© <span data-bc="ano">2026</span> <span data-bc="razao">Fabio de Godoy Lima Ltda</span><span class="ftr__sep"> · </span><span class="nobr">CNPJ <span data-bc="cnpj">12.403.843/0001-18</span></span></p>
-      <p><span data-bc="ipem">Oficina autorizada pelo <span class="nobr">IPEM-SP</span></span><span class="ftr__sep"> · </span><span class="nobr">Rio Claro-SP</span></p>
+      <p><span data-bc="ipem">Oficina autorizada pelo <span class="nobr">IPEM-SP</span></span><span class="ftr__sep"> · </span><span class="nobr" data-bc="cidade-uf">Rio Claro-SP</span></p>
       <!-- Entrada do painel da equipe (produtos e fotos). nofollow: o painel não aparece no Google -->
       <p><a class="ftr__adm" href="painel/" rel="nofollow">Área restrita</a></p>
     </div>

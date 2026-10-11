@@ -671,6 +671,9 @@
 .contact__list > div { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
 .contact__list dt { color: var(--grey); padding-top: 3px; }
 .contact__list dd { font-size: 16.5px; }
+/* Textos que vêm do painel (área Empresa): uma palavra comprida demais (e-mail, nome sem espaço)
+   quebra dentro da caixa em vez de sair dela */
+.member__name, .member__role, .member__txt, .quote__by, .contact__v, .contact__list dd { overflow-wrap: anywhere; }
 .contact__list a { text-decoration: none; }
 .contact__list a[href^="mailto:"] {
   display: inline-flex; align-items: center; min-height: 44px; margin-block: -10px;

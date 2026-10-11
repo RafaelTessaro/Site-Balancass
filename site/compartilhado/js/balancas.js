@@ -1,16 +1,179 @@
 /* =====================================================================
    Balanças.com — funções compartilhadas pelos designs
-   Carregue DEPOIS de dados/empresa.js, dados/clientes.js e dados/produtos.js:
-     <script src="compartilhado/dados/empresa.js"></script>
-     <script src="compartilhado/dados/clientes.js"></script>
+   Carregue DEPOIS dos dados, nesta ordem:
+     <script src="compartilhado/dados/empresa.js"></script>    valores originais
+     <script src="compartilhado/dados/ajustes.js"></script>    o que o painel mudou (área Empresa)
+     <script src="compartilhado/dados/clientes.js"></script>   logos (área Clientes)
      <script src="compartilhado/dados/produtos.js"></script>
      <script src="compartilhado/js/balancas.js"></script>
-   Não precisa editar este arquivo para adicionar produtos nem clientes.
+   Os ajustes do painel valem no lugar dos valores de empresa.js, no
+   MESMO objeto (window.EMPRESA = BC.empresa). Sem ajustes.js, ou com ele
+   quebrado, o site mostra empresa.js. Não precisa editar este arquivo
+   para adicionar produtos, clientes nem mudar os dados da empresa.
    ===================================================================== */
 (function () {
   "use strict";
 
   var E = window.EMPRESA || {};
+
+  /* ------------------------------------------------------------------
+     Ajustes do painel (área Empresa): dados/ajustes.js → window.AJUSTES
+     Toda parte é conferida aqui: tipo errado, link que não é http(s)
+     ou item estranho numa lista fica de fora e vale o de empresa.js.
+     Um ajustes.js quebrado nunca derruba o site (nada aqui lança erro).
+     ------------------------------------------------------------------ */
+  function ehObj(o) { return !!o && typeof o === "object" && !Array.isArray(o); }
+  // Texto aparado, sem caracteres de controle e com até "max" caracteres; senão null
+  function txt(v, max) {
+    if (typeof v !== "string") return null;
+    v = v.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim();
+    return v && v.length <= (max || 300) ? v : null;
+  }
+  function link(v) {
+    var s = txt(v, 600);
+    return s && /^https?:\/\/[^\s"'<>\\]+$/i.test(s) ? s : null;
+  }
+  function inteiro(n, min, max) { return typeof n === "number" && n % 1 === 0 && n >= min && n <= max; }
+  function data(v, re) { return typeof v === "string" && re.test(v) ? v : null; }
+  var RE_DIA = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;   // AAAA-MM-DD
+  var RE_MMDD = /^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;         // MM-DD
+
+  /* Grade de horários: {"0": [[ini, fim], …], …, "6": […]} (0 = domingo), minutos desde 0h,
+     até 3 faixas por dia, em ordem e sem sobrepor. Retorna uma cópia limpa ou null (inválida). */
+  function gradeValida(g) {
+    if (!ehObj(g)) return null;
+    var out = {};
+    for (var d = 0; d < 7; d++) {
+      var dia = g[d];
+      if (!Array.isArray(dia) || dia.length > 3) return null;
+      var fim = -1, lista = [];
+      for (var i = 0; i < dia.length; i++) {
+        var f = dia[i];
+        if (!Array.isArray(f) || f.length !== 2 || !inteiro(f[0], 0, 1440) || !inteiro(f[1], 0, 1440)) return null;
+        if (f[0] >= f[1] || f[0] < fim) return null;
+        fim = f[1];
+        lista.push([f[0], f[1]]);
+      }
+      out[d] = lista;
+    }
+    return out;
+  }
+
+  // Lista de objetos: cada item passa por "item" (que retorna o objeto limpo ou null); vazia = null
+  function lista(v, max, item) {
+    if (!Array.isArray(v)) return null;
+    var out = [];
+    for (var i = 0; i < v.length && out.length < max; i++) {
+      var x = ehObj(v[i]) || typeof v[i] === "string" ? item(v[i]) : null;
+      if (x) out.push(x);
+    }
+    return out.length ? out : null;
+  }
+
+  var SECOES = {
+    contato: function (a) {
+      var tel = txt(a.telefone, 40);
+      if (tel) {
+        E.telefone = tel;
+        // Sem telefoneLink válido, sai do próprio telefone: +55 + DDD + número
+        var dig = tel.replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
+        if (/^\d{10,11}$/.test(dig)) E.telefoneLink = "+55" + dig;
+      }
+      if (typeof a.telefoneLink === "string" && /^\+\d{10,14}$/.test(a.telefoneLink)) E.telefoneLink = a.telefoneLink;
+      if (typeof a.whatsapp === "string" && /^55\d{10,11}$/.test(a.whatsapp)) E.whatsapp = a.whatsapp;
+      var msg = txt(a.whatsappMensagemPadrao, 400);
+      if (msg) E.whatsappMensagemPadrao = msg;
+      var em = txt(a.email, 120);
+      if (em && /^[^\s@<>"'()\\,;:]+@[^\s@<>"'()\\,;:]+\.[a-z]{2,}$/i.test(em)) E.email = em;
+    },
+    endereco: function (a) {
+      var end = ehObj(E.endereco) ? E.endereco : (E.endereco = {});
+      ["rua", "referencia", "bairro", "cidade", "uf", "cep"].forEach(function (k) {
+        var v = txt(a[k], 120);
+        if (k === "uf" && v && !/^[A-Z]{2}$/.test(v)) v = null;
+        if (k === "cep" && v && !/^\d{5}-?\d{3}$/.test(v)) v = null;
+        if (v) end[k] = v;
+        else if (k === "referencia" && a[k] === "") end[k] = "";   // o painel apagou a referência
+      });
+    },
+    mapa: function (a) { var u = link(a); if (u) E.mapa = u; },
+    horario: function (a) {
+      var linhas = lista(a.linhas, 10, function (h) {
+        var d = txt(h.dias, 80), hs = txt(h.horas, 120);
+        return d && hs ? { dias: d, horas: hs } : null;
+      });
+      if (linhas) E.horarios = linhas;
+      var g = gradeValida(a.grade);
+      if (g) E.grade = g;
+    },
+    feriados: function (a) {
+      var MOVEIS = [-48, -47, -46, 60];   // segunda e terça de Carnaval, Cinzas, Corpus Christi
+      E.feriados = {
+        municipais: lista(a.municipais, 40, function (f) {
+          var d = data(f.data, RE_MMDD);
+          return d ? { data: d, nome: txt(f.nome, 80) || "" } : null;
+        }) || [],
+        moveis: Array.isArray(a.moveis) ? a.moveis.filter(function (n, i, l) { return MOVEIS.indexOf(n) !== -1 && l.indexOf(n) === i; }) : [],
+        datas: lista(a.datas, 120, function (f) {
+          var d = data(f.data, RE_DIA);
+          return d ? { data: d, nome: txt(f.nome, 80) || "" } : null;
+        }) || []
+      };
+    },
+    aviso: function (a) {
+      var t = txt(a.texto, 200);
+      // O painel desligou o aviso e apagou o texto: desligado, mesmo que empresa.js tenha um aviso
+      if (!t) { if (a.ativo === false) E.aviso = { ativo: false, texto: "", inicio: "", fim: "", tom: "info" }; return; }
+      E.aviso = {
+        ativo: a.ativo === true, texto: t,
+        inicio: data(a.inicio, RE_DIA) || "", fim: data(a.fim, RE_DIA) || "",
+        tom: a.tom === "alerta" ? "alerta" : "info"
+      };
+    },
+    google: function (a) {
+      var g = ehObj(E.google) ? E.google : (E.google = {});
+      if (typeof a.nota === "string" && /^[1-5],\d$/.test(a.nota) && parseFloat(a.nota.replace(",", ".")) <= 5) g.nota = a.nota;
+      if (inteiro(a.avaliacoes, 0, 1e6)) g.avaliacoes = a.avaliacoes;
+      var u = link(a.link);
+      if (u) g.link = u;
+    },
+    redes: function (a) {
+      var r = ehObj(E.redes) ? E.redes : (E.redes = {});
+      ["facebook", "instagram"].forEach(function (k) {
+        if (a[k] === "") r[k] = "";                 // vazio = o link some do site
+        else { var u = link(a[k]); if (u) r[k] = u; }
+      });
+    },
+    equipe: function (a) {
+      var l = lista(a, 12, function (p) {
+        var n = txt(p.nome, 80);
+        return n ? { nome: n, cargo: txt(p.cargo, 80) || "", texto: txt(p.texto, 300) || "" } : null;
+      });
+      if (l) E.equipe = l;
+    },
+    depoimentos: function (a) {
+      var l = lista(a, 12, function (d) {
+        var t = txt(d.texto, 400), n = txt(d.nome, 80);
+        return t && n ? { texto: t, nome: n, empresa: txt(d.empresa, 80) || "" } : null;
+      });
+      if (l) E.depoimentos = l;
+    },
+    marcas: function (a) {
+      var l = lista(a, 40, function (m) { return txt(m, 40); });
+      if (l) E.marcas = l;
+    }
+  };
+  var AJ = window.AJUSTES, aplicados = [];
+  if (ehObj(AJ)) {
+    Object.keys(SECOES).forEach(function (k) {
+      var v = AJ[k];
+      if (v == null) return;
+      // equipe/depoimentos/marcas são listas; mapa é texto; o resto, objetos
+      var ok = k === "mapa" ? typeof v === "string" : /^(equipe|depoimentos|marcas)$/.test(k) ? Array.isArray(v) : ehObj(v);
+      if (!ok) return;
+      try { SECOES[k](v); aplicados.push(k); } catch (e) { /* parte com problema: vale o de empresa.js */ }
+    });
+  }
 
   // Clientes: a lista de dados/clientes.js (gerada pelo painel, área Clientes) vale no lugar
   // de EMPRESA.clientes — no MESMO objeto, então window.EMPRESA.clientes e BC.empresa.clientes
@@ -106,6 +269,8 @@
 
   window.BC = {
     empresa: E,
+    ajustes: aplicados,          // partes de ajustes.js que valeram (ex.: ["contato", "aviso"])
+    gradeValida: gradeValida,    // confere uma grade de horários (usada pelo "Aberto agora")
     categorias: C,
     produtos: ordenar(TODOS),
     base: base,
