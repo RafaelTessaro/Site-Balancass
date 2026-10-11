@@ -628,6 +628,10 @@ primeiro quadro, use `.is-loading .minha-classe { opacity: 0 }` dentro de
   conteúdo nem os flutuantes de WhatsApp/Ligar (testado em 360 e 390 px); no topo da página fica escondida e aparece ao rolar. Classe `.lvp`, atributo `data-preview`.
 - Em todas as páginas, os links com `data-home` passam a apontar para a variação guardada (padrão `index.html`).
 - Incluir `<script defer src="js/preview.js"></script>` em todas as páginas. **Remover na publicação.**
+- **Publicação:** feita pelo `ferramentas/montar-site.py`, que gera `site/` sem o `preview.js` (tira a tag `<script>`,
+  o `data-variacao` e a seção 8 do `home-v3.css`), com `index-3.html` como `index.html`. As fontes aqui continuam com o
+  seletor, para as três variações seguirem comparáveis. A página `404.html` (estilo próprio, caminhos absolutos) vai
+  para a raiz do site; no celular (≤ 640 px) a faixa verde dela é uma aba curta ao lado do “404”, sem passar atrás dos textos.
 
 ---
 
@@ -657,3 +661,45 @@ Zero erros de console, zero rolagem horizontal (o `.sec` corta o que vaza com `o
 screenshots se nada importante foi cortado), um `<h1>`, seletor de variação visível e com a sua variação destacada,
 "Início" voltando para a sua variação, tudo visível com `reducedMotion: "reduce"` e sem JavaScript.
 O screenshot de página inteira distorce alturas em `vh` (hero): avalie o topo com `vshot.mjs`.
+
+---
+
+## 12. Decisões do dono — variação 3 "Painel" (escolhida)
+
+- **Capa (`index-3.html`, `.pn-hero`)**: o `<h1>` é a frase da marca, em três linhas
+  `A medida certa / para o seu / negócio.` (a última em verde, com `margin-top: .09em` para o acento de NEGÓCIO
+  não encostar na linha de cima). Tamanho: `clamp(56px, min(7.6vw, 12.2vh), 126px)` no computador e
+  `clamp(44px, 15vw, 126px)` até 860 px — "A MEDIDA CERTA" mede ~5,9 em e precisa caber na coluna de texto.
+  "Peso certo. Caixa em dia." virou o apoio em negrito do parágrafo (`.pn-hero__lead strong`). Não repita a
+  frase da marca no parágrafo.
+- **Produto da capa**: Toledo **Prix 7E** (`produtos-recorte/prix7e.webp`, 900 × 549, `preload` no `<head>`),
+  dentro de `.pn-hero__prod` (proporção fixa + `container-type: inline-size`). O `data-hero-id="toledo-prix-7e"`
+  em `.pn-hero__prod` diz qual é o produto da capa: o `js/home-v3.js` o tira da vitrine e das fichas, o painel
+  mostra nele o selo "Na capa do site" (e pede confirmação para esconder, excluir ou mudar o código), e o
+  `montar-site.py` confere que ele existe no catálogo e bate com `produto_capa` em `painel/config.php`. Etiquetas técnicas
+  `li.pn-hero__call.pn-spec.pn-spec--N` com `--x`/`--y` (números, % da foto) = ponto da balança; o fio sobe
+  (padrão) ou desce (`.pn-spec--dn`) e o comprimento sai de `cqw`, então as etiquetas de cima ficam alinhadas
+  logo acima da balança e as de baixo logo abaixo em qualquer tamanho. Dados (catálogo oficial da Toledo), cada
+  um no ponto de que fala: 01 prato → capacidade 32 kg multifaixa ("divisão de 2 g até 6 kg") · 02 teclado →
+  60 teclas rápidas (acesso a até 180 itens) · 03 saída da impressora → térmica integrada (até 100 mm/s) ·
+  04 tampa do rolo de etiquetas → GS1 QR Code com validade e lote. 861–1180 px: some a 04 e a 03 desce da frente
+  da impressora; celular: só 01 e 03, sem a 3ª linha. Legenda `figcaption.pn-hero__ref` = link para
+  `produtos.html#p=toledo-prix-7e` (vertical no computador; etiqueta preta no celular).
+- **Destaques da página inicial** (`js/home-v3.js`): até 8 destaques de `BC.destaques()`, sem o produto da capa,
+  revezando as categorias (o 1º de cada categoria, depois o 2º…). 4 vão para a vitrine do quadro 03 (prefere
+  recortes escuros; sem recorte, a foto normal entra num "palco" claro, `.pn-vit__fig--palco`) e 4 para as
+  fichas da seção 02. A mesma regra está em `destaquesDaHome()` (`painel/lib/catalogo.php`), que dá os selos
+  "Destaque · página inicial / fora da página inicial" do painel: mude as duas juntas. O `<li>` estático da
+  vitrine (sem JS) é a Prix 4 Uno. O hero do catálogo (`produtos.html`) continua com a Prix 7E (é a vitrine do
+  catálogo inteiro; a Prix 4 Uno, mais antiga, não combinaria com o pedido do dono).
+- **Rodapé**: o `ftr__legal` tem o link discreto **"Área restrita"** (`../painel/` na fonte, `painel/` no pacote,
+  `rel="nofollow"`), a entrada do painel de produtos.
+- **Imagem de compartilhamento** `img/og-linha-verde.jpg`: Prix 7E + "A medida certa para o seu negócio."
+  (modelo em `scratchpad/og/og-7e.html`).
+- **"Oficina, loja e sistema" saiu** (soava como três empresas). Em `empresa.html`, seção 02:
+  título **"Quem vende é quem cuida."** (sem a vírgula entre sujeito e verbo de "Quem vende, cuida.") e apoio
+  "A mesma equipe que vende a balança e o caixa faz o conserto e cuida do BC System, o nosso sistema de vendas.
+  Tudo aqui em Rio Claro." Palavra gigante: "Pós-venda". Faixa: Vendas · Assistência técnica · BC System ·
+  Suporte · Desde 2010 · Rio Claro-SP. `og:`/`twitter:description` com a mesma ideia. Não repita "Quem vende é
+  quem cuida" nas outras páginas, nem "Quem … é quem …" em seções vizinhas; "Fale com quem resolve" fica só na
+  página inicial e no contato. "Oficina autorizada pelo IPEM-SP" continua (é o selo oficial).

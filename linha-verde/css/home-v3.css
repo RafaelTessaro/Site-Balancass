@@ -35,49 +35,95 @@
 }
 .pn-hero__copy { position: relative; z-index: 2; }
 .pn-hero__eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; color: var(--grey); margin-bottom: clamp(14px, 2.4vh, 26px); }
+/* Frase da marca em três linhas: A MEDIDA CERTA / PARA O SEU / NEGÓCIO. (a última em verde) */
 .pn-hero__t {
   display: flex; flex-direction: column; align-items: flex-start;
   font-family: var(--f-display); font-weight: 900; text-transform: uppercase;
-  font-size: clamp(60px, min(8.8vw, 14.5vh), 148px); line-height: .84; letter-spacing: -.01em;
+  font-size: clamp(56px, min(7.6vw, 12.2vh), 126px); line-height: .9; letter-spacing: -.01em;
 }
 .pn-hero__l { position: relative; display: block; padding-right: .06em; white-space: nowrap; }
 .pn-hero__l--green { color: var(--green); }
+/* O acento de NEGÓCIO sobe acima da altura das maiúsculas: respiro só nesta linha */
+.pn-hero__t .pn-hero__l--green { margin-top: .09em; }
 .pn-hero__w { display: block; }
 .pn-hero__lead {
   margin-top: clamp(18px, 3vh, 32px); max-width: 33em;
   font-size: clamp(16.5px, 1.25vw, 19px); line-height: 1.5; color: #C9C9C3;
 }
+/* Apoio curto ("Peso certo. Caixa em dia.") em linha própria, menor que o título */
 .pn-hero__lead strong { display: block; margin-bottom: 6px; color: var(--paper); font-weight: 700; font-size: 1.2em; letter-spacing: -.005em; text-wrap: balance; }
 .pn-hero__ctas { margin-top: clamp(20px, 3.2vh, 34px); }
 
-/* Coluna visual: faixa verde diagonal + balança e caixa */
+/* Coluna visual: faixa verde diagonal + Toledo Prix 7E com etiquetas técnicas */
 .pn-hero__visual { position: relative; align-self: stretch; display: grid; place-items: center; min-height: 300px; }
 .pn-hero__band { position: absolute; top: -120vh; bottom: -120vh; left: 50%; width: 54%; margin-left: -27%; z-index: 0; pointer-events: none; }
 .pn-hero__band::before, .pn-hero__band::after { content: ""; position: absolute; transform: skewX(var(--slash)); }
 .pn-hero__band::before { inset: 0; background: var(--green); }
 .pn-hero__band::after { inset: 0 18px; border-left: 1px solid rgba(10,10,10,.35); border-right: 1px solid rgba(10,10,10,.35); }
-.pn-hero__fig { position: relative; z-index: 1; width: min(100%, 470px); display: grid; place-items: center; }
-.pn-hero__fig img { width: 100%; height: auto; max-height: min(50vh, 470px); object-fit: contain; filter: drop-shadow(0 26px 24px rgba(0,0,0,.5)); }
+/* A figura não cria camada própria: a legenda (.pn-hero__ref) se apoia na coluna visual */
+.pn-hero__fig { position: static; z-index: 1; width: 100%; margin: 0; display: grid; place-items: center; }
+.pn-hero__prod { position: relative; z-index: 1; width: min(100%, 600px); aspect-ratio: 900 / 549; }
+/* Telas grandes: a balança fica um pouco maior que a coluna e encostada à direita, longe da
+   legenda vertical (o que passa da coluna cai no vão entre as colunas, à esquerda) */
+@media (min-width: 1181px) { .pn-hero__prod { width: min(104%, 640px); justify-self: end; margin-right: 22px; } }
+.pn-hero__prod img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 26px 24px rgba(0,0,0,.55)); }
+
+/* Etiquetas técnicas: ponto na balança (--x, --y em % da foto 900 × 549) + fio + etiqueta.
+   Fio para cima (padrão) ou para baixo (.pn-spec--dn); a etiqueta cresce para a esquerda do fio.
+   O comprimento do fio sai da largura da foto (cqw): as etiquetas de cima ficam alinhadas logo
+   acima da balança e as de baixo logo abaixo, em qualquer tamanho. */
+.pn-hero__prod { container-type: inline-size; }
+.pn-specs { position: absolute; inset: 0; z-index: 2; margin: 0; padding: 0; list-style: none; }
 .pn-hero__call {
-  position: absolute; z-index: 2; display: inline-flex; align-items: center; gap: 8px;
-  padding: 6px 9px 5px; background: var(--ink); color: var(--paper); border: 1px solid #2B2B2A;
-  font-size: 10.5px; line-height: 1.2; white-space: nowrap;
+  --off: 16px; --len: calc(var(--y) * .61cqw + var(--off));
+  position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); width: 0; height: 0;
 }
-.pn-hero__call b { color: var(--volt); font-weight: 500; }
-/* 01 fica junto da balança (embaixo, à esquerda); 02 junto do caixa/impressora (em cima, à direita) */
-.pn-hero__call--1 { left: 2%; bottom: 24%; }
-.pn-hero__call--2 { right: 4%; top: 14%; }
+.pn-spec--dn { --len: calc((93 - var(--y)) * .61cqw + var(--off)); }
+.pn-hero__call::before {
+  content: ""; position: absolute; z-index: 1; left: -5px; top: -5px; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--volt); box-shadow: 0 0 0 3px rgba(10,10,10,.82);
+}
+/* Fio claro com contorno escuro (lê no preto, no verde e sobre o inox) */
+.pn-hero__call::after {
+  content: ""; position: absolute; bottom: 0; left: 0; width: 1px; height: var(--len);
+  background: rgba(244,244,240,.85); box-shadow: 1px 0 0 rgba(10,10,10,.28), -1px 0 0 rgba(10,10,10,.28);
+}
+.pn-spec--dn::after { bottom: auto; top: 0; }
+.pn-spec__box {
+  position: absolute; right: -1px; bottom: var(--len); display: grid; justify-items: end; gap: 3px;
+  padding: 7px 10px 8px 12px; text-align: right; white-space: nowrap;
+  background: var(--ink); color: var(--paper); border: 1px solid #2E2E2C; border-right: 2px solid var(--volt);
+}
+.pn-spec--dn .pn-spec__box { bottom: auto; top: var(--len); }
+.pn-spec__k { font-size: 10px; line-height: 1.2; letter-spacing: .06em; text-transform: uppercase; color: var(--grey); }
+.pn-spec__k b { margin-right: 3px; color: var(--volt); font-weight: 500; }
+.pn-spec__v { font: 650 14px/1.15 var(--f-text); letter-spacing: -.003em; }
+.pn-spec__s { font-size: 12px; line-height: 1.2; color: #A9A9A3; }
+/* 01 prato · 02 teclado · 03 saída da impressora (o fio passa pelo prato) · 04 tampa do rolo de etiquetas */
+.pn-spec--1 { --x: 33; --y: 21; }
+.pn-spec--2 { --x: 25; --y: 61; }
+.pn-spec--3 { --x: 66; --y: 47; }
+.pn-spec--4 { --x: 64; --y: 66; }
+
+/* Legenda: modelo + link para a ficha (vertical, na borda direita da coluna) */
 .pn-hero__ref {
-  position: absolute; right: 0; top: 50%; z-index: 1;
+  position: absolute; right: 0; top: 50%; z-index: 2;
   writing-mode: vertical-rl; transform: translateY(-50%) rotate(180deg);
-  color: var(--grey); font-size: 10px; white-space: nowrap;
+  font-size: 10px; white-space: nowrap;
 }
+.pn-hero__ref a { display: inline-flex; align-items: center; gap: 8px; padding: 6px 0; color: var(--grey); text-decoration: none; transition: color .25s; }
+.pn-hero__ref-m { color: var(--paper); }
+.pn-hero__ref .i { width: 12px; height: 12px; color: var(--green); transform: rotate(90deg); }
+.pn-hero__ref a:hover { color: var(--paper); }
+/* Área de toque de 44 px em volta da legenda (vertical no computador, etiqueta no celular) */
+.pn-hero__ref a { position: relative; }
+.pn-hero__ref a::after { content: ""; position: absolute; inset: -6px -15px; }
 @media (prefers-reduced-motion: no-preference) {
   .is-loading .pn-hero__band { transform: scaleY(0); transform-origin: 50% 0; }
   /* A imagem (LCP) não some: só começa um pouco abaixo e sobe na abertura */
-  .is-loading .pn-hero__fig img { transform: translateY(8%); }
+  .is-loading .pn-hero__prod img { transform: translateY(8%); }
   .is-loading .pn-hero__call, .is-loading .pn-hero__ref { opacity: 0; }
-  .via-vt.is-loading .pn-hero__band, .via-vt.is-loading .pn-hero__fig img { transform: none; }
+  .via-vt.is-loading .pn-hero__band, .via-vt.is-loading .pn-hero__prod img { transform: none; }
   .via-vt.is-loading .pn-hero__call, .via-vt.is-loading .pn-hero__ref { opacity: 1; }
 }
 /* Faixa de confiança no pé do hero (o CSS da .trust vem de paginas.css) */
@@ -268,6 +314,12 @@
 .pn-vit__slide.is-on { z-index: 1; }
 .pn-vit__fig { position: relative; flex: 1 1 auto; min-height: 0; }
 .pn-vit__fig img { position: absolute; left: 6%; top: 7%; width: 88%; height: 86%; object-fit: contain; filter: drop-shadow(0 22px 20px rgba(0,0,0,.55)); }
+/* Produto sem recorte para fundo escuro (foto com fundo branco): entra num "palco" claro inclinado */
+.pn-vit__fig--palco::before {
+  content: ""; position: absolute; left: 13%; top: 9%; width: 74%; height: 82%;
+  background: var(--paper); transform: skewX(var(--slash)); box-shadow: 0 22px 40px rgba(0,0,0,.45);
+}
+.pn-vit__fig--palco img { left: 19%; top: 14%; width: 62%; height: 72%; filter: none; mix-blend-mode: multiply; }
 .pn-vit__cap { flex: none; height: var(--cap); display: grid; align-content: end; gap: 6px; justify-items: start; padding: 0 0 2px; }
 .pn-vit__brand { color: var(--grey); }
 .pn-vit__name {
@@ -515,19 +567,32 @@
   .pn-prova__foot { padding-top: 14px; }
 }
 
+/* Computador estreito (861–1180 px): a coluna da balança fica curta para quatro etiquetas.
+   Ficam 01 (prato), 02 (teclado) e 03, que passa a descer da frente da impressora */
+@media (min-width: 861px) and (max-width: 1180px) {
+  .pn-spec--4 { display: none; }
+  .pn-spec--3 { --x: 66; --y: 70; --len: calc((93 - var(--y)) * .61cqw + var(--off)); }
+  .pn-spec--3::after { bottom: auto; top: 0; }
+  .pn-spec--3 .pn-spec__box { bottom: auto; top: var(--len); }
+}
+
 /* Hero no celular e tablet estreito: texto em cima, faixa com a imagem embaixo */
 @media (max-width: 860px) {
   .pn-hero { min-height: 0; }
   .pn-hero__in { grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 22px; padding-bottom: 0; }
-  .pn-hero__t { font-size: clamp(56px, 16.4vw, 128px); }
-  .pn-hero__visual { margin: clamp(22px, 5vw, 34px) calc(var(--gut) * -1) 0; min-height: 0; padding: 16px var(--gut) 14px; overflow: clip; }
+  /* "A MEDIDA CERTA" mede ~5,9 em: 15vw cabe na coluna de 320 a 860 px */
+  .pn-hero__t { font-size: clamp(44px, 15vw, 126px); }
+  /* Faixa com a balança embaixo do texto; espaço em cima e embaixo para as etiquetas */
+  /* Só corta na horizontal: no rolar, a balança sobe um pouco (paralaxe) e as etiquetas de cima não podem ser cortadas */
+  .pn-hero__visual { margin: clamp(22px, 5vw, 34px) calc(var(--gut) * -1) 0; min-height: 0; padding: 92px var(--gut) 76px; overflow-x: clip; overflow-y: visible; }
   .pn-hero__band { top: 0; bottom: 0; left: 22%; width: 56%; margin-left: 0; }
-  .pn-hero__fig { width: min(64%, 320px); }
-  .pn-hero__fig img { max-height: 210px; }
-  .pn-hero__ref { display: none; }
-  .pn-hero__call { font-size: 10px; padding: 4px 6px 3px; gap: 5px; }
-  .pn-hero__call--1 { left: var(--gut); top: auto; bottom: 14px; }
-  .pn-hero__call--2 { right: var(--gut); bottom: auto; top: 14px; }
+  .pn-hero__prod { width: min(70%, 480px); }
+  /* Legenda na horizontal, numa etiqueta preta no canto de baixo à direita */
+  .pn-hero__ref { top: auto; bottom: 12px; right: var(--gut); writing-mode: horizontal-tb; transform: none; font-size: 11px; }
+  .pn-hero__ref a { min-height: 32px; padding: 4px 9px; gap: 7px; background: var(--ink); border: 1px solid #2E2E2C; }
+  .pn-hero__ref .i { transform: none; }
+  .pn-hero__ref a::after { inset: -6px 0; }
+  .pn-hero__ref-x { display: none; }
   .pn-feat__head { grid-template-columns: minmax(0, 1fr); align-items: start; }
   .pn-feat__intro { margin-top: 14px; }
 }
@@ -544,9 +609,24 @@
   .pn-hero__ctas .btn { --bh: 52px; width: 100%; margin: 0; justify-content: flex-start; }
   .pn-hero__ctas .btn--line { justify-content: space-between; }
   .pn-hero__strip .pn-trust__x { display: none; }
-  .pn-hero__visual { margin-top: 16px; padding-block: 10px 8px; }
-  .pn-hero__fig { width: min(54%, 240px); }
-  .pn-hero__fig img { max-height: 140px; }
+  /* Celular: balança maior que a faixa, só as etiquetas 01 (prato) e 03 (impressora), sem a 3ª linha */
+  .pn-hero__visual { margin-top: 18px; padding-block: 60px 52px; }
+  .pn-hero__prod { width: min(80%, 330px); }
+  .pn-spec--2, .pn-spec--4, .pn-spec__s { display: none; }
+  .pn-hero__call { --off: 10px; }
+  .pn-spec__box { padding: 5px 8px 6px 9px; gap: 2px; }
+  .pn-spec__v { font-size: 13.5px; }
+  /* 01: etiqueta à direita do fio (sobre a faixa); 03: o fio desce da frente da impressora
+     e a etiqueta também cresce para a direita; a legenda vai para o canto de baixo à esquerda */
+  .pn-spec--1 { --x: 36; --y: 20; }
+  .pn-spec--3 { --x: 62; --y: 66; --len: calc((93 - var(--y)) * .61cqw + var(--off)); }
+  .pn-spec--3::after { bottom: auto; top: 0; }
+  .pn-spec--3 .pn-spec__box { bottom: auto; top: var(--len); }
+  .pn-spec--1 .pn-spec__box, .pn-spec--3 .pn-spec__box {
+    right: auto; left: -1px; justify-items: start; text-align: left;
+    padding: 5px 9px 6px 8px; border-right-width: 1px; border-left: 2px solid var(--volt);
+  }
+  .pn-hero__ref { right: auto; left: var(--gut); bottom: 10px; }
 }
 
 /* Celular: mosaico de uma coluna; cada quadro com 1–2 linhas de texto */
@@ -661,7 +741,6 @@
   .pn-ask__all { margin-left: 0; font-size: 13px; letter-spacing: .02em; }
 }
 @media (max-width: 380px) {
-  .pn-hero__call--2 { display: none; }
   .pn-ruler { gap: 8px; }
   /* Vitrine: cada traço com pelo menos 44 px de largura */
   .pn-vit__ctrl { gap: 8px; }
@@ -677,13 +756,13 @@
 @media (max-width: 760px) {
   .pg-inicio--v3 .mono, .pg-inicio--v3 .kicker, .pg-inicio--v3 .sec__tab, .pg-inicio--v3 .status,
   .pg-inicio--v3 .tag, .pg-inicio--v3 .trust__i,
-  .pn-hero__call, .pn-t__tab, .pn-t__go, .pn-ruler__y .mono, .pn-ruler__lbl,
+  .pn-spec__k, .pn-hero__ref, .pn-t__tab, .pn-t__go, .pn-ruler__y .mono, .pn-ruler__lbl,
   .pn-vit__brand, .pn-vit__count, .pn-goog__ext, .pn-cats__q, .pn-brands__lbl,
   .pn-feat__grid .spec__brand, .pn-feat__grid .spec__tab, .pn-feat__grid .badge,
   .pg-inicio--v3 .ftr__h, .pg-inicio--v3 .ftr__legal, .pg-inicio--v3 .menu__info { font-size: 12px; }
   .pn-t__tab { letter-spacing: .03em; }
   .pn-t__tab b { font-size: 20px; }
-  .pn-hero__call { padding: 4px 6px 3px; letter-spacing: 0; }
+  .pn-spec__k { letter-spacing: .02em; }
   .pn-feat__grid .badge { line-height: 1.25; letter-spacing: .01em; padding: 5px 7px 4px; }
   .pn-feat__grid .spec__tab { padding: 6px 10px 5px calc(10px + 20px * var(--tan)); letter-spacing: .02em; }
   .pn-feat__grid .spec__brand { letter-spacing: .03em; }
@@ -743,3 +822,6 @@
 @media (min-width: 761px) and (prefers-reduced-motion: reduce) {
   .pg-inicio--v3 .lvp, .pg-inicio--v3 .lvp.lvp--topo { transition: none; }
 }
+
+/* Celular: a marca de canto do hero encostaria no selo "Rio Claro-SP" */
+@media (max-width: 640px) { .pn-hero .crop--tl { display: none; } }

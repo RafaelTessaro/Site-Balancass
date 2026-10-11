@@ -40,7 +40,9 @@
   .btn:hover::before { background: var(--volt); }
   .btn svg { width: 20px; height: 20px; }
   footer { padding: 18px var(--gut) calc(18px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); }
-  @media (max-width: 640px) { main::before { right: -14%; width: 34%; } .big { -webkit-text-stroke-width: 1.5px; } }
+  /* Celular: a faixa vira uma aba curta ao lado do "404", sem passar por trás dos textos */
+  @media (max-width: 640px) { main::before { top: 0; bottom: auto; height: clamp(150px, 46vw, 200px); right: -4%; width: 32%; } .big { -webkit-text-stroke-width: 1.5px; } }
+  .nw { white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -79,6 +81,6 @@
   <a class="btn" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg>Falar no WhatsApp<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"> (abre em nova aba)</span></a>
 </main>
 
-<footer class="mono">Balanças.com · (19) 3023-9050 · Rio Claro-SP</footer>
+<footer class="mono">Balanças.com · <span class="nw">(19) 3023-9050</span> · <span class="nw">Rio Claro-SP</span></footer>
 </body>
 </html>

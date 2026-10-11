@@ -1,0 +1,779 @@
+/* =====================================================================
+   Painel Balanças.com — comportamento (melhoria progressiva)
+   Sem este arquivo o painel continua funcionando (formulários normais).
+   Com ele: ações rápidas sem recarregar, busca instantânea, confirmação
+   em janela, prévia e redução da foto no próprio celular antes de enviar.
+   ===================================================================== */
+(function () {
+  "use strict";
+  document.documentElement.classList.add("js");
+
+  var $ = function (s, c) { return (c || document).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+
+  /* ------------------------------------------------------------------
+     Aviso rápido (toast)
+     ------------------------------------------------------------------ */
+  var toastEl = $("[data-toast]"), toastT = 0;
+  function svgIcone(nome) {
+    var ic = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    ic.setAttribute("class", "i"); ic.setAttribute("aria-hidden", "true");
+    var use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+    use.setAttribute("href", "#i-" + nome);
+    ic.appendChild(use);
+    return ic;
+  }
+  // opts: { link: <a> a copiar, tempo: ms (0 = até fechar) }
+  function toast(msg, erro, opts) {
+    if (!toastEl) return;
+    opts = opts || {};
+    toastEl.className = "toast" + (erro ? " toast--erro" : "") + (opts.link ? " toast--acao" : "");
+    toastEl.textContent = "";
+    var p = document.createElement("span");
+    p.textContent = msg;
+    if (opts.link) { p.appendChild(document.createTextNode(" ")); p.appendChild(opts.link); }
+    var x = document.createElement("button");
+    x.type = "button"; x.className = "toast__x"; x.setAttribute("aria-label", "Fechar aviso");
+    x.appendChild(svgIcone("x"));
+    x.addEventListener("click", function () { toastEl.hidden = true; clearTimeout(toastT); });
+    toastEl.appendChild(svgIcone(erro ? "alert" : "check")); toastEl.appendChild(p); toastEl.appendChild(x);
+    toastEl.hidden = false;
+    clearTimeout(toastT);
+    var tempo = opts.tempo != null ? opts.tempo : (erro ? 9000 : (msg.length > 90 ? 8000 : 4500));
+    if (tempo) toastT = setTimeout(function () { toastEl.hidden = true; }, tempo);
+  }
+
+  /* ------------------------------------------------------------------
+     Confirmação (excluir, restaurar) em janela própria
+     ------------------------------------------------------------------ */
+  var dlg = $("[data-dialogo]");
+  function confirmar(texto, ok, titulo) {
+    return new Promise(function (resolve) {
+      if (!dlg || typeof dlg.showModal !== "function") { resolve(window.confirm(texto)); return; }
+      $("[data-dialogo-txt]", dlg).textContent = texto;
+      $("[data-dialogo-tit]", dlg).textContent = titulo || "Tem certeza?";
+      $("[data-dialogo-ok]", dlg).textContent = ok || "Confirmar";
+      dlg.returnValue = "";
+      dlg.addEventListener("close", function fim() {
+        dlg.removeEventListener("close", fim);
+        resolve(dlg.returnValue === "sim");
+      });
+      dlg.showModal();
+      $("[data-dialogo-ok]", dlg).focus();
+    });
+  }
+  // data-confirmar-se="0": só pede confirmação quando o valor enviado é esse (ex.: esconder, não mostrar)
+  function precisaConfirmar(f) {
+    if (!f.matches || !f.matches("[data-confirmar]") || f.dataset.confirmado === "1") return false;
+    if (f.dataset.confirmarSe != null) { var v = $("input[name=valor]", f); return !!v && v.value === f.dataset.confirmarSe; }
+    return true;
+  }
+  document.addEventListener("submit", function (e) {
+    var f = e.target;
+    if (!precisaConfirmar(f)) return;
+    e.preventDefault();
+    confirmar(f.dataset.confirmar, f.dataset.confirmarOk, f.dataset.confirmarTit).then(function (sim) {
+      if (!sim) return;
+      if (f.matches("[data-rapido]") && f.requestSubmit) {
+        f.dataset.confirmado = "1";
+        f.requestSubmit();
+        f.dataset.confirmado = "";
+        return;
+      }
+      var h = document.createElement("input");
+      h.type = "hidden"; h.name = "confirmado"; h.value = "1";
+      f.appendChild(h);
+      f.dataset.confirmado = "1";
+      var b = $("button[type=submit]", f);
+      if (b) b.setAttribute("aria-busy", "true");
+      f.submit();
+    });
+  });
+
+  /* ------------------------------------------------------------------
+     Sessão vencida: pede a senha numa janela e continua de onde parou
+     ------------------------------------------------------------------ */
+  var relogin = $("[data-relogin]");
+  function atualizarCsrf(tk) {
+    if (!tk) return;
+    $$("input[name=csrf]").forEach(function (i) { i.value = tk; });
+  }
+  var loginAberto = null;
+  function pedirLogin(csrf) {
+    if (!relogin || typeof relogin.showModal !== "function") {
+      window.location.href = "index.php?a=entrar";
+      return Promise.resolve(false);
+    }
+    if (loginAberto) return loginAberto;
+    loginAberto = new Promise(function (resolve) {
+      var form = $("[data-relogin-form]", relogin), erro = $("[data-relogin-erro]", relogin);
+      var senha = $("#rl-senha", relogin), usuario = $("#rl-usuario", relogin), ok = $("[data-relogin-ok]", relogin);
+      var token = csrf || "";
+      erro.hidden = true; senha.value = "";
+      var fim = function (r) {
+        form.removeEventListener("submit", enviarLogin);
+        relogin.removeEventListener("cancel", cancelar);
+        $("[data-relogin-cancelar]", relogin).removeEventListener("click", cancelar);
+        if (relogin.open) relogin.close();
+        loginAberto = null;
+        resolve(r);
+      };
+      var cancelar = function (e) { if (e) e.preventDefault(); fim(false); };
+      var enviarLogin = function (e) {
+        e.preventDefault();
+        if (!usuario.value.trim() || !senha.value) { erro.hidden = false; $("p", erro).textContent = "Digite o usuário e a senha."; return; }
+        var fd = new FormData();
+        fd.append("csrf", token); fd.append("usuario", usuario.value.trim()); fd.append("senha", senha.value);
+        ok.setAttribute("aria-busy", "true");
+        fetch("index.php?a=entrar", { method: "POST", body: fd, headers: { "X-Requested-With": "fetch", "Accept": "application/json" }, credentials: "same-origin", cache: "no-store" })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            ok.removeAttribute("aria-busy");
+            if (d && d.ok) { atualizarCsrf(d.csrf); toast("Pronto, você entrou de novo."); fim(true); return; }
+            if (d && d.csrf) token = d.csrf;
+            erro.hidden = false; $("p", erro).textContent = (d && d.msg) || "Não foi possível entrar. Tente de novo.";
+            senha.value = ""; senha.focus();
+          }, function () {
+            ok.removeAttribute("aria-busy");
+            erro.hidden = false; $("p", erro).textContent = "Sem conexão com a internet. Tente de novo.";
+          });
+      };
+      form.addEventListener("submit", enviarLogin);
+      relogin.addEventListener("cancel", cancelar);
+      $("[data-relogin-cancelar]", relogin).addEventListener("click", cancelar);
+      relogin.showModal();
+      (usuario.value ? senha : usuario).focus();
+    });
+    return loginAberto;
+  }
+  // Confere a sessão antes de um envio grande (formulário do produto). true = pode enviar.
+  function sessaoOk() {
+    return fetch("index.php?a=sessao", { headers: { "X-Requested-With": "fetch", "Accept": "application/json" }, credentials: "same-origin", cache: "no-store" })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.logado) { atualizarCsrf(d.csrf); return true; }
+        return pedirLogin(d && d.csrf);
+      }, function () { return true; });   // sem resposta: o envio normal segue (o servidor confere)
+  }
+
+  /* ------------------------------------------------------------------
+     Envio pelo fetch (ações rápidas e ordem) — resposta em JSON
+     ------------------------------------------------------------------ */
+  function enviar(form, segunda) {
+    return fetch(form.action, {
+      method: "POST",
+      body: new FormData(form),
+      headers: { "X-Requested-With": "fetch", "Accept": "application/json" },
+      credentials: "same-origin",
+      cache: "no-store"
+    }).then(function (r) {
+      return r.json().catch(function () { return { ok: false, msg: "Resposta inesperada do servidor. Recarregue a página." }; })
+        .then(function (d) {
+          if (d && d.login) {
+            if (segunda) throw new Error("login");
+            return pedirLogin(d.csrf).then(function (entrou) {
+              if (!entrou) throw new Error("login");
+              return enviar(form, true);
+            });
+          }
+          if (!r.ok || !d || !d.ok) throw new Error((d && d.msg) || "Não foi possível salvar. Tente de novo.");
+          return d;
+        });
+    }, function () { throw new Error("Sem conexão com a internet. Tente de novo."); });
+  }
+
+  // Selos "Destaque · página inicial / fora da página inicial" (o servidor manda a lista atual)
+  function aplicarHome(ids) {
+    if (!ids) return;
+    var dica = $(".dica[data-capa]"), capa = dica ? dica.getAttribute("data-capa") : "";
+    $$(".item").forEach(function (li) {
+      var s = $("[data-selo-destaque]", li);
+      if (!s || li.dataset.id === capa) return;
+      var dentro = ids.indexOf(li.dataset.id) >= 0;
+      s.textContent = dentro ? "Destaque · página inicial" : "Destaque · fora da página inicial";
+      s.classList.toggle("is-fora", !dentro);
+    });
+    $$("[data-n=home]").forEach(function (b) { b.textContent = ids.length; });
+  }
+
+  function atualizarContadores() {
+    var itens = $$(".item");
+    var n = { total: itens.length, site: 0, destaque: 0 };
+    itens.forEach(function (li) {
+      if (li.dataset.visivel === "1") { n.site++; if (li.dataset.destaque === "1") n.destaque++; }
+    });
+    $$("[data-n]").forEach(function (b) { if (n[b.dataset.n] != null) b.textContent = n[b.dataset.n]; });
+  }
+
+  function aplicarRapido(li, campo, valor) {
+    if (campo === "estoque") {
+      var lab = $("[data-estoque]", li);
+      if (lab) lab.className = "estoque estoque--" + valor;
+      return;
+    }
+    var on = valor === "1";
+    var form = $(".rapido--" + campo, li);
+    var bt = form && $(".tg", form);
+    if (bt) bt.setAttribute("aria-pressed", on ? "true" : "false");
+    var inp = form && $("input[name=valor]", form);
+    if (inp) inp.value = on ? "0" : "1";
+    if (campo === "destaque") {
+      li.dataset.destaque = on ? "1" : "0";
+      $("[data-selo-destaque]", li).hidden = !on;
+    } else {
+      li.dataset.visivel = on ? "1" : "0";
+      li.classList.toggle("is-oculto", !on);
+      $("[data-selo-oculto]", li).hidden = on;
+    }
+    atualizarContadores();
+  }
+
+  document.addEventListener("submit", function (e) {
+    var f = e.target;
+    if (!f.matches || !f.matches("[data-rapido]")) return;
+    e.preventDefault();
+    if (precisaConfirmar(f)) return;   // a janela de confirmação manda de novo
+    var li = f.closest(".item");
+    var alvo = $(".tg", f) || $("[data-estoque]", f);
+    if (alvo) alvo.setAttribute("aria-busy", "true");
+    enviar(f).then(function (d) {
+      aplicarRapido(li, d.campo, d.valor);
+      aplicarHome(d.home);
+      var sel = $("select", f);
+      if (sel) sel.dataset.valor = d.valor;
+      toast(d.msg);
+    }).catch(function (err) {
+      var sel = $("select", f);
+      if (sel && sel.dataset.valor) sel.value = sel.dataset.valor;
+      if (err.message !== "login") toast(err.message, true);
+    }).then(function () {
+      if (alvo) alvo.removeAttribute("aria-busy");
+    });
+  });
+
+  // Estoque: troca na hora, sem botão
+  $$("select[data-auto]").forEach(function (sel) {
+    sel.dataset.valor = sel.value;
+    sel.addEventListener("change", function () {
+      var f = sel.form;
+      if (f.requestSubmit) f.requestSubmit(); else f.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+    });
+  });
+
+  // Ordem: troca de lugar com o vizinho da mesma categoria
+  function acertarSetas(lista) {
+    var itens = $$(".item", lista);
+    itens.forEach(function (li, i) {
+      var c = $("[data-mover-cima]", li), b = $("[data-mover-baixo]", li);
+      if (c) c.disabled = i === 0;
+      if (b) b.disabled = i === itens.length - 1;
+    });
+  }
+  document.addEventListener("submit", function (e) {
+    var f = e.target;
+    if (!f.matches || !f.matches("[data-mover]")) return;
+    e.preventDefault();
+    var bt = $("button", f), li = f.closest(".item");
+    bt.setAttribute("aria-busy", "true");
+    enviar(f).then(function (d) {
+      var viz = document.getElementById("p-" + d.com);
+      if (viz && viz.parentNode === li.parentNode) {
+        if (d.dir === "cima") li.parentNode.insertBefore(li, viz);
+        else li.parentNode.insertBefore(viz, li);
+      }
+      acertarSetas(li.parentNode);
+      li.classList.add("is-movendo");
+      setTimeout(function () { li.classList.remove("is-movendo"); }, 900);
+      if (!bt.disabled) bt.focus({ preventScroll: true });
+      else { var outro = $(d.dir === "cima" ? "[data-mover-baixo]" : "[data-mover-cima]", li); if (outro && !outro.disabled) outro.focus({ preventScroll: true }); }
+      if (li.scrollIntoView) li.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      aplicarHome(d.home);
+      toast(d.msg);
+    }).catch(function (err) {
+      if (err.message !== "login") toast(err.message, true);
+    }).then(function () { bt.removeAttribute("aria-busy"); });
+  });
+
+  /* ------------------------------------------------------------------
+     Busca e filtros instantâneos na lista
+     ------------------------------------------------------------------ */
+  var filtros = $("[data-filtros]");
+  if (filtros) {
+    var busca = $("[data-busca]", filtros), ver = $("[data-ver]", filtros);
+    var catAtual = (function () { var h = $("[data-cat-atual]", filtros); return h ? h.value : ""; })();
+    var semAcento = function (s) {
+      return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+        .replace(/&/g, " e ").replace(/\+/g, " plus ");
+    };
+    var filtrar = function () {
+      var termos = semAcento(busca.value).split(/\s+/).filter(Boolean);
+      var modo = ver.value, total = 0;
+      $$(".grupo").forEach(function (g) {
+        var n = 0;
+        $$(".item", g).forEach(function (li) {
+          var ok = (!catAtual || li.dataset.cat === catAtual) &&
+            (modo !== "site" || li.dataset.visivel === "1") &&
+            (modo !== "ocultos" || li.dataset.visivel === "0") &&
+            (modo !== "destaques" || li.dataset.destaque === "1") &&
+            termos.every(function (t) { return li.dataset.busca.indexOf(t) !== -1; });
+          li.hidden = !ok;
+          if (ok) n++;
+        });
+        g.hidden = n === 0;
+        total += n;
+      });
+      var todos = $$(".item").length;
+      $("[data-contagem]").textContent = total === todos ? "Mostrando todos os " + todos + " produtos." :
+        total + (total === 1 ? " produto encontrado." : " produtos encontrados.");
+      $("[data-vazio]").hidden = total > 0;
+      try {
+        var u = new URL(window.location.href);
+        ["q", "cat", "ver"].forEach(function (k) { u.searchParams.delete(k); });
+        if (busca.value.trim()) u.searchParams.set("q", busca.value.trim());
+        if (catAtual) u.searchParams.set("cat", catAtual);
+        if (modo) u.searchParams.set("ver", modo);
+        history.replaceState(null, "", u.pathname + u.search + u.hash);
+      } catch (err) { /* navegador antigo: tudo bem */ }
+    };
+    busca.addEventListener("input", filtrar);
+    ver.addEventListener("change", filtrar);
+    $$("[data-chip]", filtros).forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        e.preventDefault();
+        catAtual = b.dataset.chip;
+        $$("[data-chip]", filtros).forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+        filtrar();
+      });
+    });
+    filtros.addEventListener("submit", function (e) { e.preventDefault(); filtrar(); busca.blur(); });
+  }
+
+  /* ------------------------------------------------------------------
+     Formulário do produto
+     ------------------------------------------------------------------ */
+  var fp = $("[data-form-produto]");
+  if (fp) {
+    var sujo = false, enviando = false, fotoPronta = null;
+    fp.addEventListener("input", function () { sujo = true; });
+    fp.addEventListener("change", function () { sujo = true; });
+    window.addEventListener("beforeunload", function (e) {
+      if (sujo && !enviando) { e.preventDefault(); e.returnValue = ""; }
+    });
+
+    // Categoria → só as subcategorias dela (o iPhone ignora opções escondidas, então recria a lista)
+    var selCat = $("[data-categoria]", fp), selSub = $("[data-subcategoria]", fp);
+    var mapa = {};
+    $$("optgroup", selSub).forEach(function (g) {
+      mapa[g.dataset.cat] = $$("option", g).map(function (o) { return o.value; });
+    });
+    var montarSub = function () {
+      var atual = selSub.value, lista = mapa[selCat.value] || [];
+      selSub.textContent = "";
+      var vazio = document.createElement("option");
+      vazio.value = ""; vazio.textContent = selCat.value ? "Escolha…" : "Escolha a categoria antes";
+      selSub.appendChild(vazio);
+      lista.forEach(function (v) {
+        var o = document.createElement("option");
+        o.value = v; o.textContent = v;
+        if (v === atual) o.selected = true;
+        selSub.appendChild(o);
+      });
+      if (lista.length === 1) selSub.value = lista[0];
+    };
+    montarSub();
+    selCat.addEventListener("change", montarSub);
+
+    // Código (id) criado sozinho a partir de marca + nome
+    var slugEl = $("[data-slug]", fp);
+    var slug = function (s) {
+      return String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+        .replace(/[ºª°]/g, "o").replace(/&/g, " e ").replace(/\+/g, " plus ")
+        .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80).replace(/-+$/, "");
+    };
+    var slugAuto = $("[data-slug-auto-campo]", fp);
+    var marcarAuto = function (v) { slugEl.dataset.slugAuto = v; if (slugAuto) slugAuto.value = v; };
+    if (slugEl) {
+      slugEl.addEventListener("input", function () { marcarAuto(slugEl.value ? "0" : "1"); });
+      $$("[data-slug-origem]", fp).forEach(function (el) {
+        el.addEventListener("input", function () {
+          if (slugEl.dataset.slugAuto !== "1") return;
+          slugEl.value = slug(($("#f-marca").value || "") + " " + ($("#f-nome").value || ""));
+        });
+      });
+    }
+
+    // Contador de caracteres
+    $$("[data-contador]", fp).forEach(function (t) {
+      var max = +t.getAttribute("maxlength"), p = document.createElement("p");
+      p.className = "contador";
+      p.setAttribute("aria-hidden", "true");
+      t.insertAdjacentElement("afterend", p);
+      var at = function () {
+        p.textContent = t.value.length + "/" + max;
+        p.classList.toggle("is-perto", t.value.length > max * 0.9);
+      };
+      t.addEventListener("input", at);
+      at();
+    });
+
+    // Ficha técnica: adicionar/remover linhas
+    var specs = $("[data-specs]", fp), modelo = $("[data-spec-modelo]", fp), add = $("[data-spec-adicionar]", fp);
+    var renumerar = function () {
+      $$(".spec", specs).forEach(function (li, i) {
+        var n = i + 1, ins = $$("input", li), rm = $("[data-spec-remover]", li);
+        ins[0].setAttribute("aria-label", "Característica " + n);
+        ins[1].setAttribute("aria-label", "Valor " + n);
+        rm.setAttribute("aria-label", "Remover linha " + n);
+        rm.hidden = false;
+      });
+      add.hidden = $$(".spec", specs).length >= 24;
+    };
+    if (specs && modelo && add) {
+      add.hidden = false;
+      add.addEventListener("click", function () {
+        var novo = modelo.content.firstElementChild.cloneNode(true);
+        specs.appendChild(novo);
+        renumerar();
+        $("input", novo).focus();
+        sujo = true;
+      });
+      specs.addEventListener("click", function (e) {
+        var rm = e.target.closest("[data-spec-remover]");
+        if (!rm) return;
+        var li = rm.closest(".spec");
+        if ($$(".spec", specs).length > 1) {
+          var prox = li.nextElementSibling || li.previousElementSibling;
+          li.remove();
+          renumerar();
+          if (prox) $("input", prox).focus(); else add.focus();
+        } else {
+          $$("input", li).forEach(function (i) { i.value = ""; });
+          $("input", li).focus();
+        }
+        sujo = true;
+      });
+      renumerar();
+    }
+
+    // Foto: prévia no formato do cartão + redução no próprio aparelho (fotos de celular têm 3–12 MB)
+    var fInput = $("[data-foto-input]", fp), fBox = $("[data-foto]", fp), fImg = $("[data-foto-previa]", fp);
+    var fVazio = $("[data-foto-vazio]", fp), fRot = $("[data-foto-rotulo]", fp), fInfo = $("[data-foto-info]", fp);
+    var MAX = +fInput.getAttribute("data-max-bytes") || 8 * 1024 * 1024, MIN = +fInput.getAttribute("data-min") || 300, LADO = 1800;
+    var estado = document.createElement("p");
+    estado.className = "foto-estado"; estado.setAttribute("aria-live", "polite"); estado.hidden = true;
+    fInfo.insertAdjacentElement("beforebegin", estado);
+    var dica = document.createElement("p");
+    dica.className = "foto-dica"; dica.hidden = true;
+    estado.insertAdjacentElement("afterend", dica);
+    var kb = function (b) { return b > 1048576 ? (b / 1048576).toFixed(1).replace(".", ",") + " MB" : Math.round(b / 1024) + " KB"; };
+    var mostrarEstado = function (txt, erro) { estado.hidden = !txt; estado.textContent = txt || ""; estado.classList.toggle("is-erro", !!erro); };
+    var mostrarDica = function (txt) { dica.hidden = !txt; dica.textContent = txt || ""; };
+
+    var formatoRuim = function (file) {
+      var nome = (file.name || "").toLowerCase(), tipo = (file.type || "").toLowerCase();
+      if (/hei[cf]/.test(tipo) || /\.hei[cf]$/.test(nome)) return "Seu celular salvou a foto em HEIC, formato que o site não usa. Na câmera, desligue a opção “alta eficiência” (HEIF) ou compartilhe a foto como JPG e escolha de novo.";
+      if (tipo === "application/pdf" || /\.pdf$/.test(nome)) return "Esse arquivo é um PDF, não uma foto. Salve a imagem do produto como JPG (ou tire um print) e escolha de novo.";
+      if (!/^image\/(jpeg|png|webp)$/.test(tipo)) return "Formato não aceito (" + (file.type || nome.split(".").pop() || "desconhecido") + "). Use foto JPG, PNG ou WebP: uma foto da câmera ou salva do site do fabricante.";
+      return "";
+    };
+    var carregar = function (file) {
+      return new Promise(function (ok, falha) {
+        var url = URL.createObjectURL(file), img = new Image();
+        img.onload = function () { ok({ img: img, url: url }); };
+        img.onerror = function () { URL.revokeObjectURL(url); falha(new Error("Não consegui abrir essa foto. Tente outra ou salve como JPG.")); };
+        img.src = url;
+      });
+    };
+    var transparente = function (ctx, w, h) {
+      try {
+        var d = ctx.getImageData(0, 0, w, h).data, passo = Math.max(4, Math.floor(d.length / 4 / 60000)) * 4;
+        for (var i = 3; i < d.length; i += passo) if (d[i] < 250) return true;
+      } catch (e) { /* sem acesso aos pixels */ }
+      return false;
+    };
+    // Fundo: a borda da foto é branca (ou transparente)? O servidor só recorta borda branca.
+    var fundoBranco = function (img, w, h) {
+      try {
+        var f = Math.min(1, 160 / Math.max(w, h)), cw = Math.max(8, Math.round(w * f)), ch = Math.max(8, Math.round(h * f));
+        var c = document.createElement("canvas"); c.width = cw; c.height = ch;
+        var x = c.getContext("2d"); x.drawImage(img, 0, 0, cw, ch);
+        var d = x.getImageData(0, 0, cw, ch).data, m = Math.max(1, Math.round(Math.min(cw, ch) * 0.05)), borda = 0, bom = 0;
+        for (var y = 0; y < ch; y++) for (var xx = 0; xx < cw; xx++) {
+          if (y >= m && y < ch - m && xx >= m && xx < cw - m) continue;
+          var i = (y * cw + xx) * 4;
+          borda++;
+          if (d[i + 3] < 200 || Math.min(d[i], d[i + 1], d[i + 2]) >= 226) bom++;
+        }
+        return bom / borda > 0.7;
+      } catch (e) { return true; }
+    };
+    var paraBlob = function (canvas, tipo, q) {
+      return new Promise(function (ok) { canvas.toBlob(ok, tipo, q); });
+    };
+    var preparar = function (file) {
+      var ruim = formatoRuim(file);
+      if (ruim) return Promise.reject(new Error(ruim));
+      if (file.size > 40 * 1024 * 1024) return Promise.reject(new Error("Foto grande demais (" + kb(file.size) + "). Use uma foto menor."));
+      return carregar(file).then(function (r) {
+        var w = r.img.naturalWidth, h = r.img.naturalHeight;
+        if (w < MIN || h < MIN) {
+          URL.revokeObjectURL(r.url);
+          throw new Error("A foto é pequena demais (" + w + " × " + h + " px). Use uma com pelo menos " + MIN + " px de largura e de altura.");
+        }
+        var info = { emPe: h > w * 1.08, branco: fundoBranco(r.img, w, h) };
+        var precisa = Math.max(w, h) > LADO || file.size > MAX || (file.type === "image/jpeg" && file.size > 2.5 * 1048576);
+        if (!precisa) return { file: file, url: r.url, w: w, h: h, info: info };
+        var f = Math.min(1, LADO / Math.max(w, h)), nw = Math.round(w * f), nh = Math.round(h * f);
+        var c = document.createElement("canvas");
+        c.width = nw; c.height = nh;
+        var ctx = c.getContext("2d");
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(r.img, 0, 0, nw, nh);
+        var alfa = file.type !== "image/jpeg" && transparente(ctx, nw, nh);
+        var tipo = alfa ? "image/png" : "image/jpeg";
+        return paraBlob(c, tipo, 0.9).then(function (blob) {
+          if (blob && blob.size > MAX && tipo === "image/jpeg") return paraBlob(c, tipo, 0.75);
+          return blob;
+        }).then(function (blob) {
+          // Reduzir não diminuiu o arquivo (PNG): manda o original, que já cabe (o servidor reduz)
+          if ((!blob || blob.size >= file.size) && file.size <= MAX) return { file: file, url: r.url, w: w, h: h, info: info };
+          URL.revokeObjectURL(r.url);
+          if (!blob || blob.size > MAX) throw new Error("Não consegui reduzir a foto. Tente outra menor que 8 MB.");
+          var nome = "foto." + (tipo === "image/png" ? "png" : "jpg");
+          var novo = new File([blob], nome, { type: tipo, lastModified: Date.now() });
+          return { file: novo, url: URL.createObjectURL(novo), w: w, h: h, nw: nw, nh: nh, antes: file.size, info: info };
+        });
+      });
+    };
+    var trocarArquivo = function (file) {
+      try {
+        var dt = new DataTransfer();
+        dt.items.add(file);
+        fInput.files = dt.files;
+        return true;
+      } catch (e) { return false; }
+    };
+    var aoEscolher = function (file) {
+      if (!file) return;
+      mostrarEstado("Preparando a foto…");
+      mostrarDica("");
+      fBox.setAttribute("aria-busy", "true");
+      fotoPronta = preparar(file).then(function (r) {
+        if (fImg.src && fImg.src.indexOf("blob:") === 0) URL.revokeObjectURL(fImg.src);
+        fImg.src = r.url; fImg.alt = "Prévia da foto nova"; fImg.hidden = false;
+        if (fVazio) fVazio.hidden = true;
+        fBox.classList.remove("foto--vazia");
+        fRot.textContent = "Trocar foto";
+        var trocou = r.file !== file && trocarArquivo(r.file);
+        if (r.file !== file && !trocou && file.size > MAX) throw new Error("Este navegador não conseguiu reduzir a foto. Use uma foto menor que 8 MB.");
+        mostrarEstado(trocou ? "Foto nova pronta: " + (r.file.size < r.antes ? "reduzida" : "ajustada") + " de " + r.w + "×" + r.h + " (" + kb(r.antes) + ") para " + r.nw + "×" + r.nh + " (" + kb(r.file.size) + "). Salve para publicar."
+                             : "Foto nova pronta (" + r.w + "×" + r.h + ", " + kb(file.size) + "). Salve para publicar.");
+        var motivos = [];
+        if (r.info.emPe) motivos.push("está em pé");
+        if (!r.info.branco) motivos.push("o fundo não é branco (ele aparece no site)");
+        mostrarDica(motivos.length ? "Atenção: no site ela vai aparecer pequena, porque " + motivos.join(" e ") + ". Para ficar como as outras: celular deitado, produto ocupando quase toda a foto, fundo branco ou liso. Pode salvar assim mesmo." : "");
+        fBox.classList.toggle("is-pequena", motivos.length > 0);
+        fInput.removeAttribute("aria-invalid");
+      }).catch(function (err) {
+        fInput.value = "";
+        mostrarEstado(err.message, true);
+      }).then(function () {
+        fBox.removeAttribute("aria-busy");
+        fotoPronta = null;
+      });
+    };
+    fInput.addEventListener("change", function () { aoEscolher(fInput.files && fInput.files[0]); });
+    // Arrastar e soltar (computador)
+    ["dragenter", "dragover"].forEach(function (t) {
+      fBox.addEventListener(t, function (e) { e.preventDefault(); fBox.classList.add("is-arrastando"); });
+    });
+    ["dragleave", "drop"].forEach(function (t) {
+      fBox.addEventListener(t, function () { fBox.classList.remove("is-arrastando"); });
+    });
+    fBox.addEventListener("drop", function (e) {
+      e.preventDefault();
+      var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file && trocarArquivo(file)) { sujo = true; aoEscolher(file); }
+    });
+
+    // Produto da capa: esconder ou mudar o código pede confirmação
+    var confirmarCapa = function () {
+      var capa = fp.getAttribute("data-capa");
+      if (!capa) return Promise.resolve(true);
+      var vis = $("input[name=visivel]", fp), idEl = $("[data-slug]", fp);
+      var motivos = [];
+      if (vis && !vis.checked) motivos.push("esconder");
+      if (idEl && idEl.value.trim() !== capa) motivos.push("mudar o código");
+      if (!motivos.length) return Promise.resolve(true);
+      return confirmar("Este é o produto da capa do site. Se " + motivos.join(" e ") + ", a foto da capa continua lá, mas o link dela vai abrir o catálogo com o aviso “produto fora do catálogo”.", "Salvar assim", "Produto da capa");
+    };
+    fp.addEventListener("submit", function (e) {
+      var bt = e.submitter;
+      if (fotoPronta) {
+        e.preventDefault();
+        fotoPronta.then(function () { if (fp.requestSubmit) fp.requestSubmit(bt || undefined); else { enviando = true; fp.submit(); } });
+        return;
+      }
+      if (fp.dataset.liberado !== "1") {
+        // Antes de enviar: confirma o produto da capa e confere se a sessão ainda vale
+        e.preventDefault();
+        confirmarCapa().then(function (sim) { return sim ? sessaoOk() : false; }).then(function (ok) {
+          if (!ok) return;
+          fp.dataset.liberado = "1";
+          if (fp.requestSubmit) fp.requestSubmit(bt || undefined); else { enviando = true; salvarRascunho(); fp.submit(); }
+          fp.dataset.liberado = "";
+        });
+        return;
+      }
+      enviando = true;
+      salvarRascunho();
+    });
+
+    /* Rascunho: o que é digitado fica guardado neste aparelho até o produto ser salvo
+       (sessão vencida, aba fechada, bateria…). A foto não entra (o navegador não deixa). */
+    var CHAVE = fp.getAttribute("data-rascunho") ? "bc-painel-rascunho:" + fp.getAttribute("data-rascunho") : "";
+    var NAO = { csrf: 1, MAX_FILE_SIZE: 1, foto: 1 };
+    function lerCampos() {
+      var out = {};
+      $$("input, select, textarea", fp).forEach(function (el) {
+        if (!el.name || NAO[el.name] || el.type === "file" || (el.type === "hidden" && el.name !== "id_auto")) return;
+        if (el.type === "radio") { if (el.checked) out[el.name] = [el.value]; return; }
+        (out[el.name] = out[el.name] || []).push(el.type === "checkbox" ? (el.checked ? el.value : "") : el.value);
+      });
+      return out;
+    }
+    function normal(c) {
+      var n = JSON.parse(JSON.stringify(c || {})), a = n.spec_nome || [], b = n.spec_valor || [], na = [], nb = [];
+      for (var i = 0; i < Math.max(a.length, b.length); i++) if ((a[i] || "").trim() || (b[i] || "").trim()) { na.push(a[i] || ""); nb.push(b[i] || ""); }
+      n.spec_nome = na; n.spec_valor = nb;
+      return JSON.stringify(Object.keys(n).sort().map(function (k) { return [k, n[k]]; }));
+    }
+    function lerRascunho() {
+      try { var d = JSON.parse(localStorage.getItem(CHAVE) || "null"); return d && d.campos ? d : null; } catch (e) { return null; }
+    }
+    var rascT = 0;
+    function salvarRascunho() {
+      if (!CHAVE || !sujo) return;
+      clearTimeout(rascT);
+      try { localStorage.setItem(CHAVE, JSON.stringify({ t: Date.now(), campos: lerCampos() })); } catch (e) { /* sem espaço ou bloqueado: tudo bem */ }
+    }
+    function apagarRascunho() { try { localStorage.removeItem(CHAVE); } catch (e) { /* ok */ } }
+    function aplicarRascunho(c) {
+      var sp = $("[data-specs]", fp), mod = $("[data-spec-modelo]", fp);
+      var nSpecs = Math.max((c.spec_nome || []).length, 1);
+      if (sp && mod) {
+        while ($$(".spec", sp).length < nSpecs) sp.appendChild(mod.content.firstElementChild.cloneNode(true));
+        $$(".spec", sp).forEach(function (li, i) { if (i >= nSpecs) li.remove(); });
+        if (typeof renumerar === "function" && add) renumerar();
+      }
+      if (c.categoria) { selCat.value = c.categoria[0]; montarSub(); }
+      Object.keys(c).forEach(function (nome) {
+        var els = $$("[name=\"" + nome.replace(/"/g, "") + "\"]", fp), vals = c[nome];
+        els.forEach(function (el, i) {
+          if (el.type === "radio") el.checked = vals.indexOf(el.value) >= 0;
+          else if (el.type === "checkbox") el.checked = !!vals[i];
+          else if (i < vals.length && el.type !== "file") el.value = vals[i];
+        });
+      });
+      if (slugEl && c.id_auto) marcarAuto(c.id_auto[0] === "1" ? "1" : "0");
+      $$("[data-contador]", fp).forEach(function (x) { x.dispatchEvent(new Event("input")); });
+    }
+    if (CHAVE) {
+      fp.addEventListener("input", function () { clearTimeout(rascT); rascT = setTimeout(salvarRascunho, 400); });
+      fp.addEventListener("change", function () { clearTimeout(rascT); rascT = setTimeout(salvarRascunho, 400); });
+      $$(".barra-salvar a", fp).forEach(function (a) { a.addEventListener("click", apagarRascunho); });
+      var r = lerRascunho();
+      if (r && Date.now() - r.t > 14 * 864e5) { apagarRascunho(); r = null; }
+      if (r && normal(r.campos) !== normal(lerCampos())) {
+        var bar = document.createElement("div"), d = new Date(r.t);
+        bar.className = "aviso aviso--info rascunho"; bar.setAttribute("role", "status");
+        var txt = document.createElement("p");
+        txt.textContent = "Há um rascunho deste produto, de " + ("0" + d.getDate()).slice(-2) + "/" + ("0" + (d.getMonth() + 1)).slice(-2) +
+          " às " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2) + ", que não foi salvo.";
+        var b1 = document.createElement("button"), b2 = document.createElement("button");
+        b1.type = b2.type = "button";
+        b1.className = "btn btn--verde btn--p"; b1.textContent = "Recuperar";
+        b2.className = "btn btn--linha btn--p"; b2.textContent = "Descartar";
+        var bts = document.createElement("div"); bts.className = "rascunho__bts";
+        bts.appendChild(b1); bts.appendChild(b2);
+        bar.appendChild(svgIcone("restore")); bar.appendChild(txt); bar.appendChild(bts);
+        fp.parentNode.insertBefore(bar, fp);
+        b1.addEventListener("click", function () {
+          aplicarRascunho(r.campos);
+          sujo = true;
+          bar.remove();
+          toast("Rascunho recuperado. Confira" + (fImg.hidden ? ", escolha a foto" : "") + " e salve.", false, { tempo: 7000 });
+          var n = $("#f-nome"); if (n) n.focus();
+        });
+        b2.addEventListener("click", function () { apagarRascunho(); bar.remove(); });
+      }
+    }
+
+    var erros = $("[data-erros]");
+    if (erros) { erros.focus(); }
+  }
+
+  /* ------------------------------------------------------------------
+     Formulários comuns: impede envio duplo
+     ------------------------------------------------------------------ */
+  document.addEventListener("submit", function (e) {
+    var f = e.target;
+    if (e.defaultPrevented || !f.matches || !f.matches("[data-form-enviar]")) return;
+    var b = $("button[type=submit]", f) || $("[data-salvar]", f);
+    if (!b) return;
+    if (f.dataset.enviado === "1") { e.preventDefault(); return; }
+    f.dataset.enviado = "1";
+    b.setAttribute("aria-busy", "true");
+    var sp = $("span", b);
+    if (sp && b.matches("[data-salvar]")) sp.textContent = "Salvando…";
+    // Se o navegador voltar à página (botão Voltar), libera de novo
+    window.addEventListener("pageshow", function () { f.dataset.enviado = ""; b.removeAttribute("aria-busy"); }, { once: true });
+  });
+
+  /* ------------------------------------------------------------------
+     Mostrar/ocultar senha
+     ------------------------------------------------------------------ */
+  $$("[data-ver-senha]").forEach(function (b) {
+    var inp = b.parentNode.querySelector("input");
+    b.hidden = false;
+    b.addEventListener("click", function () {
+      var ver = inp.type === "password";
+      inp.type = ver ? "text" : "password";
+      b.setAttribute("aria-pressed", ver ? "true" : "false");
+      b.setAttribute("aria-label", ver ? "Esconder senha" : "Mostrar senha");
+    });
+  });
+
+  // Código de primeiro acesso: maiúsculas e hífens automáticos
+  var cod = $("#f-codigo");
+  if (cod) {
+    cod.addEventListener("input", function () {
+      var v = cod.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
+      cod.value = v.replace(/(.{4})(?=.)/g, "$1-");
+    });
+  }
+
+  // Avisos: todos têm botão de fechar; os simples de sucesso somem sozinhos. Os de erro e os que
+  // têm ação (Ver no site, Desfazer) ficam até o dono fechar.
+  $$("[data-avisos] .aviso").forEach(function (a) {
+    var x = $("[data-aviso-fechar]", a);
+    if (x) { x.hidden = false; x.addEventListener("click", function () { a.hidden = true; }); }
+    if (a.hasAttribute("data-aviso-acao") || a.classList.contains("aviso--erro")) return;
+    setTimeout(function () { a.hidden = true; }, 12000);
+  });
+  // Produto salvo: o rascunho dele já não serve
+  $$("[data-rascunho-limpar]").forEach(function (a) {
+    try { localStorage.removeItem("bc-painel-rascunho:" + a.getAttribute("data-rascunho-limpar")); } catch (e) { /* ok */ }
+  });
+  // Depois de salvar, a lista abre no produto (#p-ID), longe do aviso do topo: o aviso aparece
+  // também fixo na tela (com o link "Ver no site", por 30 s) e o cartão fica marcado
+  var alvoHash = /^#p-[a-z0-9-]+$/.test(location.hash) ? document.getElementById(location.hash.slice(1)) : null;
+  var primeiro = $("[data-avisos] .aviso");
+  if (alvoHash && primeiro) {
+    alvoHash.classList.add("is-novo");
+    setTimeout(function () { alvoHash.classList.remove("is-novo"); }, 8000);
+    var pTxt = $("p", primeiro), link = pTxt && $("a", pTxt);
+    var msg = pTxt ? (pTxt.firstChild && pTxt.firstChild.nodeType === 3 ? pTxt.firstChild.nodeValue : pTxt.textContent).trim() : "";
+    if (msg) toast(msg, primeiro.classList.contains("aviso--erro"), { link: link ? link.cloneNode(true) : null, tempo: link ? 30000 : 10000 });
+  }
+})();

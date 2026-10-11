@@ -334,11 +334,24 @@
       }).join("") + "</ul></div>" : "");
   }
 
+  // Link de um produto que não está mais no catálogo (excluído, escondido ou com código novo)
+  function missingHTML(id) {
+    var nome = String(id || "").toLowerCase().replace(/[^a-z0-9-]+/g, "").slice(0, 60).replace(/-+/g, " ").trim();
+    var msg = "Olá! Abri um link do site" + (nome ? " (produto “" + nome + "”)" : "") + " que não está mais no catálogo. Vocês ainda têm esse produto ou um parecido?";
+    return '<p class="mono dw__crumb">Catálogo</p>' +
+      '<h2 class="dw__model" id="dw-title">Produto fora do catálogo</h2>' +
+      '<p class="dw__desc">Este produto não está mais no catálogo do site' + (nome ? " (“" + esc(nome) + "”)" : "") + ". Fale com a gente: conferimos se ainda temos ou indicamos um parecido.</p>" +
+      '<div class="dw__buy"><div class="dw__ctas">' +
+        '<a class="btn btn--green btn--lg" href="' + BC.whatsLink(msg) + '" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Falar no WhatsApp">Falar no WhatsApp</span><span class="sr-only"> (abre em nova aba)</span></a>' +
+        '<button class="btn btn--line" type="button" data-close><span class="st" data-t="Ver o catálogo">Ver o catálogo</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></button>' +
+      "</div></div>";
+  }
+
   function focusables() { return $$('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])', panel).filter(function (el) { return el.offsetParent !== null; }); }
 
   function openDetail(id, push) {
     var p = BC.porId(id);
-    if (!p) return false;
+    if (!p && push) return false;   // clique num link interno: sempre é de um produto que existe
     if (push) { try { history.pushState({ p: id, lvDepth: depth() + 1 }, "", "#p=" + encodeURIComponent(id)); } catch (e) { location.hash = "p=" + encodeURIComponent(id); return true; } }
     if (closeTl) {
       closeTl.kill(); closeTl = null;
@@ -348,10 +361,10 @@
     closing = false;
     if (drawer.hidden) lastFocus = document.activeElement;
     openId = id;
-    body.innerHTML = detailHTML(p);
+    body.innerHTML = p ? detailHTML(p) : missingHTML(id);
     if (copyMsg) copyMsg.textContent = "";
-    refEl.textContent = "Ref. " + LV.pad(BC.produtos.indexOf(p) + 1) + " · " + LV.catCurto(p.categoria);
-    document.title = p.marca + " " + p.nome + " | Catálogo Balanças.com";
+    refEl.textContent = p ? "Ref. " + LV.pad(BC.produtos.indexOf(p) + 1) + " · " + LV.catCurto(p.categoria) : "Fora do catálogo";
+    document.title = (p ? p.marca + " " + p.nome : "Produto fora do catálogo") + " | Catálogo Balanças.com";
     drawer.hidden = false;
     panel.scrollTop = 0;
     LV.inertBg(true, [".hdr"]);
@@ -387,7 +400,8 @@
       LV.inertBg(false, [".hdr"]);
       doc.style.overflow = ""; if (LV.lenis) LV.lenis.start();
       document.title = baseTitle;
-      var card = closedId && grid.querySelector('a[data-detail="' + closedId.replace(/"/g, "") + '"]');
+      var card = null;
+      try { card = closedId && grid.querySelector('a[data-detail="' + closedId.replace(/["\\]/g, "") + '"]'); } catch (e) { /* código estranho no endereço */ }
       var tgt = (lastFocus && lastFocus !== document.body && document.contains(lastFocus) && lastFocus.offsetParent !== null) ? lastFocus
         : (card && card.offsetParent !== null ? card : qIn);
       tgt.focus({ preventScroll: tgt === lastFocus });
@@ -410,7 +424,11 @@
       return;
     }
     var m = /^#p=(.+)$/.exec(location.hash);
-    if (m) { var id = decodeURIComponent(m[1]); if (id !== openId) openDetail(id, false); }
+    if (m) {
+      var id = m[1];
+      try { id = decodeURIComponent(id); } catch (e) { /* endereço com % quebrado: usa como está */ }
+      if (id !== openId) openDetail(id, false);
+    }
     else closeDetail(true);
   }
   window.addEventListener("popstate", sync);

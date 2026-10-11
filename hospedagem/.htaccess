@@ -3,7 +3,7 @@
 # Vai na raiz do site: public_html/.htaccess
 # Tudo está dentro de <IfModule>: se um módulo não existir, não dá erro 500.
 # =====================================================================
-DirectoryIndex index.html
+DirectoryIndex index.html index.php
 Options -Indexes
 ErrorDocument 404 /404.html
 AddDefaultCharset UTF-8
@@ -11,8 +11,21 @@ AddType image/webp .webp
 AddType image/avif .avif
 AddType application/manifest+json .webmanifest
 
+# --- Painel de produtos (/painel/): as partes internas nunca abrem --------
+# A pasta painel/ tem o próprio .htaccess; estas regras são uma segunda
+# trava (continuam valendo se aquele arquivo se perder no envio).
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^painel/(lib|privado)(/|$) - [F,L]
+  RewriteRule ^painel/(config\.php|LEIA-ME\.md|\.user\.ini|\.htaccess)$ - [F,L,NC]
+</IfModule>
+<FilesMatch "^(config\.php|primeiro-acesso\.php)$">
+  Require all denied
+</FilesMatch>
+
 # --- HTTPS + endereço único (sem www) em um só redirecionamento ----------
-# Ative DEPOIS que o certificado SSL (AutoSSL) estiver funcionando.
+# O HTTPS de balancass.com já funciona (conferido em 11/10/2026). Se um dia o cadeado
+# sumir (SSL vencido/AutoSSL com erro), comente as 4 linhas Rewrite abaixo até resolver.
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteCond %{REQUEST_URI} !^/\.well-known/

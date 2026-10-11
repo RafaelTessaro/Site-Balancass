@@ -3,3 +3,9 @@ Thumbs.db
 node_modules/
 _previews/
 *.log
+# Dados privados do painel criados em testes locais (senha, código de primeiro acesso, cópias)
+painel-balancas-privado/
+painel/privado/
+site/painel/privado/
+.site-montando-*/
+site.zip

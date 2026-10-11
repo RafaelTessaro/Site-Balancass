@@ -645,6 +645,9 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
   display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 32px;
   margin-top: 48px; padding-top: 22px; border-top: 1px solid #262625; color: var(--grey);
 }
+/* "Área restrita": entrada discreta do painel da equipe */
+.ftr__adm { display: inline-flex; align-items: center; min-height: 32px; margin-block: -6px; color: var(--grey); text-decoration: none; }
+.ftr__adm:hover, .ftr__adm:focus-visible { color: var(--green); text-decoration: underline; text-underline-offset: 4px; }
 .hours { display: grid; gap: 6px; }
 .hours li { display: flex; justify-content: space-between; gap: 16px; font-size: 15px; }
 .hours li span:first-child { color: var(--grey); }

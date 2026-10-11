@@ -1,0 +1,6 @@
+# Balanças.com — instruções para os robôs de busca
+User-agent: *
+Allow: /
+Disallow: /painel/
+
+Sitemap: https://balancass.com/sitemap.xml

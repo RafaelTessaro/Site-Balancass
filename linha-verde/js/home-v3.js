@@ -1,8 +1,10 @@
 /* =====================================================================
    Balanças.com — "Linha Verde" — página inicial, variação 3 "Painel"
    js/home-v3.js — só index-3.html (depois de core.js, antes do CDN).
-   1. Produtos (window.BC): a vitrine do módulo 03 e as 4 fichas em
-      destaque saem de BC.destaques(), sem repetir e variando a categoria.
+   1. Produtos (window.BC): a página inicial mostra até 8 destaques (sem o
+      produto da capa), revezando as categorias; 4 vão para a vitrine do
+      módulo 03 e 4 para as fichas da seção 02. A mesma regra está no painel
+      (destaquesDaHome em painel/lib/catalogo.php): se mudar aqui, mude lá.
    2. Vitrine automática: troca a cada 5 s; pausa pelo botão, com o mouse
       em cima, com o foco do teclado dentro, fora da tela ou com a aba
       oculta. Com "reduzir movimento" começa parada.
@@ -41,11 +43,21 @@
   }
   function fora(lista, usados) { return lista.filter(function (p) { return usados.indexOf(p) < 0; }); }
 
-  var dest = BC.destaques();
-  var vitrine = variado(dest.filter(function (p) { return BC.temRecorte(p) && CLAROS.indexOf(p.imagem) < 0; }), 4);
-  if (vitrine.length < 2) vitrine = variado(BC.produtos.filter(function (p) { return BC.temRecorte(p) && CLAROS.indexOf(p.imagem) < 0; }), 4);
-  var grade = variado(fora(dest, vitrine), 4);
-  if (grade.length < 4) grade = grade.concat(variado(fora(fora(BC.produtos, vitrine), grade), 4 - grade.length));
+  // Produto da capa (data-hero-id): já está no topo da página, não se repete logo abaixo
+  var heroEl = $(".pn-hero__prod"), capa = heroEl ? heroEl.getAttribute("data-hero-id") : "";
+  var semCapa = function (p) { return p.id !== capa; };
+  var escuro = function (p) { return BC.temRecorte(p) && CLAROS.indexOf(p.imagem) < 0; };
+  // Os 8 destaques da página inicial: o 1º de cada categoria, depois o 2º de cada… (BC.destaques()
+  // já vem com Pronta entrega primeiro e, depois, na ordem do painel)
+  var home = variado(BC.destaques().filter(semCapa), 8);
+  // Vitrine (fundo preto): prefere recortes escuros; se faltarem, entra foto normal num palco claro,
+  // desde que as fichas continuem com 4
+  var vitrine = variado(home.filter(escuro), 4);
+  var resto = fora(home, vitrine);
+  while (vitrine.length < 4 && resto.length > 4) vitrine.push(resto.shift());
+  if (vitrine.length < 2) vitrine = vitrine.concat(variado(fora(BC.produtos.filter(semCapa).filter(escuro), home), 4 - vitrine.length));
+  var grade = fora(home, vitrine).slice(0, 4);
+  if (grade.length < 4) grade = grade.concat(variado(fora(fora(BC.produtos.filter(semCapa), vitrine), grade), 4 - grade.length));
 
   /* ------------------------------------------------------------------
      2. Vitrine automática (módulo 03)
@@ -62,7 +74,7 @@
     box.setAttribute("aria-label", "Vitrine de produtos");
     ul.innerHTML = lista.map(function (p, i) {
       return '<li class="pn-vit__slide' + (i ? "" : " is-on") + '" role="group" aria-roledescription="produto" aria-label="' + (i + 1) + " de " + n + '">' +
-        '<figure class="pn-vit__fig">' + LV.imgProduto(p, { alt: "", sizes: "(max-width: 640px) 86vw, (max-width: 1060px) 50vw, 460px" }) + "</figure>" +
+        '<figure class="pn-vit__fig' + (escuro(p) ? "" : " pn-vit__fig--palco") + '">' + LV.imgProduto(p, { alt: "", sizes: "(max-width: 640px) 86vw, (max-width: 1060px) 50vw, 460px" }) + "</figure>" +
         '<p class="pn-vit__cap"><span class="pn-vit__brand mono">' + esc(p.marca) + " · " + esc(LV.catCurto(p.categoria)) + "</span>" +
         '<a class="pn-vit__name" href="produtos.html#p=' + encodeURIComponent(p.id) + '"><span class="sr-only">' + esc(p.marca) + " </span>" + esc(p.nome) +
         '<svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></p></li>';
@@ -234,7 +246,7 @@
     var hero = $(".pn-hero");
     if (hero) {
       tl = gsap.timeline({ defaults: { ease: "expo.out" }, delay: pronto ? 0 : 0.08 });
-      var band = $(".pn-hero__band", hero), fig = $(".pn-hero__fig", hero), img = $(".pn-hero__fig img", hero);
+      var band = $(".pn-hero__band", hero), fig = $(".pn-hero__prod", hero) || $(".pn-hero__fig", hero), img = $("img", fig || hero);
       if (band) {
         // A faixa é bem mais alta que o hero (−120vh … +120vh): a origem da escala fica na borda
         // de cima do hero, senão a parte visível "pula" de 0 a 100% em poucos quadros.
@@ -245,7 +257,16 @@
         LV.wipe(l, { tl: tl, at: 0.36 + i * 0.16, cor: l.classList.contains("pn-hero__l--green") ? "paper" : "green" });
       });
       if (img) tl.fromTo(img, { yPercent: 8 }, { yPercent: 0, duration: 1.3, immediateRender: true }, 0.62);
-      tl.from($$(".pn-hero__call, .pn-hero__ref", hero), { autoAlpha: 0, y: 8, stagger: 0.08, duration: 0.6 }, 1.2);
+      // Etiquetas técnicas: o ponto acende, o fio cresce a partir dele e a etiqueta aparece
+      var calls = $$(".pn-hero__call", hero);
+      if (calls.length) {
+        tl.from(calls, { autoAlpha: 0, duration: 0.35, stagger: 0.12 }, 1.1);
+        calls.forEach(function (c, i) {
+          var box = $(".pn-spec__box", c), up = !c.classList.contains("pn-spec--dn");
+          if (box) tl.from(box, { y: up ? 10 : -10, duration: 0.6 }, 1.2 + i * 0.12);
+        });
+      }
+      tl.from($$(".pn-hero__ref", hero), { autoAlpha: 0, y: 8, duration: 0.6 }, 1.5);
       var rest = $$("[data-intro]", hero).filter(function (el) { return !el.classList.contains("pn-hero__w"); });
       if (rest.length) tl.from(rest, { opacity: 0, y: 24, stagger: 0.08, duration: 1.05 }, 0.72);
       if (pronto) tl.progress(1);

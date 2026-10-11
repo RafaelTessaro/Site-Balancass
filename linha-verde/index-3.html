@@ -17,7 +17,7 @@
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Balança Toledo Prix 4 Uno sobre a faixa verde da Balanças.com, com o texto Pesa. Imprime. Vende.">
+<meta property="og:image:alt" content="Balança Toledo Prix 7E sobre a faixa verde da Balanças.com, com a frase A medida certa para o seu negócio.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Balanças.com — A medida certa para o seu negócio">
 <meta name="twitter:description" content="Assistência técnica de balanças, equipamentos de automação comercial e o BC System com NFC-e. Rio Claro-SP, desde 2010.">
@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/paginas.css">
 <link rel="stylesheet" href="css/home-v3.css">
-<link rel="preload" as="image" href="../compartilhado/img/fotos/prix-6-pdv.webp" fetchpriority="high">
+<link rel="preload" as="image" href="../compartilhado/img/produtos-recorte/prix7e.webp" fetchpriority="high">
 <script>
   /* Marca o documento antes de pintar: as animações de entrada só escondem
      o conteúdo enquanto o JS não assume. Se algo falhar, tudo reaparece. */
@@ -250,8 +250,10 @@
 <main id="conteudo">
 
 <!-- ============================== HERO COMPACTO ==============================
-     Frase forte + slogan + 2 chamadas. À direita, a faixa verde diagonal com
-     a balança e o caixa (peso certo / caixa em dia). Animação: js/home-v3.js -->
+     Abre com a frase da marca em destaque ("A medida certa para o seu negócio.")
+     + apoio curto + 2 chamadas. À direita, a faixa verde diagonal com a balança
+     Toledo Prix 7E e quatro etiquetas técnicas (dados do fabricante), cada uma
+     presa por um fio ao ponto da balança de que fala. Animação: js/home-v3.js -->
 <section class="pn-hero" aria-labelledby="pn-hero-t">
   <div class="phero__grid" aria-hidden="true"></div>
   <span class="crop crop--tl" aria-hidden="true"></span>
@@ -259,11 +261,12 @@
     <div class="pn-hero__copy">
       <p class="pn-hero__eyebrow mono" data-intro><span class="tag tag--volt">Rio Claro-SP</span><span>Balanças · PDV · NFC-e</span></p>
       <h1 class="pn-hero__t" id="pn-hero-t">
-        <span class="pn-hero__l"><span class="pn-hero__w" data-intro>Peso certo.</span></span>
-        <span class="pn-hero__l pn-hero__l--green"><span class="pn-hero__w" data-intro>Caixa em dia.</span></span>
+        <span class="pn-hero__l"><span class="pn-hero__w" data-intro>A medida certa</span></span>
+        <span class="pn-hero__l"><span class="pn-hero__w" data-intro>para o seu</span></span>
+        <span class="pn-hero__l pn-hero__l--green"><span class="pn-hero__w" data-intro>negócio.</span></span>
         <span class="sr-only"> Balanças, automação comercial e assistência técnica em Rio Claro-SP.</span>
       </h1>
-      <p class="pn-hero__lead" data-intro><strong><span data-bc="frase">A medida certa para o seu negócio</span>.</strong> Conserto de balanças, equipamentos<span class="pn-x"> para o balcão</span> e o BC System com NFC-e<span class="pn-x"> — num lugar só,</span><span class="pn-m">,</span> em Rio Claro e região.</p>
+      <p class="pn-hero__lead" data-intro><strong>Peso certo. Caixa em dia.</strong> Conserto de balanças, equipamentos<span class="pn-x"> para o balcão</span> e o BC System com NFC-e<span class="pn-x"> — num lugar só,</span><span class="pn-m">,</span> em Rio Claro e região.</p>
       <div class="btns pn-hero__ctas" data-intro data-float-off>
         <a class="btn btn--green btn--lg" data-magnet data-wa="" href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Balan%C3%A7as.com%20e%20gostaria%20de%20atendimento." target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Falar no WhatsApp">Falar no WhatsApp</span></a>
         <a class="btn btn--line btn--lg" data-magnet href="produtos.html"><span class="st" data-t="Ver produtos">Ver produtos</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
@@ -272,12 +275,24 @@
 
     <div class="pn-hero__visual">
       <div class="pn-hero__band" aria-hidden="true"></div>
-      <figure class="pn-hero__fig" data-pn-par>
-        <img src="../compartilhado/img/fotos/prix-6-pdv.webp" width="1044" height="1098" alt="Balança com tela touch ao lado de um caixa completo: terminal, gaveta e impressora" fetchpriority="high" decoding="async">
+      <figure class="pn-hero__fig">
+        <!-- data-hero-id: o código do produto da capa. O js/home-v3.js tira este produto da vitrine e
+             das fichas da página inicial, e o painel mostra o selo "Na capa do site" nele. -->
+        <div class="pn-hero__prod" data-pn-par data-hero-id="toledo-prix-7e">
+          <img src="../compartilhado/img/produtos-recorte/prix7e.webp" width="900" height="549" alt="Balança Toledo Prix 7E, computadora com impressora de etiquetas integrada, teclado alfanumérico e prato de aço inox" fetchpriority="high" decoding="async">
+          <!-- Etiquetas técnicas (catálogo oficial da Toledo do Brasil). Cada uma é presa por um fio
+               ao ponto da balança de que fala: 01 prato (capacidade), 02 teclado (teclas rápidas),
+               03 saída da impressora (impressão), 04 compartimento do rolo de etiquetas (códigos
+               impressos na etiqueta). Posições em css/home-v3.css. No celular: 01 e 03. -->
+          <ul class="pn-specs" role="list" aria-label="Destaques técnicos da Prix 7E">
+            <li class="pn-hero__call pn-spec pn-spec--1"><span class="pn-spec__box"><span class="pn-spec__k mono"><b>01</b> Capacidade</span><span class="pn-spec__v">32 kg multifaixa</span><span class="pn-spec__s">divisão de 2 g até 6 kg</span></span></li>
+            <li class="pn-hero__call pn-spec pn-spec--dn pn-spec--2"><span class="pn-spec__box"><span class="pn-spec__k mono"><b>02</b> Teclado</span><span class="pn-spec__v">60 teclas rápidas</span><span class="pn-spec__s">acesso a até 180 itens</span></span></li>
+            <li class="pn-hero__call pn-spec pn-spec--3"><span class="pn-spec__box"><span class="pn-spec__k mono"><b>03</b> Impressão</span><span class="pn-spec__v">Térmica integrada</span><span class="pn-spec__s">até 100 mm/s</span></span></li>
+            <li class="pn-hero__call pn-spec pn-spec--dn pn-spec--4"><span class="pn-spec__box"><span class="pn-spec__k mono"><b>04</b> Etiqueta</span><span class="pn-spec__v">GS1 QR Code</span><span class="pn-spec__s">com validade e lote</span></span></li>
+          </ul>
+        </div>
+        <figcaption class="pn-hero__ref mono"><a href="produtos.html#p=toledo-prix-7e"><span class="pn-hero__ref-m">Toledo</span> Prix 7E<span class="pn-hero__ref-x"> — balança computadora com impressora integrada</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></figcaption>
       </figure>
-      <p class="pn-hero__call pn-hero__call--1 mono" aria-hidden="true"><b>01</b> Peso certo · balança</p>
-      <p class="pn-hero__call pn-hero__call--2 mono" aria-hidden="true"><b>02</b> Caixa em dia · NFC-e</p>
-      <p class="pn-hero__ref mono" aria-hidden="true">Balanças.com — <span data-bc="rua">Rua 13, 650</span> — Rio Claro-SP</p>
     </div>
   </div>
   <!-- Faixa de confiança (a mesma das páginas internas): Google, IPEM-SP, desde 2010 -->
@@ -359,12 +374,13 @@
           <p class="pn-t__tab"><b aria-hidden="true">03</b>Catálogo</p>
           <div class="pn-prod__head">
             <h3 class="pn-t__h"><a class="pn-t__a" href="produtos.html">Produtos</a></h3>
-            <p class="pn-t__p"><span class="pn-x">Balanças, etiquetadoras, leitores e PDV: </span><span class="nobr"><span data-bc="total-produtos">41</span> itens</span> no catálogo.</p>
+            <p class="pn-t__p"><span class="pn-x">Balanças, etiquetadoras, leitores e PDV: </span><span class="nobr"><span data-bc="total-produtos">42</span> itens</span> no catálogo.</p>
           </div>
           <div class="pn-vit" data-pn-vit>
             <div class="pn-vit__stage">
               <span class="pn-vit__band" aria-hidden="true"></span>
               <ul class="pn-vit__slides" role="list" data-pn-slides>
+                <!-- Sem JS: um produto que não é o da capa (com JS, a vitrine sai dos destaques) -->
                 <li class="pn-vit__slide is-on">
                   <figure class="pn-vit__fig"><img src="../compartilhado/img/produtos-recorte/prix4uno.webp" srcset="img/p480/r/prix4uno.webp 480w, ../compartilhado/img/produtos-recorte/prix4uno.webp 900w" sizes="(max-width: 640px) 86vw, (max-width: 1060px) 50vw, 460px" width="900" height="534" alt="Balança Toledo Prix 4 Uno" loading="lazy" decoding="async"></figure>
                   <p class="pn-vit__cap"><span class="pn-vit__brand mono">Toledo · Balanças</span><a class="pn-vit__name" href="produtos.html#p=toledo-prix-4-uno">Prix 4 Uno<svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></p>
@@ -403,7 +419,7 @@
             <p class="pn-also__lbl mono" id="pn-also-t">Também</p>
             <ul class="pn-also__list" role="list" aria-labelledby="pn-also-t">
               <li class="pn-also__i">
-                <a class="pn-also__a" href="sistema.html#informatica"><svg class="i pn-also__ic" aria-hidden="true"><use href="#i-monitor"/></svg><span class="pn-also__t"><b>Informática da loja</b><span class="pn-also__s">Computadores, impressoras e rede</span></span><svg class="i pn-also__go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+                <a class="pn-also__a" href="sistema.html#informatica"><svg class="i pn-also__ic" aria-hidden="true"><use href="#i-monitor"/></svg><span class="pn-also__t"><b>Suporte em informática</b><span class="pn-also__s">Computadores, impressoras e rede</span></span><svg class="i pn-also__go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
               </li>
               <li class="pn-also__i pn-also__i--fich">
                 <a class="pn-also__a" href="sistema.html#fichas"><svg class="i pn-also__ic" aria-hidden="true"><use href="#i-ticket"/></svg><span class="pn-also__t"><b>BC Fichas</b><span class="pn-also__s">Aluguel para festas e eventos</span></span><svg class="i pn-also__go" aria-hidden="true"><use href="#i-arrow"/></svg></a>
@@ -453,19 +469,19 @@
         <p class="kicker">Produtos em destaque</p>
         <h2 class="h2 h2--md" id="feat-t" data-reveal="split">Direto do catálogo.</h2>
       </div>
-      <p class="sec__intro pn-feat__intro" data-reveal>Uma amostra dos <span data-bc="total-produtos">41</span> itens<span class="pn-x"> do catálogo</span>. Preço e disponibilidade direto no WhatsApp.</p>
+      <p class="sec__intro pn-feat__intro" data-reveal>Uma amostra dos <span data-bc="total-produtos">42</span> itens<span class="pn-x"> do catálogo</span>. Preço e disponibilidade direto no WhatsApp.</p>
       <ul class="pn-cats" role="list" aria-label="Categorias do catálogo">
-        <li><a href="produtos.html?cat=balancas" data-pn-cat="balancas"><span class="pn-cats__n" data-pn-cat-nome>Balanças</span> <span class="pn-cats__q mono"><b data-pn-cat-n>16</b> itens</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+        <li><a href="produtos.html?cat=balancas" data-pn-cat="balancas"><span class="pn-cats__n" data-pn-cat-nome>Balanças</span> <span class="pn-cats__q mono"><b data-pn-cat-n>17</b> itens</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
         <li><a href="produtos.html?cat=automacao" data-pn-cat="automacao"><span class="pn-cats__n" data-pn-cat-nome>Automação</span> <span class="pn-cats__q mono"><b data-pn-cat-n>19</b> itens</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
         <li><a href="produtos.html?cat=informatica" data-pn-cat="informatica"><span class="pn-cats__n" data-pn-cat-nome>Informática</span> <span class="pn-cats__q mono"><b data-pn-cat-n>6</b> itens</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
       </ul>
     </header>
 
     <ul class="pgrid pgrid--4 pn-feat__grid" role="list" data-pn-destaques data-float-off>
-      <li class="pn-nojs"><a class="link-u" href="produtos.html#p=balmak-orion-1-plus">Balmak Órion 1 Key</a></li>
+      <li class="pn-nojs"><a class="link-u" href="produtos.html#p=toledo-prix-5-plus">Toledo Prix 5 Plus</a></li>
       <li class="pn-nojs"><a class="link-u" href="produtos.html#p=elgin-el4200">Elgin EL4200</a></li>
       <li class="pn-nojs"><a class="link-u" href="produtos.html#p=elgin-i9">Elgin i9 Full</a></li>
-      <li class="pn-nojs"><a class="link-u" href="produtos.html#p=toledo-prix-3-fit">Toledo Prix 3 Fit</a></li>
+      <li class="pn-nojs"><a class="link-u" href="produtos.html#p=balmak-orion-1-plus">Balmak Órion 1 Key</a></li>
     </ul>
 
     <div class="pn-feat__foot" data-reveal>
@@ -535,6 +551,8 @@
     <div class="ftr__legal mono">
       <p>© <span data-bc="ano">2026</span> <span data-bc="razao">Fabio de Godoy Lima Ltda</span><span class="ftr__sep"> · </span><span class="nobr">CNPJ <span data-bc="cnpj">12.403.843/0001-18</span></span></p>
       <p><span data-bc="ipem">Oficina autorizada pelo <span class="nobr">IPEM-SP</span></span><span class="ftr__sep"> · </span><span class="nobr">Rio Claro-SP</span></p>
+      <!-- Entrada do painel da equipe (produtos e fotos). nofollow: o painel não aparece no Google -->
+      <p><a class="ftr__adm" href="../painel/" rel="nofollow">Área restrita</a></p>
     </div>
   </div>
 </footer>
