@@ -1,4 +1,4 @@
-# Pacote gerado por ferramentas/montar-site.py em 11/10/2026 01:04 (origem: hospedagem/.htaccess).
+# Pacote gerado por ferramentas/montar-site.py em 11/10/2026 01:11 (origem: hospedagem/.htaccess).
 # =====================================================================
 # .htaccess — Balanças.com (HostGator / cPanel)
 # Vai na raiz do site: public_html/.htaccess
@@ -79,6 +79,12 @@ AddType application/manifest+json .webmanifest
 </IfModule>
 
 # --- Bloqueia arquivos que não devem ser baixados --------------------------
-<FilesMatch "(^\.ht|\.(bak|zip|sql|log|md|ini|sh)$)">
+# Em qualquer pasta: configurações, registros de erro e anotações.
+<FilesMatch "(^\.ht|^error_log$|\.(log|md|ini|sh)$)">
   Require all denied
 </FilesMatch>
+# Só na RAIZ do site: backups (.zip, .bak, .sql). Subpastas como /sistemas/
+# continuam podendo oferecer arquivos .zip para download.
+<IfModule mod_rewrite.c>
+  RewriteRule ^[^/]+\.(zip|bak|sql)$ - [F,L,NC]
+</IfModule>

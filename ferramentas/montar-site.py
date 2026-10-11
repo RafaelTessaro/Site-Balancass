@@ -188,7 +188,8 @@ def htaccess():
         "ErrorDocument 404 /404.html": "ErrorDocument 404 /404.html",
         "bloqueio de painel/lib e painel/privado": r"RewriteRule ^painel/(lib|privado)(/|$) - [F,L]",
         "bloqueio de config.php/LEIA-ME.md/.user.ini do painel": r"RewriteRule ^painel/(config\.php|LEIA-ME\.md|\.user\.ini|\.htaccess)$",
-        "bloqueio de .md/.ini/.bak": r"\.(bak|zip|sql|log|md|ini|sh)$",
+        "bloqueio de .md/.ini/.log em qualquer pasta": r"\.(log|md|ini|sh)$",
+        "bloqueio de .zip/.bak/.sql na raiz": r"RewriteRule ^[^/]+\.(zip|bak|sql)$ - [F,L,NC]",
     }
     for nome, trecho in obrigatorio.items():
         if trecho not in texto:
