@@ -12,7 +12,8 @@ para a  public_html  da HostGator (cPanel):
     ├── 404.html                 ← página de erro (caminhos absolutos)
     ├── css/  js/  img/          ← só o que as 6 páginas usam
     ├── compartilhado/           ← dados (empresa.js, ajustes.js, clientes.js, produtos.js), balancas.js, fotos e logos
-    ├── painel/                  ← painel de produtos e clientes (PHP), sem dados privados
+    ├── painel/                  ← painel de produtos e clientes (PHP), sem dados privados,
+    │   └── pacotes/<id>/        ←   com as atualizações do catálogo (pacote.json + fotos + recortes)
     ├── .htaccess  robots.txt  sitemap.xml  favicon.ico
 
 O que o script faz nas páginas:
@@ -27,7 +28,8 @@ No fim, confere o resultado (arquivos que faltam, restos de "../",
 preview.js, variações antigas, formato do catálogo, da lista de clientes,
 dos dados da empresa (empresa.js) e dos ajustes do painel (ajustes.js),
 a ordem dos dados em todas as páginas — empresa.js → ajustes.js →
-clientes.js → produtos.js → balancas.js —, dados privados no painel) e
+clientes.js → produtos.js → balancas.js —, dados privados no painel, as
+atualizações do catálogo em painel/pacotes/ — JSON, campos, fotos WebP) e
 para com erro se algo estiver errado. A pasta site/ antiga só é
 substituída quando tudo deu certo.
 
@@ -50,7 +52,10 @@ servidor, para extrair por cima da public_html sem perder nada:
     Empresa: contato, horário, feriados, aviso…) com --incluir-ajustes —
     quase nunca é preciso: no servidor que ainda não tem o arquivo, o painel
     cria o vazio ("window.AJUSTES = {};") na primeira vez que alguém entra;
-  * os .htaccess dessas pastas (que bloqueiam scripts) vão sempre.
+  * os .htaccess dessas pastas (que bloqueiam scripts) vão sempre;
+  * as atualizações do catálogo (painel/pacotes/<id>/) vão sempre: é assim
+    que produtos novos e trocas chegam ao catálogo do servidor (o
+    administrador revê e aplica no painel; veja painel/LEIA-ME.md).
 O zip fica ao lado da pasta de saída (padrão: atualizacao.zip na raiz do projeto).
 
 Fontes: linha-verde/ (páginas, css, js, img, 404.html), compartilhado/,
@@ -59,6 +64,7 @@ Nada nas fontes é alterado.
 """
 import argparse
 import datetime
+import subprocess
 import fnmatch
 import hashlib
 import json
@@ -101,6 +107,23 @@ SINAIS_PRIVADOS = ["primeiro-acesso.php", "tentativas.php", "registro.php", "reg
 PASTAS_DO_PAINEL = ("produtos", "produtos-recorte", "clientes")
 # Logo de cliente: só o nome do arquivo (mesma regra do painel, lib/clientes.php)
 RE_ARQUIVO_LOGO = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(?:webp|png|jpe?g|svg)$")
+# Atualizações do catálogo (painel/pacotes/<id>/): mesmas regras de painel/lib/pacotes.php e lib/catalogo.php
+RE_PACOTE = re.compile(r"^[0-9]{4}-[0-9]{2}-[a-z0-9-]{1,40}$")
+RE_ID = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+RE_ARQUIVO_FOTO = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(?:webp|jpe?g|png)$")
+CAMPOS_PACOTE = {"id", "titulo", "resumo", "criado", "operacoes"}
+CAMPOS_OPERACAO = {
+    "adicionar": {"tipo", "produto", "depois_de", "motivo"},
+    "substituir": {"tipo", "alvo", "nome_antigo", "produto", "motivo"},
+    "foto": {"tipo", "alvo", "nome_antigo", "imagem", "recorte", "antes", "motivo"},
+    "remover": {"tipo", "alvo", "nome_antigo", "motivo"},
+}
+CAMPOS_PRODUTO = {"id", "nome", "marca", "categoria", "subcategoria", "resumo", "descricao", "especificacoes",
+                  "imagem", "recorte", "estoque", "condicao", "preco", "destaque", "visivel"}
+LIMITES = {"id": 80, "nome": 90, "marca": 40, "resumo": 220, "descricao": 3000, "spec_nome": 60, "spec_valor": 300,
+           "specs": 24, "preco": 60}
+ESTOQUES = {"consulte", "disponivel", "encomenda", "esgotado"}
+CONDICOES = {"novo", "seminovo"}
 
 erros = []
 avisos = []   # não impedem a montagem; aparecem no resumo
@@ -499,6 +522,244 @@ def conferir_scripts_dados(rel, texto, completa=True):
 
 
 # ---------------------------------------------------------------------------
+# Atualizações do catálogo (painel/pacotes/<id>/: pacote.json + fotos/ + recortes/)
+# ---------------------------------------------------------------------------
+def info_webp(caminho):
+    """(largura, altura, tem_alfa) de um WebP de verdade (cabeçalho RIFF/WEBP), ou None."""
+    try:
+        with open(caminho, "rb") as f:
+            b = f.read(40)
+    except OSError:
+        return None
+    if len(b) < 30 or b[0:4] != b"RIFF" or b[8:12] != b"WEBP":
+        return None
+    bloco = b[12:16]
+    if bloco == b"VP8 " and b[23:26] == b"\x9d\x01\x2a":
+        return (int.from_bytes(b[26:28], "little") & 0x3FFF, int.from_bytes(b[28:30], "little") & 0x3FFF, False)
+    if bloco == b"VP8L" and b[20] == 0x2F:
+        bits = int.from_bytes(b[21:25], "little")
+        return ((bits & 0x3FFF) + 1, ((bits >> 14) & 0x3FFF) + 1, bool((bits >> 28) & 1))
+    if bloco == b"VP8X":
+        return (int.from_bytes(b[24:27], "little") + 1, int.from_bytes(b[27:30], "little") + 1, bool(b[20] & 0x10))
+    return None
+
+
+def texto_limpo(v, limite, obrigatorio=True):
+    return isinstance(v, str) and (bool(v.strip()) or not obrigatorio) and len(v.strip()) <= limite
+
+
+def conferir_foto_pacote(pasta, sub, arquivo, codigo, obrigatoria, problemas, onde):
+    """Foto do pacote: nome <código>-<10 hex>.webp, dentro de fotos/ ou recortes/, WebP de verdade, até 900 px."""
+    if arquivo in (None, ""):
+        if obrigatoria:
+            problemas.append(f"{onde}: falta a foto (imagem)")
+        return None
+    prefixo = codigo[:50].rstrip("-") + "-"
+    if not isinstance(arquivo, str) or not re.fullmatch(re.escape(prefixo) + r"[0-9a-f]{10}\.webp", arquivo):
+        problemas.append(f"{onde}: foto {arquivo!r} fora do padrão {prefixo}<10 hex>.webp")
+        return None
+    caminho = pasta / sub / arquivo
+    if not caminho.is_file() or caminho.is_symlink():
+        problemas.append(f"{onde}: foto {sub}/{arquivo} não está na pasta do pacote")
+        return None
+    info = info_webp(caminho)
+    if not info:
+        problemas.append(f"{onde}: {sub}/{arquivo} não é WebP de verdade")
+        return None
+    w, h, alfa = info
+    if max(w, h) > 900 or min(w, h) < 100:
+        problemas.append(f"{onde}: {sub}/{arquivo} tem {w}×{h} px (precisa de 100 a 900 px)")
+    if sub == "recortes" and not alfa:
+        avisos.append(f"pacote {pasta.name}: o recorte {arquivo} não tem fundo transparente")
+    return sub + "/" + arquivo
+
+
+def conferir_produto_pacote(p, cats, pasta, problemas, onde):
+    if not isinstance(p, dict):
+        problemas.append(f"{onde}: \"produto\" precisa ser um objeto")
+        return None
+    for k in p:
+        if k not in CAMPOS_PRODUTO:
+            problemas.append(f"{onde}: campo desconhecido no produto: {k!r}")
+    pid = p.get("id")
+    if not isinstance(pid, str) or len(pid) > LIMITES["id"] or not RE_ID.match(pid):
+        problemas.append(f"{onde}: código (id) do produto inválido: {pid!r}")
+        return None
+    onde = f"{onde} ({pid})"
+    for k, obrig in (("nome", True), ("marca", True), ("resumo", True), ("descricao", False), ("preco", False)):
+        if k in p or obrig:
+            if not texto_limpo(p.get(k), LIMITES[k], obrig):
+                problemas.append(f"{onde}: \"{k}\" precisa ser texto{' preenchido' if obrig else ''} de até {LIMITES[k]} caracteres")
+    cat = next((c for c in cats if c.get("id") == p.get("categoria")), None)
+    if not cat:
+        problemas.append(f"{onde}: categoria {p.get('categoria')!r} não existe no catálogo")
+    elif p.get("subcategoria") not in cat.get("subcategorias", []):
+        problemas.append(f"{onde}: subcategoria {p.get('subcategoria')!r} não existe em {cat.get('nome')}")
+    if p.get("estoque", "consulte") not in ESTOQUES:
+        problemas.append(f"{onde}: estoque {p.get('estoque')!r} inválido")
+    if p.get("condicao", "novo") not in CONDICOES:
+        problemas.append(f"{onde}: condição {p.get('condicao')!r} inválida")
+    for k in ("destaque", "visivel"):
+        if k in p and not isinstance(p[k], bool):
+            problemas.append(f"{onde}: \"{k}\" precisa ser true ou false")
+    specs = p.get("especificacoes")
+    if not isinstance(specs, list) or not 1 <= len(specs) <= LIMITES["specs"] or not all(
+            isinstance(s, list) and len(s) == 2 and texto_limpo(s[0], LIMITES["spec_nome"]) and texto_limpo(s[1], LIMITES["spec_valor"])
+            for s in specs):
+        problemas.append(f"{onde}: \"especificacoes\" precisa ser uma lista de 1 a {LIMITES['specs']} pares [\"Nome\", \"Valor\"] preenchidos")
+    fotos = [conferir_foto_pacote(pasta, "fotos", p.get("imagem"), pid, True, problemas, onde),
+             conferir_foto_pacote(pasta, "recortes", p.get("recorte"), pid, False, problemas, onde)]
+    return pid, [f for f in fotos if f]
+
+
+def conferir_pacotes(site):
+    """Confere cada atualização do catálogo em painel/pacotes/ (a mesma conferência do painel, em Python; e, se
+    houver PHP nesta máquina, também a do próprio painel). Devolve [(id, nº de mudanças, pendentes no projeto)]."""
+    raiz = site / "painel" / "pacotes"
+    if not raiz.is_dir():
+        erro("painel/pacotes/ faltando no pacote (atualizações do catálogo)")
+        return []
+    if not (raiz / ".htaccess").is_file():
+        erro("painel/pacotes/.htaccess faltando (bloqueia scripts e o pacote.json no navegador)")
+    try:
+        src_cat = ler(site / "compartilhado" / "dados" / "produtos.js")
+        cats, prods = json_depois(src_cat, "CATEGORIAS"), json_depois(src_cat, "PRODUTOS")
+    except Exception:
+        return []   # conferir_catalogo já aponta o problema
+    por_id = {p.get("id"): p for p in prods}
+    resumo = []
+    for pasta in sorted(x for x in raiz.iterdir()):
+        rel = pasta.relative_to(site).as_posix()
+        if pasta.is_file():
+            if pasta.name != ".htaccess":
+                erro(f"{rel}: arquivo solto em painel/pacotes/ (cada atualização fica numa pasta AAAA-MM-nome)")
+            continue
+        if not RE_PACOTE.match(pasta.name):
+            erro(f"{rel}: nome de pasta fora do padrão AAAA-MM-nome (ex.: 2026-10-catalogo)")
+            continue
+        problemas = []
+        try:
+            d = json.loads(ler(pasta / "pacote.json"))
+        except FileNotFoundError:
+            erro(f"{rel}: falta o pacote.json")
+            continue
+        except (ValueError, UnicodeDecodeError) as ex:
+            erro(f"{rel}/pacote.json não é JSON válido ({ex})")
+            continue
+        if not isinstance(d, dict):
+            erro(f"{rel}/pacote.json precisa ser um objeto {{…}}")
+            continue
+        for k in d:
+            if k not in CAMPOS_PACOTE:
+                problemas.append(f"campo desconhecido {k!r}")
+        if d.get("id") != pasta.name:
+            problemas.append(f"\"id\" ({d.get('id')!r}) diferente do nome da pasta")
+        if not texto_limpo(d.get("titulo"), 120):
+            problemas.append("\"titulo\" (texto de até 120 caracteres)")
+        if "resumo" in d and not texto_limpo(d.get("resumo"), 400, False):
+            problemas.append("\"resumo\" (texto de até 400 caracteres)")
+        try:
+            datetime.date.fromisoformat(str(d.get("criado")))
+        except ValueError:
+            problemas.append("\"criado\" (data AAAA-MM-DD)")
+        ops = d.get("operacoes")
+        if not isinstance(ops, list) or not ops or len(ops) > 200:
+            problemas.append("\"operacoes\" (lista de 1 a 200 mudanças)")
+            ops = []
+        citados, usadas, pendentes = {}, set(), 0
+        for n, op in enumerate(ops, 1):
+            onde = f"mudança {n}"
+            if not isinstance(op, dict) or op.get("tipo") not in CAMPOS_OPERACAO:
+                problemas.append(f"{onde}: \"tipo\" precisa ser adicionar, substituir, foto ou remover")
+                continue
+            tipo = op["tipo"]
+            onde = f"{onde} ({tipo})"
+            for k in op:
+                if k not in CAMPOS_OPERACAO[tipo]:
+                    problemas.append(f"{onde}: campo desconhecido {k!r}")
+            if not texto_limpo(op.get("motivo"), 300):
+                problemas.append(f"{onde}: \"motivo\" (texto de até 300 caracteres)")
+            alvo = op.get("alvo")
+            if tipo != "adicionar" and not (isinstance(alvo, str) and RE_ID.match(alvo)):
+                problemas.append(f"{onde}: \"alvo\" precisa ser o código de um produto")
+                continue
+            if tipo == "adicionar" and "depois_de" in op:
+                # Um código ou uma lista (até 5) em ordem de preferência
+                ancoras = op["depois_de"] if isinstance(op["depois_de"], list) else [op["depois_de"]]
+                if len(ancoras) > 5 or not all(isinstance(a, str) and RE_ID.match(a) for a in ancoras):
+                    problemas.append(f"{onde}: \"depois_de\" precisa ser o código de um produto ou uma lista de até 5 códigos")
+            if tipo != "adicionar" and "nome_antigo" in op and not texto_limpo(op.get("nome_antigo"), 120, False):
+                problemas.append(f"{onde}: \"nome_antigo\" (texto de até 120 caracteres)")
+            fotos, novo = [], None
+            if tipo in ("adicionar", "substituir"):
+                r = conferir_produto_pacote(op.get("produto"), cats, pasta, problemas, onde)
+                if r:
+                    novo, fotos = r
+                    if novo == alvo:
+                        problemas.append(f"{onde}: o produto novo precisa ter código diferente do antigo")
+            if tipo == "foto":
+                fotos = [conferir_foto_pacote(pasta, "fotos", op.get("imagem"), alvo, True, problemas, onde),
+                         conferir_foto_pacote(pasta, "recortes", op.get("recorte"), alvo, False, problemas, onde)]
+                fotos = [f for f in fotos if f]
+                if op.get("antes") not in (None, "") and not (isinstance(op["antes"], str) and RE_ARQUIVO_FOTO.match(op["antes"])):
+                    problemas.append(f"{onde}: \"antes\" precisa ser o nome de uma foto")
+            for c in (alvo if tipo != "adicionar" else None, novo):
+                if c:
+                    if c in citados:
+                        problemas.append(f"{onde}: o produto {c} já aparece na mudança {citados[c]}")
+                    citados[c] = n
+            for f in fotos:
+                if f in usadas:
+                    problemas.append(f"{onde}: a foto {f} já é usada em outra mudança")
+                usadas.add(f)
+            # Ainda falta aplicar no compartilhado/ do projeto? (mesma regra da tela do painel)
+            if tipo == "adicionar" and novo and novo not in por_id:
+                pendentes += 1
+            elif tipo == "substituir" and novo and novo not in por_id and alvo in por_id:
+                pendentes += 1
+            elif tipo == "foto" and alvo in por_id and por_id[alvo].get("imagem") != op.get("imagem"):
+                pendentes += 1
+            elif tipo == "remover" and alvo in por_id:
+                pendentes += 1
+        # Nada além de pacote.json, fotos/*.webp e recortes/*.webp; e nenhuma foto sobrando
+        for f in pasta.rglob("*"):
+            r = f.relative_to(pasta).as_posix()
+            if f.is_dir():
+                if r not in ("fotos", "recortes"):
+                    problemas.append(f"pasta inesperada {r}/")
+            elif r != "pacote.json" and not re.fullmatch(r"(fotos|recortes)/[^/]+\.webp", r):
+                problemas.append(f"arquivo inesperado {r} (só pacote.json, fotos/*.webp e recortes/*.webp)")
+            elif r != "pacote.json" and r not in usadas:
+                avisos.append(f"{rel}: {r} não é usada por nenhuma mudança")
+        if problemas:
+            mais = f" (e mais {len(problemas) - 6})" if len(problemas) > 6 else ""
+            erro(f"{rel}: pacote com problema — " + "; ".join(problemas[:6]) + mais)
+            continue
+        conferir_pacote_no_php(site, pasta)
+        if pendentes:
+            avisos.append(f"{rel}: {pendentes} mudança(s) ainda não aplicada(s) ao compartilhado/ do projeto "
+                          f"(php ferramentas/aplicar-pacote.php painel/pacotes/{pasta.name} compartilhado)")
+        resumo.append((pasta.name, len(ops), pendentes))
+    return resumo
+
+
+def conferir_pacote_no_php(site, pasta):
+    """Se houver PHP, roda a conferência do próprio painel (ferramentas/aplicar-pacote.php --simular)."""
+    php = shutil.which("php")
+    if not php:
+        avisos.append(f"pacote {pasta.name}: sem PHP nesta máquina, só a conferência em Python rodou")
+        return
+    try:
+        r = subprocess.run([php, str(RAIZ / "ferramentas" / "aplicar-pacote.php"), str(pasta), str(site / "compartilhado"), "--simular"],
+                           capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.TimeoutExpired) as ex:
+        avisos.append(f"pacote {pasta.name}: a conferência do painel (PHP) não rodou ({ex})")
+        return
+    if r.returncode != 0:
+        erro(f"painel/pacotes/{pasta.name}: o painel recusaria este pacote — " + (r.stderr.strip() or r.stdout.strip())[:600])
+
+
+# ---------------------------------------------------------------------------
 # Conferência final do pacote
 # ---------------------------------------------------------------------------
 # (?<![\w-]) evita atributos como data-bc-href="tel", que não são endereços
@@ -579,7 +840,8 @@ def conferir(site):
             erro(f"{rel}: arquivo privado de teste no pacote")
         if f.is_file() and f.suffix == ".php" and f.read_bytes().startswith(b"<?php exit; ?>"):
             erro(f"{rel}: arquivo da pasta privada (começa com <?php exit; ?>) no pacote")
-    for obrig in ("index.php", "config.php", ".htaccess", ".user.ini", "lib/.htaccess", "assets/painel.css", "assets/painel.js"):
+    for obrig in ("index.php", "config.php", ".htaccess", ".user.ini", "lib/.htaccess", "assets/painel.css", "assets/painel.js",
+                  "lib/pacotes.php", "lib/visoes-pacotes.php", "pacotes/.htaccess"):
         if not (pnl / obrig).is_file():
             erro(f"painel/{obrig} faltando no pacote")
     for pasta in PASTAS_DO_PAINEL:
@@ -686,6 +948,7 @@ def montar(destino):
         copiar_arvore(PAINEL, site / "painel", fora=PAINEL_FORA)
 
         conferir(site)
+        resumo_pacotes = conferir_pacotes(site)
         if erros:
             print("NÃO MONTADO — problemas encontrados:", file=sys.stderr)
             for e in erros:
@@ -719,6 +982,12 @@ def montar(destino):
     print("  Empresa: empresa.js em JSON ✓; ajustes.js no formato do painel ✓ ("
           + ("sem ajustes: vale empresa.js" if not resumo_ajustes else "ajustes em: " + ", ".join(resumo_ajustes)) + ")")
     print("  Ordem dos dados em todas as páginas ✓ (empresa.js → ajustes.js → clientes.js → produtos.js → balancas.js)")
+    if resumo_pacotes:
+        print("  Atualizações do catálogo (painel/pacotes/): " + "; ".join(
+            f"{i} ({n} mudanças, conferido ✓; " + ("já aplicado ao catálogo do projeto)" if not pend else f"{pend} ainda não aplicadas ao projeto)")
+            for i, n, pend in resumo_pacotes))
+    else:
+        print("  Atualizações do catálogo (painel/pacotes/): nenhuma")
     for a in avisos:
         print("  AVISO: " + a)
     print("  Painel: painel/ (primeiro acesso pelo código gravado no cPanel; veja painel/LEIA-ME.md)")
@@ -779,6 +1048,10 @@ def compactar_atualizacao(site, incluir_clientes, incluir_ajustes=False):
                  [f"compartilhado/img/{p}/.htaccess" for p in PASTAS_DO_PAINEL]:
         if obrig not in nomes:
             problemas.append("faltou " + obrig)
+    # As atualizações do catálogo vão sempre (é por elas que o catálogo do servidor recebe produtos novos)
+    for f in sorted((site / "painel" / "pacotes").rglob("*")):
+        if f.is_file() and f.relative_to(site).as_posix() not in nomes:
+            problemas.append("faltou " + f.relative_to(site).as_posix())
     if incluir_clientes and "compartilhado/dados/clientes.js" not in nomes:
         problemas.append("faltou compartilhado/dados/clientes.js (--incluir-clientes)")
     if incluir_ajustes and "compartilhado/dados/ajustes.js" not in nomes:

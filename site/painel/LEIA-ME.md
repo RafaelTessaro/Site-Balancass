@@ -27,6 +27,7 @@ Painel para **cadastrar, editar, esconder e excluir produtos e trocar as fotos**
 │       ├── config.php               ← caminhos e limites (único lugar com configuração)
 │       ├── lib/                     ← código (bloqueado para o navegador)
 │       ├── assets/                  ← visual (CSS e JS)
+│       ├── pacotes/                 ← atualizações do catálogo preparadas pelo suporte (item 4, “Atualizações do catálogo preparadas pelo suporte”)
 │       ├── .htaccess  .user.ini     ← proteção e limites do PHP
 │       └── LEIA-ME.md               ← este arquivo (bloqueado para o navegador, como todo .md e .htaccess)
 └── painel-balancas-privado/         ← DADOS PRIVADOS (criada sozinha, FORA do public_html)
@@ -124,7 +125,16 @@ Tudo vai para `compartilhado/dados/ajustes.js`, que guarda **só o que foi mudad
 - **Trazer de volta** (nas cópias de exclusão): devolve só aquele produto, no mesmo lugar e com a foto.
 - **Restaurar**: volta o catálogo **inteiro** (ou a lista de clientes, ou todos os dados da empresa), com as fotos, para aquele momento, e desfaz também tudo o que foi feito depois. A janela de confirmação diz quantas alterações serão desfeitas e quais. O estado atual também vira uma cópia, então dá para desfazer a restauração.
 
-**Conta**: quem está usando (nome, usuário e papel), **trocar a senha** (os outros aparelhos conectados saem), as **suas** últimas atividades e o passo a passo de **Esqueci a senha**. Para administradores, também os atalhos para **Usuários**, **Atividades** e **Cópias de segurança**.
+**Atualizações do catálogo preparadas pelo suporte** (só administradores): quando quem cuida do site prepara mudanças no catálogo (produtos novos, modelos que saíram de linha trocados pelos atuais, fotos novas, produtos que saem do site), elas chegam **dentro da atualização do site** (`atualizacao.zip`, pasta `painel/pacotes/`) e o catálogo do site **não muda sozinho**: no topo da lista de produtos aparece o cartão **“Atualização do catálogo pronta”**, com o resumo (ex.: *5 produtos novos, 7 trocados pelo modelo atual, 1 foto nova, 2 para tirar do site*) e o botão **Ver e aplicar**. Editores não veem nada disso.
+- A tela mostra cada mudança, separada em **Produtos novos**, **Trocados pelo modelo atual**, **Fotos novas** e **Saem do site**, com a foto (toque nela para ver em tamanho grande), a marca e o nome, o resumo, as 3 primeiras linhas da ficha técnica e o **porquê**. Nas trocas aparece **No lugar de:** com o produto antigo; o novo herda dele o **destaque**, o **fora do site** e a anotação interna (estoque volta para *Consulte* e o preço fica vazio; quando o antigo tem preço ou está como *Pronta entrega*, a tela avisa: *“Hoje: Pronta entrega · R$ 990,00. O modelo novo entra como “Consulte”, sem preço; o antigo sai do site.”*).
+- Cada mudança tem uma caixinha, já marcada quando pode ser aplicada. Ficam **desmarcadas** (para você decidir): o produto da **capa** do site, uma foto que você **já trocou no painel**, a troca de um produto antigo que **não está mais no catálogo** (o novo entra no fim da categoria) e a troca de um modelo que está como **Pronta entrega** (se ainda tem unidades dele para vender, deixe para depois). **Marcar todas** marca de uma vez tudo o que pode ser aplicado. O que já está assim (ex.: *Já está no catálogo*) aparece sem caixinha ativa.
+- **Aplicar os marcados**: uma janela resume o que vai mudar; tudo entra no site de uma vez, com **uma** cópia de segurança antes. O quadro **Aplicado em …** no alto da tela diz **qual cópia restaurar** para desfazer tudo de uma vez (fotos inclusive): **Conta → Cópias de segurança → Restaurar** a cópia daquela data, *“Antes de: aplicar a atualização ‘…’”* (guardada 30 dias). Se você aplicou em mais de uma vez, é a cópia de antes da **primeira** (a tela mostra a data certa); ela desfaz também o que mais tiver mudado no catálogo depois. Depois de restaurar, a tela passa a dizer *“A atualização foi desfeita”*. O que ficou desmarcado pode ser aplicado depois, na mesma tela; depois que você aplicou, o cartão da lista de produtos não volta só por causa do que ficou desmarcado.
+- **Agora não**: esconde o cartão da lista sem mudar nada no site. Para ver de novo: **Conta → Atualizações do catálogo** → **Mostrar o aviso de novo**.
+- Se a atualização chegar com defeito (arquivo incompleto, foto que falta), a tela mostra **“Pacote com problema: …”** e nada pode ser aplicado: avise quem cuida do site.
+- As fotos novas são copiadas para `compartilhado/img/produtos/` e `produtos-recorte/` (nunca por cima de outra foto); as fotos dos produtos trocados ou tirados vão para a lixeira privada, como ao excluir pelo painel. O registro (Atividades) diz *“Aplicou a atualização “…” (15 mudanças)”*.
+- A primeira é a **“Catálogo de outubro de 2026”** (`pacotes/2026-10-catalogo/`, 15 mudanças): Toledo Prix 4 Trend, Prix 6 e Prix 7T, Balmak EDGE e Urano BA37 entram; Argox OS-2140, Zebra ZT230, Datalogic QW2100, Elgin EL4200, Gertec TC 504, Busca Preço G2-E e MT 720 dão lugar aos modelos atuais (OS-214 Pro, ZT231, QuickScan QW2500, EL8600iA, TC506E 2D, Busca Preço 2D e MT-721 VT100); a Prix 5 Plus ganha a foto da versão em torre; as Balmak Órion 1 Key e 2 Key saem do site (pedido da loja). Num site instalado do zero com o `site.zip` novo, o catálogo já vem com tudo isso e o cartão não aparece (na tela, cada mudança aparece como já feita: *“Já está no catálogo”*, *“Já está com esta foto”*, *“Já não está no catálogo”*).
+
+**Conta**: quem está usando (nome, usuário e papel), **trocar a senha** (os outros aparelhos conectados saem), as **suas** últimas atividades e o passo a passo de **Esqueci a senha**. Para administradores, também os atalhos para **Usuários**, **Atividades**, **Cópias de segurança** e, quando houver, **Atualizações do catálogo**.
 
 **Usuários e papéis** (Conta → Usuários, só administradores). Cada pessoa tem o seu usuário e a sua senha, com um destes papéis:
 
@@ -134,6 +144,7 @@ Tudo vai para `compartilhado/dados/ajustes.js`, que guarda **só o que foi mudad
 | Clientes (logos) | ✓ | ✓ |
 | Empresa (dados do site) | ✓ | — |
 | Cópias de segurança (ver, trazer de volta, restaurar) | ✓ | — |
+| Atualização do catálogo (ver, aplicar, “Agora não”) | ✓ | — |
 | Usuários | ✓ | — |
 | Atividades | de todos | só as próprias (em Conta) |
 | Trocar a própria senha | ✓ | ✓ |
@@ -271,5 +282,34 @@ window.AJUSTES = {"versao": 1, "contato": {…}, "horario": {"grade": {"0": [], 
 Toda chave é opcional (ausente = vale `empresa.js`): `contato`, `endereco`, `mapa`, `horario` (`grade` em minutos desde 0h, 0 = domingo, e as `linhas` de texto geradas pelo painel), `feriados` (`municipais` “MM-DD”, `moveis` em dias a partir da Páscoa, `datas` “AAAA-MM-DD”), `aviso`, `google`, `redes`, `equipe`, `depoimentos`, `marcas`. Arquivo vazio: `window.AJUSTES = {};`. O `balancas.js` junta os ajustes no mesmo objeto `EMPRESA` conferindo cada parte (o que estiver fora do formato é ignorado e vale `empresa.js`); o `js/core.js` usa a grade e os feriados no “Aberto agora”, mostra a faixa de aviso e atualiza os dados estruturados (JSON-LD). Código: `lib/ajustes.php` (leitura, conferência, gravação, cópias `copias/ajustes-*.php`) e `lib/visoes-empresa.php` (telas). O `.htaccess` da raiz manda `ajustes.js` sem cache, e o `ferramentas/montar-site.py` confere os dois formatos e a ordem dos `<script>`.
 
 **Atualizar o site no ar sem perder o que o painel gravou:** `python3 ferramentas/montar-site.py --atualizacao` gera o `atualizacao.zip` sem `produtos.js`, sem as fotos de produtos, sem `clientes.js`/logos (estes só com `--incluir-clientes`, para quando o servidor ainda não tem `clientes.js`) e sem `ajustes.js` (o painel cria o vazio sozinho na primeira vez que alguém entra, se o servidor ainda não tiver; `--incluir-ajustes` quase nunca é necessário). Passo a passo em `docs/PUBLICAR-NO-CPANEL.md`, item 6.
+
+**Atualizações do catálogo (pacotes).** O `produtos.js` e as fotos do servidor nunca vêm nas atualizações, então mudanças preparadas fora do painel chegam como um pacote: `painel/pacotes/<id>/pacote.json` + `fotos/*.webp` (fundo branco) + `recortes/*.webp` (transparente), com `<id>` = `AAAA-MM-nome` (igual ao `"id"` do JSON). Formato:
+
+```json
+{ "id": "2026-10-catalogo", "titulo": "…", "resumo": "…", "criado": "2026-10-11",
+  "operacoes": [
+    { "tipo": "adicionar",  "produto": { …produto completo… }, "depois_de": "toledo-prix-7e", "motivo": "…" },
+    { "tipo": "adicionar",  "produto": { … }, "depois_de": ["toledo-prix-7t", "toledo-prix-7e"], "motivo": "…" },
+    { "tipo": "substituir", "alvo": "argox-os-2140", "nome_antigo": "Argox OS-2140", "produto": { … }, "motivo": "…" },
+    { "tipo": "foto",       "alvo": "toledo-prix-5-plus", "nome_antigo": "Toledo Prix 5 Plus", "imagem": "toledo-prix-5-plus-<10 hex>.webp", "recorte": "<o mesmo>", "antes": "prix5.webp", "motivo": "…" },
+    { "tipo": "remover",    "alvo": "balmak-orion-2", "nome_antigo": "Balmak Órion 2 Key", "motivo": "…" } ] }
+```
+
+- `depois_de` (opcional): um código ou uma lista de até 5 em ordem de preferência; o produto entra logo depois do primeiro que estiver no catálogo (na mesma categoria), senão no fim da categoria. Use a lista quando dois produtos novos entram no mesmo lugar (ex.: Prix 6 depois da Prix 7T, que também é nova, ou da Prix 7E): a ordem final fica a mesma, aplicados juntos ou em vezes diferentes.
+- `nome_antigo` (opcional): nome do produto antigo (marca e modelo), que a tela mostra quando ele já não está no catálogo (o dono excluiu antes, ou o site foi instalado do zero); sem ele, aparece o código.
+- **Pacote entregue não muda.** O painel guarda o que foi aplicado por mudança (tipo + código, nunca pela posição na lista), mas o conteúdo de uma mudança que já foi aplicada no servidor não é conferido de novo. Para corrigir ou acrescentar algo depois de publicar, crie **outra pasta** (outro id, ex.: `2026-11-catalogo`) com só as mudanças novas.
+
+O painel (`lib/pacotes.php`, telas em `lib/visoes-pacotes.php`) confere tudo com as **mesmas regras do formulário do produto** (`produtoDoFormulario`: limites, categoria e subcategoria do catálogo atual, estoque, condição, ficha técnica), recusa campos desconhecidos, produto citado em duas mudanças e foto repetida, e só aceita fotos com nome `<código>-<10 hex>.webp` dentro de `fotos/` e `recortes/` do pacote, WebP de verdade (`getimagesize`), até 900 px; nenhum caminho do JSON é usado como caminho. Aplicar = uma chamada a `alterarCatalogo()` (tipo `pacote`: uma cópia, protegida 30 dias) que copia as fotos das mudanças marcadas (nunca sobrescreve; se a gravação falhar, apaga as que copiou) e grava; o que foi aplicado/dispensado fica em `pacotes.php` (pasta privada). `painel/pacotes/.htaccess` (e uma regra no `.htaccess` da raiz) bloqueia scripts e o `pacote.json` no navegador; as fotos abrem, para a tela de revisão.
+
+Para o catálogo do **projeto** (os próximos `site/` e `site.zip`), aplique o mesmo pacote pela linha de comando, que usa as mesmas funções (não apaga fotos antigas nem guarda cópia; `--simular` só mostra; `--incluir-opcionais` aplica também o que a tela deixaria desmarcado):
+
+```bash
+php ferramentas/aplicar-pacote.php painel/pacotes/2026-10-catalogo compartilhado --simular
+php ferramentas/aplicar-pacote.php painel/pacotes/2026-10-catalogo compartilhado
+```
+
+O pacote `2026-10-catalogo` já foi aplicado assim ao `compartilhado/` do projeto (os `site/` e `site.zip` novos saem com o catálogo de outubro).
+
+O `ferramentas/montar-site.py` leva `painel/pacotes/` no `site/`, no `site.zip` e no `atualizacao.zip`, confere cada pacote (JSON, campos, fotos WebP, categorias; e, se houver PHP na máquina, a conferência do próprio painel) e avisa quando o pacote ainda não foi aplicado ao `compartilhado/` do projeto. Um pacote já aplicado no servidor pode continuar na pasta (a tela mostra “Aplicado em … por …”); para tirar, apague a pasta dele no servidor e no projeto.
 
 **Teste local:** `php -S 127.0.0.1:8090 -t <pasta-do-site>` com o painel em `<pasta-do-site>/painel/` e `compartilhado/` ao lado (o PHP embutido ignora `.htaccess`, e mesmo assim nada da pasta privada aparece, graças ao `<?php exit; ?>`).

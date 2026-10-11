@@ -18,6 +18,8 @@ AddType application/manifest+json .webmanifest
   RewriteEngine On
   RewriteRule ^painel/(lib|privado)(/|$) - [F,L]
   RewriteRule ^painel/(config\.php|LEIA-ME\.md|\.user\.ini|\.htaccess)$ - [F,L,NC]
+  # Atualizações do catálogo: o pacote.json só o painel lê (as fotos abrem, para a tela de revisão)
+  RewriteRule ^painel/pacotes/.*\.(json|php\d?|phtml|phar)$ - [F,L,NC]
 </IfModule>
 <FilesMatch "^(config\.php|primeiro-acesso\.php)$">
   Require all denied

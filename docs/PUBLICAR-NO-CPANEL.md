@@ -81,6 +81,8 @@ Depois que o painel começa a ser usado, **o que vale é o que está no servidor
 
 **O que é o `atualizacao.zip`:** o site completo (páginas, `css/`, `js/`, `img/`, `painel/`, `.htaccess`…) **menos** os dados que o painel altera. Ele **nunca** leva `produtos.js` nem as fotos dos produtos, então os produtos, o estoque, os destaques e as fotos que você mudou no painel **não são tocados**. A lista de clientes e os logos só vão junto quando o pacote é gerado com `--incluir-clientes`, e o `ajustes.js` (área Empresa), com `--incluir-ajustes` (veja abaixo). O `empresa.js` (os dados originais da empresa) vai sempre: o que foi mudado no painel fica no `ajustes.js` e continua valendo por cima dele. Os `.htaccess` das pastas de fotos e de logos vão sempre (são iguais aos do servidor e bloqueiam scripts).
 
+**E os produtos novos?** Mudanças no catálogo preparadas por quem cuida do site (produtos novos, modelos que saíram de linha trocados pelos atuais, fotos novas, produtos que saem do site) vão **dentro do painel**, na pasta `painel/pacotes/` (uma “atualização do catálogo”). Elas **não mudam o site sozinhas**: um administrador revê e aplica no painel (passo 8 abaixo).
+
 ### Quem mantém o projeto: gerar o pacote
 
 ```bash
@@ -93,6 +95,7 @@ python3 ferramentas/montar-site.py --atualizacao --incluir-ajustes   # raramente
 
 - **`--incluir-clientes`** leva também `compartilhado/dados/clientes.js` e os logos de `img/clientes/`. Use **só** se o servidor ainda **não** tem `compartilhado/dados/clientes.js` (ou seja, o painel ainda mostra o aviso “A lista de clientes ainda não foi instalada no servidor”). É o caso da **primeira atualização** depois da área Clientes. Depois que alguém cadastrar logos pelo painel, gere sempre **sem** essa opção, senão a lista do servidor seria substituída pela do projeto (se acontecer: painel → **Conta → Cópias de segurança** → aba **Clientes** → **Restaurar** a mais recente, que traz tudo de volta menos a última mudança feita antes da atualização).
 - O pacote também leva o `painel/config.php`. Se um dia você mudou algo nele direto no servidor, refaça a mudança depois de atualizar.
+- **Atualização do catálogo** (`painel/pacotes/<id>/`): vai sempre no pacote. Antes de gerar, aplique a mesma atualização ao catálogo do **projeto**, para os próximos `site/` e `site.zip` já saírem com ela: `php ferramentas/aplicar-pacote.php painel/pacotes/2026-10-catalogo compartilhado` (com `--simular` só mostra o que faria). O script de montagem confere o pacote e avisa se ele ainda não foi aplicado ao projeto.
 - O script confere tudo antes (formato do catálogo, da lista de clientes, do `empresa.js` e do `ajustes.js`; a ordem `empresa.js` → `ajustes.js` → `clientes.js` → `produtos.js` → `balancas.js` em todas as páginas; o `.htaccess` mandando esses arquivos sem cache) e diz no fim o que ficou de fora do zip.
 
 ### No cPanel: instalar a atualização
@@ -104,6 +107,7 @@ python3 ferramentas/montar-site.py --atualizacao --incluir-ajustes   # raramente
 5. **Apague o `atualizacao.zip`** da `public_html` (botão direito → **Excluir**). Ele não fica acessível pela internet (o `.htaccess` bloqueia `.zip` na raiz), mas não tem por que ficar lá.
 6. Abra o site numa **aba anônima** e confira as páginas que mudaram; abra o painel e veja **Produtos** e **Clientes**.
 7. **Depois desta atualização (usuários e área Empresa), entre no painel** com o usuário e a senha de sempre (é nessa hora que o painel cria o `ajustes.js`). O seu usuário vira **Administrador** sozinho, com a mesma senha (se o painel já estava aberto, continua logado). No menu aparece **Empresa**; em **Conta** ficam **Usuários**, **Atividades** e **Cópias de segurança**. Para pôr o seu nome: **Conta → Mudar o meu nome**. Para outras pessoas usarem o painel, crie um usuário para cada uma em **Conta → Usuários** (veja `COMO-ADICIONAR-PRODUTOS.md`, item 9).
+8. **Se a atualização traz mudanças no catálogo** (a de outubro de 2026 traz: 5 balanças novas, 7 modelos que saíram de linha trocados pelos atuais, a foto nova da Prix 5 Plus e as Balmak Órion fora do site): entre no painel como **administrador** → **Produtos**. No topo aparece **“Atualização do catálogo pronta”** → **Ver e aplicar** → confira cada mudança (desmarque o que não quiser) → **Aplicar os marcados** → confirme. Depois toque em **Ver no site** e confira no celular. Para desfazer tudo: **Conta → Cópias de segurança → Restaurar** a cópia *“Antes de: aplicar a atualização ‘…’”* com a data que o quadro **Aplicado em …** da tela indica (se aplicou em mais de uma vez, a de antes da primeira). Passo a passo em `COMO-ADICIONAR-PRODUTOS.md`, item 12.
 
 O `montar-site.py` acrescenta um `?v=…` nos CSS/JS de cada pacote, para o navegador dos clientes baixar a versão nova na hora (CSS e JS ficam guardados no navegador por até um mês). Por isso, gere sempre o pacote pelo script, em vez de enviar arquivos soltos.
 

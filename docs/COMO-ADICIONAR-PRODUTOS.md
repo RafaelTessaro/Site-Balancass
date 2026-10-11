@@ -1,7 +1,7 @@
 # Como adicionar e atualizar produtos no site
 
 O jeito principal é o **painel do site**: **`https://balancass.com/painel/`**.
-Pelo celular ou pelo computador você cadastra, edita, esconde e exclui produtos, troca o estoque e envia fotos, **sem mexer em código**. Na área **Clientes** você também coloca, troca e reordena os **logos dos clientes** (item 8), e na área **Empresa** muda telefone, horário, feriados, aviso no site, equipe e outros dados da empresa (item 10). Cada pessoa entra com o seu usuário, como **Administrador** ou **Editor** (item 9). O que você salva aparece no site na hora.
+Pelo celular ou pelo computador você cadastra, edita, esconde e exclui produtos, troca o estoque e envia fotos, **sem mexer em código**. Na área **Clientes** você também coloca, troca e reordena os **logos dos clientes** (item 8), e na área **Empresa** muda telefone, horário, feriados, aviso no site, equipe e outros dados da empresa (item 10). Cada pessoa entra com o seu usuário, como **Administrador** ou **Editor** (item 9). O que você salva aparece no site na hora. Quando quem cuida do site prepara produtos novos ou trocas de modelos, eles chegam prontos no painel para você conferir e aplicar (item 12).
 
 Editar o arquivo do catálogo à mão continua possível, mas virou **plano B** (fim desta página).
 
@@ -173,6 +173,21 @@ Mudou e se arrependeu? **Conta → Cópias de segurança → aba Empresa → Res
 - **Textos das páginas** (títulos, explicações, história da empresa, e o resumo que o Google e as prévias de link mostram, com o telefone e o endereço): no HTML das páginas, no projeto (`linha-verde/`).
 - **Lista para quem navega sem JavaScript:** o `produtos.html` tem uma lista curta e fixa de destaques dentro de `<noscript>` (quase ninguém vê; o Google lê a lista completa, que é gerada sozinha). Se trocar muito os destaques, atualize essa lista no projeto quando gerar o próximo pacote.
 
+## 12. Atualizações do catálogo preparadas pelo suporte
+
+Às vezes quem cuida do site prepara mudanças no catálogo para você: **produtos novos**, modelos que **saíram de linha trocados pelos atuais**, **fotos novas** e produtos que **saem do site**. Elas chegam junto com a atualização do site, mas **não mudam nada sozinhas**: você confere e decide. Só administradores veem.
+
+- **Onde aparece:** no topo da tela **Produtos**, o cartão **“Atualização do catálogo pronta”**, com o resumo (ex.: *5 produtos novos, 7 trocados pelo modelo atual, 1 foto nova, 2 para tirar do site*) e o botão **Ver e aplicar**.
+- **Conferir:** cada mudança aparece com a foto (toque nela para ver em tamanho grande), a marca e o nome, o resumo, as 3 primeiras linhas da ficha técnica e o **porquê**. Nas trocas aparece **No lugar de:** com o produto antigo. O novo herda do antigo o **destaque**, o **fora do site** e a anotação interna; o estoque volta para *Consulte* e o preço fica vazio (se o antigo tem preço ou está como *Pronta entrega*, a tela avisa).
+- **Escolher:** cada mudança tem uma caixinha, já marcada. Desmarque o que não quiser (ex.: um modelo que a loja não vai vender). Algumas já vêm **desmarcadas** para você decidir: o produto da capa, uma foto que você já trocou no painel, a troca de um produto que você já tinha tirado do catálogo ou de um modelo que está como **Pronta entrega** (se ainda tem unidades dele, deixe para depois). **Marcar todas** marca tudo de uma vez.
+- **Aplicar:** **Aplicar os marcados** → a janela resume o que vai mudar → **Aplicar**. Tudo entra no site de uma vez e o cartão some. O que ficou desmarcado pode ser aplicado depois, na mesma tela (**Conta → Atualizações do catálogo**).
+- **Agora não:** esconde o cartão sem mudar nada no site. Para ver de novo: **Conta → Atualizações do catálogo**.
+- **Desfazer:** antes de aplicar, o painel guarda **uma** cópia de segurança. O quadro **Aplicado em …**, no alto da tela da atualização, diz a data da cópia certa: **Conta → Cópias de segurança → Restaurar** a cópia daquela data (*“Antes de: aplicar a atualização ‘…’”*) volta o catálogo e as fotos como estavam (essa cópia fica guardada 30 dias). Se você aplicou em mais de uma vez, é a de antes da **primeira**, e ela desfaz também o que mais tiver mudado no catálogo depois (a janela de confirmação mostra o quê).
+- **Depois:** toque em **Ver no site** e confira no celular. Os produtos novos são produtos como os outros: estoque, preço, destaque, foto e textos se mudam pelo painel.
+- **“Pacote com problema”:** a atualização chegou com defeito (por exemplo, falta uma foto) e nada pode ser aplicado. O catálogo continua como estava: avise quem cuida do site.
+
+> **Catálogo de outubro de 2026:** 5 balanças novas (Toledo **Prix 4 Trend**, **Prix 6** e **Prix 7T**, Balmak **EDGE** e Urano **BA37**), 7 produtos de automação que saíram de linha trocados pelos atuais (Argox **OS-214 Pro**, Zebra **ZT231**, Datalogic **QuickScan QW2500**, Elgin **EL8600iA**, Gertec **TC506E 2D**, **Busca Preço 2D** e **MT-721 VT100**), a foto nova da **Prix 5 Plus** (em torre) e as duas **Balmak Órion** fora do site, como a loja pediu. O que mudou e por quê: `docs/ATUALIZAR-BALANCAS.md`; de onde saiu cada dado: `docs/FONTES-DOS-PRODUTOS.md`.
+
 ---
 
 ## Plano B: editar o catálogo à mão
@@ -189,24 +204,24 @@ O arquivo agora está no **formato JSON**, o formato que o painel lê e grava. E
 
 ### Passo a passo
 
-1. **Foto:** cPanel → Gerenciador de Arquivos → `public_html/compartilhado/img/produtos` → **Carregar**. Nome sem espaços e sem acentos (`toledo-prix-6.webp` ✅, `Balança Prix 6 (1).JPG` ❌), de preferência com 900 px de largura e fundo branco (o https://squoosh.app converte e reduz de graça).
+1. **Foto:** cPanel → Gerenciador de Arquivos → `public_html/compartilhado/img/produtos` → **Carregar**. Nome sem espaços e sem acentos (`urano-pop-z-mira.webp` ✅, `Balança POP-Z Mira (1).JPG` ❌), de preferência com 900 px de largura e fundo branco (o https://squoosh.app converte e reduz de graça).
 2. **Cópia de segurança:** em `public_html/compartilhado/dados`, botão direito em `produtos.js` → **Copiar** → `produtos-backup.js`.
 3. Botão direito em `produtos.js` → **Editar**. Copie um bloco inteiro de produto, do `{` até o `},`, cole logo depois dele e troque as informações:
 
 ```json
     {
-        "id": "toledo-prix-6",
-        "nome": "Prix 6",
-        "marca": "Toledo",
+        "id": "urano-pop-z-mira",
+        "nome": "POP-Z Mira",
+        "marca": "Urano",
         "categoria": "balancas",
-        "subcategoria": "Com impressora de etiquetas",
-        "resumo": "Balança touch com impressora de etiquetas.",
-        "descricao": "Balança com tela sensível ao toque, impressora de etiquetas e integração com o PDV.",
+        "subcategoria": "Computadoras",
+        "resumo": "Balança computadora com bateria, para o balcão.",
+        "descricao": "Pesa e calcula o preço no balcão. Funciona na tomada ou na bateria.",
         "especificacoes": [
-            ["Capacidade", "15 kg"],
-            ["Tela", "Touch"]
+            ["Capacidade", "31 kg"],
+            ["Bateria", "Até 200 h"]
         ],
-        "imagem": "toledo-prix-6.webp",
+        "imagem": "urano-pop-z-mira.webp",
         "estoque": "consulte",
         "condicao": "novo",
         "preco": "",
@@ -220,7 +235,7 @@ O arquivo agora está no **formato JSON**, o formato que o painel lê e grava. E
 
 | Campo | O que colocar |
 |---|---|
-| `"id"` | Código único, minúsculo, só letras, números e hífen. Vira o link `produtos.html#p=toledo-prix-6`. |
+| `"id"` | Código único, minúsculo, só letras, números e hífen. Vira o link `produtos.html#p=urano-pop-z-mira`. |
 | `"categoria"` | `"balancas"`, `"automacao"` ou `"informatica"`. |
 | `"subcategoria"` | Exatamente uma das listadas em `window.CATEGORIAS`, no topo do arquivo (ex.: `"Computadoras"`). |
 | `"especificacoes"` | Lista de pares `["Nome", "Valor"]`; pode ser `[]`. |

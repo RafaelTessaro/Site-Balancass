@@ -334,9 +334,38 @@
       }).join("") + "</ul></div>" : "");
   }
 
+  // Modelos que saíram de linha → o modelo atual que entrou no lugar deles (as trocas da atualização do
+  // catálogo de outubro de 2026, as mesmas dos data-ou dos kits). Um link antigo já compartilhado
+  // (WhatsApp, "Copiar link") mostra o modelo atual, quando ele está no catálogo e no site.
+  // código antigo → [código do modelo atual, nome do modelo antigo (o mesmo nome_antigo do pacote)]
+  var SUCESSORES = {
+    "argox-os-2140": ["argox-os-214-pro", "Argox OS-2140"],
+    "zebra-zt230": ["zebra-zt231", "Zebra ZT230"],
+    "datalogic-quickscan-qw2100": ["datalogic-quickscan-qw2500", "Datalogic QuickScan Lite QW2100"],
+    "elgin-el4200": ["elgin-el8600ia", "Elgin EL4200"],
+    "gertec-tc504": ["gertec-tc506e-2d", "Gertec Terminal TC 504"],
+    "gertec-g2": ["gertec-busca-preco-2d", "Gertec Busca Preço G2-E"],
+    "gertec-mt-720": ["gertec-mt-721", "Gertec Microterminal MT 720"]
+  };
+
   // Link de um produto que não está mais no catálogo (excluído, escondido ou com código novo)
   function missingHTML(id) {
     var nome = String(id || "").toLowerCase().replace(/[^a-z0-9-]+/g, "").slice(0, 60).replace(/-+/g, " ").trim();
+    var suc = Object.prototype.hasOwnProperty.call(SUCESSORES, id) ? SUCESSORES[id] : null;
+    var novo = suc ? BC.porId(suc[0]) : null;
+    if (novo) {
+      nome = suc[1];
+      var msgNovo = "Olá! Abri um link do site (produto “" + nome + "”, que saiu de linha) e vi o " + novo.marca + " " + novo.nome + ". Podem me passar o preço e a disponibilidade?";
+      return '<p class="mono dw__crumb">Catálogo</p>' +
+        '<h2 class="dw__model" id="dw-title">Este modelo saiu de linha</h2>' +
+        '<p class="dw__desc">O fabricante não vende mais este modelo (“' + esc(nome) + "”). No lugar dele, temos o " + esc(novo.marca + " " + novo.nome) + ".</p>" +
+        '<div class="dw__rel"><p class="mono dw__rel-t">Modelo atual</p><ul role="list"><li><a href="#p=' + encodeURIComponent(novo.id) + '" data-detail="' + esc(novo.id) + '">' +
+          '<img src="' + BC.imgProduto(novo, true) + '" alt="" width="64" height="44" loading="lazy"><span><small>' + esc(novo.marca) + "</small><b>" + esc(novo.nome) + '</b></span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li></ul></div>' +
+        '<div class="dw__buy"><div class="dw__ctas">' +
+          '<a class="btn btn--green btn--lg" href="' + BC.whatsLink(msgNovo) + '" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Pedir orçamento no WhatsApp">Pedir orçamento no WhatsApp</span><span class="sr-only"> (abre em nova aba)</span></a>' +
+          '<button class="btn btn--line" type="button" data-close><span class="st" data-t="Ver o catálogo">Ver o catálogo</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></button>' +
+        "</div></div>";
+    }
     var msg = "Olá! Abri um link do site" + (nome ? " (produto “" + nome + "”)" : "") + " que não está mais no catálogo. Vocês ainda têm esse produto ou um parecido?";
     return '<p class="mono dw__crumb">Catálogo</p>' +
       '<h2 class="dw__model" id="dw-title">Produto fora do catálogo</h2>' +
@@ -363,8 +392,9 @@
     openId = id;
     body.innerHTML = p ? detailHTML(p) : missingHTML(id);
     if (copyMsg) copyMsg.textContent = "";
-    refEl.textContent = p ? "Ref. " + LV.pad(BC.produtos.indexOf(p) + 1) + " · " + LV.catCurto(p.categoria) : "Fora do catálogo";
-    document.title = (p ? p.marca + " " + p.nome : "Produto fora do catálogo") + " | Catálogo Balanças.com";
+    var saiu = !p && Object.prototype.hasOwnProperty.call(SUCESSORES, id) && !!BC.porId(SUCESSORES[id][0]);
+    refEl.textContent = p ? "Ref. " + LV.pad(BC.produtos.indexOf(p) + 1) + " · " + LV.catCurto(p.categoria) : (saiu ? "Saiu de linha" : "Fora do catálogo");
+    document.title = (p ? p.marca + " " + p.nome : (saiu ? "Modelo fora de linha" : "Produto fora do catálogo")) + " | Catálogo Balanças.com";
     drawer.hidden = false;
     panel.scrollTop = 0;
     LV.inertBg(true, [".hdr"]);

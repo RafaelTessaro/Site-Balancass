@@ -719,6 +719,8 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
 .dialogo h2 { font: 800 30px/1 var(--f-display); text-transform: uppercase; color: var(--ink); }
 .dialogo p { font-size: 15.5px; overflow-wrap: anywhere; white-space: pre-line; }
 .dialogo--login { border-top-color: var(--green); }
+/* Confirmação de algo que não é perigoso (ex.: aplicar a atualização do catálogo): faixa e botão verdes */
+.dialogo--ok { border-top-color: var(--green); }
 .dialogo--login p { white-space: normal; }
 .dialogo--login .aviso { padding: 10px 12px; }
 @media (max-width: 520px) {
@@ -1104,4 +1106,127 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
 }
 @media (prefers-reduced-motion: reduce) {
   .emp-sec, .emp-item { transition: none; }
+}
+
+/* =====================================================================
+   Atualização do catálogo (pacotes de painel/pacotes/): aviso na lista
+   de produtos e tela de revisão (caixinha, foto, ficha, motivo, situação)
+   ===================================================================== */
+.pk-aviso {
+  display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px 14px; align-items: start;
+  margin: 0 0 18px; padding: 16px; background: var(--white); border: 1px solid var(--line); border-left: 6px solid var(--green);
+}
+.pk-aviso__ic { display: grid; place-items: center; width: 44px; height: 44px; background: var(--ink); color: var(--volt); transform: skewX(var(--slash)); }
+.pk-aviso__ic .i { width: 22px; height: 22px; }
+.pk-aviso__txt { display: grid; gap: 4px; min-width: 0; }
+.pk-aviso__sobre { font: 500 10.5px/1.3 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--green-deep); overflow-wrap: anywhere; }
+.pk-aviso h2 { font: 800 26px/1 var(--f-display); text-transform: uppercase; color: var(--ink); }
+.pk-aviso__txt > p:last-child { font-size: 15px; line-height: 1.45; }
+.pk-aviso__bt { grid-column: 1 / -1; justify-self: start; }
+.pk-aviso__bt .i { width: 17px; height: 17px; }
+.pk-aviso--erro { border-left-color: var(--red); }
+.pk-aviso--erro .pk-aviso__ic { background: var(--red); color: var(--white); }
+.pk-cartoes .cartao { min-height: 0; }
+
+.pk-dica { margin-top: -2px; }
+.pk-dica .i { color: var(--green-deep); }
+.pk-feito p a { white-space: normal; }
+.pk-feito--desfeita .i { color: var(--muted); }
+.pk-so-dispensar { margin-top: 4px; }
+.pk-grupo { margin-top: 24px; }
+.pk-grupo:first-of-type { margin-top: 4px; }
+.pk-lista { display: grid; gap: 10px; }
+.pk-item {
+  display: grid; grid-template-columns: 44px 88px minmax(0, 1fr);
+  grid-template-areas: "chk foto txt" "det det det";
+  gap: 10px 12px; padding: 12px;
+  background: var(--white); border: 1px solid var(--line);
+  scroll-margin: calc(var(--topo) + 16px);
+  transition: border-color .2s, box-shadow .2s;
+}
+.pk-item__chk { grid-area: chk; align-self: start; display: grid; place-items: center; width: 44px; height: 44px; cursor: pointer; }
+.pk-item__chk input { width: 26px; height: 26px; margin: 0; accent-color: var(--green-deep); cursor: pointer; }
+.pk-item__chk input:disabled { cursor: default; opacity: .55; }
+.pk-item__foto { position: relative; grid-area: foto; align-self: start; display: grid; place-items: center; width: 88px; aspect-ratio: 1; background: var(--white); border: 1px solid var(--paper-3); overflow: hidden; }
+.pk-item__foto img { width: 100%; height: 100%; object-fit: contain; padding: 5px; }
+/* A foto abre em tamanho grande (outra aba): a lupa no canto avisa que dá para tocar.
+   O link fica fora do grid (absoluto, ocupa a caixa toda): dentro do grid com aspect-ratio a altura de 100%
+   não se resolve e fotos em pé passavam da caixa (cortadas embaixo, lupa escondida). */
+.pk-item__foto a { position: absolute; inset: 0; display: block; cursor: zoom-in; }
+.pk-item__zoom { position: absolute; right: 3px; bottom: 3px; display: grid; place-items: center; width: 24px; height: 24px; background: rgba(255, 255, 255, .92); border: 1px solid var(--paper-3); color: var(--ink); }
+.pk-item__zoom .i { width: 14px; height: 14px; }
+.pk-item__foto a:hover .pk-item__zoom { background: var(--volt); border-color: var(--ink); }
+.pk-todas { margin: -4px 0 12px; }
+.pk-todas .i { width: 16px; height: 16px; }
+.pk-item__txt { grid-area: txt; align-self: center; min-width: 0; }
+.pk-item__txt .item__marca span, .pk-item__txt .item__marca { display: block; }
+.pk-item__nome { margin: 4px 0 6px; font: 800 24px/1 var(--f-display); text-transform: uppercase; color: var(--ink); overflow-wrap: anywhere; }
+.pk-item__nome label { cursor: pointer; }
+.pk-item__det { grid-area: det; display: grid; gap: 8px; min-width: 0; font-size: 14.5px; line-height: 1.45; }
+/* Celular: resumo, ficha técnica e depois o resto (o bloco de texto "some" e os itens se ordenam) */
+.pk-item__info { display: contents; }
+.pk-item__resumo { order: 0; }
+.pk-specs { order: 1; }
+.pk-troca, .pk-motivo, .pk-situacao, .pk-alerta { order: 2; }
+.pk-specs { display: grid; margin: 0; border-top: 1px solid var(--paper-3); }
+.pk-specs div { display: grid; grid-template-columns: minmax(84px, 36%) minmax(0, 1fr); gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--paper-3); }
+.pk-specs dt { font: 500 10.5px/1.6 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); overflow-wrap: anywhere; }
+.pk-specs dd { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+.pk-troca { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--paper); border: 1px dashed var(--line-2); }
+.pk-troca img { flex: none; width: 48px; height: 48px; object-fit: contain; padding: 3px; background: var(--white); border: 1px solid var(--paper-3); }
+.pk-troca > a { flex: none; display: block; cursor: zoom-in; }
+.pk-troca p { min-width: 0; overflow-wrap: anywhere; }
+.pk-troca p > span { color: var(--muted); }
+.pk-troca .pk-troca__herda { color: var(--green-deep); font-weight: 600; }
+.pk-motivo { color: var(--muted); }
+.pk-motivo b { color: var(--ink); font-weight: 600; }
+.pk-situacao { font-weight: 600; color: var(--ink); }
+.pk-situacao a { font-weight: 700; white-space: nowrap; }
+.pk-situacao--opcional { color: var(--amber); }
+.pk-situacao--impossivel { color: var(--red); }
+.pk-situacao--feito { color: var(--green-deep); }
+.pk-alerta { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; background: var(--amber-soft); color: var(--amber); font-weight: 600; }
+.pk-alerta .i { flex: none; width: 18px; height: 18px; margin-top: 1px; }
+.pk-item.is-opcional { border-color: #E3B341; }
+.pk-item.is-feito, .pk-item.is-impossivel { background: #FAFAF7; border-style: dashed; border-color: var(--line-2); }
+.pk-item.is-feito .pk-item__foto img, .pk-item.is-impossivel .pk-item__foto img { opacity: .6; }
+.pk-item:has(input:checked) { border-color: var(--green); box-shadow: inset 4px 0 0 var(--green); }
+.selo--ok { background: var(--green-soft); border-color: #8CCB9F; color: var(--green-deep); }
+.pk-barra { grid-template-columns: auto minmax(0, 1fr); align-items: center; margin-top: 18px; }
+.pk-barra__conta { grid-column: 1 / -1; font-size: 13.5px; font-weight: 600; color: var(--muted); }
+.pk-barra__form { margin: 0; display: grid; }
+.pk-barra__form .btn { padding-inline: 22px; }
+.pk-barra--so .btn--verde { grid-column: 1 / -1; }
+.pk-aviso--erro .pk-aviso__sobre { color: var(--muted); }
+/* Celular: os dois botões cabem lado a lado (texto pode quebrar; sem o ícone) */
+@media (max-width: 599px) {
+  .pk-barra .btn { padding-inline: 14px; font-size: 13px; letter-spacing: .02em; white-space: normal; text-align: center; line-height: 1.15; }
+  .pk-barra .btn .i { display: none; }
+}
+@media (min-width: 600px) {
+  .pk-barra { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .pk-barra__conta { grid-column: auto; }
+  .pk-barra--so .btn--verde { grid-column: auto; }
+}
+@media (min-width: 700px) {
+  .pk-aviso { grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; padding: 16px 18px; }
+  .pk-aviso__bt { grid-column: auto; }
+  .pk-item {
+    grid-template-columns: 44px 120px minmax(0, 1fr); grid-template-rows: auto 1fr;
+    grid-template-areas: "chk foto txt" "chk foto det"; gap: 6px 16px; padding: 14px;
+  }
+  .pk-item__foto { width: 120px; }
+  .pk-item__txt { align-self: start; }
+}
+@media (min-width: 1000px) {
+  .pk-item__det { grid-template-columns: minmax(0, 1fr) minmax(260px, .85fr); column-gap: 26px; align-items: start; }
+  .pk-item__info { display: grid; gap: 8px; align-content: start; }
+  .pk-item__info:only-child { grid-column: 1 / -1; }
+  .pk-specs { grid-column: 2; grid-row: 1; }
+}
+@media (min-width: 600px) {
+  .hub__cartoes--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1100px) {
+  .hub__cartoes--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }

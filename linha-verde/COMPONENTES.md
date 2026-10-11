@@ -601,6 +601,13 @@ Extras: `data-reveal-delay="0.2"`, `data-reveal-start="top 80%"`.
 - `data-ticker` (+ `data-skew`, `data-speed="0.6"`) — faixa corrida; `data-sat` — animação SAT→NFC-e; `data-stamp` — carimbo "bate" na página.
 - `data-float-off` — enquanto o bloco está na tela, os botões flutuantes somem (use nos CTAs do hero e em blocos com WhatsApp).
 - `data-acc` — acordeão; `data-form` — formulário que monta a mensagem do WhatsApp; `data-kits` — abas de kits.
+- Produtos dos kits (`a.kit__p`): `data-detail="<código atual>"` + `data-ou="<código antigo> …"` (os que ele substitui,
+  em ordem de preferência). O core usa o primeiro que existir no catálogo do servidor (marca, nome e foto vêm de lá) e
+  tira o item se nenhum existir. O `src` do HTML é só a reserva sem JavaScript: aponte para uma foto que já existe.
+- Link antigo de um modelo que saiu de linha (`produtos.html#p=<código antigo>`): o `SUCESSORES` do `js/catalogo.js`
+  liga o código antigo ao do modelo atual; se o atual está no site, o painel de detalhes mostra “Este modelo saiu de
+  linha” com o link para ele, em vez de “Produto fora do catálogo”. Ao trocar um modelo por outro (pacote do painel,
+  tipo `substituir`), acrescente o par lá também.
 
 ### API JS (`window.LV`, disponível depois do `core.js`)
 ```js

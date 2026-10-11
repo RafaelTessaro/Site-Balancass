@@ -41,8 +41,8 @@ const RE_FOTO_DO_PAINEL = '/^[a-z0-9-]{1,60}-[0-9a-f]{10}\.(?:webp|jpg|png)$/';
 const RE_COPIA = '/^copia-(\d{8})-(\d{6})(?:-\d{3})?-[0-9a-f]{4}(?:-([a-z]{3,12}))?\.php$/';
 // Ações seguidas desses tipos (em poucos minutos) viram uma cópia só
 const TIPOS_JUNTAR = ['ordem', 'estoque', 'destaque', 'visivel'];
-// Cópias que ficam guardadas mais tempo (config: copias_protegidas_dias)
-const TIPOS_PROTEGIDOS = ['excluir', 'restaurar'];
+// Cópias que ficam guardadas mais tempo (config: copias_protegidas_dias); "pacote" = antes de aplicar uma atualização do catálogo
+const TIPOS_PROTEGIDOS = ['excluir', 'restaurar', 'pacote'];
 // Página inicial do site (js/home-v3.js): quantos destaques cabem e a ordem do estoque no site
 const HOME_MAX_DESTAQUES = 8;
 const ORDEM_ESTOQUE_SITE = ['disponivel' => 0, 'consulte' => 1, 'encomenda' => 1, 'esgotado' => 2];
@@ -226,14 +226,25 @@ function alterarCatalogo(array $acao, callable $fn): array
     return comTrava('catalogo', static function () use ($acao, $fn): array {
         $antes = lerCatalogo();
         $novo = $fn($antes);
+        // Quem só sabe o que fez depois de olhar o catálogo (ex.: atualização do catálogo) devolve a frase final
+        if (is_string($novo['feito'] ?? null) && $novo['feito'] !== '') $acao['feito'] = $novo['feito'];
         $categorias = $novo['categorias'] ?? $antes['categorias'];
         $produtos = array_values($novo['produtos']);
         // Confere antes de mexer em qualquer coisa (a gravação confere de novo)
         [$publicos] = separarNotas($produtos);
         $conf = interpretarCatalogo(montarCatalogo($categorias, $publicos));
         if ($conf['produtos'] !== $publicos) throw new RuntimeException('conferência do catálogo falhou');
-        $copia = fazerCopia($antes, $acao);
-        gravarCatalogo($categorias, $produtos);
+        $hashAntes = @hash_file('sha256', arquivoCatalogo());
+        $desfazerCopia = null;
+        $copia = fazerCopia($antes, $acao, $desfazerCopia);
+        try {
+            gravarCatalogo($categorias, $produtos);
+        } catch (Throwable $t) {
+            // O produtos.js não mudou: a cópia não desfaz nada e só confundiria quem for restaurar
+            // ("Aplicou…" que nunca aconteceu). Se o arquivo chegou a mudar, a cópia fica, como deve.
+            if (is_callable($desfazerCopia) && @hash_file('sha256', arquivoCatalogo()) === $hashAntes) $desfazerCopia();
+            throw $t;
+        }
         sincronizarFotos($antes['produtos'], $produtos);
         registrar('catalogo', (string) ($acao['feito'] ?? $acao['antes'] ?? ''));
         return ['categorias' => $categorias, 'produtos' => $produtos, 'copia' => $copia];
@@ -501,9 +512,10 @@ function moverProduto(array $produtos, string $id, string $direcao): ?array
 /**
  * Guarda o catálogo de antes da alteração. Ações seguidas do mesmo tipo (ordem, estoque,
  * destaque, no site), feitas em menos de 10 min, ficam numa cópia só: a de antes da primeira.
- * Devolve o nome da cópia.
+ * Devolve o nome da cópia; em $desfazer, uma função que desfaz o que foi feito aqui (apaga a
+ * cópia nova ou devolve a juntada como estava), para quando a gravação do catálogo falha.
  */
-function fazerCopia(array $catalogo, array $acao): string
+function fazerCopia(array $catalogo, array $acao, ?callable &$desfazer = null): string
 {
     $tipo = preg_match('/^[a-z]{3,12}$/', (string) ($acao['tipo'] ?? '')) ? (string) $acao['tipo'] : 'outro';
     $micro = microtime(true);
@@ -515,6 +527,8 @@ function fazerCopia(array $catalogo, array $acao): string
         $janela = max(1, (int) (cfg('copias_juntar_min') ?? 10)) * 60;
         if (is_array($d) && ($d['tipo'] ?? '') === $tipo && ($d['usuario'] ?? '') === $usuario
             && (int) ($d['ultimo'] ?? $d['criado'] ?? 0) >= $agora - $janela && is_array($d['produtos'] ?? null)) {
+            $original = $d;
+            $desfazer = static function () use ($ultima, $original): void { gravarJsonPrivado('copias/' . basename($ultima), $original); };
             $d['ultimo'] = $agora;
             $d['juntou'] = (int) ($d['juntou'] ?? 1) + 1;
             $d['feitos'] = array_slice(array_merge(is_array($d['feitos'] ?? null) ? $d['feitos'] : [], [(string) ($acao['feito'] ?? '')]), -40);
@@ -537,6 +551,7 @@ function fazerCopia(array $catalogo, array $acao): string
         'categorias' => $catalogo['categorias'],
         'produtos' => $catalogo['produtos'],
     ]);
+    $desfazer = static function () use ($nome): void { @unlink(caminhoPrivado('copias/' . $nome)); };
     podarCopias();
     limparLixeira();
     return $nome;
@@ -623,7 +638,7 @@ function frasePassado(string $motivo): string
         'cadastrar ' => 'Cadastrou ', 'editar ' => 'Editou ', 'excluir ' => 'Excluiu ',
         'mudar a ordem de ' => 'Mudou a ordem de ', 'mudar o estoque de ' => 'Mudou o estoque de ',
         'pôr ' => 'Pôs ', 'tirar ' => 'Tirou ', 'mostrar ' => 'Mostrou ', 'esconder ' => 'Escondeu ',
-        'restaurar ' => 'Restaurou ', 'trazer de volta ' => 'Trouxe de volta ',
+        'restaurar ' => 'Restaurou ', 'trazer de volta ' => 'Trouxe de volta ', 'aplicar ' => 'Aplicou ',
     ];
     foreach ($verbos as $de => $para) if (str_starts_with($s, $de)) return $para . substr($s, strlen($de));
     return $s === '' ? 'Alteração no catálogo' : ucfirst($s);

@@ -326,7 +326,7 @@ function telaInstalar(string $erro = '', array $v = []): void
 /* ------------------------------------------------------------------
    Lista de produtos
    ------------------------------------------------------------------ */
-function telaLista(array $cat, array $filtro): void
+function telaLista(array $cat, array $filtro, array $pacotes = []): void
 {
     $categorias = $cat['categorias'];
     $produtos = $cat['produtos'];
@@ -350,11 +350,12 @@ function telaLista(array $cat, array $filtro): void
     };
     $achados = count(array_filter($produtos, $passa));
 
-    pagina('Produtos', static function () use ($categorias, $produtos, $porCat, $filtro, $passa, $total, $visiveis, $destaques, $achados, $ctx): void {
+    pagina('Produtos', static function () use ($categorias, $produtos, $porCat, $filtro, $passa, $total, $visiveis, $destaques, $achados, $ctx, $pacotes): void {
         cabecalhoPagina('Catálogo do site', 'Produtos',
             '<span><b data-n="total">' . $total . '</b> produtos</span><span><b data-n="site">' . $visiveis . '</b> no site</span><span><b data-n="destaque">' . $destaques . '</b> em destaque</span>'
             . '<span><b data-n="home">' . count($ctx['home']) . '</b> na página inicial</span>',
             '<a class="btn btn--verde" href="' . e(link_('novo')) . '">' . icone('plus') . 'Novo produto</a>');
+        if ($pacotes) avisoPacotes($pacotes);   // só administradores (acaoLista)
         ?>
   <form class="filtros" method="get" action="index.php" role="search" data-filtros>
     <label class="busca">
@@ -731,7 +732,7 @@ function telaCopias(array $copias, ?int $totalAtual, array $idsAtuais = []): voi
         migalhaConta();
         cabecalhoPagina('Desfazer alterações', 'Cópias de segurança',
             'Antes de cada mudança no catálogo o painel guarda uma cópia de como ele estava. Ficam sempre as ' . (int) cfg('copias_max')
-            . ' mais recentes e tudo dos últimos ' . (int) cfg('copias_dias') . ' dias; as de <b>excluir</b> e <b>restaurar</b> ficam ' . (int) cfg('copias_protegidas_dias') . ' dias. '
+            . ' mais recentes e tudo dos últimos ' . (int) cfg('copias_dias') . ' dias; as de <b>excluir</b>, <b>restaurar</b> e <b>aplicar uma atualização do catálogo</b> ficam ' . (int) cfg('copias_protegidas_dias') . ' dias. '
             . 'Mudanças seguidas do mesmo tipo (ordem, estoque, destaque, no site) feitas em menos de ' . (int) cfg('copias_juntar_min') . ' minutos ficam numa cópia só. '
             . '<b>Restaurar</b> volta o catálogo inteiro, com as fotos, e desfaz também o que foi feito depois. Para devolver só um produto excluído, use <b>Trazer de volta</b>.');
         abasCopias('produtos');

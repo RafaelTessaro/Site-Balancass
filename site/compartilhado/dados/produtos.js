@@ -15,7 +15,7 @@
    encomenda | esgotado), condicao (novo | seminovo), preco ("" = Consulte),
    destaque e visivel. (A anotação interna de cada produto fica só no
    painel, na pasta privada: não é publicada aqui.)
-   Última gravação pelo painel: 11/10/2026 00:39.
+   Última gravação pelo painel: 11/10/2026 12:13.
    ===================================================================== */
 window.CATEGORIAS = [
     {
@@ -108,6 +108,112 @@ window.PRODUTOS = [
         "destaque": true
     },
     {
+        "id": "toledo-prix-7t",
+        "nome": "Prix 7T",
+        "marca": "Toledo",
+        "categoria": "balancas",
+        "subcategoria": "Com impressora de etiquetas",
+        "resumo": "Etiquetadora de 32 kg que reconhece o produto pela imagem, com 100.000 itens e tela de toque de 12,1 polegadas.",
+        "descricao": "Pesa, calcula o preço e imprime etiquetas, na venda direta no balcão ou na pré-embalagem, a até 130 mm/s. Câmeras na torre reconhecem o produto pela imagem (a balança aprende os itens da loja durante a operação) e o rosto do operador, o que dá mais controle em lojas com vários turnos. O operador usa uma tela de toque de 12,1 polegadas, com teclas rápidas identificadas por imagem, e o cliente vê num display de 7 polegadas imagens e vídeos das suas promoções, gerenciados pelo MGV 7 ou pelo MGV Cloud. Guarda até 100.000 itens com receita e tabela nutricional, aceita etiqueta contínua e imprime códigos 2D (GS1 QR Code e GS1 Data Matrix) que podem levar validade e lote. Indicada para supermercados, hipermercados, padarias, açougues e hortifrútis.",
+        "especificacoes": [
+            [
+                "Capacidade",
+                "32 kg (2 g até 6 kg / 5 g até 15 kg / 10 g até 32 kg)"
+            ],
+            [
+                "Memória",
+                "Até 100.000 itens"
+            ],
+            [
+                "Impressão",
+                "Térmica, 8 pontos/mm, até 130 mm/s; etiquetas de 30 a 60 mm de largura; aceita etiqueta contínua"
+            ],
+            [
+                "Display",
+                "Tela sensível ao toque colorida de 12,1\" para o operador; LCD colorido de 7\" para o cliente, com imagens e vídeos"
+            ],
+            [
+                "Inteligência artificial",
+                "Reconhecimento do produto por imagem e reconhecimento facial do operador, com câmeras na torre"
+            ],
+            [
+                "Códigos",
+                "Code 128, GS1 DataBar Expanded, GS1 QR Code, GS1 Data Matrix e GS1 Digital Link"
+            ],
+            [
+                "Conectividade",
+                "Ethernet (Gigabit) e Wi-Fi (802.11 b/g/n); integração com MGV 7 e MGV Cloud"
+            ],
+            [
+                "Cadastro",
+                "100.000 receitas, 100.000 tabelas nutricionais, teclas de acesso rápido com imagem e até 500 operadores"
+            ],
+            [
+                "Prato",
+                "Aço inoxidável, 495 x 300 mm"
+            ]
+        ],
+        "imagem": "toledo-prix-7t-8e917913b2.webp",
+        "recorte": "toledo-prix-7t-8e917913b2.webp",
+        "estoque": "consulte",
+        "condicao": "novo",
+        "preco": "",
+        "destaque": false
+    },
+    {
+        "id": "toledo-prix-6",
+        "nome": "Prix 6",
+        "marca": "Toledo",
+        "categoria": "balancas",
+        "subcategoria": "Com impressora de etiquetas",
+        "resumo": "Etiquetadora de 32 kg com 20.000 itens e display colorido de 7 polegadas que mostra ao cliente o produto e as promoções.",
+        "descricao": "Pesa, calcula o preço e imprime etiquetas, na venda direta no balcão ou na pré-embalagem, a até 100 mm/s. O operador usa um display fluorescente a vácuo de 2 linhas, fácil de ler de qualquer ângulo, e o cliente acompanha a venda num display colorido de 7 polegadas que mostra a imagem do produto e até 10 mensagens de promoção; com a torre opcional, esse display fica no alto. Guarda até 20.000 itens com receita e tabela nutricional, acessa 180 itens pelas 60 teclas rápidas e registra as vendas de até 500 operadores. Aceita etiqueta contínua, que economiza papel, e, conforme a versão, imprime códigos 2D com validade e lote. Indicada para padarias, açougues e balcões com alto volume de produção.",
+        "especificacoes": [
+            [
+                "Capacidade",
+                "32 kg (2 g até 6 kg / 5 g até 15 kg / 10 g até 32 kg)"
+            ],
+            [
+                "Memória",
+                "Até 20.000 itens"
+            ],
+            [
+                "Impressão",
+                "Térmica, 8 pontos/mm, até 100 mm/s; etiquetas de até 60 mm de largura; aceita etiqueta contínua"
+            ],
+            [
+                "Display",
+                "Fluorescente a vácuo (VFD), 2 linhas de 20 dígitos, para o operador; LCD colorido de 7\" para o cliente, com imagens e mensagens"
+            ],
+            [
+                "Versões",
+                "Standard ou com torre (opcional), em que colunas duplas elevam o display do cliente"
+            ],
+            [
+                "Códigos",
+                "Code 128 e GS1 DataBar Expanded; GS1 QR Code, GS1 Data Matrix e GS1 Digital Link, conforme a versão"
+            ],
+            [
+                "Conectividade",
+                "Ethernet e Wi-Fi (802.11 b/g); integração com o MGV 7"
+            ],
+            [
+                "Cadastro",
+                "20.000 receitas, 20.000 tabelas nutricionais, 180 itens nas teclas rápidas e até 500 operadores"
+            ],
+            [
+                "Prato",
+                "Aço inoxidável, com aba para escoamento de líquido"
+            ]
+        ],
+        "imagem": "toledo-prix-6-ab09c21dc2.webp",
+        "recorte": "toledo-prix-6-ab09c21dc2.webp",
+        "estoque": "consulte",
+        "condicao": "novo",
+        "preco": "",
+        "destaque": false
+    },
+    {
         "id": "toledo-prix-5-plus",
         "nome": "Prix 5 Plus",
         "marca": "Toledo",
@@ -137,11 +243,65 @@ window.PRODUTOS = [
                 "Ethernet e Wi-Fi (802.11 b/g/n)"
             ]
         ],
-        "imagem": "prix5.webp",
+        "imagem": "toledo-prix-5-plus-495bf16c9c.webp",
+        "recorte": "toledo-prix-5-plus-495bf16c9c.webp",
         "estoque": "consulte",
         "condicao": "novo",
         "preco": "",
         "destaque": true
+    },
+    {
+        "id": "toledo-prix-4-trend",
+        "nome": "Prix 4 Trend",
+        "marca": "Toledo",
+        "categoria": "balancas",
+        "subcategoria": "Com impressora de etiquetas",
+        "resumo": "Etiquetadora compacta de 32 kg com 2.000 itens, Ethernet e Wi-Fi e Modo Comanda, que soma as compras numa comanda só.",
+        "descricao": "Pesa, calcula o preço e imprime etiquetas com código de barras EAN-13 para leitura no caixa, na venda direta no balcão ou na pré-embalagem, a 70 mm/s. No Modo Comanda, soma as compras de um cliente e, no final, imprime uma comanda em papel contínuo com o total em código de barras e a identificação do operador, sem gastar etiqueta adesiva. Guarda até 2.000 itens, cadastrados na balança ou pelo computador, e as 48 teclas rápidas acessam até 144 itens sem digitar código. Trabalha em rede Ethernet ou Wi-Fi com o MGV, o programa de gestão de vendas da Toledo, e tem prato de inox removível, fácil de limpar. Indicada para mercados, mercearias, padarias, açougues e hortifrútis de pequeno e médio porte.",
+        "especificacoes": [
+            [
+                "Capacidade",
+                "32 kg (2 g até 6 kg / 5 g até 15 kg / 10 g até 32 kg)"
+            ],
+            [
+                "Memória",
+                "Até 2.000 itens"
+            ],
+            [
+                "Impressão",
+                "Térmica, 8 pontos/mm, 70 mm/s; etiquetas de até 60 mm de largura; código de barras EAN-13"
+            ],
+            [
+                "Modo Comanda",
+                "Soma as vendas do cliente e imprime uma comanda em papel térmico contínuo de 40 ou 60 mm"
+            ],
+            [
+                "Display",
+                "LCD alfanumérico com backlight azul, para o operador e para o cliente"
+            ],
+            [
+                "Teclas rápidas",
+                "48 teclas, com acesso a até 144 itens"
+            ],
+            [
+                "Conectividade",
+                "Ethernet e Wi-Fi (802.11 b/g); integração com o MGV; USB para backup"
+            ],
+            [
+                "Prato",
+                "Aço inoxidável, 359 x 251 mm, removível, com aba para escoamento de líquido"
+            ],
+            [
+                "Alimentação",
+                "Multivoltagem automática, de 93,5 a 264 Vca (50 a 60 Hz)"
+            ]
+        ],
+        "imagem": "toledo-prix-4-trend-7bfd42eccc.webp",
+        "recorte": "toledo-prix-4-trend-7bfd42eccc.webp",
+        "estoque": "consulte",
+        "condicao": "novo",
+        "preco": "",
+        "destaque": false
     },
     {
         "id": "toledo-prix-4-uno",
@@ -220,76 +380,106 @@ window.PRODUTOS = [
         "destaque": false
     },
     {
-        "id": "balmak-orion-1-plus",
-        "nome": "Órion 1 Key",
+        "id": "balmak-edge",
+        "nome": "EDGE",
         "marca": "Balmak",
         "categoria": "balancas",
         "subcategoria": "Com impressora de etiquetas",
-        "resumo": "Etiquetadora de 30 kg com 4.000 itens, display SUPERLUX e impressão a 100 mm/s.",
-        "descricao": "Pesa, calcula o preço e imprime etiquetas com código de barras EAN-13 para leitura no caixa, tanto na venda direta no balcão quanto na pré-embalagem. O display SUPERLUX, de três linhas e retroiluminado, facilita a leitura mesmo com pouca luz, e a impressora aceita etiquetas de 30 x 30 mm até 60 x 120 mm. Vem nas versões plana e torre, com Ethernet e Wi-Fi na mesma balança, e é indicada para o médio e o grande varejo.",
+        "resumo": "Etiquetadora torre de 33 kg com 10.000 itens, display colorido com a imagem do produto para operador e cliente e carga de dados por pen drive.",
+        "descricao": "Pesa, calcula o preço e imprime etiquetas com código de barras, na venda direta no balcão ou na pré-embalagem, a 100 mm/s. Feita pela Balmak para o pequeno e o médio varejo, tem formato torre: o display colorido, no alto da coluna, mostra ao operador e ao cliente as informações da pesagem e a imagem do item pesado. Guarda até 10.000 itens, imprime etiquetas com tabela nutricional e os selos de “alto em” da RDC 429 da Anvisa e tem 352 teclas de atalho, em 4 páginas de teclado. O cadastro pode ser feito no teclado da própria balança, pela rede com o software de gestão EDGE ou por pen drive na porta USB, então ela também funciona sozinha, sem computador. O prato de aço inox, de 383 x 262 mm, tem grade de apoio. Indicada para padarias, açougues, hortifrútis, lojas de conveniência, sorveterias, restaurantes e mercados.",
         "especificacoes": [
             [
                 "Capacidade",
-                "30 kg (2 g até 6 kg / 5 g até 15 kg / 10 g até 30 kg)"
+                "33 kg (2 g até 6 kg / 5 g até 15 kg / 10 g até 33 kg)"
             ],
             [
                 "Memória",
-                "Até 4.000 itens"
-            ],
-            [
-                "Display",
-                "SUPERLUX LCD alfanumérico de alta definição, retroiluminado, com 3 linhas"
+                "Até 10.000 itens"
             ],
             [
                 "Impressão",
-                "Térmica, 8 pontos/mm, 100 mm/s"
+                "Térmica, 8 pontos/mm, 100 mm/s; etiquetas de 30 x 30 mm até 60 x 130 mm; cabeça térmica com vida útil de 150 km"
+            ],
+            [
+                "Display",
+                "TFT colorido no alto da torre, para o operador e para o cliente, com a imagem do item pesado"
+            ],
+            [
+                "Teclas rápidas",
+                "352 teclas de atalho, em 4 páginas de teclado"
             ],
             [
                 "Etiquetas",
-                "De 30 x 30 mm até 60 x 120 mm"
+                "99 modelos (16 fixos e 83 personalizáveis no software de gestão EDGE); tabela nutricional com os selos “alto em” (RDC 429 da Anvisa)"
             ],
             [
                 "Conectividade",
-                "Ethernet (TCP/IP) e Wi-Fi (802.11)"
+                "Ethernet (TCP/IP) e Wi-Fi (802.11), conforme a versão; USB para carga de dados por pen drive"
+            ],
+            [
+                "Prato",
+                "Aço inoxidável, 383 x 262 mm, com grade de apoio"
+            ],
+            [
+                "Formato",
+                "Torre; 400 x 440 x 570 mm (L x P x A); 6,5 kg"
             ]
         ],
-        "imagem": "balmak.webp",
+        "imagem": "balmak-edge-bc25842b92.webp",
+        "recorte": "balmak-edge-bc25842b92.webp",
         "estoque": "consulte",
         "condicao": "novo",
         "preco": "",
-        "destaque": true
+        "destaque": false
     },
     {
-        "id": "balmak-orion-2",
-        "nome": "Órion 2 Key",
-        "marca": "Balmak",
+        "id": "urano-ba37",
+        "nome": "BA37",
+        "marca": "Urano",
         "categoria": "balancas",
         "subcategoria": "Com impressora de etiquetas",
-        "resumo": "Etiquetadora de 30 kg com display gráfico, 5.000 itens e versões plana ou torre.",
-        "descricao": "Pesa, calcula o preço e imprime etiquetas com código de barras EAN-13 ou Code 128. O Code 128 pode levar a data de validade no código e, se isso estiver programado no sistema do caixa, o operador recebe um aviso quando o item está vencido. O display gráfico azul, de 240 x 64 pixels, pode mostrar logotipos e mensagens publicitárias, e a memória comporta até 5.000 itens. Vem nas versões plana e torre, com Ethernet e Wi-Fi na mesma balança, e é indicada para o médio e o grande varejo.",
+        "resumo": "Etiquetadora compacta de 31 kg, sem coluna, com memória para 10.000 produtos, rede por cabo (ou Wi-Fi, conforme o modelo) e a data de validade no código de barras.",
+        "descricao": "Pesa, calcula o preço e imprime etiquetas com código de barras, na venda direta no balcão ou na pré-embalagem, de produtos vendidos por peso ou por unidade, inclusive congelados (glaciados) e com líquido (drenados). É a versão compacta, sem coluna, com 40 teclas rápidas. Guarda até 10.000 produtos com tabela nutricional, receitas, alérgenos e tara predeterminada, e põe a data de validade no código de barras, para o caixa barrar produto vencido (se o sistema do caixa aceitar). Entra na rede por cabo ou, conforme o modelo, por Wi-Fi, e o cadastro é feito no Urano Connect, programa gratuito que acompanha a balança, no próprio teclado ou por pen drive. Não tem bateria: trabalha ligada na tomada. Indicada para açougues, padarias, restaurantes e supermercados.",
         "especificacoes": [
             [
                 "Capacidade",
-                "30 kg (2 g até 6 kg / 5 g até 15 kg / 10 g até 30 kg)"
+                "31 kg (2 g até 6 kg / 5 g até 15 kg / 10 g até 31 kg)"
             ],
             [
                 "Memória",
-                "Até 5.000 itens"
-            ],
-            [
-                "Display",
-                "Gráfico azul matricial retroiluminado, 240 x 64 pixels"
+                "Até 10.000 itens"
             ],
             [
                 "Impressão",
-                "Térmica, 8 pontos/mm, 100 mm/s; etiquetas de 30 x 30 mm até 60 x 120 mm"
+                "Térmica embutida, velocidade ajustável; etiquetas com gap de 30 a 60 mm de largura ou papel térmico; cabeça térmica com vida útil de 150 km"
+            ],
+            [
+                "Display",
+                "LCD verde com backlight de alto brilho e display matricial verde para o nome do produto e mensagens"
+            ],
+            [
+                "Teclas rápidas",
+                "40 teclas, com até 3 produtos cada (até 120 produtos)"
+            ],
+            [
+                "Códigos",
+                "EAN-13, EAN-8, UPC-A, UPC-E, EAN-128, Code 128 (controle de validade), ITF25, Code 39, Code 93, PDF417 e QR Code"
             ],
             [
                 "Conectividade",
-                "Ethernet (TCP/IP) e Wi-Fi (802.11)"
+                "Ethernet, ou Wi-Fi e Ethernet na mesma balança, conforme o modelo; IP fixo ou DHCP; carga também por pen drive"
+            ],
+            [
+                "Cadastro",
+                "Tabela nutricional, fornecedor, receitas, alérgenos e tara predeterminada; até 300 imagens e 99 modelos de etiqueta"
+            ],
+            [
+                "Prato",
+                "Aço inoxidável, 320 x 220 mm"
             ]
         ],
-        "imagem": "balmak-orion2.webp",
+        "imagem": "urano-ba37-760913165c.webp",
+        "recorte": "urano-ba37-760913165c.webp",
         "estoque": "consulte",
         "condicao": "novo",
         "preco": "",
@@ -740,29 +930,37 @@ window.PRODUTOS = [
         "destaque": true
     },
     {
-        "id": "argox-os-2140",
-        "nome": "OS-2140",
+        "id": "argox-os-214-pro",
+        "nome": "OS-214 Pro",
         "marca": "Argox",
         "categoria": "automacao",
         "subcategoria": "Impressoras de etiquetas",
-        "resumo": "Impressora de etiquetas de mesa, 203 dpi, térmica direta ou com ribbon.",
-        "descricao": "Impressora de mesa que ocupa pouco espaço, para etiquetas de produtos, preços e códigos de barras, com impressão térmica direta ou por transferência térmica (ribbon). Imprime até 5 polegadas (127 mm) por segundo em etiquetas de até 110 mm de largura e aceita as emulações PPLA, PPLB e PPLZ. O mecanismo de impressão é todo em metal e a carcaça é de plástico ABS de alto impacto.",
+        "resumo": "Impressora de etiquetas de mesa, compacta, para papel térmico ou com ribbon: 203 dpi, até 127 mm/s e 128 MB de memória Flash.",
+        "descricao": "Impressora de mesa que ocupa pouco espaço, para etiquetas de produtos, preços e códigos de barras, com impressão térmica direta ou por transferência térmica (ribbon). Imprime até 5 polegadas (127 mm) por segundo em etiquetas de 25,4 a 110 mm de largura, aceita rolos de até 109 mm de diâmetro e ribbon de até 92 m, e tem 128 MB de memória Flash e 128 MB de SDRAM. Imprime códigos de barras 1D, GS1 DataBar, QR Code e Data Matrix e aceita as emulações PPLA, PPLB e PPLZ. A ligação com o computador é só por USB, com drivers da Argox para Windows, Linux e macOS. O mecanismo de impressão é todo em metal, a carcaça é de plástico ABS de alto impacto e a cabeça de impressão é de encaixe e se coloca em 2 segundos.",
         "especificacoes": [
             [
                 "Impressão",
-                "Térmica direta e transferência térmica (ribbon)"
-            ],
-            [
-                "Resolução",
-                "203 dpi (8 pontos/mm)"
+                "Térmica direta e transferência térmica (ribbon); 203 dpi (8 pontos/mm)"
             ],
             [
                 "Velocidade",
-                "Até 5 pol/s (127 mm/s)"
+                "Até 127 mm/s (5 pol/s)"
+            ],
+            [
+                "Conectividade",
+                "USB 2.0"
             ],
             [
                 "Largura de impressão",
                 "Até 105 mm (etiqueta de 25,4 a 110 mm)"
+            ],
+            [
+                "Rolo e ribbon",
+                "Rolo de até 109 mm de diâmetro externo; ribbon de até 92 m"
+            ],
+            [
+                "Memória",
+                "128 MB de Flash e 128 MB de SDRAM"
             ],
             [
                 "Linguagens",
@@ -771,34 +969,43 @@ window.PRODUTOS = [
             [
                 "Construção",
                 "Mecanismo de impressão todo em metal; carcaça em ABS de alto impacto"
+            ],
+            [
+                "Dimensões e peso",
+                "186 x 278 x 165 mm (L x P x A); 2,0 kg"
             ]
         ],
-        "imagem": "argox.webp",
+        "imagem": "argox-os-214-pro-0de4cd873a.webp",
+        "recorte": "argox-os-214-pro-0de4cd873a.webp",
         "estoque": "consulte",
         "condicao": "novo",
         "preco": "",
         "destaque": false
     },
     {
-        "id": "zebra-zt230",
-        "nome": "ZT230",
+        "id": "zebra-zt231",
+        "nome": "ZT231",
         "marca": "Zebra",
         "categoria": "automacao",
         "subcategoria": "Impressoras de etiquetas",
-        "resumo": "Impressora de etiquetas industrial de 4 polegadas, até 152 mm/s, para rolos de até 203 mm.",
-        "descricao": "Impressora de etiquetas da linha industrial ZT200 da Zebra. Aceita rolos de etiqueta de até 203 mm de diâmetro externo e, na versão com transferência térmica, ribbon de até 450 m, o que diminui as trocas de material. Tem mecanismo de impressão e tampa de mídia metálicos, display LCD gráfico com teclado para configuração e as linguagens ZPL e EPL residentes.",
+        "resumo": "Impressora de etiquetas industrial de 4 polegadas, até 305 mm/s, com tela colorida sensível ao toque e rolos de até 203 mm de diâmetro.",
+        "descricao": "Impressora de etiquetas da linha industrial ZT200 da Zebra, com estrutura e gabinete de metal, feita para uso industrial leve, como etiquetas de preço, de paletes, de expedição e de recebimento de mercadorias. Imprime até 12 polegadas (305 mm) por segundo a 203 dpi, ou com textos e códigos mais nítidos usando a cabeça opcional de 300 dpi, e aceita rolos de etiqueta de até 203 mm de diâmetro externo e, na versão com transferência térmica, ribbon de 450 m, o que diminui as trocas de material. A tela colorida sensível ao toque de 4,3\" mostra o estado da impressora e traz assistentes e vídeos de ajuda. Já vem com USB, serial, Ethernet e USB host, e aceita depois, instalados no local, Wi-Fi, guilhotina, destacador e codificação RFID. Usa a linguagem ZPL, compatível com todas as impressoras Zebra, e EPL nos modelos de 203 dpi.",
         "especificacoes": [
             [
                 "Impressão",
-                "Térmica direta; transferência térmica opcional (instalada de fábrica)"
-            ],
-            [
-                "Resolução",
-                "203 dpi (300 dpi opcional)"
+                "Térmica direta ou com ribbon (transferência térmica, conforme a versão); 203 dpi (300 dpi opcional)"
             ],
             [
                 "Velocidade",
-                "Até 152 mm/s (6 pol/s)"
+                "Até 305 mm/s (12 pol/s) a 203 dpi; até 203 mm/s (8 pol/s) a 300 dpi"
+            ],
+            [
+                "Conectividade",
+                "USB 2.0, serial RS-232, Ethernet 10/100, USB host e Bluetooth Low Energy; opcionais: Wi-Fi 802.11ac e segunda Ethernet 10/100"
+            ],
+            [
+                "Tela",
+                "Colorida sensível ao toque, de 4,3\""
             ],
             [
                 "Largura de impressão",
@@ -806,18 +1013,23 @@ window.PRODUTOS = [
             ],
             [
                 "Rolo de etiquetas",
-                "Até 203 mm de diâmetro externo (tubete de 76 mm)"
+                "Até 203 mm de diâmetro externo (tubete de 76 mm); ribbon de 450 m na versão com transferência térmica"
             ],
             [
-                "Conectividade",
-                "USB 2.0 e serial RS-232; opcional (uma por impressora): paralela, Ethernet 10/100 ou Wi-Fi 802.11a/b/g/n"
+                "Memória",
+                "256 MB de SDRAM e 256 MB de Flash"
             ],
             [
                 "Linguagens",
-                "ZPL, ZPL II e EPL (EPL só com cabeça de 203 dpi)"
+                "ZPL e ZPL II; EPL e EPL2 (só com cabeça de 203 dpi)"
+            ],
+            [
+                "Dimensões e peso",
+                "241 x 432 x 279 mm (L x P x A); 9,1 kg"
             ]
         ],
-        "imagem": "zebra.webp",
+        "imagem": "zebra-zt231-80d6bfb607.webp",
+        "recorte": "zebra-zt231-80d6bfb607.webp",
         "estoque": "consulte",
         "condicao": "novo",
         "preco": "",
@@ -896,76 +1108,94 @@ window.PRODUTOS = [
         "destaque": false
     },
     {
-        "id": "datalogic-quickscan-qw2100",
-        "nome": "QuickScan Lite QW2100",
+        "id": "datalogic-quickscan-qw2500",
+        "nome": "QuickScan QW2500",
         "marca": "Datalogic",
         "categoria": "automacao",
         "subcategoria": "Leitores de código de barras",
-        "resumo": "Leitor 1D de imagem linear, até 400 leituras/s, com fio USB ou RS-232.",
-        "descricao": "Leitor de mão pequeno e leve, para caixas e balcões. A linha de leitura mais extensa facilita a leitura de códigos longos, como os de faturas. Lê os códigos 1D mais comuns, inclusive GS1 DataBar, com até 400 leituras por segundo, e pode ser usado num suporte articulável (vendido em kit ou à parte) para leitura com as mãos livres. Aguenta quedas de até 1,5 m e tem vedação IP42.",
+        "resumo": "Leitor de mão 2D com fio USB: lê códigos de barras e QR Code em qualquer direção, com vedação IP52 e resistência a quedas de 1,5 m.",
+        "descricao": "Leitor de mão com fio, o modelo mais simples da série QuickScan 2500 da Datalogic, feito para o caixa do varejo. O sensor de imagem 2D lê os códigos 1D mais comuns, inclusive GS1 DataBar, e códigos 2D como QR Code, Data Matrix e PDF417, em qualquer direção, sem precisar alinhar o produto, e também lê códigos na tela do celular. Um ponto azul mostra para onde o leitor aponta, e cada leitura é confirmada por bipe e pelo “Green Spot”, uma luz verde projetada sobre o código, útil em ambiente barulhento. O sensor de movimento Motionix deixa o leitor pronto assim que é pego e, apoiado no suporte, ele pode ser configurado para ler sozinho os códigos apresentados. Tem vedação IP52, resiste a quedas de 1,5 m no concreto e o gatilho aguenta 10 milhões de acionamentos.",
         "especificacoes": [
             [
-                "Tecnologia",
-                "Imager linear 1D com LED vermelho (610–650 nm)"
-            ],
-            [
-                "Taxa de leitura",
-                "Até 400 leituras por segundo"
-            ],
-            [
-                "Profundidade de campo",
-                "0 a 40 cm (código de 13 mils)"
+                "Leitura",
+                "1D e 2D, como QR Code; em qualquer direção, com imager 2D VGA (640 x 480 pixels)"
             ],
             [
                 "Conectividade",
-                "USB (QW2120) ou RS-232/teclado (QW2170)"
+                "USB; código do modelo com cabo USB: QW2520"
+            ],
+            [
+                "Profundidade de campo",
+                "1 a 40 cm (EAN/UPC de 13 mils); 1 a 33 cm (QR Code de 20 mils)"
+            ],
+            [
+                "Códigos lidos",
+                "1D (inclusive GS1 DataBar), QR Code, Micro QR, Data Matrix, Aztec, MaxiCode, PDF417 e códigos postais"
+            ],
+            [
+                "Mira e confirmação",
+                "Ponto azul de mira; bipe ajustável e “Green Spot” (luz verde sobre o código) a cada leitura"
             ],
             [
                 "Robustez",
-                "Vedação IP42; resiste a quedas de 1,5 m"
+                "Vedação IP52; resiste a quedas repetidas de 1,5 m no concreto; gatilho para 10 milhões de acionamentos"
+            ],
+            [
+                "Dimensões e peso",
+                "68 x 126 x 148 mm (L x P x A); 145 g sem o cabo"
             ]
         ],
-        "imagem": "quickscan.webp",
+        "imagem": "datalogic-quickscan-qw2500-d1abf2d727.webp",
+        "recorte": "datalogic-quickscan-qw2500-d1abf2d727.webp",
         "estoque": "consulte",
         "condicao": "novo",
         "preco": "",
         "destaque": false
     },
     {
-        "id": "elgin-el4200",
-        "nome": "EL4200",
+        "id": "elgin-el8600ia",
+        "nome": "EL8600iA",
         "marca": "Elgin",
         "categoria": "automacao",
         "subcategoria": "Leitores de código de barras",
-        "resumo": "Leitor fixo laser omnidirecional para checkout, 3.000 scans/s.",
-        "descricao": "Leitor fixo de mesa para o checkout: com a leitura omnidirecional, o operador passa o produto na frente do leitor sem precisar alinhar o código de barras com precisão. O laser de 650 nm projeta 30 linhas de varredura em 5 direções e lê códigos 1D, inclusive da família GS1 DataBar. Há versões USB e serial RS-232.",
+        "resumo": "Leitor fixo 2D para o checkout, com inteligência artificial para códigos danificados ou com respingos d’água e tolerância a produtos passando a até 8 m/s.",
+        "descricao": "Leitor fixo de mesa para o caixa: o operador passa o produto na frente do leitor, sem precisar alinhar o código, e ele lê códigos 1D e 2D, como o QR Code. Tem inteligência artificial para ler códigos borrados, danificados ou com respingos d’água, o que evita digitar o código à mão, e tolera produtos passando a até 8 m/s. O pedestal ajustável permite inclinar o leitor para a posição mais confortável para o operador. É ligado e alimentado pela porta USB, sem fonte externa (a ligação serial RS-232, com cabo vendido à parte, é sob consulta), e tem um modo, que pode ser ativado na configuração, para ler códigos na tela do celular. Tem vedação IP52, resiste a quedas de 1,5 m e a Elgin dá 3 anos de garantia, contados da nota fiscal de compra.",
         "especificacoes": [
             [
-                "Padrão de varredura",
-                "Laser omnidirecional, 5 direções / 30 linhas"
-            ],
-            [
-                "Velocidade",
-                "3.000 varreduras (scans) por segundo"
-            ],
-            [
-                "Fonte de luz",
-                "Diodo laser de 650 nm"
-            ],
-            [
-                "Profundidade de leitura",
-                "Acima de 200 mm (EAN 13 mil, PCS 90%)"
-            ],
-            [
-                "Códigos lidos",
-                "1D, incluindo a família GS1 DataBar"
+                "Leitura",
+                "1D e 2D, com inteligência artificial; lê por imagem (1280 x 1024 pixels) códigos danificados, borrados ou com respingos d’água"
             ],
             [
                 "Conectividade",
-                "USB (PN 46EL4200US0C) ou serial RS-232 (PN 46EL4200SR00), em versões separadas"
+                "USB 2.0 (cabo de 2 m), alimentado pela USB; serial RS-232 sob consulta (cabo vendido à parte)"
+            ],
+            [
+                "Tolerância ao movimento",
+                "Até 8 m/s"
+            ],
+            [
+                "Códigos lidos",
+                "EAN-13, EAN-8, UPC, Code 128, GS1-128, Code 39, Interleaved 2 of 5, GS1 DataBar, QR Code, Data Matrix, PDF417 e Aztec, entre outros"
+            ],
+            [
+                "Profundidade de leitura",
+                "5 a 180 mm (UPC de 13 mils); 10 a 180 mm (QR Code de 20 mils)"
+            ],
+            [
+                "Robustez",
+                "Vedação IP52; resiste a quedas de 1,5 m; janela de vidro temperado"
+            ],
+            [
+                "Pedestal",
+                "Ajustável, com regulagem de inclinação"
+            ],
+            [
+                "Dimensões",
+                "153 x 112 x 187 mm (L x P x A, com pedestal)"
             ]
         ],
-        "imagem": "el4200.webp",
+        "imagem": "elgin-el8600ia-3811a63d90.webp",
+        "recorte": "elgin-el8600ia-3811a63d90.webp",
         "estoque": "consulte",
         "condicao": "novo",
         "preco": "",
@@ -1080,112 +1310,151 @@ window.PRODUTOS = [
         "destaque": false
     },
     {
-        "id": "gertec-tc504",
-        "nome": "Terminal TC 504",
+        "id": "gertec-tc506e-2d",
+        "nome": "Terminal TC506E 2D",
         "marca": "Gertec",
         "categoria": "automacao",
         "subcategoria": "Terminais de consulta",
-        "resumo": "Terminal de consulta de preço com tela colorida e leitor omnidirecional.",
-        "descricao": "Terminal instalado no salão da loja para o cliente consultar o preço passando o código de barras, sem precisar ir ao caixa. Funciona em rede com o programa de consulta da loja: a tela colorida mostra nome, preço e foto do produto e, quando ninguém está consultando, exibe anúncios de produtos e promoções. As 4 teclas e o leitor de cartão magnético podem ser usados em programas de fidelidade.",
+        "resumo": "Terminal de consulta de preço maior (220 x 135 x 95 mm), com a tela colorida de 3,2\" num painel redondo, leitor de códigos 1D e 2D (lê QR Code) e conexão por Ethernet ou Wi-Fi.",
+        "descricao": "Fica no salão da loja para o cliente conferir o preço sozinho, sem ir ao caixa: ele passa o código de barras no leitor, logo abaixo do painel redondo, e a tela colorida mostra o nome e o preço enviados pelo programa de consulta do seu sistema. O leitor lê os códigos de barras comuns (1D) e também códigos 2D, como QR Code e Data Matrix. Liga-se à rede da loja por cabo Ethernet ou por Wi-Fi e é configurado pelo celular Android, com o aplicativo da Gertec via Bluetooth, ou à distância, por um navegador de internet. A tela exibe imagens JPEG e BMP e animações para destacar informações importantes e, enquanto ninguém consulta, mostra as mensagens que você cadastrar; o alto-falante toca áudios WAV, recurso que ajuda na acessibilidade. Vem com fonte e suporte de fixação.",
         "especificacoes": [
             [
-                "Display",
-                "Gráfico colorido de 5,7\" (320 x 240 px)"
+                "Leitor",
+                "Imager CMOS 1D e 2D; lê QR Code e Data Matrix"
             ],
             [
-                "Leitor",
-                "Scanner laser multi-feixe omnidirecional, 1.650 linhas por segundo"
+                "Display",
+                "TFT colorido de 3,2\" (320 x 240 px); exibe imagens JPEG e BMP"
             ],
             [
                 "Conectividade",
-                "Ethernet ou Wi-Fi 802.11 b/g (conforme a versão)"
+                "Ethernet (RJ-45) e Wi-Fi 2,4 GHz (802.11 b/g/n); Bluetooth 4.2 para configuração"
             ],
             [
-                "Leitor de cartão",
-                "Magnético, trilhas 1 e 2"
+                "Configuração",
+                "Aplicativo da Gertec para Android (via Bluetooth) ou navegador de internet"
+            ],
+            [
+                "Áudio",
+                "Alto-falante de 1,5 W que reproduz arquivos WAV, com recurso de acessibilidade"
             ],
             [
                 "Alimentação",
-                "90 a 240 VAC"
+                "5 Vcc, com fonte inclusa (entrada de 100 a 240 Vca, 50/60 Hz)"
+            ],
+            [
+                "Dimensões e peso",
+                "220 x 135 x 95 mm (L x P x A); 430 g"
+            ],
+            [
+                "Instalação",
+                "Em parede ou superfície vertical, com o suporte de fixação que acompanha"
+            ],
+            [
+                "Garantia",
+                "12 meses"
             ]
         ],
-        "imagem": "gertec504.webp",
+        "imagem": "gertec-tc506e-2d-f09c849a3e.webp",
+        "recorte": "gertec-tc506e-2d-f09c849a3e.webp",
         "estoque": "consulte",
         "condicao": "novo",
         "preco": "",
         "destaque": false
     },
     {
-        "id": "gertec-g2",
-        "nome": "Busca Preço G2-E",
+        "id": "gertec-busca-preco-2d",
+        "nome": "Busca Preço 2D",
         "marca": "Gertec",
         "categoria": "automacao",
         "subcategoria": "Terminais de consulta",
-        "resumo": "Terminal compacto de consulta de preço com tela colorida, Ethernet e Wi-Fi.",
-        "descricao": "Terminal compacto para fixar na parede ou em suporte: o cliente passa o código de barras e vê o preço na tela colorida de 3,2\", sem precisar ir ao caixa. Conecta-se à rede da loja por Ethernet ou Wi-Fi e tem alto-falante que reproduz arquivos de áudio WAV, com recurso de acessibilidade. Também exibe imagens nos formatos JPEG e BMP.",
+        "resumo": "Terminal de consulta de preço compacto e leve (140 x 100 x 40 mm, 250 g), com tela colorida de 3,2\", leitor de códigos 1D e 2D, Ethernet e Wi-Fi e aba personalizável no alto.",
+        "descricao": "Versão atual do Busca Preço da Gertec, que agora lê os códigos de barras comuns (1D) e também códigos 2D. Compacto e leve (250 g), fica no salão da loja: o cliente passa o produto no leitor e vê o preço na tela colorida, sem precisar ir ao caixa. Ajuda a loja a cumprir o Decreto 5.903/2006, que exige leitores de preço a no máximo 15 metros de qualquer produto quando os preços são informados por código de barras. Liga-se à rede por Ethernet ou Wi-Fi, e o Bluetooth serve para configurá-lo pelo aplicativo da Gertec no celular. A tela mostra imagens e propagandas durante a consulta ou na espera, o alto-falante toca áudios WAV (recurso de acessibilidade) e a aba de cima é personalizável; vem com fonte e suporte de fixação.",
         "especificacoes": [
+            [
+                "Leitor",
+                "Códigos de barras 1D e 2D"
+            ],
             [
                 "Display",
                 "TFT colorido de 3,2\" (320 x 240 px, 256 mil cores); exibe imagens JPEG e BMP"
             ],
             [
-                "Leitor",
-                "Imager 1D unidirecional integrado"
-            ],
-            [
                 "Conectividade",
-                "Ethernet e Wi-Fi 802.11 b/g/n 2,4 GHz; Bluetooth 4.2 para configuração"
+                "Ethernet e Wi-Fi 2,4 GHz (802.11 b/g/n); Bluetooth 4.2 para configuração"
             ],
             [
                 "Áudio",
-                "Alto-falante integrado (reproduz arquivos WAV), com recurso de acessibilidade"
+                "Alto-falante que reproduz arquivos WAV, com recurso de acessibilidade"
             ],
             [
-                "Dimensões",
-                "140 x 100 x 40 mm"
+                "Alimentação",
+                "5 Vcc, com fonte inclusa (110/220 V)"
+            ],
+            [
+                "Dimensões e peso",
+                "140 x 100 x 40 mm (L x P x A); 250 g"
             ],
             [
                 "Montagem",
-                "Fixação em parede ou suporte"
+                "Suporte de fixação incluso; aba personalizável"
+            ],
+            [
+                "Garantia",
+                "12 meses"
             ]
         ],
-        "imagem": "gertecg2.webp",
+        "imagem": "gertec-busca-preco-2d-d2a071e35e.webp",
+        "recorte": "gertec-busca-preco-2d-d2a071e35e.webp",
         "estoque": "consulte",
         "condicao": "novo",
         "preco": "",
         "destaque": false
     },
     {
-        "id": "gertec-mt-720",
-        "nome": "Microterminal MT 720",
+        "id": "gertec-mt-721",
+        "nome": "Microterminal MT-721 VT100",
         "marca": "Gertec",
         "categoria": "automacao",
         "subcategoria": "Teclados e microterminais",
-        "resumo": "Microterminal em rede para lançar pedidos e comandas no balcão ou na cozinha.",
-        "descricao": "Microterminal com display e teclado programável que se conecta ao sistema da loja pela rede Ethernet, para lançar pedidos e comandas. Indicado para padarias, restaurantes, bares e cozinhas. As portas seriais permitem conectar outros aparelhos, como leitor de código de barras, impressora e balança, conforme o software de automação usado.",
+        "resumo": "Microterminal em rede Ethernet com display de 2 linhas, 20 teclas programáveis e protocolos VT100 e STX/ETX, para comandas e cartões de consumo.",
+        "descricao": "Microterminal ligado ao computador da loja pela rede Ethernet: todo o processamento fica no sistema, e o aparelho serve para digitar e mostrar informações no ponto de atendimento. É indicado para cartões de consumo e comandas em padarias, bares, lanchonetes e restaurantes self-service, e também para livrarias, papelarias e apontamento de produção na indústria. Tem display de cristal líquido de 2 linhas por 20 caracteres, com luz de fundo, e 20 teclas programáveis e relegendáveis, protegidas por uma película de silicone contra poeira e líquidos. Funciona com os protocolos VT100 e STX/ETX, além do protocolo da própria Gertec, e as 2 portas seriais e as 2 USB permitem ligar periféricos, como um teclado auxiliar, conforme o seu sistema. Vários microterminais podem ser ligados ao mesmo computador pela rede.",
         "especificacoes": [
             [
-                "Display",
-                "LCD de 2 linhas x 20 caracteres, com backlight"
-            ],
-            [
                 "Teclado",
-                "20 teclas programáveis, com película protetora de silicone"
+                "20 teclas programáveis; relegendáveis e com película protetora de silicone"
             ],
             [
                 "Rede",
-                "Ethernet (RJ-45), protocolo TCP/IP"
+                "Ethernet 10/100 Mbps (RJ-45), TCP/IP"
+            ],
+            [
+                "Protocolos",
+                "VT100 e STX/ETX, além do protocolo Gertec"
+            ],
+            [
+                "Display",
+                "Cristal líquido de 2 linhas x 20 caracteres, com backlight"
             ],
             [
                 "Portas",
-                "3 seriais RS-232 (1 DB9 + 2 RJ11) para aparelhos como leitor de código de barras, impressora e balança; PS/2 para teclado auxiliar"
+                "2 seriais RJ11 (acompanha cabo adaptador para DB9) e 2 USB"
             ],
             [
                 "Alimentação",
-                "Bivolt (110/220 V)"
+                "5 Vcc, com fonte inclusa (90 a 240 V, chaveamento automático)"
+            ],
+            [
+                "Dimensões e peso",
+                "130 x 160 x 50 mm (L x P x A); 690 g"
+            ],
+            [
+                "Garantia",
+                "12 meses"
             ]
         ],
-        "imagem": "mt720.webp",
+        "imagem": "gertec-mt-721-19e72965bf.webp",
+        "recorte": "gertec-mt-721-19e72965bf.webp",
         "estoque": "consulte",
         "condicao": "novo",
         "preco": "",

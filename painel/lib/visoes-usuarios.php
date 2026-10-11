@@ -53,8 +53,9 @@ function telaConta(string $erro = ''): void
     $desativados = count(array_filter($usuarios, static fn($u) => !$u['ativo']));
     $comAcesso = count($usuarios) - $desativados;   // desativado não tem acesso
     $recuperar = $admin ? arquivosRecuperacao() : [];
+    $pacotes = $admin ? idsPacotes() : [];   // atualizações do catálogo no servidor (painel/pacotes/)
 
-    pagina('Conta', static function () use ($eu, $admin, $minhas, $comAcesso, $esperando, $desativados, $recuperar, $erro): void {
+    pagina('Conta', static function () use ($eu, $admin, $minhas, $comAcesso, $esperando, $desativados, $recuperar, $erro, $pacotes): void {
         cabecalhoPagina('Acesso', 'Conta',
             '<span>Você entrou como <b>' . e($eu['nome']) . '</b></span><span>usuário <b>' . e($eu['usuario']) . '</b></span><span>' . e(PAPEIS[$eu['papel']]) . '</span>',
             $admin ? '<a class="btn btn--linha btn--p" href="' . e(link_('usuario-editar', ['u' => $eu['usuario']])) . '">' . icone('edit') . 'Mudar o meu nome</a>' : '');
@@ -64,7 +65,7 @@ function telaConta(string $erro = ''): void
         if ($admin): ?>
   <section class="hub" aria-labelledby="hub-tit">
     <h2 class="secao-tit" id="hub-tit">Administração</h2>
-    <div class="hub__cartoes">
+    <div class="hub__cartoes<?= $pacotes ? ' hub__cartoes--4' : '' ?>">
       <a class="cartao" href="<?= e(link_('usuarios')) ?>">
         <?= icone('users', 'i cartao__ic') ?>
         <span class="cartao__txt"><b>Usuários</b><span><?= $comAcesso ?> <?= $comAcesso === 1 ? 'pessoa' : 'pessoas' ?> com acesso<?= $esperando ? ' · ' . $esperando . ' aguardando o 1º acesso' : '' ?><?= $desativados ? ' · ' . $desativados . ($desativados === 1 ? ' desativada' : ' desativadas') : '' ?>. Crie, mude o papel, redefina a senha.</span></span>
@@ -80,6 +81,13 @@ function telaConta(string $erro = ''): void
         <span class="cartao__txt"><b>Cópias de segurança</b><span>Volte os produtos, a lista de clientes ou os dados da empresa para como estavam antes.</span></span>
         <?= icone('seta', 'i cartao__seta') ?>
       </a>
+      <?php if ($pacotes): ?>
+      <a class="cartao" href="<?= e(link_('pacote', count($pacotes) > 1 ? ['lista' => '1'] : ['id' => $pacotes[0]])) ?>">
+        <?= icone('box', 'i cartao__ic') ?>
+        <span class="cartao__txt"><b>Atualizações do catálogo</b><span>Produtos novos, modelos trocados pelos atuais e fotos novas preparados por quem cuida do site: reveja e aplique.</span></span>
+        <?= icone('seta', 'i cartao__seta') ?>
+      </a>
+      <?php endif; ?>
     </div>
   </section>
 <?php   else: ?>

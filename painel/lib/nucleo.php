@@ -20,6 +20,9 @@ function cfg(string $chave)
     if ($c === null) {
         $c = require __DIR__ . '/../config.php';
         if (!is_array($c)) throw new RuntimeException('config.php inválido');
+        // Só na linha de comando (ferramentas/aplicar-pacote.php): outra pasta compartilhado/ e uma pasta
+        // privada temporária. Num pedido pelo navegador isto nunca vale.
+        if (PHP_SAPI === 'cli' && is_array($GLOBALS['PAINEL_CFG_CLI'] ?? null)) $c = $GLOBALS['PAINEL_CFG_CLI'] + $c;
     }
     return $c[$chave] ?? null;
 }

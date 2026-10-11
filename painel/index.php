@@ -14,9 +14,11 @@ require __DIR__ . '/lib/catalogo.php';
 require __DIR__ . '/lib/imagens.php';
 require __DIR__ . '/lib/clientes.php';
 require __DIR__ . '/lib/ajustes.php';
+require __DIR__ . '/lib/pacotes.php';
 require __DIR__ . '/lib/visoes.php';
 require __DIR__ . '/lib/visoes-usuarios.php';
 require __DIR__ . '/lib/visoes-empresa.php';
+require __DIR__ . '/lib/visoes-pacotes.php';
 
 iniciarPainel();
 
@@ -44,12 +46,13 @@ verificarSessao();
 const ACOES = ['lista', 'novo', 'editar', 'salvar', 'rapido', 'mover', 'excluir', 'desfazer', 'copias', 'restaurar', 'conta', 'senha', 'sair', 'entrar', 'instalar', 'sessao',
     'clientes', 'cliente-novo', 'cliente-editar', 'cliente-salvar', 'cliente-mover', 'cliente-excluir', 'cliente-desfazer',
     'usuarios', 'usuario-novo', 'usuario-editar', 'usuario-salvar', 'usuario-senha', 'usuario-ativo', 'usuario-excluir', 'senha-temporaria',
-    'atividades', 'criar-senha', 'recuperar', 'empresa', 'empresa-salvar'];
-const SO_POST = ['salvar', 'rapido', 'mover', 'desfazer', 'senha', 'sair', 'cliente-salvar', 'cliente-mover', 'cliente-desfazer', 'usuario-salvar', 'empresa-salvar'];
+    'atividades', 'criar-senha', 'recuperar', 'empresa', 'empresa-salvar', 'pacote', 'pacote-aplicar', 'pacote-dispensar'];
+const SO_POST = ['salvar', 'rapido', 'mover', 'desfazer', 'senha', 'sair', 'cliente-salvar', 'cliente-mover', 'cliente-desfazer', 'usuario-salvar', 'empresa-salvar',
+    'pacote-aplicar', 'pacote-dispensar'];
 // Só administradores. O papel é lido do usuarios.php a cada pedido (mudou, vale na hora).
 // Vale para GET, POST e fetch (JSON): editor recebe 403.
 const SO_ADMIN = ['usuarios', 'usuario-novo', 'usuario-editar', 'usuario-salvar', 'usuario-senha', 'usuario-ativo', 'usuario-excluir', 'senha-temporaria',
-    'atividades', 'copias', 'restaurar', 'empresa', 'empresa-salvar'];
+    'atividades', 'copias', 'restaurar', 'empresa', 'empresa-salvar', 'pacote', 'pacote-aplicar', 'pacote-dispensar'];
 // Enquanto a pessoa não cria a própria senha (entrou com a senha temporária), só estas
 const SEM_SENHA_PROPRIA = ['criar-senha', 'sair'];
 $acao = is_string($_GET['a'] ?? null) && in_array($_GET['a'], ACOES, true) ? $_GET['a'] : 'lista';
@@ -150,6 +153,10 @@ if (usuarioLogado() === null) {
         } elseif ($acao === 'empresa-salvar') {
             $_SESSION['voltar'] = link_('empresa');
             avisar('Sua sessão terminou e os dados da empresa não foram salvos. Entre de novo e salve outra vez.', 'info');
+        } elseif ($acao === 'pacote-aplicar') {
+            $idPac = is_string($_POST['id'] ?? null) && preg_match(RE_PACOTE, $_POST['id']) ? $_POST['id'] : '';
+            $_SESSION['voltar'] = $idPac !== '' ? link_('pacote', ['id' => $idPac]) : link_('pacote');
+            avisar('Sua sessão terminou e a atualização do catálogo não foi aplicada. Entre de novo, confira as mudanças e aplique outra vez.', 'info');
         } else {
             avisar('Sua sessão terminou e a última ação não foi feita. Entre de novo para continuar.', 'info');
         }
@@ -231,6 +238,10 @@ try {
         // Área Empresa (ajustes do site): lib/ajustes.php e lib/visoes-empresa.php
         'empresa'          => acaoEmpresa(),
         'empresa-salvar'   => acaoEmpresaSalvar(),
+        // Atualização do catálogo (pacotes em painel/pacotes/): lib/pacotes.php e lib/visoes-pacotes.php
+        'pacote'           => acaoPacote(),
+        'pacote-aplicar'   => acaoPacoteAplicar(),
+        'pacote-dispensar' => acaoPacoteDispensar(),
     };
 } catch (ErroCatalogo $e) {
     if (pedidoJson()) responderJson(['ok' => false, 'msg' => 'Não consegui ler o catálogo: ' . $e->getMessage()], 500);
@@ -254,7 +265,7 @@ exit;
 function destinoSeguro($url): ?string
 {
     if (!is_string($url) || strlen($url) > 300) return null;
-    if (!preg_match('/^index\.php\?a=(novo|editar|copias|conta|clientes|cliente-novo|cliente-editar|usuarios|usuario-novo|usuario-editar|atividades|empresa)(&[A-Za-z0-9_=%.\-]*)*$/', $url)) return null;
+    if (!preg_match('/^index\.php\?a=(novo|editar|copias|conta|clientes|cliente-novo|cliente-editar|usuarios|usuario-novo|usuario-editar|atividades|empresa|pacote)(&[A-Za-z0-9_=%.\-]*)*$/', $url)) return null;
     return $url;
 }
 
@@ -263,6 +274,7 @@ function nomeDaArea(string $acao): string
 {
     if (str_starts_with($acao, 'usuario') || $acao === 'senha-temporaria') return 'Usuários';
     if (str_starts_with($acao, 'empresa')) return 'Empresa';
+    if (str_starts_with($acao, 'pacote')) return 'Atualização do catálogo';
     return ['copias' => 'Cópias de segurança', 'restaurar' => 'Cópias de segurança (restaurar)', 'atividades' => 'Atividades'][$acao] ?? $acao;
 }
 
@@ -275,6 +287,11 @@ function voltarDepoisDoErro(string $acao): string
     if (in_array($acao, ['conta', 'senha', 'atividades'], true)) return link_('conta');
     if (in_array($acao, ['copias', 'restaurar'], true)) return link_('copias');
     if (str_starts_with($acao, 'empresa')) return link_('empresa');
+    if (str_starts_with($acao, 'pacote')) {
+        // De volta à mesma atualização (se o id for de uma que existe); senão, à lista delas
+        $id = $_POST['id'] ?? $_GET['id'] ?? '';
+        return $acao !== 'pacote' && is_string($id) && preg_match(RE_PACOTE, $id) && in_array($id, idsPacotes(), true) ? link_('pacote', ['id' => $id]) : link_('pacote', ['lista' => '1']);
+    }
     return 'index.php';
 }
 
@@ -297,7 +314,8 @@ function filtroDaUrl(array $categorias): array
 function acaoLista(): void
 {
     $cat = catalogoOuTela();
-    telaLista($cat, filtroDaUrl($cat['categorias']));
+    // Atualização do catálogo pronta (painel/pacotes/): aviso no topo, só para administradores
+    telaLista($cat, filtroDaUrl($cat['categorias']), ehAdmin() ? avisosDePacotes($cat) : []);
 }
 
 function produtoDaUrl(array $cat, string $fonte = 'get'): array

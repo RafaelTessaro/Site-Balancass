@@ -4,6 +4,8 @@ Pesquisa feita em **11/10/2026** nos sites dos fabricantes e de distribuidores b
 
 > **O catálogo que vale é o do servidor.** Todas as mudanças abaixo são feitas **no painel** (`https://balancass.com/painel/`), nunca editando o `produtos.js` nem enviando o arquivo pelo cPanel: os pacotes de atualização do site não levam esse arquivo, e o que for editado à mão some na próxima vez que o painel salvar. Se algum item já foi mudado no painel depois de 11/10/2026, ignore esse item.
 
+> **Já preparado: a atualização “Catálogo de outubro de 2026”.** O que a loja pediu desta lista virou um pacote pronto para o painel (`painel/pacotes/2026-10-catalogo/`), que chega com a atualização do site: **5 balanças novas** (Toledo Prix 4 Trend, Prix 6 e Prix 7T, Balmak EDGE e Urano BA37), os **7 produtos de automação que saíram de linha trocados pelos atuais**, a **foto nova da Prix 5 Plus** e as **duas Balmak Órion fora do site** (pedido da loja). As fichas foram conferidas de novo nas fontes oficiais em 11/10/2026 (fontes em `docs/FONTES-DOS-PRODUTOS.md`). Para aplicar: painel → **Produtos** → cartão **“Atualização do catálogo pronta”** → **Ver e aplicar** (passo a passo em `docs/COMO-ADICIONAR-PRODUTOS.md`, item 12). Nesta página, o que está no pacote aparece marcado com **No pacote de outubro**; o resto continua como sugestão, a fazer pelo painel.
+
 **Como ler as tabelas**
 
 - **Situação:** *Em linha* (o fabricante ainda oferece), *Trocar nome* (continua à venda, mas com outro nome ou versão), *Fora de linha* (o fabricante ou o distribuidor diz que saiu de linha), *Substituído* (o fabricante vende uma versão nova no lugar), *Proibido em SP* e *Sem modelo* (o cadastro não diz qual é o modelo).
@@ -24,10 +26,11 @@ Pesquisa feita em **11/10/2026** nos sites dos fabricantes e de distribuidores b
 **O principal**
 
 1. **Balanças: nenhuma das 17 saiu de linha.** Toledo e Balmak ainda oferecem todas. O que está velho é outra coisa:
-   - **Faltam os modelos novos.** Os que valem cadastrar são a **Toledo Prix 4 Trend** (página publicada em 2026), a **Prix 6**, a **Prix 7T** (com inteligência artificial), a **Balmak EDGE** (a etiquetadora mais nova da Balmak) e a **Urano BA37** (a Urano chama de "nova linha").
+   - **Faltam os modelos novos** (os 5 estão **no pacote de outubro**). Os que valem cadastrar são a **Toledo Prix 4 Trend** (página publicada em 2026), a **Prix 6**, a **Prix 7T** (com inteligência artificial), a **Balmak EDGE** (a etiquetadora mais nova da Balmak) e a **Urano BA37** (a Urano chama de "nova linha").
    - **A ficha da Toledo 2096PP cita uma portaria revogada.** A "Portaria 236/94" foi revogada pela **Portaria Inmetro 157/2022**, em vigor desde 02/01/2023.
-   - **A foto da Prix 5 Plus parece ser de uma versão antiga, sem coluna.** A Toledo mostra a Prix 5 Plus em torre, e a própria ficha do site diz "em torre". Vale também conferir se a foto da **Órion 1 Key** é mesmo da versão "Key", a de teclas individuais.
-2. **Automação: 7 produtos estão fora de linha.**
+   - **A foto da Prix 5 Plus mostra a balança sem coluna** (foto nova **no pacote de outubro**). A conferência mostrou que não é uma versão antiga: é a versão **Standard**, que a Toledo ainda vende. Mas a ficha do site descreve a versão em torre, que é a foto principal da página da Toledo, então a foto foi trocada pela da torre.
+   - **As Balmak Órion saem do site**, a pedido da loja (**no pacote de outubro**).
+2. **Automação: 7 produtos estão fora de linha.** As 7 trocas estão **no pacote de outubro**.
 
    | Sai | Entra |
    |---|---|
@@ -54,11 +57,11 @@ Pesquisa feita em **11/10/2026** nos sites dos fabricantes e de distribuidores b
 | Produto no site | Situação | Sugestão | Fonte (certeza) |
 |---|---|---|---|
 | Toledo **Prix 7E** (`toledo-prix-7e`) | Em linha (fotos da página oficial de mai/2026) | Manter. É o produto da capa do site. | [toledobrasil.com](https://www.toledobrasil.com/produto/prix-7e/) (Alta) |
-| Toledo **Prix 5 Plus** (`toledo-prix-5-plus`) | Em linha | Manter. **Trocar a foto:** a do site mostra a balança sem coluna, mas a Toledo mostra a Prix 5 Plus em torre ([foto oficial](https://stportalcorporativoprd.blob.core.windows.net/blobappportalc63534e8570/wp-content/uploads/2024/08/prix5-plus-com-coluna-vista-operador-desktop-1.png)). | [toledobrasil.com](https://www.toledobrasil.com/produto/prix-5-plus/) (Alta; foto: Média) |
-| Toledo **Prix 4 Uno** (`toledo-prix-4-uno`) | Em linha | Manter. A Toledo publicou em 2026 a **Prix 4 Trend**, da mesma faixa (2.000 itens). Pergunte ao distribuidor se a Uno vai sair de linha e cadastre a Trend (ver detalhes). | [toledobrasil.com](https://www.toledobrasil.com/produto/prix-4-uno/) (Alta) |
+| Toledo **Prix 5 Plus** (`toledo-prix-5-plus`) | Em linha | Manter. **Trocar a foto:** a do site mostra a versão Standard, sem coluna (ainda vendida), mas a ficha fala da versão em torre, que é a que a Toledo mostra ([foto oficial](https://stportalcorporativoprd.blob.core.windows.net/blobappportalc63534e8570/wp-content/uploads/2024/08/prix5-plus-com-coluna-vista-operador-desktop-1.png)). **No pacote de outubro.** | [toledobrasil.com](https://www.toledobrasil.com/produto/prix-5-plus/) (Alta; foto: Média) |
+| Toledo **Prix 4 Uno** (`toledo-prix-4-uno`) | Em linha | Manter. A Toledo publicou em 2026 a **Prix 4 Trend**, também com 2.000 itens (**no pacote de outubro**). Pergunte ao distribuidor se a Uno vai sair de linha. | [toledobrasil.com](https://www.toledobrasil.com/produto/prix-4-uno/) (Alta) |
 | Toledo **Prix 4 Due** (`toledo-prix-4-due`) | Em linha | Manter. | [toledobrasil.com](https://www.toledobrasil.com/produto/prix-4-due/) (Alta) |
-| Balmak **Órion 1 Key** (`balmak-orion-1-plus`) | Em linha (catálogo Balmak RV1, jun/2024) | Manter. Conferir se a foto é da versão **Key** (teclas individuais). A novidade da Balmak é a **EDGE** (ver detalhes). | [catálogo oficial, cópia no distribuidor](https://www.brasilinternacional.com/arquivo/catalogo/2_1_balmak-lnea-automatizacin-comercial_3.pdf) (Média: o site da Balmak estava fora do ar) |
-| Balmak **Órion 2 Key** (`balmak-orion-2`) | Em linha (catálogo jun/2024) | Manter. | mesmo catálogo (Média) |
+| Balmak **Órion 1 Key** (`balmak-orion-1-plus`) | Em linha (catálogo Balmak RV1, jun/2024) | **Sai do site**, a pedido da loja (**no pacote de outubro**). No lugar, a Balmak **EDGE** (**no pacote de outubro**). | [catálogo oficial, cópia no distribuidor](https://www.brasilinternacional.com/arquivo/catalogo/2_1_balmak-lnea-automatizacin-comercial_3.pdf) (Média: o site da Balmak estava fora do ar) |
+| Balmak **Órion 2 Key** (`balmak-orion-2`) | Em linha (catálogo jun/2024) | **Sai do site**, a pedido da loja (**no pacote de outubro**). | mesmo catálogo (Média) |
 | Toledo **Prix 3 Fit** (`toledo-prix-3-fit`) | Em linha | Manter. | [toledobrasil.com](https://www.toledobrasil.com/produto/prix-3-fit/) (Alta) |
 | Toledo **Prix 3 Plus** (`toledo-prix-3-plus`) | Em linha | Manter. | [toledobrasil.com](https://www.toledobrasil.com/produto/prix-3-plus/) (Alta) |
 | Balmak **ONE** (`balmak-one`) | Em linha (catálogo jun/2024, "Linha Comercial") | Manter. | mesmo catálogo (Média) |
@@ -76,24 +79,24 @@ Pesquisa feita em **11/10/2026** nos sites dos fabricantes e de distribuidores b
 | Produto no site | Situação | Sugestão | Fonte (certeza) |
 |---|---|---|---|
 | Elgin **L42 Pro** (`elgin-l42-pro`) | **Trocar nome.** O site da Elgin só tem a **L42 Pro Full**, marcada "Indisponível" na loja oficial em 10/2026. | Renomear para "L42 Pro Full" e deixar a conectividade como USB, Serial e Ethernet. Estoque: "Consulte". | [elgin.com.br](https://www.elgin.com.br/impressora-termica-eti-elgin-l42pro-full/p) (Média) |
-| Argox **OS-2140** (`argox-os-2140`) | **Fora de linha** ("OS-2140 (Discontinued)") | Trocar pela **Argox OS-214 Pro**. É a mais parecida, mas a Argox não diz que ela substitui a OS-2140. | [argox.com](https://www.argox.com/products-detail/os-2140/) (Alta) |
-| Zebra **ZT230** (`zebra-zt230`) | **Fora de linha** desde 27/06/2022. A Zebra indica a **ZT231** e dá suporte à ZT230 até 31/01/2027. | Trocar pela **Zebra ZT231**. | [zebra.com, suporte da ZT230](https://www.zebra.com/us/en/support-downloads/printers/industrial/zt230.html) (Alta, conferida em 07/10/2026) |
+| Argox **OS-2140** (`argox-os-2140`) | **Fora de linha** ("OS-2140 (Discontinued)") | Trocar pela **Argox OS-214 Pro**. É a mais parecida, mas a Argox não diz que ela substitui a OS-2140. **No pacote de outubro.** | [argox.com](https://www.argox.com/products-detail/os-2140/) (Alta) |
+| Zebra **ZT230** (`zebra-zt230`) | **Fora de linha** desde 27/06/2022. A Zebra indica a **ZT231** e dá suporte à ZT230 até 31/01/2027. | Trocar pela **Zebra ZT231**. **No pacote de outubro.** | [zebra.com, suporte da ZT230](https://www.zebra.com/us/en/support-downloads/printers/industrial/zt230.html) (Alta, conferida em 07/10/2026) |
 | Tanca **TL-120** (`tanca-tl-120`) | Em linha (só lê 1D) | Manter. Veja a nota sobre 2D no fim da tabela. | [tanca.com.br](https://www.tanca.com.br/automacao-comercial-produto.php?cod=158) (Alta) |
 | Tanca **TL-220** (`tanca-tl-220`) | Em linha (laser, só lê 1D) | Manter. | [tanca.com.br](https://www.tanca.com.br/automacao-comercial-produto.php?cod=92) (Alta) |
-| Datalogic **QuickScan Lite QW2100** (`datalogic-quickscan-qw2100`) | **Fora de linha.** Saiu da página da série no site da Datalogic, e revendas o marcam como "discontinued". | Trocar pelo **QuickScan QW2500** (2D, USB). Para quem precisa de RS-232: **QD2500** (QD2590). | [datalogic.com](https://www.datalogic.com/eng/retail-transportation-logistics-other-applications/handheld-scanners/quickscan-2100-series-pd-909.html) (Média) |
-| Elgin **EL4200** (`elgin-el4200`) | **Fora de linha** (distribuidor: "fora de linha e não será mais comercializado") | Trocar pelo **Elgin EL8600iA** (fixo, 2D). | [bztech.com.br](https://www.bztech.com.br/elgin/leitor-fixo-el4200) (Alta) |
+| Datalogic **QuickScan Lite QW2100** (`datalogic-quickscan-qw2100`) | **Fora de linha.** Saiu da página da série no site da Datalogic, e revendas o marcam como "discontinued". | Trocar pelo **QuickScan QW2500** (2D, USB). Para quem precisa de RS-232: **QD2500** (QD2590). **No pacote de outubro.** (QW2500) | [datalogic.com](https://www.datalogic.com/eng/retail-transportation-logistics-other-applications/handheld-scanners/quickscan-2100-series-pd-909.html) (Média) |
+| Elgin **EL4200** (`elgin-el4200`) | **Fora de linha** (distribuidor: "fora de linha e não será mais comercializado") | Trocar pelo **Elgin EL8600iA** (fixo, 2D). **No pacote de outubro.** | [bztech.com.br](https://www.bztech.com.br/elgin/leitor-fixo-el4200) (Alta) |
 | Tanca **TL-900** (`tanca-tl-900`) | Em linha | Manter. É o leitor 2D do catálogo: vale pôr em destaque. | [tanca.com.br](https://www.tanca.com.br/automacao-comercial-produto.php?cod=162) (Alta) |
 | Menno **Gaveta MG 41** (`gaveta-menno`) | Em linha | Manter. | [menno.com.br](https://www.menno.com.br/suprimentos-para-escritorio/produto/gaveta-para-dinheiro-mg-41b-plus-automatica/) (Alta) |
 | Bematech **Gaveta GD-56** (`gaveta-bematech`) | **Trocar nome.** Hoje é vendida pela Elgin como **GD-56M** (Bematech). | Renomear para "Gaveta GD-56M". | [elgin.com.br](https://www.elgin.com.br/Produtos/Automacao/gaveta/gd-56m) (Média) |
-| Gertec **TC 504** (`gertec-tc504`) | **Fora de linha** | Trocar pelo **Gertec TC506E 2D**. Atenção: a tela é menor (3,2" contra 5,7"). | [bztech.com.br](https://www.bztech.com.br/gertec/terminal-de-consulta-tc-504) e [loja.gertec.com.br](https://loja.gertec.com.br/terminais-de-consulta) (Alta) |
-| Gertec **Busca Preço G2-E** (`gertec-g2`) | **Fora de linha.** A loja oficial da Gertec só vende as versões 2D. | Trocar pelo **Busca Preço 2D** (G2 E 2D, ref. 00410780). | [loja.gertec.com.br](https://loja.gertec.com.br/terminais-de-consulta) e [bztech.com.br](https://www.bztech.com.br/gertec/terminal-de-consulta-busca-preco-g2) (Alta) |
-| Gertec **MT 720** (`gertec-mt-720`) | **Fora de linha** | Trocar pelo **Gertec MT-721 VT100**. | [bztech.com.br](https://www.bztech.com.br/gertec/microterminal-nao-fiscal-mt-720) (Média: o site da Gertec estava fora do ar) |
+| Gertec **TC 504** (`gertec-tc504`) | **Fora de linha** | Trocar pelo **Gertec TC506E 2D**. Atenção: a tela é menor (3,2" contra 5,7"). **No pacote de outubro.** | [bztech.com.br](https://www.bztech.com.br/gertec/terminal-de-consulta-tc-504) e [loja.gertec.com.br](https://loja.gertec.com.br/terminais-de-consulta) (Alta) |
+| Gertec **Busca Preço G2-E** (`gertec-g2`) | **Fora de linha.** A loja oficial da Gertec só vende as versões 2D. | Trocar pelo **Busca Preço 2D** (G2 E 2D, ref. 00410780). **No pacote de outubro.** | [loja.gertec.com.br](https://loja.gertec.com.br/terminais-de-consulta) e [bztech.com.br](https://www.bztech.com.br/gertec/terminal-de-consulta-busca-preco-g2) (Alta) |
+| Gertec **MT 720** (`gertec-mt-720`) | **Fora de linha** | Trocar pelo **Gertec MT-721 VT100**. **No pacote de outubro.** | [bztech.com.br](https://www.bztech.com.br/gertec/microterminal-nao-fiscal-mt-720) (Média: o site da Gertec estava fora do ar) |
 | Gertec **TEC 44** (`gertec-tec-44`) | Em linha | Manter. Também existe a TEC44 DIS, com display. | [loja.gertec.com.br](https://loja.gertec.com.br/tec-e-44/p) (Alta) |
 | Smak **SKO-44** (`smak-sko44`) | Em linha | Manter. | [smak.com.br](https://smak.com.br/produto/teclado-optico-de-44-teclas/) (Alta) |
 | Toledo **Fatiador Prix Veloce 350A** (`toledo-uni-350-ga`) | Em linha | Manter. | [toledobrasil.com](https://www.toledobrasil.com/produto/fatiador-de-frios-prix-veloce-350a/) (Alta) |
 | Toledo **Fatiador Prix Supremo 350S** (`toledo-uni-350`) | Em linha | Manter. | [toledobrasil.com](https://www.toledobrasil.com/produto/prix-supremo-350s/) (Alta) |
 | Toledo **MIT 7** (`toledo-mit`) | Em linha | Manter. | [toledobrasil.com](https://www.toledobrasil.com/produto/mit-7/) (Alta) |
-| Balmak **All-Mídia** (`balmak-all-midia`) | Em linha (catálogo jun/2024) | Manter. O catálogo descreve um player antigo (MK809 IV ou Raspberry, com software para Windows XP a 10): confirmar com a Balmak o equipamento atual antes de detalhar a ficha. | catálogo jun/2024 (Média) |
+| Balmak **All-Mídia** (`balmak-all-midia`) | Em linha (catálogo jun/2024) | Manter. O catálogo descreve um player antigo (MK809 IV ou Raspberry, com software para Windows XP a 10): confirmar com a Balmak o equipamento atual antes de detalhar a ficha. Com as Órion fora do site, o resumo e a descrição ainda dizem “integrada às balanças Balmak Órion”: ajustar pelo painel (texto pronto na lista de conferência abaixo, item 2). | catálogo jun/2024 (Média) |
 
 **Nota sobre leitores 1D e 2D.** A GS1 definiu como meta que, até o fim de 2027, todo caixa leia o código do produto tanto no código de barras comum quanto no 2D. Ela avisa que leitor a laser não lê 2D ([GS1, guia de implantação](https://www.gs1.org/standards/2d-barcodes-retail-point-sale-implementation-guideline/current-standard); [GS1, prontidão para 2D](https://www.gs1.org/industries/retail/solution-provider-2d-readiness)). O código de barras comum continua nas embalagens por bastante tempo, então TL-120 e TL-220 podem ficar no site, mas o destaque deve ir para os leitores 2D.
 
@@ -132,46 +135,48 @@ O que isso muda no catálogo:
 
 Para baixar as fotos, use os links de "Foto oficial": abra no celular, salve e envie no campo **Foto** do painel. Antes de usar foto do fabricante, confirme com o distribuidor se ele autoriza.
 
+> **Para os 12 modelos que estão no pacote de outubro, a ficha que vale é a do pacote**, conferida de novo nas fontes oficiais em 11/10/2026 (fontes e divergências em `docs/FONTES-DOS-PRODUTOS.md`) e com fotos já recortadas. Os resumos abaixo ficam como registro da pesquisa inicial e têm pontos que a conferência corrigiu (por exemplo: o QW2500 tem mira de ponto azul e lê tela de celular; o site da Gertec voltou ao ar e confirmou as fichas da TC506E, do Busca Preço 2D e do MT-721; a ficha da EDGE não traz o tamanho do display; a 7T imprime “até 130 mm/s”).
+
 ### A. Substitutos (entram no lugar de um produto do site)
 
-#### Zebra ZT231, no lugar da ZT230
+#### Zebra ZT231, no lugar da ZT230 · no pacote de outubro
 - **Por quê:** é a substituta indicada pela própria Zebra.
 - **Ficha:** térmica direta, com transferência térmica opcional. 203 dpi (300 dpi opcional). Até 12 pol/s (cerca de 305 mm/s) a 203 dpi. Largura máxima de impressão de 104 mm; etiqueta de 19,4 a 114 mm; rolo de até 203 mm de diâmetro externo. USB 2.0, serial RS-232, Ethernet 10/100, USB host e Bluetooth Low Energy; Wi-Fi 802.11ac opcional. Tela colorida sensível ao toque de 4,3". Linguagens ZPL e ZPL II.
 - **Página oficial:** <https://www.zebra.com/us/en/products/printers/industrial/zt200-series/zt231.html>. Ficha em português: <https://www.zebra.com/content/dam/zebra_dam/pt_br/spec-sheets/zt231-spec-sheet-pt-br.pdf>
 - **Foto oficial:** na página do produto. Certeza: Alta.
 
-#### Argox OS-214 Pro, no lugar da OS-2140
+#### Argox OS-214 Pro, no lugar da OS-2140 · no pacote de outubro
 - **Por quê:** é a de desenho mais parecido e está na linha atual. A Argox não diz que ela substitui a OS-2140.
 - **Ficha:** térmica direta e transferência térmica. 203 dpi. Até 5 pol/s. Impressão de até 105 mm; etiqueta de 25,4 a 110 mm. Ribbon de até 92 m. 128 MB de SDRAM e 128 MB de Flash. Emulações PPLA, PPLB e PPLZ. **Interface: só USB 2.0** (quem precisa de rede deve ver outro modelo com o fornecedor).
 - **Página oficial:** <https://www.argox.com/products-detail/os-214_pro/>
 - **Foto oficial:** <https://www.argox.com/upload/catalog_m/ALL_catalog_25I09_QvaF9je1JN.png> (foto com a tampa aberta). Certeza: Alta.
 
-#### Datalogic QuickScan QW2500 (ou QD2500), no lugar do QW2100
+#### Datalogic QuickScan QW2500 (ou QD2500), no lugar do QW2100 · no pacote de outubro
 - **Por quê:** é o leitor de mão com fio da linha atual da Datalogic e lê 2D (QR Code, inclusive GS1 Digital Link).
 - **Ficha:** lê 1D e 2D em qualquer direção. Mira com triângulos azuis e confirmação "Green Spot". Gabinete IP52. Gatilho para cerca de 10 milhões de acionamentos. Modelos: **QW2520** (USB) e **QD2590** (USB e RS-232). O QD2500 resiste a queda de 1,5 m e lê telas de celular; para o QW2500 a página não informa leitura de tela (confirmar com o fornecedor).
 - **Página oficial:** <https://www.datalogic.com/eng/retail-manufacturing-healthcare-gs1-digital-link/handheld-scanners/quickscan-2500-series-pd-898.html>
 - **Foto oficial:** na página do produto. Certeza: Alta.
 
-#### Elgin EL8600iA, no lugar do EL4200
+#### Elgin EL8600iA, no lugar do EL4200 · no pacote de outubro
 - **Por quê:** é a substituta indicada pelo distribuidor BZTech e lê QR Code.
 - **Ficha (pelo resumo da página oficial; a tabela técnica não abriu, então confirmar com o fornecedor):** leitor fixo 1D e 2D, até 8 m/s, pedestal ajustável, IP52, queda de 1,5 m, USB (serial RS-232 sob consulta), garantia de 3 anos.
 - **Página oficial:** <https://www.elgin.com.br/leitor-cod-barras-2d-elgin-bema-el8600ia/p>
 - **Foto oficial:** <https://elgin.vtexassets.com/arquivos/ids/172365-800-800?width=800&height=800&aspect=true>. Certeza: Média.
 
-#### Gertec TC506E 2D, no lugar do TC 504
+#### Gertec TC506E 2D, no lugar do TC 504 · no pacote de outubro
 - **Por quê:** é a substituta indicada pelo distribuidor e está à venda na loja oficial da Gertec.
 - **Ficha:** tela TFT colorida de 3,2" (320 x 240), que mostra imagens JPEG e BMP. Leitor 1D e 2D (QR Code). Ethernet, Wi-Fi 2,4 GHz (802.11 b/g/n) e Bluetooth 4.2 (para configurar). Alimentação de 5 Vdc, com fonte inclusa. Ref. 00410543.
 - **Página oficial:** <https://loja.gertec.com.br/tc506-e-2d/p>
 - **Foto oficial:** <https://lojagertec.vtexassets.com/arquivos/ids/156170-800-auto?width=800&height=auto&aspect=true>. Certeza: Alta.
 
-#### Gertec Busca Preço 2D (G2 E 2D), no lugar do Busca Preço G2-E
+#### Gertec Busca Preço 2D (G2 E 2D), no lugar do Busca Preço G2-E · no pacote de outubro
 - **Por quê:** a versão 1D saiu de linha, e a loja oficial só vende a 2D.
 - **Ficha:** tela TFT colorida de 3,2" (320 x 240, 256 mil cores). Leitor 1D e 2D. Ethernet, Wi-Fi 2,4 GHz e Bluetooth 4.2 (para configurar). Alto-falante que toca arquivos WAV (acessibilidade). 5 Vdc, com fonte inclusa (110/220 V). Ref. 00410780. O datasheet da Gertec cita 140 x 100 x 40 mm e garantia de 12 meses (confirmar com o fornecedor).
 - **Página oficial:** <https://loja.gertec.com.br/terminal-de-consulta-busca-preco-2d-00410780/p>. Datasheet: <https://www.gertec.com.br/wp-content/uploads/2025/07/Busca-Preco-G2-E-2D.pdf>
 - **Foto oficial:** <https://lojagertec.vtexassets.com/arquivos/ids/156585-800-auto?width=800&height=auto&aspect=true>. Certeza: Alta.
 - **Dica:** o TC506E 2D e o Busca Preço 2D têm fichas quase iguais. Se a loja só vende um deles, dá para juntar os dois cadastros num produto só.
 
-#### Gertec MT-721 VT100, no lugar do MT 720
+#### Gertec MT-721 VT100, no lugar do MT 720 · no pacote de outubro
 - **Por quê:** é o substituto indicado pelo distribuidor BZTech.
 - **Ficha (distribuidor; o site da Gertec estava fora do ar):** LCD de 2 linhas x 20 caracteres com backlight. 20 teclas programáveis. 1 Ethernet RJ-45, 2 USB e 2 seriais RJ11. 5 Vdc, com fonte inclusa. Protocolos VT100 e STX/ETX. Garantia de 1 ano.
 - **Página:** <https://www.bztech.com.br/gertec/microterminal-nao-fiscal-mt-721> (distribuidor). A página oficial da Gertec não abriu (erro 503). Certeza: Média.
@@ -206,26 +211,26 @@ Para baixar as fotos, use os links de "Foto oficial": abra no celular, salve e e
 
 A ordem é de prioridade para uma loja de balanças comerciais como a de Rio Claro.
 
-#### 1. Toledo Prix 4 Trend (Balanças → Com impressora de etiquetas)
+#### 1. Toledo Prix 4 Trend (Balanças → Com impressora de etiquetas) · no pacote de outubro
 - **Por quê:** é a etiquetadora compacta mais nova da Toledo (página publicada em 2026), na faixa de preço da Prix 4 Uno. Serve para padarias, açougues e mercadinhos.
 - **Ficha:** 32 kg (2 g até 6 kg / 5 g até 15 kg / 10 g até 32 kg), classe III, com aprovação do Inmetro. Impressão a 70 mm/s, até 60 mm de largura; etiqueta EAN-13 ou papel contínuo de 40 ou 60 mm (modo comanda). Até 2.000 itens. Display LCD com backlight; 48 teclas rápidas para até 144 itens. Ethernet ou Wi-Fi 802.11 b/g; integra com o MGV.
 - **Página oficial:** <https://www.toledobrasil.com/produto/prix-4-trend/>
 - **Foto oficial:** <https://stportalcorporativoprd.blob.core.windows.net/blobappportalc63534e8570/wp-content/uploads/2026/06/balanca-comercial-prix-4-trend-toledo-do-brasil-vista-angular.webp>. Certeza: Alta.
 
-#### 2. Balmak EDGE (Balanças → Com impressora de etiquetas)
+#### 2. Balmak EDGE (Balanças → Com impressora de etiquetas) · no pacote de outubro
 - **Por quê:** a própria Balmak apresenta como "a mais nova e avançada" etiquetadora dela, feita para o pequeno e o médio varejo, com bom custo-benefício. Hoje o site só tem Balmak Órion.
 - **Ficha (catálogo oficial RV1, jun/2024):** 6/15/33 kg com divisão de 2/5/10 g; carga mínima de 40 g; tara de até 5,998 kg. Até 10.000 itens; 352 teclas de atalho. Display TFT colorido de 1,5" para o operador e o cliente. Impressão térmica de 8 pontos/mm, a 100 mm/s; cabeça para 150 km; etiquetas de 30 x 30 mm até 60 x 130 mm. Ethernet, Wi-Fi (802.11) e USB (carga por pen drive). Formato torre; prato de 383 x 262 mm. Alimentação de 100 a 240 V. Garantia de 1 ano. Atende a RDC 429/2020 da Anvisa (rotulagem nutricional).
 - **Versões:** nas revendas aparecem a EDGE33TE (Ethernet), a EDGE33TW (Wi-Fi) e uma "EDGE Mini" plana (EDGE33MW, com LCD de 4,3"). Confirmar os códigos com o distribuidor Balmak.
 - **Página oficial:** <https://balmak.com.br/produtos/automacao-comercial/edge/> (fora do ar em 11/10/2026: certificado incompleto e erro 503). Catálogo: <https://www.brasilinternacional.com/arquivo/catalogo/2_1_balmak-lnea-automatizacin-comercial_3.pdf>
 - **Foto oficial:** pedir ao distribuidor (o site não abriu). Certeza: Alta para a ficha; Média para as versões.
 
-#### 3. Urano BA37 (Balanças → Com impressora de etiquetas)
+#### 3. Urano BA37 (Balanças → Com impressora de etiquetas) · no pacote de outubro
 - **Por quê:** a Urano chama a BA37 de "nova linha", e o catálogo ainda não tem nenhuma Urano.
 - **Ficha:** 31 kg (6 kg x 2 g / 15 kg x 5 g / 31 kg x 10 g). Versões BA37 (sem coluna), BA37C (com coluna) e BA37-T (com coluna, sem display numérico), cada uma com Ethernet ou Wi-Fi. Impressora térmica embutida; etiqueta de 30 a 60 mm de largura (de 30 x 30 até 60 x 130 mm). Até 10.000 produtos, 300 imagens e 99 modelos de etiqueta. **Sem bateria**; fonte interna de 90 a 240 V. A velocidade de impressão não está na página (confirmar com o fornecedor).
 - **Página oficial:** <https://www.urano.com.br/balancas-digitais-ba37>
 - **Foto oficial:** <https://www.urano.com.br/wp-content/uploads/2022/08/Foto-alterado-01-nova-1024x643.png>. Certeza: Alta.
 
-#### 4. Toledo Prix 7T (Balanças → Com impressora de etiquetas)
+#### 4. Toledo Prix 7T (Balanças → Com impressora de etiquetas) · no pacote de outubro
 - **Por quê:** é a top de linha da Toledo para supermercado e hortifrúti. Reconhece o produto pela imagem (inteligência artificial) e mostra ofertas para o cliente. Combina com a Prix 7E, que já é a capa do site.
 - **Ficha:** 32 kg (6 kg x 2 g / 15 kg x 5 g / 32 kg x 10 g), classe III. Até 100.000 itens. Impressão de 60 a 130 mm/s, de 30 a 60 mm de largura. Tela sensível ao toque de 12,1" para o operador e display de 7" para o cliente. Reconhecimento de produto por imagem e reconhecimento facial do operador. Ethernet e Wi-Fi (802.11 b/g/n); MGV 7 e MGV Cloud.
 - **Página oficial:** <https://www.toledobrasil.com/produto/prix-7t/>
@@ -237,7 +242,7 @@ A ordem é de prioridade para uma loja de balanças comerciais como a de Rio Cla
 - **Página oficial:** <https://www.urano.com.br/balanca-pop-z-mira/>
 - **Foto oficial:** <https://www.urano.com.br/wp-content/uploads/2026/02/mira_pro_visao_cliente_pfrutas-1-scaled.png>. Certeza: Alta.
 
-#### 6. Toledo Prix 6 (Balanças → Com impressora de etiquetas)
+#### 6. Toledo Prix 6 (Balanças → Com impressora de etiquetas) · no pacote de outubro
 - **Por quê:** fica entre a Prix 5 Plus e a Prix 7E: tem display para o cliente com imagens de ofertas e memória grande.
 - **Ficha:** 32 kg (6 kg x 2 g / 15 kg x 5 g / 32 kg x 10 g). Até 20.000 itens; 180 itens em teclas rápidas. Display do operador e display do cliente para imagens e mensagens (a página cita TFT de 7" e também display fluorescente: confirmar com a Toledo qual tela fica de qual lado). Ethernet e Wi-Fi. A velocidade de impressão não está na página.
 - **Página oficial:** <https://www.toledobrasil.com/produto/prix-6/>
@@ -249,6 +254,7 @@ A ordem é de prioridade para uma loja de balanças comerciais como a de Rio Cla
 - **Fonte:** catálogo oficial jun/2024 (seção "Conheça também") e anúncios de revenda. Foto oficial: pedir ao distribuidor. Certeza: Média.
 
 #### 8. Um leitor de mão 2D (Automação → Leitores de código de barras)
+- **Já resolvido pelo pacote de outubro:** o Datalogic QuickScan QW2500, que entra no lugar do QW2100, é um leitor de mão 2D.
 - **Por quê:** é a preparação para o QR Code GS1 de 2027 e também lê QR Code na tela do celular. O catálogo só tem leitor 2D fixo (TL-900).
 - **Opções com página oficial:** o Datalogic QW2500 (ficha acima); o **Elgin BR-520**, de mão, 1D/2D, com sensor CMOS e leitura manual ou automática (a ficha completa não abriu: confirmar com o fornecedor), em <https://www.elgin.com.br/leitor-de-codigo-de-barras-de-mao-elgin-1d2d-br-520/p>; e o **Elgin EL720iA**, semifixo 1D/2D, tolera movimento de até 4 m/s, bom para caixa pequeno, em <https://www.elgin.com.br/leitor-de-codigo-de-barras-el720ia-semifixo-leitura-1d-e-2d-tolerancia-a-movimento-de-ate-4ms/p>. Certeza: Média.
 
@@ -264,6 +270,11 @@ A ordem é de prioridade para uma loja de balanças comerciais como a de Rio Cla
 
 O catálogo que vale é o do **servidor**: faça tudo pelo painel (`https://balancass.com/painel/`, link "Área restrita" no rodapé do site). Cada alteração guarda uma cópia de segurança automática; se errar, use **Desfazer** (logo depois de excluir) ou **Cópias**.
 
+### 0. Primeiro: aplicar a atualização do catálogo de outubro
+- [ ] Depois de instalar a atualização do site, entre no painel como administrador → **Produtos** → **“Atualização do catálogo pronta”** → **Ver e aplicar** → confira → **Aplicar os marcados**. Isso faz de uma vez: as 5 balanças novas, as 7 trocas da automação, a foto nova da Prix 5 Plus e a saída das duas Órion (os itens marcados com *no pacote* abaixo). Para desfazer: **Conta → Cópias de segurança → Restaurar** a cópia *“Antes de: aplicar a atualização ‘…’”* com a data que a tela indica.
+- [ ] Depois de aplicar, ajuste pelo painel o que for da loja: estoque e preço dos novos e quais entram em **destaque** (os novos chegam sem estrela; o EL8600iA herda a do EL4200).
+- [ ] Ajuste o texto do **Balmak All-Mídia**, que ainda cita as Órion (item 2, com o texto pronto).
+
 **Regra prática para os substitutos**
 
 - **A loja ainda tem o modelo antigo em estoque:** deixe o antigo no site com estoque "Sob encomenda" ou "Esgotado" (ou esconda) e cadastre o novo em **Novo produto**.
@@ -276,35 +287,29 @@ O catálogo que vale é o do **servidor**: faça tudo pelo painel (`https://bala
 
 ### 2. Editar (tocar no produto, mudar e Salvar)
 - [ ] **Toledo Prix 2096PP:** na Ficha técnica, linha "Aprovação", trocar o valor por `Inmetro, classe de exatidão III`.
-- [ ] **Toledo Prix 5 Plus:** trocar a foto pela foto oficial, em torre (link na tabela de Balanças).
-- [ ] **Balmak Órion 1 Key:** conferir se a foto mostra o teclado de teclas individuais (versão Key). Se não mostrar, pedir a foto ao distribuidor.
+- [x] **Toledo Prix 5 Plus:** trocar a foto pela foto oficial, em torre: *no pacote de outubro*.
+- [x] **Balmak Órion 1 Key:** conferir a foto: *não precisa mais, as Órion saem do site no pacote de outubro*.
+- [ ] **Balmak All-Mídia:** o resumo, a descrição e duas linhas da ficha citam as balanças Órion, que saem do site. O que a fonte confirma é a integração com as Órion (software DFS); textos prontos, sem citar um modelo que não está no site (copie e cole no **Editar**):
+  - **Resumo:** `Tabela de preços e ofertas em TV Full HD, que pode buscar os preços direto das balanças Balmak compatíveis.`
+  - **Descrição:** `Mostra nas TVs da loja tabelas de preços, ofertas, imagens e vídeos em Full HD, com programação configurável de forma diferente para cada setor da loja. Com as balanças Balmak compatíveis, usa o mesmo banco de dados delas pelo software DFS: o preço alterado na balança muda sozinho na tabela digital, sem importar arquivos. Também funciona de forma independente (stand-alone) e, com as balanças Balmak compatíveis, organiza filas com chamada de senha.`
+  - **Ficha técnica:** linha "Integração" → `Balanças Balmak compatíveis, via software DFS (atualização automática de preços)`; linha "Chamada de senha" → `Organizador de fila com senha, com balanças Balmak compatíveis`.
+  - Antes, se puder, confirme com a Balmak quais balanças atuais (ex.: a EDGE) conversam com o All-Mídia; se a EDGE estiver entre elas, dá para citá-la.
 - [ ] **Elgin L42 Pro:** Nome → `L42 Pro Full`. Na Ficha, Conectividade → `USB, Serial e Ethernet`. Estoque "Consulte".
 - [ ] **Bematech Gaveta GD-56:** Nome → `Gaveta GD-56M`. Conferir a ficha com o fornecedor.
 - [ ] **Elgin i9 Full:** se a loja já vende a nova, Nome → `i9 Full 2` e foto nova. Bobina, guilhotina e garantia só depois de confirmar com o fornecedor.
 - [ ] **NHS Nobreak 400 VA:** Nome → `Nobreak Mini 4 Bivolt 600 VA`, ficha da seção B e foto nova. Ou exclua e cadastre como novo.
 - [ ] **APC BZ400BI-BR:** confirmar com o distribuidor. Se acabou, trocar pelo BVX600BI-BR (ficha acima).
 - [ ] **Centrium Mini PC:** se a loja tem um modelo fixo, preencher processador, memória, SSD e portas.
-- [ ] Substitutos (por Editar ou por Novo, conforme a regra prática):
-  - [ ] Argox OS-2140 → Argox OS-214 Pro
-  - [ ] Zebra ZT230 → Zebra ZT231
-  - [ ] Datalogic QW2100 → Datalogic QuickScan QW2500
-  - [ ] Elgin EL4200 → Elgin EL8600iA
-  - [ ] Gertec TC 504 → Gertec TC506E 2D
-  - [ ] Gertec Busca Preço G2-E → Gertec Busca Preço 2D
-  - [ ] Gertec MT 720 → Gertec MT-721 VT100
+- [x] Substitutos: *os 7 estão no pacote de outubro* (Argox OS-2140 → OS-214 Pro, Zebra ZT230 → ZT231, Datalogic QW2100 → QuickScan QW2500, Elgin EL4200 → EL8600iA, Gertec TC 504 → TC506E 2D, Busca Preço G2-E → Busca Preço 2D, MT 720 → MT-721 VT100). O produto novo fica no lugar do antigo e herda dele o destaque e o “fora do site”.
 
 ### 3. Esconder do site (botão "No site", com o olho)
 - [ ] Qualquer produto fora de linha que a loja **não** tenha mais e que você ainda não quer apagar: guarde escondido até decidir.
 
 ### 4. Novo produto (botão verde "Novo")
-- [ ] Toledo **Prix 4 Trend**: Balanças → Com impressora de etiquetas
-- [ ] Balmak **EDGE**: Balanças → Com impressora de etiquetas
-- [ ] Urano **BA37**: Balanças → Com impressora de etiquetas
-- [ ] Toledo **Prix 7T**: Balanças → Com impressora de etiquetas (opcional)
+- [x] Toledo **Prix 4 Trend**, Balmak **EDGE**, Urano **BA37**, Toledo **Prix 7T** e Toledo **Prix 6** (Balanças → Com impressora de etiquetas): *no pacote de outubro*. Ordem na categoria: Prix 7E, 7T, 6, 5 Plus, 4 Trend, 4 Uno, 4 Due, EDGE, BA37.
+- [x] Um **leitor de mão 2D**: *o QuickScan QW2500 do pacote de outubro*.
 - [ ] Urano **POP-Z Mira / Mira Pro**: Balanças → Computadoras
-- [ ] Toledo **Prix 6**: Balanças → Com impressora de etiquetas (opcional)
 - [ ] Balmak **QUICK**: Balanças → Computadoras (depois de confirmar a ficha)
-- [ ] Um **leitor de mão 2D**: Automação → Leitores de código de barras
 
 Para cada produto novo:
 
@@ -315,14 +320,14 @@ Para cada produto novo:
 
 ### 5. Depois de tudo
 - [ ] No painel, toque em **Ver no site** e confira os cartões no celular.
-- [ ] Atualize o `docs/FONTES-DOS-PRODUTOS.md` com as fontes dos produtos novos (pedido para o desenvolvedor).
+- [x] Fontes dos produtos do pacote de outubro: em `docs/FONTES-DOS-PRODUTOS.md`. Para os que você cadastrar depois (POP-Z Mira, QUICK…), peça ao desenvolvedor para acrescentar.
 
 ---
 
 ### Limitações desta pesquisa
 
-- **Balmak:** o site `balmak.com.br` não abriu (certificado incompleto e erro 503). Usei o catálogo oficial de junho de 2024 numa cópia hospedada por um distribuidor, além de revendas.
-- **Gertec:** o site `gertec.com.br` não abriu (erro 503). Usei a loja oficial `loja.gertec.com.br` e o distribuidor BZTech.
+- **Balmak:** o site `balmak.com.br` não abriu (certificado incompleto e erro 503). Usei o catálogo oficial de junho de 2024 numa cópia hospedada por um distribuidor, além de revendas. Na conferência do pacote de outubro, a página oficial da EDGE foi lida na cópia do Internet Archive (o site segue fora do ar).
+- **Gertec:** o site `gertec.com.br` não abriu (erro 503). Usei a loja oficial `loja.gertec.com.br` e o distribuidor BZTech. Na conferência do pacote de outubro, o site da Gertec já tinha voltado e as fichas foram conferidas nas páginas, fichas técnicas e manuais oficiais.
 - **Elgin:** as páginas de produto da loja oficial não mostraram a tabela técnica. Usei o título do produto, o resumo e distribuidores, sempre com a marca "confirmar com o fornecedor".
 - **APC/Schneider:** as páginas de produto bloqueiam acesso automático. A situação do BZ400BI-BR ficou com certeza baixa.
 - **Selo "Indisponível":** nas lojas oficiais, ele indica falta de estoque naquela loja, não necessariamente fim de linha. Por isso a L42 Pro Full ficou como "Trocar nome", não como "Fora de linha".

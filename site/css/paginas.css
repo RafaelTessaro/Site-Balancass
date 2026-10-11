@@ -780,7 +780,8 @@
 }
 .kit__p figure { position: relative; flex: none; aspect-ratio: 4 / 3; overflow: hidden; background: linear-gradient(90deg, rgba(10,10,10,.06) 1px, transparent 1px) 0 0 / 20% 100%, linear-gradient(rgba(10,10,10,.06) 1px, transparent 1px) 0 0 / 100% 25%, var(--white); }
 .kit__p img { position: absolute; inset: 0; margin: auto; width: 80%; height: 80%; object-fit: contain; transition: transform .7s var(--ease-out); }
-.kit__p span { flex: 1; display: grid; align-content: start; gap: 4px; padding: 10px 12px 12px; border-top: 1px solid #E2E2DC; }
+/* > : o nome que o core.js põe no kit pode ter <span class="nobr"> ("BCK-30" não quebra no hífen) */
+.kit__p > span { flex: 1; display: grid; align-content: start; gap: 4px; padding: 10px 12px 12px; border-top: 1px solid #E2E2DC; }
 .kit__p small { font: 500 10px/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--green-deep); }
 .kit__p b { font: 900 22px/1 var(--f-display); text-transform: uppercase; }
 .kit__p:hover img { transform: scale(1.06) rotate(-2deg); }
@@ -802,7 +803,7 @@
   .kits__tab-t { font: 600 13px/1 var(--f-text); letter-spacing: .03em; }
   .kit__prods { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   .kit__p b { font-size: 17px; }
-  .kit__p span { padding: 8px 8px 10px; }
+  .kit__p > span { padding: 8px 8px 10px; }
 }
 @media (max-width: 480px) {
   .kit__prods { grid-template-columns: repeat(2, minmax(0, 1fr)); }

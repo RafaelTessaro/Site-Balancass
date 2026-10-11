@@ -32,6 +32,15 @@ python3 ferramentas/montar-site.py --atualizacao --incluir-ajustes   # idem, lev
 
 O script usa `linha-verde/index-3.html` como `index.html`, leva só o CSS/JS que as 6 páginas usam, tira o seletor de variações da fase de escolha, troca `../compartilhado/` por `compartilhado/`, acerta canonical e `og:url`, põe `?v=…` nos CSS/JS, monta `.htaccess` (de `hospedagem/.htaccess`), `robots.txt`, `sitemap.xml`, `404.html` e `favicon.ico`, copia o painel sem dados privados e **confere tudo** (referências quebradas, restos de `../`, formato do catálogo, da lista de clientes, do `empresa.js` e do `ajustes.js`, a ordem `empresa.js` → `ajustes.js` → `clientes.js` → `produtos.js` → `balancas.js` em todas as páginas, nenhum arquivo da pasta privada no pacote). Se algo estiver errado, ele para e a `site/` anterior fica como estava.
 
+**Mudanças no catálogo preparadas no projeto** (produtos novos, modelos que saíram de linha trocados pelos atuais, fotos novas, produtos que saem do site) viram uma **atualização do catálogo** em `painel/pacotes/<AAAA-MM-nome>/` (`pacote.json` + `fotos/` + `recortes/`). Ela vai no `atualizacao.zip` e um administrador revê e aplica no painel (cartão “Atualização do catálogo pronta”, com uma cópia de segurança antes). No projeto, a mesma atualização é aplicada ao `compartilhado/` pela linha de comando, com as mesmas regras do painel:
+
+```bash
+php ferramentas/aplicar-pacote.php painel/pacotes/2026-10-catalogo compartilhado --simular   # só mostra
+php ferramentas/aplicar-pacote.php painel/pacotes/2026-10-catalogo compartilhado              # aplica (catálogo + fotos)
+```
+
+A de **outubro de 2026** (`2026-10-catalogo`: 5 balanças novas, 7 trocas na automação, foto nova da Prix 5 Plus e as Balmak Órion fora) já está aplicada ao `compartilhado/` do projeto. Formato e regras: `painel/LEIA-ME.md`, item 9.
+
 > Depois que o painel estiver em uso, o catálogo, a lista de clientes e os ajustes da área Empresa que valem são os do servidor. Para publicar uma versão nova, use o `atualizacao.zip`, que não leva `produtos.js`, as fotos de produtos, (sem `--incluir-clientes`) o `clientes.js` e os logos, nem (sem `--incluir-ajustes`) o `ajustes.js` (detalhes no guia de publicação, item 6).
 
 ## Estrutura
@@ -50,9 +59,11 @@ compartilhado/
   js/balancas.js           funções comuns (junta empresa.js + ajustes.js, WhatsApp por produto, filtros, busca)
   img/                     logo em SVG, fotos de produtos, logos de clientes, telas do sistema
 painel/                    painel em PHP: produtos, clientes, área Empresa, usuários e papéis (LEIA-ME.md com instalação e segurança)
+  pacotes/<id>/            atualizações do catálogo (pacote.json + fotos/ + recortes/), aplicadas pelo administrador no painel
 hospedagem/                .htaccess do site e das pastas de fotos, favicon.ico
 ferramentas/
-  montar-site.py           gera a pasta site/ (e o site.zip ou o atualizacao.zip)
+  montar-site.py           gera a pasta site/ (e o site.zip ou o atualizacao.zip); confere as atualizações do catálogo
+  aplicar-pacote.php       aplica uma atualização do catálogo ao compartilhado/ do projeto (mesmas funções do painel)
   converter-produtos.mjs   conversão única do catálogo antigo para o formato do painel
 docs/                      guias e avaliações
 design-1-tara-zero/  design-2-balcao/  design-3-linha-verde/   propostas da 1ª rodada
@@ -65,6 +76,7 @@ index.html                 página que apresenta as 3 propostas da 1ª rodada
 - [Como adicionar e atualizar produtos (painel)](docs/COMO-ADICIONAR-PRODUTOS.md)
 - [Painel: instalação, segurança e problemas comuns](painel/LEIA-ME.md)
 - [Fontes das especificações dos produtos](docs/FONTES-DOS-PRODUTOS.md)
+- [Catálogo: o que estava velho e o que mudou em outubro de 2026](docs/ATUALIZAR-BALANCAS.md)
 - [Avaliação das propostas de design](docs/AVALIACAO-DOS-DESIGNS.md)
 
 ## Tecnologia

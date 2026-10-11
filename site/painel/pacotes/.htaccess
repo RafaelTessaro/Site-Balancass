@@ -1,0 +1,37 @@
+# =====================================================================
+# Painel Balanças.com — public_html/painel/pacotes/
+# Atualizações do catálogo: cada pasta tem pacote.json (lido só pelo PHP
+# do painel) e as fotos (fotos/, recortes/), que a tela de revisão mostra.
+# Aqui só abrem as fotos: nenhum script roda e o .json não abre no navegador.
+# =====================================================================
+Options -Indexes
+
+# Scripts nunca rodam nesta pasta (nem com nome disfarçado, ex.: foto.php.webp)
+<FilesMatch "(?i)\.(php\d?|phtml|phar|cgi|pl|py|sh|shtml)(\.|$)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# A lista de mudanças (pacote.json) e qualquer outro arquivo que não seja foto: só o painel lê
+<FilesMatch "(?i)(\.(json|md|txt|log|zip|bak)$|^\.ht)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Se o PHP estiver ligado como módulo do Apache, desliga nesta pasta
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+  php_flag engine off
+</IfModule>

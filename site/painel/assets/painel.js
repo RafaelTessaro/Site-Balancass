@@ -47,12 +47,17 @@
      Confirmação (excluir, restaurar) em janela própria
      ------------------------------------------------------------------ */
   var dlg = $("[data-dialogo]");
-  function confirmar(texto, ok, titulo) {
+  // tipo "ok": confirmação de algo que não é perigoso (faixa e botão verdes); sem tipo: vermelho (excluir, restaurar)
+  function confirmar(texto, ok, titulo, tipo) {
     return new Promise(function (resolve) {
       if (!dlg || typeof dlg.showModal !== "function") { resolve(window.confirm(texto)); return; }
+      var bOk = $("[data-dialogo-ok]", dlg), seguro = tipo === "ok";
+      dlg.classList.toggle("dialogo--ok", seguro);
+      bOk.classList.toggle("btn--verde", seguro);
+      bOk.classList.toggle("btn--perigo", !seguro);
       $("[data-dialogo-txt]", dlg).textContent = texto;
       $("[data-dialogo-tit]", dlg).textContent = titulo || "Tem certeza?";
-      $("[data-dialogo-ok]", dlg).textContent = ok || "Confirmar";
+      bOk.textContent = ok || "Confirmar";
       dlg.returnValue = "";
       dlg.addEventListener("close", function fim() {
         dlg.removeEventListener("close", fim);
@@ -72,7 +77,7 @@
     var f = e.target;
     if (!precisaConfirmar(f)) return;
     e.preventDefault();
-    confirmar(f.dataset.confirmar, f.dataset.confirmarOk, f.dataset.confirmarTit).then(function (sim) {
+    confirmar(f.dataset.confirmar, f.dataset.confirmarOk, f.dataset.confirmarTit, f.dataset.confirmarTipo).then(function (sim) {
       if (!sim) return;
       if (f.matches("[data-rapido]") && f.requestSubmit) {
         f.dataset.confirmado = "1";
@@ -89,6 +94,49 @@
       f.submit();
     });
   });
+
+  /* ------------------------------------------------------------------
+     Atualização do catálogo: contagem e texto da confirmação do que está
+     marcado (sem JavaScript, o formulário funciona igual, sem a janela)
+     ------------------------------------------------------------------ */
+  (function () {
+    var f = $("[data-pacote]");
+    if (!f) return;
+    var conta = $("[data-pacote-conta]"), bt = $("[data-pacote-aplicar]"), todas = $("[data-pacote-todas]");
+    var caixas = $$("input[name='op[]']", f).filter(function (c) { return !c.disabled; });
+    var q = function (n, um, varios) { return n + " " + (n === 1 ? um : varios); };
+    function atualizar() {
+      var n = { adicionar: 0, substituir: 0, foto: 0, remover: 0 }, total = 0, linhas = [];
+      caixas.forEach(function (c) { if (c.checked && n[c.dataset.tipo] != null) { n[c.dataset.tipo]++; total++; } });
+      if (n.adicionar) linhas.push(q(n.adicionar, "produto novo", "produtos novos"));
+      if (n.substituir) linhas.push(q(n.substituir, "trocado pelo modelo atual", "trocados pelo modelo atual"));
+      if (n.foto) linhas.push(q(n.foto, "foto nova", "fotos novas"));
+      if (n.remover) linhas.push(q(n.remover, "sai do site", "saem do site"));
+      f.dataset.confirmar = "No catálogo do site (" + q(total, "mudança", "mudanças") + "):\n" +
+        linhas.map(function (l) { return "• " + l; }).join("\n") +
+        "\nAntes, o painel guarda uma cópia de segurança: restaurar essa cópia desfaz tudo de uma vez, fotos inclusive.";
+      if (conta) conta.textContent = total ? total + " de " + caixas.length + " marcadas" : "Nenhuma marcada: marque o que quer aplicar";
+      if (bt) bt.disabled = total === 0;
+      if (todas) (todas.closest(".pk-todas") || todas).hidden = total === caixas.length;
+    }
+    f.addEventListener("change", function (e) { if (e.target && e.target.name === "op[]") atualizar(); });
+    // "Marcar todas": sem JavaScript é um link que recarrega a tela com tudo marcado; aqui marca na hora
+    if (todas) todas.addEventListener("click", function (e) {
+      e.preventDefault();
+      caixas.forEach(function (c) { c.checked = true; });
+      atualizar();
+      if (caixas[0]) caixas[0].focus();
+    });
+    // Confirmado, o diálogo envia com f.submit() (sem evento "submit"): o botão fica ocupado até a página trocar
+    window.addEventListener("beforeunload", function () { if (bt && f.dataset.confirmado === "1") bt.setAttribute("aria-busy", "true"); });
+    // Voltou para esta página (botão Voltar): pede a confirmação de novo
+    window.addEventListener("pageshow", function () {
+      if (bt) bt.removeAttribute("aria-busy");
+      f.dataset.confirmado = "";
+      $$("input[name=confirmado]", f).forEach(function (h) { h.parentNode.removeChild(h); });
+    });
+    atualizar();
+  })();
 
   /* ------------------------------------------------------------------
      Sessão vencida: pede a senha numa janela e continua de onde parou

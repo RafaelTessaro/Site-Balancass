@@ -617,6 +617,39 @@
     return '<img src="' + src + '"' + set + ' alt="' + LV.esc(opts.alt != null ? opts.alt : p.marca + " " + p.nome) + '" width="900" height="600"' +
       (opts.eager ? "" : ' loading="lazy"') + ' decoding="async">';
   };
+  // Foto pequena do produto, do melhor endereço para o pior: miniatura de 480 px (se houver), recorte
+  // (ou foto) original e a foto em fundo branco. Produto sem foto → lista vazia.
+  LV.fotosProduto = function (p) {
+    var l = [], src = BC.imgProduto(p, true), file = src.split("/").pop(), pasta = BC.temRecorte(p) ? "r/" : "f/";
+    if (P480[pasta + file]) l.push("img/p480/" + pasta + file);
+    [src, BC.imgProduto(p, false)].forEach(function (u) { if (u.split("/").pop() && l.indexOf(u) < 0) l.push(u); });
+    return l;
+  };
+  // Põe a 1ª foto da lista no <img>; se não carregar, tenta a próxima; se nenhuma carregar, esconde
+  // o <img> (fica o fundo do quadro, nunca o ícone de imagem quebrada).
+  LV.poeFoto = function (img, lista) {
+    var i = 0;   // posição, na lista, da foto que está no <img>
+    function semFoto() { img.onerror = null; img.removeAttribute("src"); img.hidden = true; }
+    function falhou() { if (++i < lista.length) img.src = lista[i]; else semFoto(); }
+    img.removeAttribute("srcset"); img.removeAttribute("sizes");
+    if (!lista.length) { semFoto(); return; }
+    img.onerror = falhou;
+    if (img.getAttribute("src") !== lista[0]) img.src = lista[0];
+    else if (img.complete && !img.naturalWidth) falhou();   // a mesma do HTML, que já falhou antes daqui
+  };
+  // Rede de segurança para as demais fotos de produto (fichas, vitrine, painel de detalhes): se o arquivo
+  // faltar no servidor (ex.: foto de uma atualização do catálogo que não chegou), a ficha tenta a foto
+  // original no lugar da miniatura e, se ainda falhar, fica sem foto, nunca com o ícone de imagem quebrada.
+  document.addEventListener("error", function (e) {
+    var img = e.target;
+    if (!img || img.tagName !== "IMG" || img.onerror) return;   // quem tem tratamento próprio (LV.poeFoto) decide
+    if (!/\/img\/(produtos|produtos-recorte|p480\/[rf])\//.test(img.currentSrc || img.src || "")) return;
+    if (img.hasAttribute("srcset") && img.currentSrc && img.currentSrc !== img.src) {
+      img.removeAttribute("srcset"); img.removeAttribute("sizes");   // falhou a miniatura: vai a original (src)
+      return;
+    }
+    img.hidden = true;
+  }, true);
 
   // Nome de modelo para títulos display: o que tem hífen ("G2-E", "BCK-30") não quebra no hífen
   // e um final curto ("MIT 7", "Prix 3") não fica sozinho na última linha.
@@ -891,6 +924,31 @@
   /* ------------------------------------------------------------------
      10. Abas de kits por segmento ([data-kits]) — sem JS todos os kits aparecem
      ------------------------------------------------------------------ */
+  // Produtos de exemplo dos kits (.kit__p): o catálogo que vale é o do servidor, que o painel edita e
+  // que pode estar antes ou depois de uma atualização do catálogo. Cada item traz o código do modelo
+  // atual (data-detail) e, em data-ou, o(s) que ele substitui, em ordem de preferência. Vale o primeiro
+  // que existir e estiver visível: marca, nome e foto vêm do catálogo (assim a foto trocada no painel
+  // aparece aqui). Se nenhum existir, o item sai da lista (nunca um link para produto fora do catálogo);
+  // remover em vez de esconder mantém a regra do celular (só os 2 primeiros) contando certo.
+  function hidratarKits() {
+    $$(".kit__prods").forEach(function (ul) {
+      var usados = {};
+      $$(".kit__p[data-detail]", ul).forEach(function (a) {
+        var li = a.closest("li") || a, p = null;
+        var ids = [a.getAttribute("data-detail")].concat((a.getAttribute("data-ou") || "").split(/\s+/));
+        for (var i = 0; i < ids.length && !p; i++) if (ids[i]) p = BC.porId(ids[i]);
+        if (!p || usados[p.id]) { li.parentNode.removeChild(li); return; }   // o mesmo produto não aparece 2 vezes no kit
+        usados[p.id] = true;
+        a.setAttribute("data-detail", p.id);
+        a.setAttribute("href", baseDetalhe() + "#p=" + encodeURIComponent(p.id));
+        var marca = $("small", a), nome = $("b", a), img = $("img", a);
+        if (marca) marca.textContent = p.marca;
+        if (nome) nome.innerHTML = LV.nomeHTML(p.nome);   // "MT-721" não quebra no hífen
+        if (img) LV.poeFoto(img, LV.fotosProduto(p));
+      });
+      if (!$(".kit__p", ul)) ul.hidden = true;
+    });
+  }
   function setupKits() {
     $$("[data-kits]").forEach(function (box) {
       var tabs = $$("[data-kit-tab]", box), panels = $$("[data-kit-panel]", box);
@@ -1253,6 +1311,7 @@
     fill();
     status(); setInterval(status, 60000);
     renderProdutos();
+    hidratarKits();
     try { jsonLD(); } catch (e) { /* dados estruturados: ficam como vieram */ }
   }
   navAtivo();

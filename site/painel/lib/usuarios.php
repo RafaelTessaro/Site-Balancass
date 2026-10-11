@@ -518,6 +518,8 @@ function fraseAtividade(array $a): string
     $ev = $a['evento'];
     if ($ev === 'catalogo' || $ev === 'clientes') return frasePassado($a['detalhe']);
     if ($ev === 'ajustes' || in_array($ev, EVENTOS_USUARIOS, true)) return $a['detalhe'] !== '' ? $a['detalhe'] : 'Alteração';
+    // Atualização do catálogo deixada para depois / aviso de volta (aplicar fica no evento "catalogo")
+    if ($ev === 'pacote') return $a['detalhe'] !== '' ? $a['detalhe'] : 'Atualização do catálogo';
     if ($ev === 'migrou-usuarios' && $a['detalhe'] !== '') return $nomes[$ev] . ' (' . $a['detalhe'] . ')';
     return $nomes[$ev] ?? $ev;
 }
