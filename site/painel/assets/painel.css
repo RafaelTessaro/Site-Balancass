@@ -86,7 +86,7 @@ code { font: 500 .86em/1.4 var(--f-mono); background: var(--paper-2); padding: .
 .btn:hover { color: var(--b-fg); }
 .btn:hover::before { filter: brightness(.94); }
 .btn:active::before { filter: brightness(.88); }
-.btn:focus-visible { outline-offset: 4px; }
+.btn:focus-visible { outline-offset: calc(var(--bh) * var(--tan) / 2 + 3px); }   /* o anel passa por fora das pontas inclinadas (saem ~5 px da caixa) */
 .btn--verde { --b-bg: var(--green); --b-fg: var(--ink); }
 .btn--linha { --b-bg: transparent; --b-bd: var(--ink); --b-fg: var(--ink); }
 .btn--linha:hover::before { background: var(--paper-2); filter: none; }
@@ -151,6 +151,8 @@ code { font: 500 .86em/1.4 var(--f-mono); background: var(--paper-2); padding: .
 .menu a[aria-current="page"] { color: var(--paper); box-shadow: inset 0 3px 0 var(--green); }
 .menu a[aria-current="page"] .i { color: var(--green); }
 .menu__novo .i { color: var(--ink); background: var(--green); width: 30px !important; height: 30px !important; padding: 5px; transform: skewX(var(--slash)); }
+.menu .menu__novo[aria-current="page"] .i { color: var(--ink); }   /* na tela "Novo" o "+" não some (verde sobre o quadrado verde) */
+.menu a:focus-visible { outline-offset: -3px; }   /* o menu encosta na borda da tela: anel por dentro, inteiro */
 
 /* ---------- Página ---------- */
 .pagina { max-width: 1240px; margin: 0 auto; padding: 22px var(--gut) calc(var(--menu-h) + 120px); outline: none; }
@@ -257,6 +259,7 @@ h1 { font: 800 clamp(38px, 10vw, 60px)/.92 var(--f-display); text-transform: upp
 .chip b { font: 500 11px/1 var(--f-mono); color: var(--muted); }
 .chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 .chip[aria-pressed="true"] b { color: var(--volt); }
+.chip:focus-visible { outline-offset: -3px; }   /* a fila de chips rola de lado (corta o que passa dela): anel por dentro */
 .ver { display: inline-flex; flex: none; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); font-weight: 600; }
 /* Largura própria: com muitas categorias (ou nomes longos), quem quebra em mais linhas são os chips, nunca o "Mostrar" */
 .ver select { min-height: 44px; min-width: 10.5rem; }
@@ -951,6 +954,7 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
 }
 .emp-indice__a b { font: 500 10.5px/1 var(--f-mono); color: var(--muted); }
 .emp-indice__a:hover { color: var(--ink); border-color: var(--ink); }
+.emp-indice__a:focus-visible { outline-offset: -3px; }   /* a fita rola de lado no celular (corta o que passa dela): anel por dentro */
 .emp-indice__a.is-atual, .emp-indice__a.is-atual:hover { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 .emp-indice__a.is-atual b { color: var(--volt); }
 .emp-indice__a.is-erro { border-color: var(--red); color: var(--red); }
@@ -1190,6 +1194,7 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
    O link fica fora do grid (absoluto, ocupa a caixa toda): dentro do grid com aspect-ratio a altura de 100%
    não se resolve e fotos em pé passavam da caixa (cortadas embaixo, lupa escondida). */
 .pk-item__foto a { position: absolute; inset: 0; display: block; cursor: zoom-in; }
+.pk-item__foto a:focus-visible { outline-offset: -3px; }   /* a caixa da foto corta o que passa dela: anel por dentro */
 .pk-item__zoom { position: absolute; right: 3px; bottom: 3px; display: grid; place-items: center; width: 24px; height: 24px; background: rgba(255, 255, 255, .92); border: 1px solid var(--paper-3); color: var(--ink); }
 .pk-item__zoom .i { width: 14px; height: 14px; }
 .pk-item__foto a:hover .pk-item__zoom { background: var(--volt); border-color: var(--ink); }
@@ -1701,7 +1706,11 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
 .capa-et__marcar { justify-self: start; }
 .capa-et__num input { font-family: var(--f-mono); font-size: 15px; }
 .capa-et__num > label { font-size: 13.5px; font-weight: 600; }
-.capa-et__marcar[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); box-shadow: inset 0 -4px 0 var(--green); }
+/* Ligado: preto com o fio verde embaixo, dentro do mesmo paralelogramo do .btn (a cor vai no ::before
+   inclinado; no próprio botão ela virava um retângulo atrás do contorno, com a transição descompassada) */
+.capa-et__marcar[aria-pressed="true"] { --b-bg: var(--ink); --b-bd: var(--ink); --b-fg: var(--paper); }
+.capa-et__marcar[aria-pressed="true"]::before { box-shadow: inset 0 0 0 1.5px var(--b-bd), inset 0 -4px 0 var(--green); }
+.capa-et__marcar[aria-pressed="true"]:hover::before { filter: none; background: var(--ink-3); }
 .capa-vazias { margin-top: -8px; }
 .capa-original { display: grid; gap: 6px; justify-items: start; min-width: 0; padding-top: 14px; border-top: 1px dashed var(--line-2); }
 .capa-original .btn { max-width: 100%; white-space: normal; text-align: left; }

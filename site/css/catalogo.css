@@ -24,6 +24,7 @@
   position: relative; isolation: isolate; display: inline-flex; align-items: baseline; gap: 8px;
   min-height: 46px; padding: 13px 22px 0; border: 0; background: none; color: var(--ink);
   font: 700 15px/1 var(--f-text); letter-spacing: .02em; text-transform: uppercase;
+  transition: color .35s var(--ease);   /* no compasso do fundo (::before): o nome não some ao trocar de aba */
 }
 .tab::before {
   content: ""; position: absolute; inset: 0 5px; z-index: -1; transform: skewX(var(--slash));
@@ -32,7 +33,7 @@
 .tab:hover::before { background: var(--paper-2); }
 .tab[aria-selected="true"] { color: var(--paper); }
 .tab[aria-selected="true"]::before { background: var(--ink); }
-.tab__n { font: 500 10.5px/1 var(--f-mono); color: inherit; opacity: .7; }
+.tab__n { font: 500 10.5px/1 var(--f-mono); color: inherit; opacity: .7; transition: color .35s var(--ease), opacity .35s var(--ease); }
 .tab[aria-selected="true"] .tab__n { color: var(--volt); opacity: 1; }
 
 .search { position: relative; flex: 1 1 280px; max-width: 420px; display: flex; align-items: center; }
@@ -59,7 +60,7 @@
 }
 .sub:hover { border-color: var(--ink); }
 .sub[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: var(--ink); }
-.sub__n { color: #6A6A64; }
+.sub__n { color: #6A6A64; transition: color .3s; }
 .sub[aria-pressed="true"] .sub__n { color: var(--ink); }
 .subs__hint { font: 400 10.5px/1.4 var(--f-mono); letter-spacing: .03em; text-transform: uppercase; color: var(--muted); padding: 10px 0; }
 
@@ -76,7 +77,8 @@
 @media (max-width: 899px) {
   .fbar__in { padding-block: 14px; }
   .fbar__top { display: grid; grid-template-columns: minmax(0, 1fr); }
-  .tabs { flex-wrap: nowrap; overflow-x: auto; margin: 0 calc(var(--gut) * -1); padding: 2px var(--gut) 6px calc(var(--gut) + 4px); scrollbar-width: none; width: calc(100% + var(--gut) * 2); }
+  /* faixas que rolam de lado cortam o que passa delas: 5 px de folga em cima/embaixo para o anel do foco (a margem negativa devolve o espaço) */
+  .tabs { flex-wrap: nowrap; overflow-x: auto; margin: -3px calc(var(--gut) * -1) 0; padding: 5px var(--gut) 6px calc(var(--gut) + 4px); scroll-padding-inline: var(--gut); scrollbar-width: none; width: calc(100% + var(--gut) * 2); }
   .tabs::-webkit-scrollbar { display: none; }
   .tab { flex: none; font-size: 13.5px; padding-inline: 18px; }
   /* Mais abas/tipos fora da tela (4 ou mais categorias não cabem numa linha): a borda daquele lado
@@ -89,7 +91,7 @@
   }
   .search { max-width: none; flex-basis: 100%; }
   .fbar__bot { flex-direction: column; align-items: stretch; }
-  .subs { flex-wrap: nowrap; overflow-x: auto; margin: 0 calc(var(--gut) * -1); padding: 0 var(--gut) 4px; scrollbar-width: none; }
+  .subs { flex-wrap: nowrap; overflow-x: auto; margin: -5px calc(var(--gut) * -1) -1px; padding: 5px var(--gut) 5px; scroll-padding-inline: var(--gut); scrollbar-width: none; }
   .subs::-webkit-scrollbar { display: none; }
   .sub { flex: none; }
   .fbar__end { margin-left: 0; justify-content: space-between; }

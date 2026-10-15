@@ -259,7 +259,7 @@
   display: flex; align-items: center; gap: 12px;
   font: 500 11px/1 var(--f-mono); letter-spacing: .04em; text-transform: uppercase;
 }
-.pn-t__arr { position: relative; isolation: isolate; flex: none; display: grid; place-items: center; width: 46px; height: 30px; color: var(--paper); }
+.pn-t__arr { position: relative; isolation: isolate; flex: none; display: grid; place-items: center; width: 46px; height: 30px; color: var(--paper); transition: color .45s var(--ease); }   /* cor e lâmina juntas: a seta não some no hover */
 .pn-t__arr::before { content: ""; position: absolute; inset: 0 3px; z-index: -1; background: var(--ink); transform: skewX(var(--slash)); transition: background .45s var(--ease); }
 .pn-t__arr .i { width: 17px; height: 17px; transition: transform .55s var(--ease); }
 .on-dark .pn-t__arr { color: var(--ink); }
@@ -399,6 +399,7 @@
 .pn-vit__pause {
   position: relative; flex: none; width: 44px; height: 44px; display: grid; place-items: center;
   border: 0; background: none; color: var(--paper);
+  transition: color .3s;   /* no compasso do fundo (::before): o ícone não some ao pausar */
 }
 .pn-vit__pause::before { content: ""; position: absolute; inset: 7px 4px; border: 1px solid var(--line); transform: skewX(var(--slash)); transition: background .3s, border-color .3s; }
 .pn-vit__pause:hover::before { border-color: var(--green); }
@@ -447,9 +448,11 @@
 .pn-also__a:hover b { text-decoration: underline; text-underline-offset: 3px; }
 .pn-also__a:hover .pn-also__go { transform: translateX(4px); }
 .pn-also__a:focus-visible, .pn-also__wa:focus-visible { outline-offset: -3px; }
+.pn-also__wa:focus-visible { outline-offset: 2px; }   /* a lâmina inclinada: anel por fora (por dentro ele cortava as pontas) */
 .pn-also__wa {
   position: relative; isolation: isolate; flex: none; align-self: center; display: grid; place-items: center;
   width: 48px; height: 44px; margin-right: 2px; color: var(--ink);
+  transition: color .3s;   /* no compasso do fundo: o ícone não some ao tirar o mouse */
 }
 .pn-also__wa::before { content: ""; position: absolute; inset: 0 4px; z-index: -1; background: var(--green); transform: skewX(var(--slash)); transition: background .3s; }
 .pn-also__wa .i { width: 19px; height: 19px; }

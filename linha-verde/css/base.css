@@ -743,7 +743,8 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .float__b--wa::before { box-shadow: 0 0 0 2px var(--ink), 0 10px 30px -8px rgba(0,0,0,.55); }
 .float__b:hover::before { background: var(--volt); }
 .float__b .i { width: 26px; height: 26px; }
-.float__b--tel { width: 50px; height: 50px; color: var(--paper); }
+.float__b--tel { width: 50px; height: 50px; color: var(--paper); transition: color .3s; }
+.float__b--tel:hover { color: var(--ink); }   /* no fundo volt do hover (que fica preso depois do toque) o ícone branco sumia */
 .float__b--tel::before { background: var(--ink); box-shadow: inset 0 0 0 1px var(--line), 0 10px 30px -8px rgba(0,0,0,.55); }
 .float__b--tel .i { width: 21px; height: 21px; }
 @media (hover: hover) and (pointer: fine) { .float__b--tel { display: none; } }
