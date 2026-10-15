@@ -1701,7 +1701,11 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
 .capa-et__marcar { justify-self: start; }
 .capa-et__num input { font-family: var(--f-mono); font-size: 15px; }
 .capa-et__num > label { font-size: 13.5px; font-weight: 600; }
-.capa-et__marcar[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); box-shadow: inset 0 -4px 0 var(--green); }
+/* Ligado: preto com o fio verde embaixo, dentro do mesmo paralelogramo do .btn (a cor vai no ::before
+   inclinado; no próprio botão ela virava um retângulo atrás do contorno, com a transição descompassada) */
+.capa-et__marcar[aria-pressed="true"] { --b-bg: var(--ink); --b-bd: var(--ink); --b-fg: var(--paper); }
+.capa-et__marcar[aria-pressed="true"]::before { box-shadow: inset 0 0 0 1.5px var(--b-bd), inset 0 -4px 0 var(--green); }
+.capa-et__marcar[aria-pressed="true"]:hover::before { filter: none; background: var(--ink-3); }
 .capa-vazias { margin-top: -8px; }
 .capa-original { display: grid; gap: 6px; justify-items: start; min-width: 0; padding-top: 14px; border-top: 1px dashed var(--line-2); }
 .capa-original .btn { max-width: 100%; white-space: normal; text-align: left; }
