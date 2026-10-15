@@ -128,6 +128,54 @@
 /* Faixa de confiança no pé do hero (o CSS da .trust vem de paginas.css) */
 .pn-hero__strip { flex: none; }
 
+/* ---------- Capa escolhida no painel (js/home-v3.js põe .pn-hero--capa) ----------
+   Só com capa escolhida (html.tem-capa, posto no <head> do index a partir do ajustes.js): até o home-v3.js
+   montar o produto escolhido, a balança do HTML não aparece, e ele entra sem "piscar" a Prix 7E. O <head>
+   libera sozinho em 8 s. Sem capa escolhida nada fica escondido: a Prix 7E pinta na hora, como sempre. */
+.tem-capa:not(.hero-pronto) .pn-hero__prod, .tem-capa:not(.hero-pronto) .pn-hero__ref { visibility: hidden; }
+/* A caixa da foto tem a proporção do recorte (--ar, posta pelo JS): os pontos ficam em % dela, como no
+   painel. Altura limitada (--hmax) para sobrar uma fila de etiquetas em cima e outra embaixo (--res);
+   produto estreito (torre) pela "presença" (--raiz), não pela largura de uma balança deitada. */
+.pn-hero--capa .pn-hero__prod {
+  --res: 92px; --hmax: 420px;
+  aspect-ratio: var(--ar, 1);
+  width: min(100%, 600px, calc(600px * var(--raiz, 1)), calc(var(--hmax) * var(--ar, 1)));
+}
+.pn-hero__prod.is-carregando .pn-specs { visibility: hidden; }
+/* Fio até a borda de cima (ou de baixo) da foto: y % da altura = y × (1 / --ar) cqw */
+.pn-hero--capa .pn-hero__call { --len: calc(var(--y) * var(--k, 1) * 1cqw + var(--off) + var(--extra, 0px)); }
+.pn-hero--capa .pn-spec--dn { --len: calc((100 - var(--y)) * var(--k, 1) * 1cqw + var(--off) + var(--extra, 0px)); }
+/* Lado da caixa (o JS escolhe): --e cresce para a esquerda do fio, --d para a direita */
+.pn-hero--capa .pn-spec--e .pn-spec__box {
+  left: auto; right: -1px; justify-items: end; text-align: right;
+  padding: 7px 10px 8px 12px; border-left: 1px solid #2E2E2C; border-right: 2px solid var(--volt);
+}
+.pn-hero--capa .pn-spec--d .pn-spec__box {
+  right: auto; left: -1px; justify-items: start; text-align: left;
+  padding: 7px 12px 8px 10px; border-right: 1px solid #2E2E2C; border-left: 2px solid var(--volt);
+}
+/* Fila cheia: o JS manda a etiqueta para a outra fila (--sobe: fio para cima; --desce: fio para baixo) */
+.pn-hero--capa .pn-hero__call.pn-spec--sobe { --len: calc(var(--y) * var(--k, 1) * 1cqw + var(--off) + var(--extra, 0px)); }
+.pn-hero--capa .pn-spec--sobe::after { top: auto; bottom: 0; }
+.pn-hero--capa .pn-spec--sobe .pn-spec__box { top: auto; bottom: var(--len); }
+.pn-hero--capa .pn-hero__call.pn-spec--desce { --len: calc((100 - var(--y)) * var(--k, 1) * 1cqw + var(--off) + var(--extra, 0px)); }
+.pn-hero--capa .pn-spec--desce::after { bottom: auto; top: 0; }
+.pn-hero--capa .pn-spec--desce .pn-spec__box { bottom: auto; top: var(--len); }
+/* Sem lugar nesta largura (o JS só usa quando uma etiqueta ficaria em cima da outra) */
+.pn-hero--capa .pn-spec--sem-lugar { display: none; }
+/* Legenda longa demais para a coluna (vertical, no computador): fica só marca e nome */
+.pn-hero__ref--curta .pn-hero__ref-x { display: none; }
+@media (min-width: 861px) {
+  .pn-hero--capa .pn-hero__visual { container-type: size; }
+  .pn-hero--capa .pn-hero__prod { --hmax: max(170px, calc(100cqh - 2 * var(--res))); }
+}
+@media (min-width: 1181px) {
+  .pn-hero--capa .pn-hero__prod {
+    --w: min(104%, 640px, calc(640px * var(--raiz, 1)), calc(var(--hmax) * var(--ar, 1)));
+    width: var(--w); margin-right: max(22px, calc((100% - var(--w)) / 2));
+  }
+}
+
 /* =====================================================================
    2. PAINEL EM MOSAICO — fios finos de 1px, abas cortadas a −12°
    ===================================================================== */
@@ -469,6 +517,25 @@
 .pn-cats a:hover .pn-cats__n { color: var(--green); }
 .pn-cats a:hover .i { transform: translateX(4px); color: var(--green); }
 .pn-cats a:focus-visible { outline-offset: -4px; }
+/* Mais de 3 categorias com produto (criadas no painel → Categorias; js/home-v3.js põe .pn-cats--muitas):
+   o nome numa linha e a contagem embaixo; no computador, no máximo 4 por linha, em linhas equilibradas
+   (--cols, do JS; .pn-cats__ini = 1º da linha, .pn-cats__baixo = linhas de baixo); até 860 px, duas por linha.
+   As palavras nunca quebram no meio (só com hífen, se uma palavra sozinha não couber). */
+.pn-cats--muitas { grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); }
+.pn-cats--muitas a { flex-wrap: wrap; align-content: center; gap: 5px 8px; }
+.pn-cats--muitas .pn-cats__n { flex-basis: 100%; overflow-wrap: break-word; hyphens: auto; }
+@media (min-width: 861px) {
+  .pn-cats--menor .pn-cats__n { font-size: clamp(20px, 1.5vw, 26px); }
+  .pn-cats--muitas li.pn-cats__ini { border-left: 0; }
+  .pn-cats--muitas li.pn-cats__ini a { padding-left: 0; }
+  .pn-cats--muitas li.pn-cats__baixo { border-top: 1px solid var(--line); }
+}
+@media (max-width: 860px) {
+  .pn-cats--muitas { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pn-cats--muitas li:nth-child(2n+1) { border-left: 0; }
+  .pn-cats--muitas li:nth-child(2n+1) a { padding-left: 0; }
+  .pn-cats--muitas li:nth-child(n+3) { border-top: 1px solid var(--line); }
+}
 
 .pn-nojs { display: flex; align-items: center; min-height: 64px; padding: 0 16px; border: 1px solid var(--line); }
 /* Fichas limpas (variante "compacta" do core): foto, marca, nome, resumo de uma linha,
@@ -576,6 +643,11 @@
   .pn-spec--3 .pn-spec__box { bottom: auto; top: var(--len); }
 }
 
+/* Capa do painel no computador estreito: a 03 desce, como a da Prix 7E */
+@media (min-width: 861px) and (max-width: 1180px) {
+  .pn-hero--capa .pn-spec--3 { --len: calc((100 - var(--y)) * var(--k, 1) * 1cqw + var(--off) + var(--extra, 0px)); }
+}
+
 /* Hero no celular e tablet estreito: texto em cima, faixa com a imagem embaixo */
 @media (max-width: 860px) {
   .pn-hero { min-height: 0; }
@@ -593,6 +665,14 @@
   .pn-hero__ref .i { transform: none; }
   .pn-hero__ref a::after { inset: -6px 0; }
   .pn-hero__ref-x { display: none; }
+  .pn-hero--capa .pn-hero__prod { --hmax: min(400px, 46svh); width: min(70%, 480px, calc(480px * var(--raiz, 1)), calc(var(--hmax) * var(--ar, 1))); }
+  .pn-hero--capa .pn-hero__ref--dir { right: auto; left: var(--gut); }
+  .pn-hero--capa .pn-hero__ref--topo { bottom: auto; top: 12px; }
+  /* Sem canto livre: a legenda desce para uma linha própria, abaixo das etiquetas de baixo */
+  .pn-hero--capa .pn-hero__ref--linha { position: relative; inset: auto; justify-self: center; margin-top: 92px; }
+  .pn-hero--capa.pn-hero--legenda-linha .pn-hero__visual { padding-bottom: 16px; }
+  /* O fio de baixo vai até a borda da foto (a da Prix 7E para no pé da balança, a 93%): um pouco mais de espaço */
+  .pn-hero--capa .pn-hero__visual { padding-bottom: 96px; }
   .pn-feat__head { grid-template-columns: minmax(0, 1fr); align-items: start; }
   .pn-feat__intro { margin-top: 14px; }
 }
@@ -627,6 +707,14 @@
     padding: 5px 9px 6px 8px; border-right-width: 1px; border-left: 2px solid var(--volt);
   }
   .pn-hero__ref { right: auto; left: var(--gut); bottom: 10px; }
+  /* Capa do painel: a 03 desce; caixas um pouco mais justas; legenda vai para a direita se atrapalhar */
+  .pn-hero--capa .pn-hero__visual { padding-bottom: 64px; }
+  .pn-hero--capa .pn-hero__prod { --hmax: 250px; width: min(80%, 330px, calc(330px * var(--raiz, 1)), calc(var(--hmax) * var(--ar, 1))); }
+  .pn-hero--capa .pn-spec--3 { --len: calc((100 - var(--y)) * var(--k, 1) * 1cqw + var(--off) + var(--extra, 0px)); }
+  .pn-hero--capa .pn-spec--e .pn-spec__box { padding: 5px 8px 6px 9px; }
+  .pn-hero--capa .pn-spec--d .pn-spec__box { padding: 5px 9px 6px 8px; }
+  .pn-hero--capa .pn-hero__ref--dir { left: auto; right: var(--gut); }
+  .pn-hero--capa .pn-hero__ref--linha { margin-top: 66px; }
 }
 
 /* Celular: mosaico de uma coluna; cada quadro com 1–2 linhas de texto */

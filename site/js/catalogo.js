@@ -25,7 +25,7 @@
      Sem acento e sem depender de hífen/espaço: "tl900" acha "TL-900", "wifi" acha "Wi-Fi",
      "prix4" acha "Prix 4". Procura também nas especificações. */
   function compacta(s) { return s.replace(/[\s\-./_,:;()]+/g, ""); }
-  var INDICE = {};
+  var INDICE = Object.create(null);   // mapas por código sem protótipo: um código "constructor" não engana
   BC.produtos.forEach(function (p) {
     var t = BC.normaliza([p.nome, p.marca, p.subcategoria, p.resumo, p.descricao, BC.categoriaNome(p.categoria), LV.catCurto(p.categoria)]
       .concat((p.especificacoes || []).map(function (r) { return r.join(" "); })).join(" "));
@@ -56,7 +56,7 @@
     var p;
     try { p = new URLSearchParams(location.search); } catch (e) { return; }
     var cat = p.get("cat");
-    state.cat = cat && BC.categoria(cat) ? cat : "todos";
+    state.cat = cat && temProdutos(cat) ? cat : "todos";
     var sub = p.get("sub") || "";
     var c = BC.categoria(state.cat);
     state.sub = c && c.subcategorias.indexOf(sub) !== -1 ? sub : "";
@@ -83,12 +83,28 @@
   function mostraAtivos() {
     mostra($('.tab[aria-selected="true"]', tabsBox), tabsBox);
     mostra($('.sub[aria-pressed="true"]', subsBox), subsBox);
+    bordas(tabsBox); bordas(subsBox);
   }
+  // Faixa rolável com mais itens fora da tela: a borda daquele lado esmaece (com 4 ou mais categorias,
+  // no celular, as abas não cabem numa linha). Só classes; o CSS (catalogo.css) faz o resto.
+  function bordas(box) {
+    if (!box) return;
+    var max = box.scrollWidth - box.clientWidth;
+    box.classList.toggle("is-mais-esq", max > 1 && box.scrollLeft > 4);
+    box.classList.toggle("is-mais-dir", max > 1 && box.scrollLeft < max - 4);
+  }
+  [tabsBox, subsBox].forEach(function (box) {
+    if (box) box.addEventListener("scroll", function () { bordas(box); }, { passive: true });
+  });
+  window.addEventListener("resize", function () { bordas(tabsBox); bordas(subsBox); });
 
-  /* ---------- Abas (categorias) ---------- */
+  /* ---------- Abas (categorias) ----------
+     Uma aba por categoria do catálogo (o painel cria, renomeia, apaga e muda a ordem), na ordem de
+     produtos.js. Categoria sem produto no site (nova, ou com tudo escondido) não ganha aba. */
   function nProdutos(n) { return n === 1 ? "1 produto" : n + " produtos"; }
+  function temProdutos(id) { return !!BC.categoria(id) && BC.contar({ categoria: id }) > 0; }
   function renderTabs() {
-    var cats = [{ id: "todos", nome: "Todos" }].concat(BC.categorias);
+    var cats = [{ id: "todos", nome: "Todos" }].concat(BC.categorias.filter(function (c) { return temProdutos(c.id); }));
     tabsBox.innerHTML = cats.map(function (c) {
       var n = contar({ categoria: c.id, texto: state.q, somenteEstoque: state.estoque });
       var sel = c.id === state.cat;
@@ -241,7 +257,7 @@
 
   function apply(animate, aoInicio) {
     var lista = filtrar({ categoria: state.cat, subcategoria: state.sub, texto: state.q, somenteEstoque: state.estoque });
-    var show = {}; lista.forEach(function (p) { show[p.id] = true; });
+    var show = Object.create(null); lista.forEach(function (p) { show[p.id] = true; });
     var all = $$(".pgrid__i", grid);
     var useFlip = animate && motion();
     var rolou = animate ? voltaAoInicio(aoInicio) : false;
@@ -307,7 +323,8 @@
     var est = BC.estoque(p), rec = BC.temRecorte(p), semi = p.condicao === "seminovo";
     var rows = [["Marca", p.marca], ["Categoria", BC.categoriaNome(p.categoria)], ["Tipo", p.subcategoria]]
       .concat(p.especificacoes || []).concat([["Condição", BC.condicao(p) || "Novo"]]);
-    var rel = BC.produtos.filter(function (x) { return x.id !== p.id && x.subcategoria === p.subcategoria; });
+    // Mesma subcategoria DA MESMA categoria (duas categorias podem ter subcategorias com o mesmo nome)
+    var rel = BC.produtos.filter(function (x) { return x.id !== p.id && x.categoria === p.categoria && x.subcategoria === p.subcategoria; });
     if (rel.length < 3) rel = rel.concat(BC.produtos.filter(function (x) { return x.id !== p.id && x.categoria === p.categoria && rel.indexOf(x) === -1; }));
     rel = rel.slice(0, 3);
     // Ordem: nome → selos → preço e botões (já na primeira tela) → descrição → especificações → mesma linha

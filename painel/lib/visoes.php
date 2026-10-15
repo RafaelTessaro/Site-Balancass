@@ -49,6 +49,9 @@ function spriteIcones(): void
   <symbol id="i-seta" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-pausa" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9v6M14 9v6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
   <symbol id="i-show" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="currentColor"/></symbol>
+  <symbol id="i-marcar" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7.5 12.3l3 3 6-6.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-categorias" viewBox="0 0 24 24"><path d="M4 4h6.5v6.5H4zM13.5 4H20v6.5h-6.5zM4 13.5h6.5V20H4zM13.5 13.5H20V20h-6.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-mover" viewBox="0 0 24 24"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2l2 2.2h8.8A1.5 1.5 0 0 1 21 8.7v9.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 13.5h6.5M13 11l2.5 2.5L13 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 </svg>
 <?php
 }
@@ -326,14 +329,19 @@ function telaInstalar(string $erro = '', array $v = []): void
 /* ------------------------------------------------------------------
    Lista de produtos
    ------------------------------------------------------------------ */
-function telaLista(array $cat, array $filtro, array $pacotes = []): void
+/** $lote (edição em lote): ['sel' => modo "Selecionar", 'todos' => marcar todos os da lista, 'marcados' => [códigos]] */
+function telaLista(array $cat, array $filtro, array $pacotes = [], array $lote = []): void
 {
     $categorias = $cat['categorias'];
     $produtos = $cat['produtos'];
     $total = count($produtos);
     $visiveis = count(array_filter($produtos, static fn($p) => ($p['visivel'] ?? true) !== false));
     $destaques = count(array_filter($produtos, static fn($p) => !empty($p['destaque']) && ($p['visivel'] ?? true) !== false));
-    $ctx = ['home' => destaquesDaHome($produtos), 'capa' => produtoCapa()];
+    $sel = !empty($lote['sel']) && $total > 0;
+    $capaSite = capaEfetiva($produtos);   // o produto que o topo do site mostra de fato (o escolhido, ou a Prix 7E no lugar dele)
+    $ctx = ['home' => destaquesDaHome($produtos), 'capa' => produtoCapa(), 'capaSite' => $capaSite, 'capaFrase' => fraseCapaFora(false, $capaSite, $produtos),
+        'marcados' => array_fill_keys($lote['marcados'] ?? [], true), 'todos' => $sel && !empty($lote['todos'])];
+    $capaFora = problemaCapa($produtos);   // capa escolhida em Empresa → Capa do site que não pode aparecer (lib/ajustes.php)
     $porCat = [];
     foreach ($produtos as $p) $porCat[$p['categoria'] ?? ''][] = $p;
     $q = semAcento($filtro['q']);
@@ -349,13 +357,21 @@ function telaLista(array $cat, array $filtro, array $pacotes = []): void
         return true;
     };
     $achados = count(array_filter($produtos, $passa));
+    $marcado = static fn(array $p): bool => isset($ctx['marcados'][(string) $p['id']]) || ($ctx['todos'] && $passa($p));
+    $nMarcados = $sel ? count(array_filter($produtos, $marcado)) : 0;
+    // "Desmarcar todos" (sem JavaScript) quando todos os desta lista já estão marcados
+    $todosDaLista = $sel && $achados > 0 && count(array_filter($produtos, static fn($p) => $passa($p) && $marcado($p))) === $achados;
 
-    pagina('Produtos', static function () use ($categorias, $produtos, $porCat, $filtro, $passa, $total, $visiveis, $destaques, $achados, $ctx, $pacotes): void {
+    pagina('Produtos', static function () use ($categorias, $produtos, $porCat, $filtro, $passa, $total, $visiveis, $destaques, $achados, $ctx, $pacotes, $sel, $nMarcados, $todosDaLista, $capaFora): void {
         cabecalhoPagina('Catálogo do site', 'Produtos',
             '<span><b data-n="total">' . $total . '</b> produtos</span><span><b data-n="site">' . $visiveis . '</b> no site</span><span><b data-n="destaque">' . $destaques . '</b> em destaque</span>'
             . '<span><b data-n="home">' . count($ctx['home']) . '</b> na página inicial</span>',
             '<a class="btn btn--verde" href="' . e(link_('novo')) . '">' . icone('plus') . 'Novo produto</a>');
+        if ($capaFora !== null): ?>
+  <div class="aviso aviso--erro aviso--fixo" role="alert"><?= icone('alert') ?><p><?= e($capaFora) ?><?php if (ehAdmin()): ?> <a href="<?= e(link_('empresa') . '#e-capa') ?>">Abrir Capa do site</a><?php endif; ?></p></div>
+<?php   endif;
         if ($pacotes) avisoPacotes($pacotes);   // só administradores (acaoLista)
+        atalhoProcurados();   // Mais procurados (lib/visoes-procurados.php), para todos
         ?>
   <form class="filtros" method="get" action="index.php" role="search" data-filtros>
     <label class="busca">
@@ -379,14 +395,25 @@ function telaLista(array $cat, array $filtro, array $pacotes = []): void
         </select>
       </label>
       <?php if ($filtro['cat'] !== ''): ?><input type="hidden" name="cat" value="<?= e($filtro['cat']) ?>" data-cat-atual><?php endif; ?>
+      <?php if ($sel): ?><input type="hidden" name="sel" value="1"><?php endif; ?>
       <noscript><button class="btn btn--linha btn--p" type="submit">Filtrar</button></noscript>
     </div>
   </form>
-  <p class="contagem" data-contagem aria-live="polite"><?= $achados === count($produtos) ? 'Mostrando todos os ' . $achados . ' produtos.' : $achados . ($achados === 1 ? ' produto encontrado.' : ' produtos encontrados.') ?></p>
-  <div class="dica" data-capa="<?= e($ctx['capa']) ?>">
+  <div class="lista-topo">
+    <p class="contagem<?= $achados === count($produtos) ? ' is-todos' : '' ?>" data-contagem aria-live="polite"><?= $achados === count($produtos) ? 'Mostrando todos os ' . $achados . ' produtos.' : $achados . ($achados === 1 ? ' produto encontrado.' : ' produtos encontrados.') ?></p>
+    <?= atalhoCategorias() /* só administradores (lib/visoes-categorias.php) */ ?>
+    <?php if ($produtos): ?>
+    <a class="btn btn--linha btn--p lista-topo__sel" href="<?= e($sel ? linkLista($filtro) : linkLista($filtro, ['sel' => '1'])) ?>" data-selecionar aria-pressed="<?= $sel ? 'true' : 'false' ?>" title="Marcar vários produtos e mudar todos de uma vez"><?= icone('marcar') ?><span data-selecionar-txt><?= $sel ? 'Sair da seleção' : 'Selecionar' ?></span></a>
+    <?php endif; ?>
+  </div>
+  <p class="lote-dica" data-lote-dica><?= icone('marcar') ?><span><b>Toque nos produtos para marcar.</b> Depois escolha, na barra de baixo, o que fazer com todos os marcados: estoque, destaque, no site, mover para outra categoria ou excluir.</span></p>
+  <div class="dica" data-capa="<?= e($ctx['capa']) ?>" data-capa-site="<?= e($ctx['capaSite']) ?>" data-capa-frase="<?= e($ctx['capaFrase']) ?>">
     <?= icone('up') ?>
-    <p><span><b>Ordem no site:</b> Pronta entrega primeiro, depois os destaques, depois a ordem das setas; Esgotado fica por último.</span>
-    <span><b>Página inicial:</b> mostra até <?= HOME_MAX_DESTAQUES ?> destaques, revezando as categorias (o de cima de cada categoria entra primeiro). Destaque além disso aparece como “fora da página inicial”.</span></p>
+    <?php $dicaOrdem = '<span><b>Ordem no site:</b> Pronta entrega primeiro, depois os destaques, depois a ordem das setas; Esgotado fica por último.</span>'
+        . '<span><b>Página inicial:</b> mostra até ' . HOME_MAX_DESTAQUES . ' destaques, revezando as categorias (o de cima de cada categoria entra primeiro). Destaque além disso aparece como “fora da página inicial”.</span>'; ?>
+    <p class="dica__texto"><?= $dicaOrdem ?></p>
+    <?php /* No celular, a explicação fica fechada (uma linha): a lista de produtos aparece na primeira tela */ ?>
+    <details class="dica__cel"><summary>Ordem no site e página inicial</summary><p><?= $dicaOrdem ?></p></details>
   </div>
 
   <div class="vazio" data-vazio<?= $achados ? ' hidden' : '' ?>>
@@ -416,13 +443,117 @@ function telaLista(array $cat, array $filtro, array $pacotes = []): void
     </ol>
   </section>
   <?php endif; ?>
+  <?php if ($produtos) barraLote($categorias, $filtro, $sel, $nMarcados, $achados, $todosDaLista); ?>
 <?php
-    }, ['menu' => 'produtos', 'classe' => 'pg-lista']);
+    }, ['menu' => 'produtos', 'classe' => 'pg-lista' . ($sel ? ' is-selecionando' : '')]);
+}
+
+/* ------------------------------------------------------------------
+   Edição em lote: barra de ações (presa embaixo) e confirmação de excluir
+   Sem JavaScript: formulário normal (caixinhas com form="f-lote", menus em
+   <details>, um botão por ação). Com JavaScript (assets/painel.js): contador,
+   marcar todos desta lista, estoque/destaque/no site sem recarregar.
+   ------------------------------------------------------------------ */
+/** Texto do "Marcar todos os N desta lista" (o JavaScript usa a mesma regra). */
+function textoMarcarTodos(int $n): string
+{
+    return $n === 1 ? 'Marcar o produto desta lista' : 'Marcar todos os ' . $n . '<span class="lote__todos-mais"> desta lista</span>';
+}
+
+function barraLote(array $categorias, array $filtro, bool $sel, int $nMarcados, int $achados, bool $todosDaLista = false): void
+{
+    $destinos = array_values(array_filter($categorias, static fn($c) => !empty($c['subcategorias'])));
+    ?>
+  <form id="f-lote" class="lote" method="post" action="<?= e(link_('lote')) ?>" data-lote data-dias="<?= (int) cfg('copias_protegidas_dias') ?>" data-max="<?= LOTE_MAX ?>" aria-labelledby="lote-tit"<?= $sel ? '' : ' hidden' ?>>
+    <?= campoCsrf() ?>
+    <?php foreach (['q', 'cat', 'ver'] as $k): ?><input type="hidden" name="<?= $k ?>" value="<?= e($filtro[$k]) ?>" data-lote-filtro="<?= $k ?>"><?php endforeach; ?>
+    <h2 class="sr-only" id="lote-tit">O que fazer com os produtos marcados</h2>
+    <div class="lote__in">
+      <div class="lote__topo">
+        <a class="lote__sair" href="<?= e(linkLista($filtro)) ?>" data-lote-sair title="Sair da seleção"><?= icone('x') ?><span class="sr-only">Sair da seleção</span></a>
+        <p class="lote__conta" data-lote-conta aria-live="polite"><?= $nMarcados ? e(qtdLote($nMarcados, 'marcado', 'marcados')) : 'Marque os produtos e escolha a ação' /* sem JavaScript o número não muda ao marcar; com ele, vira o contador ao vivo */ ?></p>
+        <?php if ($achados): ?><a class="lote__todos" href="<?= e(linkLista($filtro, $todosDaLista ? ['sel' => '1'] : ['sel' => '1', 'todos' => '1'])) ?>" data-lote-todos><?= $todosDaLista ? 'Desmarcar todos' : textoMarcarTodos($achados) ?></a><?php endif; ?>
+      </div>
+      <div class="lote__acoes">
+        <details class="lote__menu" data-lote-menu>
+          <summary class="lote__bt"><?= icone('box') ?><span>Estoque</span></summary>
+          <div class="lote__pop">
+            <p class="lote__pop-tit">Estoque dos marcados</p>
+            <?php foreach (ESTOQUES as $k => $r): ?>
+            <button type="submit" name="acao" value="estoque:<?= e($k) ?>" class="lote__op lote__op--<?= e($k) ?> estoque--<?= e($k) ?>" data-rotulo="<?= e($r) ?>"><?= e($r) ?></button>
+            <?php endforeach; ?>
+          </div>
+        </details>
+        <details class="lote__menu" data-lote-menu>
+          <summary class="lote__bt"><?= icone('star') ?><span>Destaque</span></summary>
+          <div class="lote__pop">
+            <p class="lote__pop-tit">Destaque dos marcados</p>
+            <button type="submit" name="acao" value="destaque:1" class="lote__op"><?= icone('star') ?>Pôr em destaque</button>
+            <button type="submit" name="acao" value="destaque:0" class="lote__op">Tirar do destaque</button>
+            <p class="lote__pop-ajuda">A página inicial mostra até <?= HOME_MAX_DESTAQUES ?> destaques, revezando as categorias.</p>
+          </div>
+        </details>
+        <details class="lote__menu" data-lote-menu>
+          <summary class="lote__bt"><?= icone('eye') ?><span>No site</span></summary>
+          <div class="lote__pop">
+            <p class="lote__pop-tit">Os marcados no site</p>
+            <button type="submit" name="acao" value="visivel:1" class="lote__op"><?= icone('eye') ?>Mostrar no site</button>
+            <button type="submit" name="acao" value="visivel:0" class="lote__op"><?= icone('eye-off') ?>Esconder do site</button>
+            <p class="lote__pop-ajuda">Esconder não apaga: o produto continua aqui no painel, com o selo “Fora do site”.</p>
+          </div>
+        </details>
+        <?php if ($destinos): ?>
+        <details class="lote__menu lote__menu--mover" data-lote-menu>
+          <summary class="lote__bt"><?= icone('mover') ?><span>Mover</span></summary>
+          <div class="lote__pop">
+            <label class="lote__pop-tit" for="lote-destino">Mover os marcados para</label>
+            <select id="lote-destino" name="destino" data-lote-destino>
+              <option value="">Escolha a categoria e o tipo…</option>
+              <?php foreach ($destinos as $c): ?>
+              <optgroup label="<?= e($c['nome']) ?>">
+                <?php foreach ($c['subcategorias'] as $s): ?><option value="<?= e($c['id'] . '|' . $s) ?>"><?= e($s) ?></option><?php endforeach; ?>
+              </optgroup>
+              <?php endforeach; ?>
+            </select>
+            <button type="submit" name="acao" value="mover" class="btn btn--verde btn--p"><?= icone('mover') ?>Mover</button>
+            <p class="lote__pop-ajuda">Quem muda de categoria entra no fim dela (depois, use as setas para a ordem).</p>
+          </div>
+        </details>
+        <?php endif; ?>
+        <button type="submit" name="acao" value="excluir" class="lote__bt lote__bt--perigo"><?= icone('trash') ?><span>Excluir</span></button>
+      </div>
+    </div>
+  </form>
+<?php
+}
+
+/** Confirmação de excluir em lote sem JavaScript (com JavaScript, a janela pede a mesma confirmação). */
+function telaConfirmarLote(array $prods, array $filtro): void
+{
+    $n = count($prods);
+    $titulo = $n === 1 ? 'Excluir produto?' : 'Excluir ' . $n . ' produtos?';
+    $voltar = linkLista($filtro, ['sel' => '1']);
+    pagina($titulo, static function () use ($prods, $n, $titulo, $filtro, $voltar): void { ?>
+  <section class="confirmar">
+    <?= icone('alert', 'i i--grande') ?>
+    <h1><?= e($titulo) ?></h1>
+    <p><?= e(textoExcluirLote($prods)) ?></p>
+    <form method="post" action="<?= e(link_('lote')) ?>" class="confirmar__bts">
+      <?= campoCsrf() ?>
+      <?php foreach ($prods as $p): ?><input type="hidden" name="ids[]" value="<?= e((string) $p['id']) ?>"><?php endforeach; ?>
+      <?php foreach (['q', 'cat', 'ver'] as $k): ?><input type="hidden" name="<?= $k ?>" value="<?= e($filtro[$k]) ?>"><?php endforeach; ?>
+      <input type="hidden" name="acao" value="excluir">
+      <input type="hidden" name="confirmado" value="1">
+      <a class="btn btn--linha" href="<?= e($voltar) ?>">Cancelar</a>
+      <button class="btn btn--perigo" type="submit"><?= $n === 1 ? 'Sim, excluir' : 'Sim, excluir os ' . $n ?></button>
+    </form>
+  </section>
+<?php }, ['menu' => 'produtos']);
 }
 
 function nomeCurtoCategoria(array $c): string
 {
-    return ['balancas' => 'Balanças', 'automacao' => 'Automação', 'informatica' => 'Informática'][$c['id']] ?? $c['nome'];
+    return categoriaCurta($c);   // lib/catalogo.php: o nome curto original enquanto a categoria não foi renomeada
 }
 
 function formRapido(array $p, string $campo, string $valor, string $conteudo, string $classe = '', string $attrs = ''): void
@@ -435,7 +566,7 @@ function formRapido(array $p, string $campo, string $valor, string $conteudo, st
 /** Texto do selo de destaque: dentro ou fora da página inicial. */
 function textoSeloDestaque(string $id, array $ctx): array
 {
-    if ($id === ($ctx['capa'] ?? '')) return ['Destaque', ''];
+    if ($id === ($ctx['capaSite'] ?? $ctx['capa'] ?? '')) return ['Destaque', ''];   // a capa que o site mostra de fato
     return in_array($id, $ctx['home'] ?? [], true)
         ? ['Destaque · página inicial', '']
         : ['Destaque · fora da página inicial', ' is-fora'];
@@ -447,13 +578,19 @@ function itemProduto(array $p, array $categorias, bool $primeiro, bool $ultimo, 
     $nome = nomeCompleto($p);
     $vis = ($p['visivel'] ?? true) !== false;
     $dest = !empty($p['destaque']);
-    $capa = $id === ($ctx['capa'] ?? '');
+    // Selo e confirmações seguem a capa que o site mostra de fato; o escolhido em Empresa → Capa do site que
+    // não pode aparecer (escondido, sem recorte) ganha um selo próprio
+    $capa = $id === ($ctx['capaSite'] ?? $ctx['capa'] ?? '');
+    $escolhidoFora = !$capa && $id === ($ctx['capa'] ?? '');
     [$txtDest, $clsDest] = textoSeloDestaque($id, $ctx);
     $est = (string) ($p['estoque'] ?? 'consulte');
     $img = is_string($p['imagem'] ?? null) && preg_match(RE_ARQUIVO_FOTO, $p['imagem']) ? urlFoto($p['imagem']) : '';
     $editar = link_('editar', ['id' => $id]);
+    // Edição em lote: caixinha (só aparece no modo "Selecionar"); fica fora do formulário da barra, ligada a ele por form="f-lote"
+    $marcado = isset($ctx['marcados'][$id]) || (!empty($ctx['todos']) && $mostra);
     ?>
-      <li class="item<?= $vis ? '' : ' is-oculto' ?>" id="p-<?= e($id) ?>" data-id="<?= e($id) ?>"<?= $capa ? ' data-na-capa' : '' ?> data-cat="<?= e($p['categoria'] ?? '') ?>" data-busca="<?= e(textoBusca($p, $categorias)) ?>" data-visivel="<?= $vis ? '1' : '0' ?>" data-destaque="<?= $dest ? '1' : '0' ?>"<?= $mostra ? '' : ' hidden' ?>>
+      <li class="item<?= $vis ? '' : ' is-oculto' ?><?= $marcado ? ' is-marcado' : '' ?>" id="p-<?= e($id) ?>" data-id="<?= e($id) ?>"<?= $capa ? ' data-na-capa' : '' ?> data-cat="<?= e($p['categoria'] ?? '') ?>" data-busca="<?= e(textoBusca($p, $categorias)) ?>" data-visivel="<?= $vis ? '1' : '0' ?>" data-destaque="<?= $dest ? '1' : '0' ?>" data-nome="<?= e($nome) ?>"<?= $mostra ? '' : ' hidden' ?>>
+        <label class="item__marcar"><input type="checkbox" name="ids[]" value="<?= e($id) ?>" form="f-lote" data-marcar<?= $marcado ? ' checked' : '' ?>><span class="sr-only">Marcar <?= e($nome) ?></span></label>
         <a class="item__foto" href="<?= e($editar) ?>" tabindex="-1" aria-hidden="true">
           <?php if ($img): ?><img src="<?= e($img) ?>" alt="" loading="lazy" decoding="async" width="80" height="80"><?php else: ?><span class="item__semfoto"><?= icone('camera') ?></span><?php endif; ?>
         </a>
@@ -461,7 +598,9 @@ function itemProduto(array $p, array $categorias, bool $primeiro, bool $ultimo, 
           <p class="item__marca"><?= e($p['marca'] ?? '') ?><span> · <?= e($p['subcategoria'] ?? '') ?></span></p>
           <h3 class="item__nome"><a href="<?= e($editar) ?>"><?= e($p['nome'] ?? $id) ?></a></h3>
           <p class="item__selos">
+            <span class="selo selo--estoque estoque--<?= e($est) ?>" data-selo-estoque><?= e(ESTOQUES_CURTO[$est] ?? $est) ?></span>
             <?php if ($capa): ?><span class="selo selo--capa" title="A balança grande do topo da página inicial do site">Na capa do site</span><?php endif; ?>
+            <?php if ($escolhidoFora): ?><span class="selo selo--capa-fora" title="Escolhido em Empresa → Capa do site, mas não pode aparecer: o topo do site mostra outro produto no lugar">Escolhido para a capa (fora do site)</span><?php endif; ?>
             <span class="selo selo--oculto" data-selo-oculto<?= $vis ? ' hidden' : '' ?>>Fora do site</span>
             <span class="selo selo--destaque<?= e($clsDest) ?>" data-selo-destaque<?= $dest ? '' : ' hidden' ?> title="A página inicial mostra até <?= HOME_MAX_DESTAQUES ?> destaques, revezando as categorias"><?= e($txtDest) ?></span>
             <?php if (($p['condicao'] ?? '') === 'seminovo'): ?><span class="selo">Seminovo</span><?php endif; ?>
@@ -475,7 +614,7 @@ function itemProduto(array $p, array $categorias, bool $primeiro, bool $ultimo, 
           formRapido($p, 'estoque', $est, '<label class="estoque estoque--' . e($est) . '" data-estoque><span class="sr-only">Estoque de ' . e($nome) . '</span><select name="valor" data-auto>' . $ops . '</select></label><noscript><button type="submit" class="btn btn--linha btn--p">OK</button></noscript>', 'rapido--estoque');
           formRapido($p, 'destaque', $dest ? '0' : '1', '<input type="hidden" name="valor" value="' . ($dest ? '0' : '1') . '"><button type="submit" class="tg tg--destaque" aria-pressed="' . ($dest ? 'true' : 'false') . '" title="Destaque: sobe no catálogo e entra na página inicial (cabem ' . HOME_MAX_DESTAQUES . ')">' . icone('star') . '<span>Destaque</span><span class="sr-only"> — ' . e($nome) . '</span></button>', 'rapido--destaque');
           // Esconder o produto da capa pede confirmação (o link da capa deixaria de abrir os detalhes)
-          $conf = $capa ? ' data-confirmar-se="0" data-confirmar="Esconder “' . e($nome) . '” do site? Ele é o produto da capa: a foto da capa continua lá, mas o link dela vai abrir o catálogo com o aviso “produto fora do catálogo”." data-confirmar-ok="Esconder" data-confirmar-tit="Esconder o produto da capa?"' : '';
+          $conf = $capa ? ' data-confirmar-se="0" data-confirmar="' . e('Esconder “' . $nome . '” do site? Ele é o produto da capa. ' . ($ctx['capaFrase'] ?? fraseCapaFora())) . '" data-confirmar-ok="Esconder" data-confirmar-tit="Esconder o produto da capa?"' : '';
           formRapido($p, 'visivel', $vis ? '0' : '1', '<input type="hidden" name="valor" value="' . ($vis ? '0' : '1') . '"><button type="submit" class="tg tg--visivel" aria-pressed="' . ($vis ? 'true' : 'false') . '" title="Mostrar no site">' . icone('eye', 'i i--on') . icone('eye-off', 'i i--off') . '<span>No site</span><span class="sr-only"> — ' . e($nome) . '</span></button>', 'rapido--visivel', $conf);
           ?>
         </div>
@@ -489,7 +628,7 @@ function itemProduto(array $p, array $categorias, bool $primeiro, bool $ultimo, 
             <button type="submit" class="ic" aria-label="Descer <?= e($nome) ?>" title="Descer"<?= $ultimo ? ' disabled' : '' ?> data-mover-baixo><?= icone('down') ?></button>
           </form>
           <a class="btn btn--linha btn--p item__editar" href="<?= e($editar) ?>"><?= icone('edit') ?><span>Editar</span><span class="sr-only"> <?= e($nome) ?></span></a>
-          <form method="post" action="<?= e(link_('excluir')) ?>" data-confirmar="<?= e(textoExcluir($p)) ?>" data-confirmar-ok="Excluir">
+          <form method="post" action="<?= e(link_('excluir')) ?>" data-confirmar="<?= e(textoExcluir($p, $ctx['capaSite'] ?? null, $ctx['capaFrase'] ?? null)) ?>" data-confirmar-ok="Excluir">
             <?= campoCsrf() ?><input type="hidden" name="id" value="<?= e($id) ?>">
             <button type="submit" class="ic ic--perigo" aria-label="Excluir <?= e($nome) ?>" title="Excluir"><?= icone('trash') ?></button>
           </form>
@@ -516,6 +655,9 @@ function telaProduto(array $cat, ?array $p, array $erros = [], ?string $original
     $err = static fn(string $c): string => isset($erros[$c]) ? '<p class="campo__erro" id="erro-' . e($c) . '">' . icone('alert') . e($erros[$c]) . '</p>' : '';
     $inv = static fn(string $c): string => isset($erros[$c]) ? ' aria-invalid="true" aria-describedby="erro-' . e($c) . '"' : '';
     $capa = !$novo && $original === produtoCapa();
+    $capaPainel = $capa && produtoCapaAjustes() !== null;   // escolhida em Empresa → Capa do site (foto e etiquetas de lá)
+    // Categoria sem nenhuma subcategoria não serve (subcategoria é obrigatória), a não ser a do próprio produto
+    $categoriasForm = array_values(array_filter($categorias, static fn($c) => !empty($c['subcategorias']) || ($p['categoria'] ?? '') === $c['id']));
     // Situação do destaque na página inicial (produto já salvo)
     $home = destaquesDaHome($cat['produtos']);
     $situacao = '';
@@ -524,7 +666,8 @@ function telaProduto(array $cat, ?array $p, array $erros = [], ?string $original
         $situacao = in_array($original, $home, true) ? 'Hoje: aparece na página inicial.' : 'Hoje: fora da página inicial (já há ' . HOME_MAX_DESTAQUES . ' destaques na frente dele).';
     }
 
-    pagina($titulo, static function () use ($novo, $p, $categorias, $marcas, $specs, $img, $titulo, $acao, $erros, $err, $inv, $original, $capa, $situacao): void {
+    pagina($titulo, static function () use ($novo, $p, $categoriasForm, $marcas, $specs, $img, $titulo, $acao, $erros, $err, $inv, $original, $capa, $capaPainel, $situacao): void {
+        $categorias = $categoriasForm;
         $siteLink = !$novo ? '<a class="btn btn--linha btn--p" href="' . e(cfg('url_site') . 'produtos.html#p=' . rawurlencode((string) $original)) . '" target="_blank" rel="noopener">' . icone('ext') . 'Ver no site</a>' : '';
         ?>
   <p class="migalha"><a href="index.php#p-<?= e((string) $original) ?>"><?= icone('up', 'i i--esq') ?>Produtos</a></p>
@@ -539,9 +682,13 @@ function telaProduto(array $cat, ?array $p, array $erros = [], ?string $original
   </div>
   <?php endif; ?>
   <?php if ($capa): ?>
+  <?php if ($capaPainel): ?>
+  <div class="aviso aviso--info aviso--capa"><?= icone('alert') ?><p><b>Produto da capa do site.</b> O produto grande do topo da página inicial é este (foto e etiquetas escolhidas em <?php if (ehAdmin()): ?><a href="<?= e(link_('empresa') . '#e-capa') ?>">Empresa → Capa do site</a><?php else: ?>Empresa → Capa do site<?php endif; ?>). Se esconder, excluir, mudar o código ou trocar a foto por uma sem fundo transparente, a página inicial volta a mostrar a <?= e(NOME_CAPA_ORIGINAL) ?> (a capa original).</p></div>
+  <?php else: ?>
   <div class="aviso aviso--info aviso--capa"><?= icone('alert') ?><p><b>Produto da capa do site.</b> A balança grande do topo da página inicial é este produto (foto e link fixos). Se esconder, excluir ou mudar o código, a foto da capa continua lá, mas o link dela deixa de abrir os detalhes.</p></div>
   <?php endif; ?>
-  <form class="fp" method="post" action="<?= e($acao) ?>" enctype="multipart/form-data" data-form-produto data-form-enviar data-rascunho="<?= e($novo ? 'novo' : 'editar:' . $original) ?>"<?= $capa ? ' data-capa="' . e((string) $original) . '"' : '' ?>>
+  <?php endif; ?>
+  <form class="fp" method="post" action="<?= e($acao) ?>" enctype="multipart/form-data" data-form-produto data-form-enviar data-rascunho="<?= e($novo ? 'novo' : 'editar:' . $original) ?>"<?= $capa ? ' data-capa="' . e((string) $original) . '" data-capa-frase="' . e(fraseCapaFora()) . '"' : '' ?>>
     <?= campoCsrf() ?>
     <input type="hidden" name="MAX_FILE_SIZE" value="<?= (int) cfg('foto_max_bytes') ?>">
     <div class="fp__lado">
@@ -609,6 +756,7 @@ function telaProduto(array $cat, ?array $p, array $erros = [], ?string $original
             <?= $err('subcategoria') ?>
           </div>
         </div>
+        <?= ajudaCategoriasNoForm() /* só administradores (lib/visoes-categorias.php) */ ?>
         <div class="campo">
           <label for="f-resumo">Resumo <small>uma frase, aparece no cartão</small></label>
           <textarea id="f-resumo" name="resumo" rows="2" required maxlength="<?= LIMITES['resumo'] ?>"<?= $inv('resumo') ?> data-contador><?= e($p['resumo'] ?? '') ?></textarea>
@@ -734,7 +882,7 @@ function telaCopias(array $copias, ?int $totalAtual, array $idsAtuais = []): voi
             'Antes de cada mudança no catálogo o painel guarda uma cópia de como ele estava. Ficam sempre as ' . (int) cfg('copias_max')
             . ' mais recentes e tudo dos últimos ' . (int) cfg('copias_dias') . ' dias; as de <b>excluir</b>, <b>restaurar</b> e <b>aplicar uma atualização do catálogo</b> ficam ' . (int) cfg('copias_protegidas_dias') . ' dias. '
             . 'Mudanças seguidas do mesmo tipo (ordem, estoque, destaque, no site) feitas em menos de ' . (int) cfg('copias_juntar_min') . ' minutos ficam numa cópia só. '
-            . '<b>Restaurar</b> volta o catálogo inteiro, com as fotos, e desfaz também o que foi feito depois. Para devolver só um produto excluído, use <b>Trazer de volta</b>.');
+            . '<b>Restaurar</b> volta o catálogo inteiro, com as fotos, e desfaz também o que foi feito depois. Para devolver só os produtos de uma exclusão (de um ou de vários de uma vez), use <b>Trazer de volta</b>.');
         abasCopias('produtos');
         if (!$copias): ?>
   <div class="vazio"><p><b>Ainda não há cópias.</b> Elas aparecem aqui depois da primeira alteração no catálogo.</p></div>
@@ -743,18 +891,42 @@ function telaCopias(array $copias, ?int $totalAtual, array $idsAtuais = []): voi
     <?php foreach ($copias as $i => $c):
         $titulo = $c['motivo'] !== '' ? $c['motivo'] : 'Antes de: ' . lcfirst($c['feitos'][0] ?? 'alteração');
         $mais = (int) $c['juntou'] - 1;
-        $voltaSo = $c['tipo'] === 'excluir' && $c['alvo'] !== '' && !isset($idsAtuais[$c['alvo']]); ?>
+        $voltaSo = $c['tipo'] === 'excluir' && $c['alvo'] !== '' && !isset($idsAtuais[$c['alvo']]);
+        // Exclusão em lote: os produtos dela que ainda estão fora do catálogo (trazer de volta todos ou um por um)
+        $voltaLote = $c['tipo'] === 'excluir' && $c['alvo'] === '' ? array_diff_key($c['alvos'] ?? [], $idsAtuais) : []; ?>
     <li class="copia">
       <div class="copia__txt">
         <p class="copia__quando"><?= e(quando($c['criado'])) ?><?php if ($c['ultimo'] - $c['criado'] >= 60): ?><span class="copia__ate"> até <?= e(date('H:i', $c['ultimo'])) ?></span><?php endif; ?><?php if ($i === 0): ?> <span class="selo selo--destaque">Mais recente</span><?php endif; ?></p>
         <p class="copia__motivo"><?= e($titulo) ?><?php if ($mais > 0): ?> <span class="copia__mais">e mais <?= $mais ?> <?= $mais === 1 ? 'alteração' : 'alterações' ?> do mesmo tipo</span><?php endif; ?></p>
         <p class="copia__meta"><?= (int) $c['total'] ?> produtos · <?= (int) $c['visiveis'] ?> no site<?= $c['usuario'] !== '' ? ' · por ' . e(nomeDe($c['usuario'], $nomes)) : '' ?><?= in_array($c['tipo'], TIPOS_PROTEGIDOS, true) ? ' · guardada por ' . (int) cfg('copias_protegidas_dias') . ' dias' : '' ?></p>
+        <?php if ($voltaLote): ?>
+        <details class="copia__prods">
+          <summary><?= count($voltaLote) === 1 ? 'Ver o produto que está fora do catálogo' : 'Ver os ' . count($voltaLote) . ' produtos que estão fora do catálogo' ?></summary>
+          <ul role="list">
+            <?php foreach ($voltaLote as $idV => $nomeV): ?>
+            <li>
+              <span><?= e($nomeV) ?></span>
+              <form method="post" action="<?= e(link_('desfazer')) ?>" data-form-enviar>
+                <?= campoCsrf() ?><input type="hidden" name="copia" value="<?= e($c['nome']) ?>"><input type="hidden" name="id" value="<?= e((string) $idV) ?>">
+                <button class="btn btn--linha btn--p" type="submit"><?= icone('restore') ?>Trazer de volta<span class="sr-only"> “<?= e($nomeV) ?>”</span></button>
+              </form>
+            </li>
+            <?php endforeach; ?>
+          </ul>
+        </details>
+        <?php endif; ?>
       </div>
       <div class="copia__bts">
         <?php if ($voltaSo): ?>
         <form method="post" action="<?= e(link_('desfazer')) ?>" data-form-enviar>
           <?= campoCsrf() ?><input type="hidden" name="copia" value="<?= e($c['nome']) ?>"><input type="hidden" name="id" value="<?= e($c['alvo']) ?>">
           <button class="btn btn--verde btn--p" type="submit"><?= icone('restore') ?>Trazer de volta<span class="sr-only"> “<?= e($c['alvoNome']) ?>”</span></button>
+        </form>
+        <?php endif; ?>
+        <?php if (count($voltaLote) > 1): ?>
+        <form method="post" action="<?= e(link_('lote-desfazer')) ?>" data-form-enviar>
+          <?= campoCsrf() ?><input type="hidden" name="copia" value="<?= e($c['nome']) ?>">
+          <button class="btn btn--verde btn--p" type="submit"><?= icone('restore') ?>Trazer de volta os <?= count($voltaLote) ?></button>
         </form>
         <?php endif; ?>
         <form method="post" action="<?= e(link_('restaurar')) ?>" data-confirmar="<?= e(textoRestaurar($copias, $i, $totalAtual)) ?>" data-confirmar-ok="Restaurar" data-confirmar-tit="Restaurar esta cópia?">

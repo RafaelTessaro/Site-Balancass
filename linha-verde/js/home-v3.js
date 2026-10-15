@@ -11,15 +11,234 @@
    3. Links das categorias (contagem real do catálogo).
    4. Animações (LV.onMotion): abertura do hero, quadros que "acendem"
       com um corte diagonal, régua 2010 → hoje, logos dos clientes.
+   0. Antes de tudo: a capa escolhida no painel (EMPRESA.capa, de
+      dados/ajustes.js) troca a Prix 7E do HTML pelo produto escolhido.
    A nota do Google fica sempre fixa em "5,0" (sem contador).
    ===================================================================== */
 (function () {
   "use strict";
   var LV = window.LV, BC = window.BC;
+  // Com capa escolhida no painel (html.tem-capa, do <head>), a capa fica escondida (css/home-v3.css) até aqui:
+  // decidido o produto, ela aparece — sem piscar a Prix 7E. Se algo falhar, o <head> mostra a capa do HTML em 8 s.
+  try { if (LV && BC && BC.produtos) capaDoPainel(); }
+  catch (e) { if (window.console) console.warn(e); }
+  finally { document.documentElement.classList.add("hero-pronto"); }
   if (!LV || !BC || !BC.produtos) return;
   var $ = LV.$, $$ = LV.$$, esc = LV.esc;
   var reduceMQ = window.matchMedia("(prefers-reduced-motion: reduce)");
   var fineMQ = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+  /* ------------------------------------------------------------------
+     0. Capa escolhida no painel (área Empresa → Capa do site)
+     EMPRESA.capa = { produto, pontos: [{rotulo, valor, detalhe, x, y}],
+     texto, largura, altura } (já conferido pelo balancas.js). Vale só
+     se o produto está no site (BC.porId) e tem recorte; senão fica a
+     Prix 7E do HTML, como sempre. As etiquetas usam as mesmas regras do
+     CSS da Prix 7E (quais aparecem em cada tela, em cima ou embaixo) com
+     o ponto em x/y % da foto; o lado de cada caixa sai de arrumarCapa().
+     ------------------------------------------------------------------ */
+  function capaDoPainel() {
+    var c = BC.empresa && BC.empresa.capa, p = c && BC.porId(c.produto);
+    var prod = document.querySelector(".pn-hero__prod"), hero = prod && prod.closest(".pn-hero");
+    if (!p || !BC.temRecorte(p) || !prod || !hero) return;
+    var ref = hero.querySelector(".pn-hero__ref"), esc = LV.esc;
+    var antes = { prod: prod.innerHTML, id: prod.getAttribute("data-hero-id"), ref: ref ? ref.innerHTML : "" };
+    var w = c.largura, h = c.altura;
+    if (!(w > 0 && h > 0)) { w = 900; h = 900; }
+    var nome = p.marca + " " + p.nome;
+    hero.classList.add("pn-hero--capa");
+    prod.classList.add("is-carregando");
+    prod.setAttribute("data-hero-id", p.id);
+    proporcao(prod, w / h);
+    prod.innerHTML = '<img src="' + esc(BC.imgProduto(p, true)) + '" width="' + w + '" height="' + h + '" alt="' + esc(nome + (c.texto ? ", " + c.texto : "")) +
+      '" fetchpriority="high" decoding="async">' +
+      '<ul class="pn-specs" role="list" aria-label="' + esc("Destaques técnicos: " + nome) + '">' + c.pontos.map(function (pt, i) {
+        return '<li class="pn-hero__call pn-spec pn-spec--' + (i + 1) + (i % 2 ? " pn-spec--dn" : "") + '"><span class="pn-spec__box">' +
+          '<span class="pn-spec__k mono"><b>0' + (i + 1) + "</b> " + esc(pt.rotulo) + '</span><span class="pn-spec__v">' + esc(pt.valor) + "</span>" +
+          (pt.detalhe ? '<span class="pn-spec__s">' + esc(pt.detalhe) + "</span>" : "") + "</span></li>";
+      }).join("") + "</ul>";
+    // Ponto de cada etiqueta (as regras do CSS ficam para a Prix 7E: o estilo no elemento vale mais)
+    Array.prototype.forEach.call(prod.querySelectorAll(".pn-hero__call"), function (li, i) {
+      li.style.setProperty("--x", c.pontos[i].x);
+      li.style.setProperty("--y", c.pontos[i].y);
+    });
+    if (ref) {
+      ref.innerHTML = '<a href="produtos.html#p=' + encodeURIComponent(p.id) + '"><span class="pn-hero__ref-m">' + esc(p.marca) + "</span> " + esc(p.nome) +
+        (c.texto ? '<span class="pn-hero__ref-x"> — ' + esc(c.texto) + "</span>" : "") + '<svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>';
+    }
+    var img = prod.querySelector("img");
+    var pronta = function () {
+      prod.classList.remove("is-carregando");
+      // A foto mudou depois que os pontos foram marcados? Vale a proporção real (os pontos seguem em % da foto)
+      if (img.naturalWidth && img.naturalHeight && Math.abs(img.naturalWidth / img.naturalHeight - w / h) > 0.02 * (w / h)) {
+        proporcao(prod, img.naturalWidth / img.naturalHeight);
+      }
+      arrumarCapa(hero);
+    };
+    img.addEventListener("load", pronta, { once: true });
+    img.addEventListener("error", function () {
+      // Recorte sumiu do servidor: volta a Prix 7E do HTML
+      hero.classList.remove("pn-hero--capa");
+      prod.classList.remove("is-carregando");
+      prod.removeAttribute("style");
+      prod.innerHTML = antes.prod;
+      prod.setAttribute("data-hero-id", antes.id);
+      if (ref) { ref.innerHTML = antes.ref; ref.classList.remove("pn-hero__ref--curta", "pn-hero__ref--dir"); }
+    }, { once: true });
+    if (img.complete && img.naturalWidth) pronta();
+    arrumarCapa(hero);
+    // A conta vale para o layout de agora: refaz quando ele assenta (fontes que chegam depois, a página inteira
+    // carregada, o título ou o texto mudando de tamanho), senão uma etiqueta pode ficar de fora sem precisar
+    var agenda = 0;
+    var refazer = function () {
+      if (agenda) return;
+      var f = function () { agenda = 0; arrumarCapa(hero); };
+      agenda = window.requestAnimationFrame ? window.requestAnimationFrame(f) : setTimeout(f, 16);
+    };
+    window.addEventListener("load", refazer);
+    if (document.fonts) {
+      if (document.fonts.ready) document.fonts.ready.then(refazer);
+      if (document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", refazer);
+    }
+    if ("ResizeObserver" in window) {
+      var larg = 0;
+      new ResizeObserver(function () {
+        if (hero.offsetWidth === larg) return;   // do hero, só a largura muda o lado das etiquetas
+        larg = hero.offsetWidth;
+        arrumarCapa(hero);
+      }).observe(hero);
+      // O título e o texto de apoio são obstáculos: mudam de tamanho quando a fonte chega (a conta não mexe neles)
+      var obs = new ResizeObserver(refazer);
+      Array.prototype.forEach.call(hero.querySelectorAll(".pn-hero__t, .pn-hero__lead"), function (el) { obs.observe(el); });
+    } else window.addEventListener("resize", function () { arrumarCapa(hero); });
+  }
+
+  // --ar = largura/altura da foto; --k = 1/--ar (o fio mede em cqw); --raiz: produtos estreitos
+  // (torres) ficam com a mesma "presença" de uma balança deitada, não com a mesma largura
+  function proporcao(prod, ar) {
+    prod.style.setProperty("--ar", ar.toFixed(4));
+    prod.style.setProperty("--k", (1 / ar).toFixed(4));
+    prod.style.setProperty("--raiz", Math.min(1, Math.sqrt(ar / 1.64)).toFixed(4));
+  }
+
+  /* Lado de cada etiqueta: na mesma fila (em cima ou embaixo da foto), a da esquerda cresce para a
+     esquerda e a da direita para a direita; sozinha, para o lado com mais espaço. Se a caixa sair do
+     hero, cobrir o texto, a legenda ou a outra etiqueta da fila, troca de lado (ou sobe/desce um degrau);
+     fica a posição que menos atrapalha. Medidas sem as transformações do GSAP (offsetLeft/Top). */
+  function arrumarCapa(hero) {
+    if (!hero.classList.contains("pn-hero--capa")) return;
+    var W = hero.offsetWidth, cel = window.matchMedia("(max-width: 640px)").matches;
+    var tab = window.matchMedia("(min-width: 861px) and (max-width: 1180px)").matches;
+    var hr = hero.getBoundingClientRect();
+    // Caixa de um elemento em relação ao hero, sem transformações
+    var caixa = function (el) {
+      var x = 0, y = 0, e = el;
+      while (e && e !== hero) { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; }
+      return { l: x, t: y, r: x + el.offsetWidth, b: y + el.offsetHeight };
+    };
+    var rel = function (r) { return { l: r.left - hr.left, t: r.top - hr.top, r: r.right - hr.left, b: r.bottom - hr.top }; };
+    var area = function (a, b) { return Math.max(0, Math.min(a.r, b.r) - Math.max(a.l, b.l)) * Math.max(0, Math.min(a.b, b.b) - Math.max(a.t, b.t)); };
+    // Obstáculos: o texto do hero (linhas do título, apoio, botões, selo) e a legenda
+    var obst = [];
+    Array.prototype.forEach.call(hero.querySelectorAll(".pn-hero__l, .pn-hero__eyebrow > *, .pn-hero__ctas .btn"), function (el) { obst.push(caixa(el)); });
+    var lead = hero.querySelector(".pn-hero__lead");
+    if (lead && document.createRange) { var rg = document.createRange(); rg.selectNodeContents(lead); obst.push(rel(rg.getBoundingClientRect())); }
+    var ref = hero.querySelector(".pn-hero__ref"), strip = hero.querySelector(".pn-hero__strip");
+    var hdr = parseFloat(getComputedStyle(hero).paddingTop) || 0;
+    var lim = { l: 8, r: W - 8, t: hdr + 4, b: strip ? strip.offsetTop - 4 : hero.offsetHeight - 4 };
+    // Legenda vertical (computador) longa demais para a coluna: fica só marca e nome
+    if (ref) {
+      ref.classList.remove("pn-hero__ref--curta");
+      var vis = ref.closest(".pn-hero__visual") || ref.parentElement, rr = rel(ref.getBoundingClientRect());
+      if (!cel && window.matchMedia("(min-width: 861px)").matches && rr.b - rr.t > vis.offsetHeight - 16) ref.classList.add("pn-hero__ref--curta");
+    }
+    var todas = hero.querySelectorAll(".pn-hero--capa .pn-hero__call");
+    Array.prototype.forEach.call(todas, function (li) { li.classList.remove("pn-spec--sem-lugar"); });
+    var lis = Array.prototype.filter.call(todas, function (li) { return getComputedStyle(li).display !== "none"; });
+    var embaixo = function (li) {
+      var n = +(/pn-spec--(\d)/.exec(li.className) || [0, 0])[1];
+      return n === 2 || n === 4 || (n === 3 && (cel || tab));
+    };
+    // Uma etiqueta pode trocar de lado, subir/descer um degrau e, se a fila dela estiver cheia (dois pontos no
+    // mesmo x, por exemplo), passar para a outra fila (em cima ↔ embaixo). Sair do hero custa mais que tudo.
+    var prod = hero.querySelector(".pn-hero__prod"), meio = prod ? caixa(prod).l + prod.offsetWidth / 2 : W / 2;
+    var tentar = function (ref2) {
+      lim.b = strip ? strip.offsetTop - 4 : hero.offsetHeight - 4;   // a legenda numa linha própria aumenta o hero
+      var dentroLeg = ref2 ? [rel(ref2.getBoundingClientRect())] : [];
+      var postas = [], ruim = 0;
+      // Mede do zero (nada da conta anterior: lado, degrau, fila), para o resultado não depender da vez anterior
+      lis.forEach(function (li) {
+        li.classList.remove("pn-spec--sobe", "pn-spec--desce", "pn-spec--d", "pn-spec--e");
+        li.style.removeProperty("--extra");
+      });
+      lis.forEach(function (li) { li._x = caixa(li).l; li._baixo = embaixo(li); });
+      var ordem = lis.slice().sort(function (a, b) { return (a._baixo - b._baixo) || (a._x - b._x); });
+      ordem.forEach(function (li) {
+        var box = li.querySelector(".pn-spec__box"), fila = ordem.filter(function (o) { return o._baixo === li._baixo; });
+        var prefFila = fila.length > 1 ? (fila[0] === li ? "e" : "d") : (cel ? "d" : (li._x < meio ? "d" : "e"));
+        var melhor = null;
+        [false, true].forEach(function (troca) {
+          var baixo = troca ? !li._baixo : li._baixo, pref = troca ? (li._x < meio ? "d" : "e") : prefFila;
+          li.classList.toggle("pn-spec--sobe", troca && !baixo);
+          li.classList.toggle("pn-spec--desce", troca && baixo);
+          ["e", "d"].forEach(function (lado) {
+            [0, 1].forEach(function (degrau) {
+              li.classList.toggle("pn-spec--d", lado === "d");
+              li.classList.toggle("pn-spec--e", lado === "e");
+              var ex = degrau ? box.offsetHeight + 6 : 0;
+              li.style.setProperty("--extra", ex + "px");
+              var b = caixa(box);
+              var fora = Math.max(0, lim.l - b.l) + Math.max(0, b.r - lim.r) + Math.max(0, lim.t - b.t) + Math.max(0, b.b - lim.b);
+              var custo = fora * 1e5 + (lado === pref ? 0 : 1) + degrau * 40 + (troca ? 300 : 0);
+              obst.concat(dentroLeg).forEach(function (o) { custo += area(b, o) * 2; });
+              postas.forEach(function (o) { custo += area(b, { l: o.l - 6, t: o.t - 4, r: o.r + 6, b: o.b + 4 }) * 4; });
+              if (!melhor || custo < melhor.custo) melhor = { custo: custo, lado: lado, ex: ex, b: b, troca: troca, baixo: baixo };
+            });
+          });
+        });
+        li.classList.toggle("pn-spec--sobe", melhor.troca && !melhor.baixo);
+        li.classList.toggle("pn-spec--desce", melhor.troca && melhor.baixo);
+        li.classList.toggle("pn-spec--d", melhor.lado === "d");
+        li.classList.toggle("pn-spec--e", melhor.lado === "e");
+        li.style.setProperty("--extra", melhor.ex + "px");
+        // Quanto a caixa ficou em cima de outra etiqueta (sem lugar nenhum livre)
+        li._bate = postas.reduce(function (t, o) { return t + area(melhor.b, o); }, 0) / Math.max(1, (melhor.b.r - melhor.b.l) * (melhor.b.b - melhor.b.t));
+        postas.push(melhor.b);
+        // conta como problema o que atrapalha ou mudou de fila (trocar de lado ou de degrau é normal)
+        ruim += melhor.custo > 200 ? melhor.custo : 0;
+      });
+      return ruim;
+    };
+    // No celular e no tablet estreito, a legenda fica num canto da faixa: se atrapalhar uma etiqueta, vai para
+    // o primeiro canto livre (embaixo do outro lado, depois em cima); sem canto livre, desce para uma linha própria
+    var CANTOS = ["pn-hero__ref--dir", "pn-hero__ref--topo", "pn-hero__ref--linha"];
+    var usar = function (c) { CANTOS.forEach(function (k) { ref.classList.toggle(k, c.indexOf(k) >= 0); }); hero.classList.toggle("pn-hero--legenda-linha", c.indexOf("pn-hero__ref--linha") >= 0); };
+    var posicionar = function () {
+      if (ref) usar([]);
+      var ruim = tentar(ref);
+      if (ref && ruim && window.matchMedia("(max-width: 860px)").matches) {
+        var melhor = { r: ruim, c: [] };
+        [["pn-hero__ref--dir"], ["pn-hero__ref--topo"], ["pn-hero__ref--topo", "pn-hero__ref--dir"], ["pn-hero__ref--linha"]].some(function (c) {
+          usar(c);
+          var r = tentar(ref);
+          if (r < melhor.r) melhor = { r: r, c: c };
+          return r === 0;
+        });
+        usar(melhor.c);
+        tentar(ref);
+      }
+    };
+    posicionar();
+    // Duas etiquetas sem lugar nenhum a não ser uma em cima da outra (pontos muito juntos, textos longos, tela
+    // estreita): a de número maior fica de fora nesta largura — como a 04 da Prix 7E no computador estreito
+    for (var volta = 0; volta < 2; volta++) {
+      var sobra = lis.filter(function (li) { return li._bate > 0.15; }).sort(function (a, b) { return b.className.localeCompare(a.className); })[0];
+      if (!sobra) break;
+      sobra.classList.add("pn-spec--sem-lugar");
+      lis = lis.filter(function (li) { return li !== sobra; });
+      posicionar();
+    }
+  }
 
   /* ------------------------------------------------------------------
      1. Seleção dos produtos
@@ -27,9 +246,10 @@
   // Recortes claros/inox ficam ruins sobre o preto da vitrine: vão para as fichas (palco branco)
   var CLAROS = ["9094plus.webp", "hospitalar.webp", "bk200f.webp", "2098.webp", "8217.webp", "prix3plus.webp"];
 
-  // Pega até n produtos alternando as categorias (balança, automação, informática, balança…)
+  // Pega até n produtos alternando as categorias (balança, automação, informática, balança…).
+  // Mapa sem protótipo: uma categoria criada no painel com o código "constructor" não quebra a página.
   function variado(lista, n) {
-    var grupos = {}, ordem = [], out = [];
+    var grupos = Object.create(null), ordem = [], out = [];
     lista.forEach(function (p) {
       if (!grupos[p.categoria]) { grupos[p.categoria] = []; ordem.push(p.categoria); }
       grupos[p.categoria].push(p);
@@ -179,20 +399,43 @@
   }
 
   /* ------------------------------------------------------------------
-     3. Categorias: nome curto + contagem real
+     3. Categorias: um atalho por categoria com produto no site, na ordem
+     do catálogo (painel → Categorias), com o nome curto e a contagem real.
+     O HTML traz as 3 de sempre (para quem navega sem JavaScript); o
+     primeiro <li> serve de modelo para as outras.
      ------------------------------------------------------------------ */
-  $$("[data-pn-cat]").forEach(function (a) {
-    var id = a.getAttribute("data-pn-cat"), c = BC.categoria(id), li = a.closest("li");
-    if (!c) { if (li) li.hidden = true; return; }
-    var qtd = BC.contar({ categoria: id });
-    if (!qtd) { if (li) li.hidden = true; return; }
-    $("[data-pn-cat-nome]", a).textContent = LV.catCurto(id);
-    $("[data-pn-cat-n]", a).textContent = qtd;
-    // Nome acessível = texto visível ("Balanças 16 itens"); o nome completo vai no title
-    a.title = c.nome;
-    var q = $(".pn-cats__q", a);
-    if (q && qtd === 1) q.lastChild.textContent = " item";
-  });
+  var catsUl = $(".pn-cats"), catModelo = catsUl && $("li", catsUl);
+  var comProdutos = (BC.categorias || []).filter(function (c) { return BC.contar({ categoria: c.id }) > 0; });
+  if (catModelo && $("[data-pn-cat]", catModelo) && comProdutos.length) {
+    catsUl.textContent = "";
+    comProdutos.forEach(function (c) {
+      var li = catModelo.cloneNode(true), a = $("[data-pn-cat]", li), qtd = BC.contar({ categoria: c.id });
+      li.hidden = false;
+      a.href = "produtos.html?cat=" + encodeURIComponent(c.id);
+      a.setAttribute("data-pn-cat", c.id);
+      // Nome acessível = texto visível ("Balanças 16 itens"); o nome completo vai no title
+      a.title = c.nome;
+      $("[data-pn-cat-nome]", a).textContent = LV.catCurto(c.id);
+      $("[data-pn-cat-n]", a).textContent = qtd;
+      var q = $(".pn-cats__q", a);
+      if (q) q.lastChild.textContent = qtd === 1 ? " item" : " itens";
+      catsUl.appendChild(li);
+    });
+    catsUl.classList.toggle("pn-cats--muitas", comProdutos.length > 3);
+    // Mais de 3: no computador, no máximo 4 por linha, linhas equilibradas (5 = 3 + 2, 7 = 4 + 3, 9 = 3 + 3 + 3);
+    // o 1º de cada linha e as linhas de baixo ganham classe para os fios (css/home-v3.css)
+    if (comProdutos.length > 3) {
+      var linhas = Math.ceil(comProdutos.length / 4), cols = Math.ceil(comProdutos.length / linhas);
+      catsUl.style.setProperty("--cols", cols);
+      catsUl.classList.toggle("pn-cats--menor", comProdutos.length > 5);
+      Array.prototype.forEach.call(catsUl.children, function (li, i) {
+        li.classList.toggle("pn-cats__ini", i % cols === 0);
+        li.classList.toggle("pn-cats__baixo", i >= cols);
+      });
+    }
+  } else if (catsUl) {
+    catsUl.hidden = true;   // nenhuma categoria com produto no site
+  }
 
   /* ------------------------------------------------------------------
      4. Animações (só com GSAP e sem "reduzir movimento")

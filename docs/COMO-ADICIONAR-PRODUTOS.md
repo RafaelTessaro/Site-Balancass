@@ -1,7 +1,7 @@
 # Como adicionar e atualizar produtos no site
 
 O jeito principal é o **painel do site**: **`https://balancass.com/painel/`**.
-Pelo celular ou pelo computador você cadastra, edita, esconde e exclui produtos, troca o estoque e envia fotos, **sem mexer em código**. Na área **Clientes** você também coloca, troca e reordena os **logos dos clientes** (item 8), e na área **Empresa** muda telefone, horário, feriados, aviso no site, equipe e outros dados da empresa (item 10). Cada pessoa entra com o seu usuário, como **Administrador** ou **Editor** (item 9). O que você salva aparece no site na hora. Quando quem cuida do site prepara produtos novos ou trocas de modelos, eles chegam prontos no painel para você conferir e aplicar (item 12).
+Pelo celular ou pelo computador você cadastra, edita, esconde e exclui produtos, troca o estoque e envia fotos, **sem mexer em código**. Na área **Clientes** você também coloca, troca e reordena os **logos dos clientes** (item 8), e na área **Empresa** muda telefone, horário, feriados, aviso no site, equipe e outros dados da empresa (item 10). Cada pessoa entra com o seu usuário, como **Administrador** ou **Editor** (item 9). O que você salva aparece no site na hora. Quando quem cuida do site prepara produtos novos ou trocas de modelos, eles chegam prontos no painel para você conferir e aplicar (item 12). Dá também para mudar **vários produtos de uma vez** (item 13), **trocar o produto da capa** do site (item 14), criar e renomear **categorias** (item 15) e ver os **produtos mais procurados** e de onde vêm os contatos pelo WhatsApp (item 16).
 
 Editar o arquivo do catálogo à mão continua possível, mas virou **plano B** (fim desta página).
 
@@ -37,7 +37,7 @@ O código vale 24 horas. Se vencer, abra o painel de novo e leia o código novo 
 | **Foto** | Foto do celular ou do fabricante (veja o item 5). |
 | **Nome do produto** | Como aparece no site. Ex.: `Prix 7E`. |
 | **Marca** | Toledo, Balmak, Elgin… |
-| **Categoria / Subcategoria** | Escolha nas listas (Balanças, Automação Comercial, Informática e PDV). |
+| **Categoria / Subcategoria** | Escolha nas listas (Balanças, Automação Comercial, Informática e PDV… — as da tela **Categorias**, item 15). Falta uma? Um administrador cria em **Categorias** (o que você já digitou fica no rascunho). |
 | **Resumo** | Uma frase curta. Aparece no cartão do produto. |
 | **Descrição** | Texto maior. Aparece ao abrir os detalhes. |
 | **Ficha técnica** | Uma linha por característica: nome à esquerda (`Capacidade`), valor à direita (`15 kg`). As **3 primeiras linhas** aparecem no cartão. |
@@ -62,8 +62,10 @@ O **código do produto** (o final desse link) é criado sozinho a partir da marc
 Na tela **Produtos** (a inicial do painel) estão todos, separados por categoria, com foto. Use a **busca** (nome, marca ou código, sem precisar de acento) ou os filtros.
 
 - **Editar**: abre o formulário completo do produto.
-- **★ Destaque**: o produto sobe no catálogo e entra na **página inicial**. Ela mostra **até 8 destaques**, revezando as categorias (o 1º destaque de Balanças, o 1º de Automação, o 1º de Informática, o 2º de Balanças…). O selo diz onde ele está: *Destaque · página inicial* ou *Destaque · fora da página inicial*. Para um destaque “de fora” entrar, tire a estrela de outro ou suba este com as setas.
-- **Na capa do site**: selo do produto da balança grande do topo da página inicial (hoje a Toledo **Prix 7E**). Ela não se repete na vitrine logo abaixo. Esconder, excluir ou mudar o código dela pede confirmação, porque o link da capa deixaria de abrir os detalhes.
+- **★ Destaque**: o produto sobe no catálogo e entra na **página inicial**. Ela mostra **até 8 destaques**, revezando as categorias na ordem das abas (o 1º destaque de Balanças, o 1º de Automação, o 1º de Informática, o 2º de Balanças…). O selo diz onde ele está: *Destaque · página inicial* ou *Destaque · fora da página inicial*. Para um destaque “de fora” entrar, tire a estrela de outro ou suba este com as setas.
+- **Na capa do site**: selo do produto grande do topo da página inicial (a Toledo **Prix 7E**, ou o que um administrador escolheu em **Empresa → Capa do site**, item 14). Ele não se repete na vitrine logo abaixo. Esconder, excluir ou mudar o código dele pede confirmação: com a Prix 7E, o link da capa deixaria de abrir os detalhes; com uma capa escolhida no painel, a página inicial volta a mostrar a Prix 7E (e o topo da lista de produtos avisa até você resolver).
+- **Selecionar** (vários de uma vez): veja o item 13.
+- **Mais procurados** (cartão no topo da lista): veja o item 16.
 - **👁 No site**: esconde o produto **sem apagar** (ele ganha o selo *Fora do site* no painel). Bom para produto que acabou e vai voltar.
 - **🗑 Excluir**: pede confirmação. Logo depois, o aviso “foi excluído” tem o botão **Desfazer**: o produto volta no mesmo lugar e com a foto.
 - **↑ ↓**: muda a ordem dentro da categoria. No site vale: **Pronta entrega** primeiro, depois os **destaques**, depois **esta ordem**; **Esgotado** fica por último.
@@ -96,7 +98,7 @@ As cópias ficam em **Conta → Cópias de segurança** (só administradores), c
 
 Antes de **cada** alteração o painel guarda uma **cópia de segurança** do catálogo: as 30 mais recentes sempre, tudo dos últimos 14 dias (até 200) e as de **excluir** e **restaurar** por 30 dias. Mudanças seguidas do mesmo tipo (setas, estoque, destaque, no site) feitas em menos de 10 minutos ficam numa cópia só.
 
-- **Trazer de volta** (nas cópias de exclusão): devolve só aquele produto, no mesmo lugar e com a foto. É o mesmo que o **Desfazer** do aviso.
+- **Trazer de volta** (nas cópias de exclusão): devolve só aquele produto, no mesmo lugar e com a foto. É o mesmo que o **Desfazer** do aviso. Numa exclusão de vários de uma vez: **Trazer de volta os N** (todos) ou, em *Ver os N produtos…*, um por um.
 - **Restaurar**: volta o catálogo **inteiro**, com as fotos, para aquele momento, e desfaz também o que foi feito depois. A janela de confirmação diz quantas alterações serão desfeitas e quais. O estado atual também vira cópia, então dá para desfazer a própria restauração.
 
 ## 7. Senha
@@ -141,8 +143,8 @@ Na tela **Clientes** aparecem todos, na **ordem do site** (“1º no site”, �
 
 Cada pessoa que mexe no site tem o **seu usuário e a sua senha** (não compartilhe a sua). Há dois papéis:
 
-- **Administrador**: faz tudo. Produtos, Clientes, **Empresa**, **Cópias de segurança**, **Usuários** e **Atividades** (o que cada um fez).
-- **Editor**: Produtos e Clientes (inclusive o **Desfazer** logo depois de excluir) e a própria senha. Não vê Empresa, Cópias, Usuários nem as atividades dos outros.
+- **Administrador**: faz tudo. Produtos, Clientes, **Empresa** (com a **Capa do site**), **Categorias**, **Cópias de segurança**, **Usuários** e **Atividades** (o que cada um fez).
+- **Editor**: Produtos (um ou vários de uma vez, inclusive o **Desfazer** logo depois de excluir), Clientes, **Mais procurados** e a própria senha. Não vê Empresa, Categorias, Cópias, Usuários nem as atividades dos outros.
 
 **Dar acesso a alguém** (administrador): **Conta → Usuários → Novo usuário** → nome, usuário (o painel sugere) e papel → **Salvar**. Aparece uma **senha temporária**, uma vez só: toque em **Copiar mensagem** e mande pelo WhatsApp. No primeiro acesso, a pessoa cria a própria senha.
 
@@ -153,7 +155,7 @@ Cada pessoa que mexe no site tem o **seu usuário e a sua senha** (não comparti
 
 ## 10. Dados da empresa
 
-Em **Empresa** (só administradores), o que o site mostra sobre a loja, em 9 partes. Cada parte tem o seu **Salvar**, diz onde aparece no site e tem o link **Ver no site**. Salvou, o site já mostra.
+Em **Empresa** (só administradores), o que o site mostra sobre a loja, em 10 partes (a 10ª, **Capa do site**, está no item 14). Cada parte tem o seu **Salvar**, diz onde aparece no site e tem o link **Ver no site**. Salvou, o site já mostra.
 
 - **Contato e WhatsApp:** telefone, WhatsApp, a mensagem que já vem escrita no WhatsApp e o e-mail. Digite o número com o DDD, do jeito que quiser (`(19) 99999-9999`).
 - **Endereço e mapa:** rua, referência, bairro, cidade, estado, CEP e o link do Google Maps (no Maps: **Compartilhar → Copiar link**).
@@ -187,6 +189,51 @@ Mudou e se arrependeu? **Conta → Cópias de segurança → aba Empresa → Res
 - **“Pacote com problema”:** a atualização chegou com defeito (por exemplo, falta uma foto) e nada pode ser aplicado. O catálogo continua como estava: avise quem cuida do site.
 
 > **Catálogo de outubro de 2026:** 5 balanças novas (Toledo **Prix 4 Trend**, **Prix 6** e **Prix 7T**, Balmak **EDGE** e Urano **BA37**), 7 produtos de automação que saíram de linha trocados pelos atuais (Argox **OS-214 Pro**, Zebra **ZT231**, Datalogic **QuickScan QW2500**, Elgin **EL8600iA**, Gertec **TC506E 2D**, **Busca Preço 2D** e **MT-721 VT100**), a foto nova da **Prix 5 Plus** (em torre) e as duas **Balmak Órion** fora do site, como a loja pediu. O que mudou e por quê: `docs/ATUALIZAR-BALANCAS.md`; de onde saiu cada dado: `docs/FONTES-DOS-PRODUTOS.md`.
+## 13. Vários produtos de uma vez (Selecionar)
+
+Na tela **Produtos**, toque em **Selecionar**. Aparece uma caixinha em cada produto (no celular, o cartão inteiro marca) e a barra de baixo vira a barra dos marcados.
+
+- **Marcar todos os N desta lista** marca de uma vez os que aparecem com a busca e o filtro de agora (ex.: filtre **Balanças** e busque `toledo`). No computador, **Shift+clique** marca um trecho.
+- Na barra: **Estoque** (*Pronta entrega*, *Consulte*, *Sob encomenda*, *Esgotado*), **Destaque** (pôr ou tirar), **No site** (mostrar ou esconder), **Mover** (outra categoria e tipo; quem muda de categoria entra no fim dela) e **Excluir** (a janela mostra os nomes; logo depois, **Desfazer** traz todos de volta de uma vez, cada um no seu lugar e com a foto — vale uma vez, para quem excluiu). **Estoque**, **Destaque** e **No site** também têm **Desfazer** no aviso: cada produto volta a ficar como estava antes (vale uma vez, para quem fez).
+- Os mesmos avisos de um produto só: esconder ou excluir o produto da capa, e quem ficou de fora dos 8 destaques da página inicial.
+- Cada ação guarda **uma** cópia de segurança (ex.: *“Antes de: mudar o estoque de 8 produtos para Esgotado”*) e uma linha em Atividades. Quem já estava assim fica de fora. No máximo 200 por vez. Editor também pode. Funciona sem JavaScript.
+- Para sair: **Sair da seleção** (ou o **×** da barra).
+
+## 14. Trocar o produto da capa (Empresa → Capa do site)
+
+O produto grande do topo da página inicial, com as 4 etiquetas (Capacidade, Teclado…), é a Toledo **Prix 7E**. Um administrador pode pôr outro:
+
+1. **Empresa** → parte **10 · Capa do site** (no celular, pela fita de atalhos do alto).
+2. Escolha o **produto**. Só aparecem os que estão **no site** e têm **foto com fundo transparente** (o recorte: a foto fica sobre a faixa verde, sem caixa branca em volta); a tela explica por que os outros não estão na lista.
+3. As **4 etiquetas** já vêm preenchidas com as primeiras linhas da ficha técnica: ajuste o **rótulo** (até 14 letras), o **valor** (até 24) e o **detalhe** (até 32). A **legenda** (ex.: *impressora de etiquetas industrial*) aparece depois da marca e do nome.
+4. **Ponto de cada etiqueta:** toque no número da etiqueta (1 a 4) e depois **toque na foto**, no lugar que ela descreve (no computador também dá para arrastar ou usar as setas do teclado). Sem JavaScript, use os campos de posição (x e y em %).
+5. Confira as **prévias** do computador e do celular (no celular aparecem só as etiquetas **1 e 3**) → **Salvar**. A página inicial já mostra o produto novo, e o selo **Na capa do site** passa para ele na lista.
+
+- **Voltar para a Prix 7E (capa original)**: o botão da mesma parte, com confirmação.
+- Se o produto da capa for **escondido, excluído ou ficar sem recorte**, o site volta sozinho para a Prix 7E e o painel avisa no topo de **Produtos** e na **Capa do site**, até você mostrar o produto de novo ou escolher outro.
+- Cada troca guarda uma cópia (**Conta → Cópias de segurança → aba Empresa**) e uma linha em Atividades (*“Trocou a capa do site para Zebra ZT231”*).
+
+## 15. Categorias e subcategorias
+
+As **categorias** são as abas do catálogo do site (Balanças, Automação Comercial, Informática e PDV), na ordem da lista; as **subcategorias** são os filtros de tipo de cada uma. Só administradores: **Produtos → Categorias** (botão ao lado de **Selecionar**) ou **Conta → Categorias**.
+
+- **Editar** muda o nome e a descrição. O endereço da categoria no site (`produtos.html?cat=balancas`) **nunca muda**, então links antigos continuam abrindo.
+- **Renomear** uma subcategoria muda junto todos os produtos dela, numa alteração só.
+- **↑ ↓** mudam a ordem das abas (e o “Todos” e a página inicial seguem a ordem nova) e a dos tipos.
+- **Nova categoria**: nome, descrição e as subcategorias (uma por linha). Ela entra no fim e só aparece no site quando tiver produtos: cadastre produtos nela ou mova com **Selecionar → Mover** (item 13). A página inicial ganha o atalho dela sozinha.
+- **Apagar**: categoria só quando está vazia (e nunca a última). Subcategoria vazia sai na hora; com produtos, escolha para onde eles vão (**Mover e apagar**, tudo numa alteração). Ex.: a vazia *Emissores fiscais (SAT)* sai em **Informática e PDV → 🗑 → Apagar**.
+- Cada mudança guarda uma cópia (**Cópias de segurança → Restaurar** desfaz) e uma linha em Atividades. Uma atualização do catálogo (item 12) que fale de uma categoria ou subcategoria que você apagou ou renomeou mostra aquela mudança como *“não dá para aplicar”*, com o motivo; o resto aplica normalmente.
+
+## 16. Mais procurados
+
+**Produtos → Mais procurados** (o cartão no topo da lista) ou **Conta → Mais procurados**. Todos os usuários veem; só mostra números, não muda nada.
+
+- **Período:** 7 dias, 30 dias, este mês, mês passado ou 12 meses, sempre comparado com o período anterior igual (*“+12%”*).
+- **Totais:** visitas às páginas, produtos abertos no catálogo, cliques no WhatsApp e em **Ligar**; o gráfico mostra os cliques no WhatsApp por dia (ou por mês).
+- **Produtos mais procurados:** foto, marca, categoria, quantas vezes a ficha foi aberta e quantos pediram orçamento pelo WhatsApp daquele produto (toque no lápis para editar). Quem já saiu do catálogo aparece apagado, pelo nome.
+- **De onde vêm os cliques no WhatsApp:** o lugar do botão (*Botão do topo*, *Ficha do produto*, *Botão flutuante*…) e em quais páginas; e o ranking das **páginas**.
+- **Não contar os acessos deste aparelho:** liga sozinho quando alguém entra no painel naquele aparelho, para as suas visitas não parecerem interesse de clientes. Desligue no aparelho que os clientes usam (ex.: o computador do balcão).
+- **Privacidade:** a contagem é anônima, **sem cookies** e sem guardar dados de quem visita (nem o IP); robôs do Google e afins não entram. Os números começam a contar no dia em que a atualização entrou e ficam guardados 24 meses.
 
 ---
 
@@ -236,7 +283,7 @@ O arquivo agora está no **formato JSON**, o formato que o painel lê e grava. E
 | Campo | O que colocar |
 |---|---|
 | `"id"` | Código único, minúsculo, só letras, números e hífen. Vira o link `produtos.html#p=urano-pop-z-mira`. |
-| `"categoria"` | `"balancas"`, `"automacao"` ou `"informatica"`. |
+| `"categoria"` | O código de uma das categorias de `window.CATEGORIAS`, no topo do arquivo (`"balancas"`, `"automacao"`, `"informatica"` ou outra criada no painel). Categorias novas se criam pelo painel (item 15). |
 | `"subcategoria"` | Exatamente uma das listadas em `window.CATEGORIAS`, no topo do arquivo (ex.: `"Computadoras"`). |
 | `"especificacoes"` | Lista de pares `["Nome", "Valor"]`; pode ser `[]`. |
 | `"imagem"` | Nome exato do arquivo enviado no passo 1. |

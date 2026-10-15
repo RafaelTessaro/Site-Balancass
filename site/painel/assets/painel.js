@@ -236,10 +236,17 @@
     }, function () { throw new Error("Sem conexão com a internet. Tente de novo."); });
   }
 
+  // O que acontece com a capa do site quando o produto dela sai do site (o servidor manda a frase certa:
+  // capa original no index.html ou capa escolhida em Empresa → Capa do site — fraseCapaFora() no PHP)
+  function fraseCapa() {
+    var el = $("[data-capa-frase]");
+    return (el && el.getAttribute("data-capa-frase")) || "A foto da capa continua lá, mas o link dela vai abrir o catálogo com o aviso “produto fora do catálogo”.";
+  }
+
   // Selos "Destaque · página inicial / fora da página inicial" (o servidor manda a lista atual)
   function aplicarHome(ids) {
     if (!ids) return;
-    var dica = $(".dica[data-capa]"), capa = dica ? dica.getAttribute("data-capa") : "";
+    var dica = $(".dica[data-capa]"), capa = dica ? (dica.getAttribute("data-capa-site") || dica.getAttribute("data-capa")) : "";
     $$(".item").forEach(function (li) {
       var s = $("[data-selo-destaque]", li);
       if (!s || li.dataset.id === capa) return;
@@ -379,6 +386,7 @@
       var todos = $$(".item").length;
       $("[data-contagem]").textContent = total === todos ? "Mostrando todos os " + todos + " produtos." :
         total + (total === 1 ? " produto encontrado." : " produtos encontrados.");
+      $("[data-contagem]").classList.toggle("is-todos", total === todos);   // no celular, "todos" fica só para leitores de tela
       $("[data-vazio]").hidden = total > 0;
       try {
         var u = new URL(window.location.href);
@@ -388,6 +396,8 @@
         if (modo) u.searchParams.set("ver", modo);
         history.replaceState(null, "", u.pathname + u.search + u.hash);
       } catch (err) { /* navegador antigo: tudo bem */ }
+      // A edição em lote atualiza o "Marcar todos os N desta lista"
+      document.dispatchEvent(new CustomEvent("bc:filtrou"));
     };
     busca.addEventListener("input", filtrar);
     ver.addEventListener("change", filtrar);
@@ -401,6 +411,289 @@
     });
     filtros.addEventListener("submit", function (e) { e.preventDefault(); filtrar(); busca.blur(); });
   }
+
+  /* ------------------------------------------------------------------
+     Edição em lote (lista de produtos): "Selecionar" → marcar → ação da barra.
+     Sem JavaScript funciona igual (links ?sel=1 e &todos=1, caixinhas e
+     botões de um formulário normal, menus em <details>). Com ele: contador
+     ao vivo, marcar/desmarcar todos desta lista, Shift+clique marca um
+     trecho, Esc fecha os menus; estoque, destaque e no site sem recarregar
+     (mover e excluir recarregam a lista; excluir pede confirmação).
+     ------------------------------------------------------------------ */
+  (function lote() {
+    var f = $("[data-lote]");
+    if (!f) return;
+    var corpo = document.body, MAX = +f.getAttribute("data-max") || 200, DIAS = f.getAttribute("data-dias") || "30";
+    var bSel = $("[data-selecionar]"), bSelTxt = bSel && $("[data-selecionar-txt]", bSel);
+    var conta = $("[data-lote-conta]", f), todos = $("[data-lote-todos]", f), sair = $("[data-lote-sair]", f);
+    var menus = $$("[data-lote-menu]", f), destino = $("[data-lote-destino]", f);
+    var botoes = $$(".lote__bt", f);
+    // Campo da ação: os botões são do formulário sem JavaScript; aqui a ação vai num campo escondido
+    var extras = {};
+    function campo(nome, valor) {
+      if (!extras[nome]) {
+        extras[nome] = document.createElement("input");
+        extras[nome].type = "hidden"; extras[nome].name = nome;
+        f.appendChild(extras[nome]);
+      }
+      extras[nome].value = valor;
+      extras[nome].disabled = valor === null;
+    }
+    function limparCampos() { Object.keys(extras).forEach(function (k) { extras[k].disabled = true; }); }
+    var caixas = function () { return $$("input[data-marcar]"); };
+    var itemDe = function (c) { return c.closest(".item"); };
+    var aparece = function (c) { var li = itemDe(c), g = li && li.closest(".grupo"); return !!li && !li.hidden && !(g && g.hidden); };
+    var marcadas = function () { return caixas().filter(function (c) { return c.checked; }); };
+    var q = function (n, um, varios) { return n + " " + (n === 1 ? um : varios); };
+    var selecionando = function () { return corpo.classList.contains("is-selecionando"); };
+
+    function fecharMenus(exceto) { menus.forEach(function (m) { if (m !== exceto && m.open) m.open = false; }); }
+
+    function textoTodos(vis, tudo) {
+      todos.textContent = "";
+      if (tudo) { todos.textContent = "Desmarcar todos"; return; }
+      if (vis === 1) { todos.textContent = "Marcar o produto desta lista"; return; }
+      todos.appendChild(document.createTextNode("Marcar todos os " + vis));
+      var s = document.createElement("span");
+      s.className = "lote__todos-mais"; s.textContent = " desta lista";
+      todos.appendChild(s);
+    }
+
+    function atualizar() {
+      var marc = 0, fora = 0, vis = 0, visMarc = 0;
+      caixas().forEach(function (c) {
+        var ap = aparece(c), li = itemDe(c);
+        if (ap) vis++;
+        if (c.checked) { marc++; if (ap) visMarc++; else fora++; }
+        if (li) li.classList.toggle("is-marcado", c.checked);
+      });
+      var txt = marc ? q(marc, "marcado", "marcados") + (fora ? " · " + fora + " fora desta lista" : "") : "Nenhum marcado";
+      if (marc > MAX) txt += " (no máximo " + MAX + " de cada vez)";
+      conta.textContent = txt;
+      f.classList.toggle("is-vazio", marc === 0);
+      if (todos) {
+        textoTodos(vis, vis > 0 && visMarc === vis);
+        todos.hidden = vis === 0;
+      }
+      var bloq = marc === 0 || marc > MAX;
+      botoes.forEach(function (b) { b.setAttribute("aria-disabled", bloq ? "true" : "false"); });
+      if (bloq) fecharMenus();
+    }
+
+    // Links dos nomes: fora da ordem do Tab enquanto o cartão inteiro é a caixinha
+    function ajustarTab(on) {
+      $$(".item__nome a").forEach(function (a) { if (on) a.setAttribute("tabindex", "-1"); else a.removeAttribute("tabindex"); });
+    }
+
+    function modo(on) {
+      corpo.classList.toggle("is-selecionando", on);
+      f.hidden = !on;
+      if (!on) { caixas().forEach(function (c) { c.checked = false; }); fecharMenus(); }
+      if (bSel) {
+        bSel.setAttribute("aria-pressed", on ? "true" : "false");
+        if (bSelTxt) bSelTxt.textContent = on ? "Sair da seleção" : "Selecionar";
+      }
+      ajustarTab(on);
+      try {
+        var u = new URL(window.location.href);
+        u.searchParams.delete("todos");
+        if (on) u.searchParams.set("sel", "1"); else u.searchParams.delete("sel");
+        history.replaceState(null, "", u.pathname + u.search + u.hash);
+      } catch (err) { /* navegador antigo: tudo bem */ }
+      atualizar();
+    }
+
+    if (bSel) {
+      bSel.setAttribute("role", "button");
+      bSel.addEventListener("click", function (e) { e.preventDefault(); modo(!selecionando()); });
+      // É um link (sem JavaScript, ?sel=1); como botão, também responde ao Espaço
+      bSel.addEventListener("keydown", function (e) { if (e.key === " ") { e.preventDefault(); modo(!selecionando()); } });
+    }
+    if (sair) sair.addEventListener("click", function (e) {
+      e.preventDefault();
+      modo(false);
+      if (bSel) bSel.focus({ preventScroll: true });
+    });
+    if (todos) todos.addEventListener("click", function (e) {
+      e.preventDefault();
+      var vis = caixas().filter(aparece);
+      var tudo = vis.length > 0 && vis.every(function (c) { return c.checked; });
+      if (tudo) caixas().forEach(function (c) { c.checked = false; });
+      else vis.forEach(function (c) { c.checked = true; });
+      ultima = null;
+      atualizar();
+    });
+
+    // Marcar: Shift+clique marca (ou desmarca) o trecho desde a última caixinha tocada
+    var ultima = null;
+    document.addEventListener("click", function (e) {
+      var c = e.target && e.target.matches && e.target.matches("input[data-marcar]") ? e.target : null;
+      if (!c) return;
+      if (e.shiftKey && ultima && ultima !== c) {
+        var vis = caixas().filter(aparece), a = vis.indexOf(ultima), b = vis.indexOf(c);
+        if (a >= 0 && b >= 0) vis.slice(Math.min(a, b), Math.max(a, b) + 1).forEach(function (x) { x.checked = c.checked; });
+      }
+      ultima = c;
+      atualizar();
+    });
+    document.addEventListener("change", function (e) { if (e.target && e.target.matches && e.target.matches("input[data-marcar]")) atualizar(); });
+    document.addEventListener("bc:filtrou", atualizar);
+
+    // Menus (Estoque, Destaque, No site, Mover): um aberto por vez; Esc ou toque fora fecha
+    menus.forEach(function (m) {
+      var s = $("summary", m);
+      s.addEventListener("click", function (e) {
+        if (s.getAttribute("aria-disabled") !== "true") return;
+        e.preventDefault();
+        toast(marcadas().length > MAX ? "Marque no máximo " + MAX + " produtos de cada vez." : "Marque pelo menos um produto: toque nos produtos da lista.", true);
+      });
+      m.addEventListener("toggle", function () {
+        if (!m.open) return;
+        fecharMenus(m);
+        // Próxima ação: o aviso da anterior (que fica 30 s quando tem Desfazer) sai da frente do menu
+        if (toastEl && !toastEl.hidden) { toastEl.hidden = true; clearTimeout(toastT); }
+        var prim = $(".lote__pop button, .lote__pop select", m);
+        if (prim) prim.focus({ preventScroll: true });
+      });
+    });
+    document.addEventListener("click", function (e) {
+      if (!e.target.closest || !e.target.closest("[data-lote-menu]")) fecharMenus();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      var aberto = menus.filter(function (m) { return m.open; })[0];
+      if (!aberto) return;
+      e.preventDefault();
+      aberto.open = false;
+      $("summary", aberto).focus();
+    });
+
+    // O filtro atual vai junto, para a lista voltar igual depois de mover/excluir
+    function copiarFiltro() {
+      var p;
+      try { p = new URL(window.location.href).searchParams; } catch (err) { return; }
+      $$("[data-lote-filtro]", f).forEach(function (i) { i.value = p.get(i.getAttribute("data-lote-filtro")) || ""; });
+    }
+
+    function textoExcluir(lis) {
+      var n = lis.length, max = 10;
+      var linhas = lis.slice(0, max).map(function (li) { return "• " + li.dataset.nome; });
+      if (n > max) linhas.push("• e mais " + (n - max));
+      var t = (n === 1 ? "Excluir este produto do catálogo?" : "Excluir estes " + n + " produtos do catálogo?") + "\n" + linhas.join("\n") + "\n" +
+        (n === 1 ? "A foto vai" : "As fotos vão") + " para a lixeira do painel. Logo depois aparece o botão Desfazer" +
+        (n === 1 ? "" : " (traz " + (n === 2 ? "os dois" : "os " + n) + " de volta de uma vez)") +
+        ", e a exclusão fica em Cópias de segurança por " + DIAS + " dias.";
+      lis.forEach(function (li) {
+        if (li.hasAttribute("data-na-capa")) t += "\nAtenção: “" + li.dataset.nome + "” é o produto da capa do site. " + fraseCapa();
+      });
+      return t;
+    }
+
+    // Mover e excluir: envio normal (a lista volta recarregada), depois de conferir a sessão
+    function enviarNormal(acao, confirmado) {
+      sessaoOk().then(function (ok) {
+        if (!ok) return;
+        campo("acao", acao);
+        campo("confirmado", confirmado ? "1" : null);
+        campo("js", "1");
+        copiarFiltro();
+        f.setAttribute("aria-busy", "true");
+        f.submit();
+      });
+    }
+
+    // "Desfazer" no aviso de estoque, destaque e no site em lote (envio normal: a lista volta recarregada)
+    function formDesfazer(d) {
+      var fm = document.createElement("form");
+      fm.method = "post"; fm.action = d.acao; fm.className = "toast__desfazer";
+      [["csrf", ($("input[name=csrf]", f) || {}).value || ""], ["copia", d.copia]].forEach(function (c) {
+        var i = document.createElement("input");
+        i.type = "hidden"; i.name = c[0]; i.value = c[1];
+        fm.appendChild(i);
+      });
+      var b = document.createElement("button");
+      b.type = "submit"; b.textContent = "Desfazer";
+      fm.appendChild(b);
+      return fm;
+    }
+
+    // Estoque, destaque e no site: sem recarregar (a seleção continua)
+    function enviarRapido(acao) {
+      campo("acao", acao);
+      copiarFiltro();
+      f.setAttribute("aria-busy", "true");
+      enviar(f).then(function (d) {
+        var rotulo = d.campo === "estoque" ? $("button[value='estoque:" + d.valor + "']", f) : null;
+        (d.ids || []).forEach(function (id) {
+          var li = document.getElementById("p-" + id);
+          if (!li) return;
+          aplicarRapido(li, d.campo, d.valor);
+          if (d.campo === "estoque") {
+            var sel = $("select[data-auto]", li);
+            if (sel) { sel.value = d.valor; sel.dataset.valor = d.valor; }
+            var selo = $("[data-selo-estoque]", li);
+            if (selo) {
+              selo.className = "selo selo--estoque estoque--" + d.valor;
+              var op = sel && $("option[value='" + d.valor + "']", sel);
+              selo.textContent = op ? op.textContent : (rotulo ? rotulo.getAttribute("data-rotulo") : d.valor);
+            }
+          }
+        });
+        aplicarHome(d.home);
+        toast(d.msg, false, d.desfazer ? { link: formDesfazer(d.desfazer), tempo: 30000 } : null);
+      }).catch(function (err) {
+        if (err.message !== "login") toast(err.message, true);
+      }).then(function () {
+        limparCampos();
+        f.removeAttribute("aria-busy");
+      });
+    }
+
+    var ultimoBotao = null;
+    f.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest("button[name=acao]");
+      if (b) ultimoBotao = b;
+    });
+    f.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var bt = e.submitter || ultimoBotao, acao = bt ? bt.value : "";
+      if (!acao) return;
+      var marc = marcadas();
+      if (!marc.length) { toast("Marque pelo menos um produto: toque nos produtos da lista.", true); return; }
+      if (marc.length > MAX) { toast("Marque no máximo " + MAX + " produtos de cada vez.", true); return; }
+      var lis = marc.map(itemDe);
+      var capa = lis.filter(function (li) { return li.hasAttribute("data-na-capa"); })[0];
+      fecharMenus();
+      if (acao === "excluir") {
+        confirmar(textoExcluir(lis), lis.length === 1 ? "Excluir" : "Excluir os " + lis.length, lis.length === 1 ? "Excluir produto?" : "Excluir " + lis.length + " produtos?")
+          .then(function (sim) { if (sim) enviarNormal("excluir", true); });
+        return;
+      }
+      if (acao === "mover") {
+        if (!destino || !destino.value) {
+          toast("Escolha para onde mover (a categoria e o tipo).", true);
+          var m = destino && destino.closest("details");
+          if (m) { m.open = true; destino.focus(); }
+          return;
+        }
+        enviarNormal("mover", false);
+        return;
+      }
+      if (acao === "visivel:0" && capa) {
+        confirmar("Esconder " + (lis.length === 1 ? "“" + capa.dataset.nome + "”" : "os " + lis.length + " marcados") + " do site? " +
+          (lis.length === 1 ? "Ele é" : "Entre eles está “" + capa.dataset.nome + "”,") + " o produto da capa. " + fraseCapa(),
+          "Esconder", "Esconder o produto da capa?").then(function (sim) { if (sim) enviarRapido(acao); });
+        return;
+      }
+      enviarRapido(acao);
+    });
+
+    // Voltou para a lista pelo botão Voltar: barra livre de novo
+    window.addEventListener("pageshow", function () { f.removeAttribute("aria-busy"); limparCampos(); });
+
+    if (selecionando()) ajustarTab(true);
+    atualizar();
+  })();
 
   /* ------------------------------------------------------------------
      Formulário do produto
@@ -659,7 +952,8 @@
       if (vis && !vis.checked) motivos.push("esconder");
       if (idEl && idEl.value.trim() !== capa) motivos.push("mudar o código");
       if (!motivos.length) return Promise.resolve(true);
-      return confirmar("Este é o produto da capa do site. Se " + motivos.join(" e ") + ", a foto da capa continua lá, mas o link dela vai abrir o catálogo com o aviso “produto fora do catálogo”.", "Salvar assim", "Produto da capa");
+      var frase = fraseCapa();
+      return confirmar("Este é o produto da capa do site. Se " + motivos.join(" e ") + ", " + frase.charAt(0).toLowerCase() + frase.slice(1), "Salvar assim", "Produto da capa");
     };
     fp.addEventListener("submit", function (e) {
       var bt = e.submitter;
@@ -1461,4 +1755,539 @@
       }
     }
   })();
+
+  /* ------------------------------------------------------------------
+     Categorias (a=categorias, só administradores). Fica DENTRO do IIFE
+     principal: usa $, $$, enviar, toast e o confirmar genérico (data-confirmar).
+     Sem ele, a tela funciona igual (formulários normais).
+     - só um painel (Editar/Renomear/Apagar/Nova) aberto por vez; Esc fecha;
+     - setas ↑↓ trocam a ordem sem recarregar (o servidor grava igual);
+     - "Mover e apagar": a confirmação diz para onde vão os produtos.
+     ------------------------------------------------------------------ */
+  (function categorias() {
+    var lista = $("[data-ctgs]");
+    if (!lista) return;
+
+    // Um painel aberto por vez; ao abrir, o foco vai para o primeiro campo
+    document.addEventListener("toggle", function (e) {
+      var d = e.target;
+      if (!d.matches || !d.matches("[data-cat-menu]") || !d.open) return;
+      $$("[data-cat-menu][open]").forEach(function (x) { if (x !== d) x.open = false; });
+      var campo = $("input:not([type=hidden]), textarea, select", d);
+      if (campo) campo.focus({ preventScroll: true });
+      var r = d.getBoundingClientRect();
+      if (r.bottom > window.innerHeight - 16 && d.scrollIntoView) d.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }, true);
+    lista.parentNode.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      var d = e.target.closest && e.target.closest("[data-cat-menu][open]");
+      if (!d) return;
+      d.open = false;
+      var s = $("summary", d);
+      if (s) s.focus();
+    });
+
+    // Setas: troca de lugar sem recarregar
+    function acertarSetas(ol, sel) {
+      var itens = Array.prototype.filter.call(ol.children, function (x) { return x.matches(sel); });
+      itens.forEach(function (li, i) {
+        var linha = sel === ".ctg" ? $(".ctg__linha", li) : li;
+        var c = $("[data-cat-cima]", linha), b = $("[data-cat-baixo]", linha);
+        if (c) c.disabled = i === 0;
+        if (b) b.disabled = i === itens.length - 1;
+        var pos = sel === ".ctg" ? $("[data-cat-pos]", li) : null;
+        if (pos) pos.textContent = (i + 1) + "ª aba";
+      });
+    }
+    document.addEventListener("submit", function (e) {
+      var f = e.target;
+      if (!f.matches || !f.matches("[data-cat-mover]")) return;
+      e.preventDefault();
+      var bt = $("button", f), sub = f.closest(".sb"), li = sub || f.closest(".ctg"), ol = li && li.parentNode;
+      if (!li || bt.getAttribute("aria-busy") === "true") return;
+      var sel = sub ? ".sb" : ".ctg";
+      bt.setAttribute("aria-busy", "true");
+      enviar(f).then(function (d) {
+        var viz = d.dir === "cima" ? li.previousElementSibling : li.nextElementSibling;
+        if (viz) {
+          if (d.dir === "cima") ol.insertBefore(li, viz);
+          else ol.insertBefore(viz, li);
+        }
+        acertarSetas(ol, sel);
+        li.classList.add("is-movendo");
+        setTimeout(function () { li.classList.remove("is-movendo"); }, 900);
+        if (!bt.disabled) bt.focus({ preventScroll: true });
+        else { var outro = $(d.dir === "cima" ? "[data-cat-baixo]" : "[data-cat-cima]", sub ? li : $(".ctg__linha", li)); if (outro && !outro.disabled) outro.focus({ preventScroll: true }); }
+        if (li.scrollIntoView) li.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        toast(d.msg);
+      }).catch(function (err) {
+        if (err.message !== "login") toast(err.message, true);
+      }).then(function () { bt.removeAttribute("aria-busy"); });
+    });
+
+    // "Mover e apagar": a janela de confirmação diz para onde vão os produtos
+    $$("[data-cat-mover-apagar]").forEach(function (f) {
+      var s = $("[data-cat-destino]", f);
+      if (!s) return;
+      var n = parseInt(f.dataset.n, 10) || 0, sub = f.dataset.subNome || "", cat = f.dataset.catNome || "";
+      var atualizar = function () {
+        var o = s.options[s.selectedIndex], g = o && o.parentNode && o.parentNode.label;
+        if (!o || !o.value) return;
+        f.dataset.confirmar = "Mover " + (n === 1 ? "o produto" : "os " + n + " produtos") + " de “" + sub + "” para “" + (g ? g + " › " : "") + o.textContent +
+          "” e apagar a subcategoria “" + sub + "” de “" + cat + "”? Tudo numa alteração só, com cópia de segurança.";
+      };
+      s.addEventListener("change", atualizar);
+      atualizar();
+    });
+
+    // "Nova categoria" (topo): rola até o formulário e põe o foco no nome
+    var ir = $("[data-cat-ir-nova]"), nome = $("#nc-nome");
+    if (ir && nome) ir.addEventListener("click", function (e) {
+      e.preventDefault();
+      var caixa = $("#nova");
+      if (caixa && caixa.scrollIntoView) caixa.scrollIntoView({ block: "start", behavior: "smooth" });
+      nome.focus({ preventScroll: true });
+    });
+
+    // Voltou do servidor numa categoria/subcategoria (#cat-…, #sub-…): o aviso do topo vira um toast
+    // (o topo ficou fora da tela); voltou com erro: foco no campo do formulário aberto
+    var invalido = $(".pg-categorias [aria-invalid=true]");
+    if (invalido) { window.addEventListener("load", function () { setTimeout(function () { invalido.focus(); }, 60); }); return; }
+    if (/^#(cat|sub|subnova)-/.test(location.hash)) {
+      var av = $("[data-avisos] .aviso");
+      var pTxt = av && $("p", av);
+      var msg = pTxt ? (pTxt.firstChild && pTxt.firstChild.nodeType === 3 ? pTxt.firstChild.nodeValue : pTxt.textContent).trim() : "";
+      if (msg) toast(msg, av.classList.contains("aviso--erro"), { tempo: 9000 });
+    }
+  })();
+})();
+
+/* =====================================================================
+   Painel — "Mais procurados": não contar os acessos deste aparelho.
+   Bloco independente (roda em todas as páginas do painel).
+   - localStorage "bc-nao-contar" (o mesmo endereço do site, então o
+     site lê a mesma chave): "1" = este aparelho não entra na contagem;
+     "0" = a pessoa desligou aqui (o painel não liga de novo sozinho).
+   - Entrou no painel neste aparelho (body[data-usuario]) e a chave ainda
+     não existe: liga sozinho.
+   - Na tela a=procurados, o interruptor liga e desliga.
+   ===================================================================== */
+(function () {
+  "use strict";
+  var CHAVE = "bc-nao-contar";
+  function ler() { try { return window.localStorage.getItem(CHAVE); } catch (e) { return undefined; } }
+  function gravar(v) { try { window.localStorage.setItem(CHAVE, v); return ler() === v; } catch (e) { return false; } }
+
+  if (document.body && document.body.hasAttribute("data-usuario") && ler() === null) gravar("1");
+
+  var cx = document.querySelector("[data-nao-contar]");
+  if (!cx) return;
+  var caixa = cx.closest("[data-nao-contar-caixa]");
+  var estado = document.querySelector("[data-nao-contar-estado]");
+  var semJs = document.querySelector("[data-nao-contar-sem-js]");
+  if (ler() === undefined) {
+    // Navegador que não deixa guardar nada (janela anônima de alguns navegadores, dados do site bloqueados)
+    if (semJs) semJs.textContent = "Este navegador não deixa guardar esta escolha (janela anônima ou dados do site bloqueados). Os acessos daqui contam como os de qualquer visitante.";
+    return;
+  }
+  if (semJs) semJs.hidden = true;
+  function mostra() {
+    var on = ler() === "1";
+    cx.checked = on;
+    if (estado) estado.textContent = on
+      ? "Ligado: as visitas deste aparelho ao site não entram nos números."
+      : "Desligado: este aparelho conta como qualquer visitante.";
+  }
+  cx.addEventListener("change", function () {
+    if (!gravar(cx.checked ? "1" : "0") && estado) estado.textContent = "Não consegui guardar a escolha neste navegador.";
+    else mostra();
+  });
+  // Mudou em outra aba (ex.: o painel aberto em duas abas)
+  window.addEventListener("storage", function (e) { if (e.key === CHAVE) mostra(); });
+  if (caixa) caixa.hidden = false;
+  mostra();
+})();
+
+/* =====================================================================
+   Painel Balanças.com — área Empresa, parte "Capa do site"
+   (bloco independente: não depende do resto do arquivo).
+   Sem isto a parte funciona igual: "Usar este produto" preenche as
+   etiquetas, a posição dos pontos vai pelos campos de número, a prévia
+   mostra os pontos (de 1 em 1%) e "Voltar para a Prix 7E" pede
+   confirmação numa tela própria. Com isto: troca de produto na hora
+   (etiquetas da ficha, pontos já em cima do produto), toque na foto
+   para marcar o ponto da etiqueta escolhida (arrastar com o mouse,
+   setas do teclado), prévia ao vivo e etiquetas que mudam de lado
+   quando não cabem — a mesma ideia do js/home-v3.js do site.
+   ===================================================================== */
+(function () {
+  "use strict";
+  var raiz = document.querySelector("[data-capa-parte]");
+  if (!raiz) return;
+  var form = raiz.closest("form");
+  var $ = function (s, c) { return (c || document).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  // alvo = a foto da prévia do computador (foco do teclado); alvos = as duas prévias aceitam toque e mouse
+  var sel = $("[data-capa-produto]", raiz), alvos = $$("[data-capa-alvo]", raiz), alvo = alvos[0] || null, status = $("[data-capa-status]", raiz);
+  var telas = $$("[data-capa-tela]", raiz), ets = $$("[data-capa-et]", raiz), botoes = $$("[data-capa-marcar]", raiz);
+  var EMBAIXO = { pc: [1, 3], cel: [2] }, NO_CEL = [0, 2], N = ets.length;
+  var atual = 0, guardado = {}, idAtual = sel ? sel.value : "";
+  var avisoLugar = null;
+  if (status) {
+    avisoLugar = document.createElement("p");
+    avisoLugar.className = "capa-aviso-ponto is-alerta";
+    avisoLugar.hidden = true;
+    status.insertAdjacentElement("afterend", avisoLugar);
+  }
+
+  function campo(i, k) { return form.elements["ponto[" + i + "][" + k + "]"]; }
+  function num(v) {
+    v = String(v == null ? "" : v).replace(",", ".").trim();
+    if (!/^\d{1,3}(\.\d+)?$/.test(v) || +v > 100) return null;
+    return Math.round(+v * 10) / 10;
+  }
+  function texto(n) { return String(n).replace(".", ","); }
+  function valores() {
+    var out = [];
+    for (var i = 0; i < N; i++) {
+      out.push({ rotulo: campo(i, "rotulo").value.trim(), valor: campo(i, "valor").value.trim(), detalhe: campo(i, "detalhe").value.trim(), x: campo(i, "x").value, y: campo(i, "y").value });
+    }
+    return out;
+  }
+  function vazio(p) { return !(p.rotulo + p.valor + p.detalhe); }
+  function avisar(msg, alerta) {
+    if (!status) return;
+    status.textContent = msg;
+    status.classList.toggle("is-alerta", !!alerta);
+  }
+
+  /* ---------- Prévia em escala: a tela tem a largura de verdade e é reduzida para caber ---------- */
+  var escalas = $$("[data-capa-escala]", raiz);
+  function escalar() {
+    escalas.forEach(function (w) {
+      var base = +w.getAttribute("data-capa-escala") || 560, tela = $("[data-capa-tela]", w);
+      w.classList.add("is-escala");
+      var k = Math.min(1, w.clientWidth / base);
+      tela.style.transform = k < 1 ? "scale(" + k.toFixed(4) + ")" : "";
+      w.style.height = Math.ceil(tela.offsetHeight * k) + "px";
+    });
+  }
+
+  /* ---------- Prévia: textos, posições e para que lado cada etiqueta cresce ---------- */
+  function desenhar() {
+    escalar();
+    var pts = valores();
+    telas.forEach(function (tela) {
+      var tipo = tela.getAttribute("data-capa-tela"), lis = $$("[data-capa-pt]", tela), xs = {};
+      pts.forEach(function (p, i) {
+        var li = lis[i];
+        if (!li) return;
+        var some = vazio(p) || (tipo === "cel" && NO_CEL.indexOf(i) < 0), x = num(p.x), y = num(p.y);
+        li.classList.toggle("is-vazio", some);
+        li.classList.toggle("capa-pt--dn", EMBAIXO[tipo].indexOf(i) >= 0);
+        li.classList.toggle("is-escolhida", tipo === "pc" && i === atual);
+        li.style.setProperty("--x", (x == null ? 50 : x) + "%");
+        li.style.setProperty("--y", (y == null ? 50 : y) + "%");
+        li.style.removeProperty("--extra");
+        li.removeAttribute("data-sem-lugar");
+        ["rotulo", "valor", "detalhe"].forEach(function (k) {
+          var t = $('[data-capa-txt="' + k + '"]', li);
+          if (!t) return;
+          t.textContent = p[k];
+          if (k === "detalhe") t.hidden = !p[k];
+        });
+        if (!some) xs[i] = x == null ? 50 : x;
+      });
+      lados(tela, lis, xs, tipo);
+    });
+    // Etiqueta que não coube (pontos muito juntos ou texto longo demais para a tela): avisa
+    var semLugar = telas.map(function (tela) {
+      var ns = $$("[data-sem-lugar]", tela).map(function (li) { return +li.getAttribute("data-capa-pt") + 1; });
+      var onde = tela.getAttribute("data-capa-tela") === "pc" ? "no computador" : "no celular";
+      return ns.length ? (ns.length > 1 ? "as etiquetas " + ns.join(" e ") + " não cabem " + onde + " e ficam de fora" : "a etiqueta " + ns[0] + " não cabe " + onde + " e fica de fora") : "";
+    }).filter(Boolean);
+    if (avisoLugar) {
+      avisoLugar.hidden = !semLugar.length;
+      avisoLugar.textContent = semLugar.length ? "Atenção: " + semLugar.join("; ") + ". Afaste os pontos ou encurte os textos." : "";
+    }
+    escalar();   // a legenda numa linha própria muda a altura da tela do celular
+    var op = sel && sel.options[sel.selectedIndex], tx = form.elements.texto ? form.elements.texto.value.trim() : "";
+    $$("[data-capa-leg]", raiz).forEach(function (el) {
+      var k = el.getAttribute("data-capa-leg");
+      if (k === "texto") { el.textContent = " — " + tx; el.hidden = !tx; }
+      else if (op) el.textContent = op.getAttribute(k === "marca" ? "data-marca" : "data-modelo") || "";
+    });
+  }
+
+  // Em cada fila (em cima / embaixo): a da esquerda cresce para a esquerda e a da direita para a direita;
+  // sozinha, para o lado com mais espaço (no celular, para a direita, como no site). Se não couber na tela,
+  // cobrir a legenda ou bater na outra etiqueta da fila, troca de lado ou sobe/desce um degrau — a mesma
+  // conta de arrumarCapa() em linha-verde/js/home-v3.js. No celular, a legenda procura um canto livre.
+  function lados(tela, lis, xs, tipo) {
+    var leg = $(".capa-tela__legenda", tela), T = tela.getBoundingClientRect(), k = T.width / (tela.offsetWidth || T.width || 1);
+    var lim = { l: T.left + 4 * k, r: T.right - (tipo === "pc" ? 22 : 4) * k, t: T.top + 4 * k, b: T.bottom - 4 * k };
+    var area = function (a, b) { return Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)); };
+    var tentar = function () {
+      var obst = leg && !leg.hidden ? [leg.getBoundingClientRect()] : [], ruim = 0, postas = [];
+      var ids = Object.keys(xs).map(Number), baixoDe = function (i) { return EMBAIXO[tipo].indexOf(i) >= 0; };
+      ids.sort(function (a, b) { return (baixoDe(a) - baixoDe(b)) || (xs[a] - xs[b]); });
+      ids.forEach(function (i) {
+        var li = lis[i], box = $(".capa-pt__caixa", li), melhor = null;
+        var fila = ids.filter(function (k) { return baixoDe(k) === baixoDe(i); });
+        var prefFila = fila.length > 1 ? (fila[0] === i ? "e" : "d") : (tipo === "cel" || xs[i] < 50 ? "d" : "e");
+        [false, true].forEach(function (troca) {
+          li.classList.toggle("capa-pt--dn", troca ? !baixoDe(i) : baixoDe(i));
+          var pref = troca ? (xs[i] < 50 ? "d" : "e") : prefFila;
+          ["e", "d"].forEach(function (lado) {
+            [0, 1].forEach(function (degrau) {
+              li.classList.toggle("capa-pt--d", lado === "d");
+              li.classList.toggle("capa-pt--e", lado === "e");
+              var ex = degrau ? box.offsetHeight + 6 : 0;
+              li.style.setProperty("--extra", ex + "px");
+              var r = box.getBoundingClientRect();
+              var custo = (Math.max(0, lim.l - r.left) + Math.max(0, r.right - lim.r) + Math.max(0, lim.t - r.top) + Math.max(0, r.bottom - lim.b)) * 1e5
+                + (lado === pref ? 0 : 1) + degrau * 40 + (troca ? 300 : 0);
+              obst.forEach(function (o) { custo += area(r, o) * 2; });
+              postas.forEach(function (o) { custo += area(r, { left: o.left - 6, right: o.right + 6, top: o.top - 4, bottom: o.bottom + 4 }) * 4; });
+              if (!melhor || custo < melhor.custo) melhor = { custo: custo, lado: lado, ex: ex, troca: troca, r: r };
+            });
+          });
+        });
+        li.classList.toggle("capa-pt--dn", melhor.troca ? !baixoDe(i) : baixoDe(i));
+        li.classList.toggle("capa-pt--d", melhor.lado === "d");
+        li.classList.toggle("capa-pt--e", melhor.lado === "e");
+        li.style.setProperty("--extra", melhor.ex + "px");
+        li._bate = postas.reduce(function (t, o) { return t + area(melhor.r, o); }, 0) / Math.max(1, melhor.r.width * melhor.r.height);
+        postas.push(box.getBoundingClientRect());
+        if (melhor.custo > 200) ruim += melhor.custo;
+      });
+      return ruim;
+    };
+    var usar = function (c) {
+      ["is-dir", "is-topo", "is-linha"].forEach(function (k) { leg.classList.toggle(k, c.indexOf(k) >= 0); });
+      tela.classList.toggle("tem-linha", c.indexOf("is-linha") >= 0);
+      T = tela.getBoundingClientRect();
+      lim.b = T.bottom - 4 * k;
+    };
+    if (leg) usar([]);
+    var ruim = tentar();
+    if (ruim && leg && tipo === "cel") {
+      var melhor = { r: ruim, c: [] };
+      [["is-dir"], ["is-topo"], ["is-topo", "is-dir"], ["is-linha"]].some(function (c) {
+        usar(c);
+        var r = tentar();
+        if (r < melhor.r) melhor = { r: r, c: c };
+        return r === 0;
+      });
+      usar(melhor.c);
+      tentar();
+    }
+    // Sem lugar nenhum: a de número maior fica de fora nesta tela (como no site)
+    var sobra = Object.keys(xs).map(Number).filter(function (i) { return lis[i]._bate > 0.15; }).sort(function (a, b) { return b - a; })[0];
+    if (sobra != null) {
+      lis[sobra].classList.add("is-vazio");
+      lis[sobra].setAttribute("data-sem-lugar", "");
+      delete xs[sobra];
+      lados(tela, lis, xs, tipo);
+    }
+  }
+
+  /* ---------- Etiqueta escolhida para marcar o ponto ---------- */
+  function escolher(i, rolar) {
+    atual = Math.max(0, Math.min(N - 1, i));
+    ets.forEach(function (li, j) { li.classList.toggle("is-escolhida", j === atual); });
+    botoes.forEach(function (b, j) { b.setAttribute("aria-pressed", j === atual ? "true" : "false"); });
+    $$("[data-capa-qual]", raiz).forEach(function (b) { b.textContent = atual + 1; });
+    if (alvo) alvo.setAttribute("aria-label", "Foto do produto. Toque (ou use as setas do teclado) para mover o ponto da etiqueta " + (atual + 1) + ".");
+    desenhar();
+    if (rolar && alvo) {
+      var r = alvo.getBoundingClientRect();
+      if (r.top < 70 || r.bottom > window.innerHeight) alvo.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      alvo.focus({ preventScroll: true });
+    }
+  }
+
+  /* ---------- Transparência do recorte: o ponto está em cima do produto? ---------- */
+  var mapa = null;   // { n, d: alfa }
+  function lerMapa(img) {
+    mapa = null;
+    try {
+      var n = 60, c = document.createElement("canvas");
+      c.width = n; c.height = n;
+      var ctx = c.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0, n, n);
+      var px = ctx.getImageData(0, 0, n, n).data, d = new Uint8Array(n * n);
+      for (var k = 0; k < n * n; k++) d[k] = px[k * 4 + 3];
+      mapa = { n: n, d: d };
+    } catch (e) { /* sem canvas: segue sem conferir */ }
+  }
+  function cheio(i, j) { return !!mapa && i >= 0 && j >= 0 && i < mapa.n && j < mapa.n && mapa.d[j * mapa.n + i] > 120; }
+  function noProduto(x, y) {
+    if (!mapa) return true;
+    return cheio(Math.floor(x / 100 * mapa.n), Math.floor(y / 100 * mapa.n));
+  }
+  // Ponto mais perto, de preferência no meio do produto (longe da borda)
+  function puxar(x, y) {
+    if (!mapa) return [x, y];
+    var n = mapa.n, ax = x / 100 * n - 0.5, ay = y / 100 * n - 0.5, melhor = null;
+    var dentro = function (i, j) { return cheio(i, j) && cheio(i + 1, j) && cheio(i - 1, j) && cheio(i, j + 1) && cheio(i, j - 1); };
+    if (dentro(Math.round(ax), Math.round(ay))) return [x, y];
+    [dentro, cheio].some(function (ok) {
+      for (var j = 0; j < n; j++) for (var i = 0; i < n; i++) {
+        if (!ok(i, j)) continue;
+        var dd = (i - ax) * (i - ax) + (j - ay) * (j - ay);
+        if (!melhor || dd < melhor[0]) melhor = [dd, i, j];
+      }
+      return !!melhor;
+    });
+    return melhor ? [Math.round((melhor[1] + 0.5) / n * 1000) / 10, Math.round((melhor[2] + 0.5) / n * 1000) / 10] : [x, y];
+  }
+
+  /* ---------- Marcar o ponto: toque, mouse (arrastar) e teclado ---------- */
+  function colocar(x, y, anunciar) {
+    x = Math.round(Math.max(0, Math.min(100, x)) * 10) / 10;
+    y = Math.round(Math.max(0, Math.min(100, y)) * 10) / 10;
+    campo(atual, "x").value = texto(x);
+    campo(atual, "y").value = texto(y);
+    campo(atual, "y").dispatchEvent(new Event("input", { bubbles: true }));
+    if (!anunciar) return;
+    var p = valores()[atual];
+    if (!noProduto(x, y)) avisar("O ponto da etiqueta " + (atual + 1) + " ficou fora do produto (num pedaço transparente da foto). Toque em cima da parte de que a etiqueta fala.", true);
+    else avisar("Ponto da etiqueta " + (atual + 1) + (p.rotulo ? " (" + p.rotulo + ")" : "") + " marcado: " + texto(x) + "% da esquerda, " + texto(y) + "% de cima." + (vazio(p) ? " Escreva o texto dela para ela aparecer." : ""));
+  }
+  function naFoto(e, onde) {
+    var img = $("img", onde), r = img.getBoundingClientRect();
+    return [(e.clientX - r.left) / r.width * 100, (e.clientY - r.top) / r.height * 100];
+  }
+  // Toque e mouse nas duas prévias (os mesmos % da foto): no celular, a prévia "No celular" é a maior
+  alvos.forEach(function (el) {
+    var toque = null, mouse = false;
+    el.addEventListener("pointerdown", function (e) {
+      if (e.button) return;
+      if (e.pointerType === "touch") { toque = { id: e.pointerId, x: e.clientX, y: e.clientY }; return; }
+      e.preventDefault();
+      mouse = true;
+      try { el.setPointerCapture(e.pointerId); } catch (er) { /* navegador antigo */ }
+      if (el === alvo) alvo.focus({ preventScroll: true });
+      var p = naFoto(e, el); colocar(p[0], p[1], false);
+    });
+    el.addEventListener("pointermove", function (e) { if (mouse) { var p = naFoto(e, el); colocar(p[0], p[1], false); } });
+    el.addEventListener("pointerup", function (e) {
+      if (mouse) { mouse = false; var p = naFoto(e, el); colocar(p[0], p[1], true); return; }
+      // Toque: só conta se o dedo não arrastou (arrastar é rolar a página)
+      if (toque && toque.id === e.pointerId && Math.abs(e.clientX - toque.x) < 10 && Math.abs(e.clientY - toque.y) < 10) {
+        var q = naFoto(e, el); colocar(q[0], q[1], true);
+      }
+      toque = null;
+    });
+    el.addEventListener("pointercancel", function () { toque = null; mouse = false; });
+  });
+  if (alvo) {
+    alvo.tabIndex = 0;
+    alvo.setAttribute("role", "group");
+    alvo.addEventListener("keydown", function (e) {
+      if (/^[1-4]$/.test(e.key) && +e.key <= N) { e.preventDefault(); escolher(+e.key - 1, false); return; }
+      var passo = e.shiftKey ? 5 : 0.5, d = { ArrowLeft: [-passo, 0], ArrowRight: [passo, 0], ArrowUp: [0, -passo], ArrowDown: [0, passo] }[e.key];
+      if (!d) return;
+      e.preventDefault();
+      var p = valores()[atual], x = num(p.x), y = num(p.y);
+      colocar((x == null ? 50 : x) + d[0], (y == null ? 50 : y) + d[1], true);
+    });
+  }
+  botoes.forEach(function (b, i) {
+    b.hidden = false;
+    b.addEventListener("click", function () { escolher(i, true); avisar("Toque na foto do produto (em qualquer uma das duas prévias), no lugar de que a etiqueta " + (i + 1) + " fala. Com o mouse, dá para arrastar; no teclado, use as setas."); });
+  });
+  ets.forEach(function (li, i) { li.addEventListener("focusin", function (e) { if (!e.target.matches("[data-capa-marcar]") && atual !== i) escolher(i, false); }); });
+  $$("[data-capa-dica]", raiz).forEach(function (d) { d.hidden = false; });
+
+  /* ---------- Trocar de produto: foto, etiquetas da ficha e legenda na hora ---------- */
+  function preencher(d) {
+    if (form.elements.texto) form.elements.texto.value = d.texto || "";
+    for (var i = 0; i < N; i++) {
+      var p = (d.pontos || [])[i] || {};
+      ["rotulo", "valor", "detalhe", "x", "y"].forEach(function (k) {
+        campo(i, k).value = p[k] == null ? "" : (k === "x" || k === "y") ? texto(p[k]) : String(p[k]);
+      });
+    }
+  }
+  function carregou(img, puxarPontos) {
+    lerMapa(img);
+    if (puxarPontos && mapa) {
+      for (var i = 0; i < N; i++) {
+        var x = num(campo(i, "x").value), y = num(campo(i, "y").value);
+        if (x == null || y == null) continue;
+        var q = puxar(x, y);
+        campo(i, "x").value = texto(q[0]); campo(i, "y").value = texto(q[1]);
+      }
+    }
+    desenhar();
+  }
+  var imgAlvo = alvo && $("img", alvo);
+  if (imgAlvo) {
+    if (imgAlvo.complete && imgAlvo.naturalWidth) carregou(imgAlvo, false);
+    else imgAlvo.addEventListener("load", function () { carregou(imgAlvo, false); }, { once: true });
+  }
+  if (sel) {
+    var trocar = $("[data-capa-trocar]", raiz);
+    if (trocar) trocar.hidden = true;
+    sel.addEventListener("change", function () {
+      guardado[idAtual] = { texto: form.elements.texto ? form.elements.texto.value : "", pontos: valores() };
+      var op = sel.options[sel.selectedIndex], id = op.value, volta = guardado[id], sug = null;
+      try { sug = JSON.parse(op.getAttribute("data-sug") || "null"); } catch (e) { sug = null; }
+      preencher(volta || sug || { texto: "", pontos: [] });
+      idAtual = id;
+      var puxarPontos = !volta && !op.hasAttribute("data-original");
+      telas.forEach(function (tela) {
+        var img = $("[data-capa-img]", tela);
+        img.width = +op.getAttribute("data-w") || 900;
+        img.height = +op.getAttribute("data-h") || 600;
+        if (img === imgAlvo) img.addEventListener("load", function () { carregou(img, puxarPontos); }, { once: true });
+        img.src = op.getAttribute("data-url");
+      });
+      escolher(0, false);
+      var fora = op.getAttribute("data-fora");
+      if (fora) avisar("Esse produto " + fora + ": ele não pode ficar na capa. Escolha outro da lista.", true);
+      else if (volta) avisar("Voltaram as etiquetas que você tinha escrito para " + op.textContent.trim() + ".");
+      else avisar("Etiquetas preenchidas com a ficha de " + op.textContent.trim().replace(/ \(capa original\)$/, "") + ". Confira os textos e toque na foto para acertar cada ponto.");
+    });
+  }
+  raiz.addEventListener("input", function (e) { if (e.target.closest("[data-capa-et]") || e.target === form.elements.texto) desenhar(); });
+
+  /* ---------- Voltar para a capa original: confirmação na janela do painel ---------- */
+  function confirmar(txt, ok, tit) {
+    var dlg = $("[data-dialogo]");
+    return new Promise(function (resolve) {
+      if (!dlg || typeof dlg.showModal !== "function") { resolve(window.confirm(txt)); return; }
+      var bOk = $("[data-dialogo-ok]", dlg);
+      dlg.classList.remove("dialogo--ok");
+      bOk.classList.remove("btn--verde"); bOk.classList.add("btn--perigo");
+      $("[data-dialogo-txt]", dlg).textContent = txt;
+      $("[data-dialogo-tit]", dlg).textContent = tit;
+      bOk.textContent = ok;
+      dlg.returnValue = "";
+      dlg.addEventListener("close", function fim() { dlg.removeEventListener("close", fim); resolve(dlg.returnValue === "sim"); });
+      dlg.showModal();
+      bOk.focus();
+    });
+  }
+  var bOrig = $("[data-capa-original]", form);
+  if (bOrig) bOrig.addEventListener("click", function (e) {
+    e.preventDefault();
+    confirmar(bOrig.getAttribute("data-confirmar-txt"), "Voltar para a capa original", "Voltar para a capa original?").then(function (sim) {
+      if (!sim) return;
+      [["original", "1"], ["confirmado", "1"]].forEach(function (kv) {
+        var h = document.createElement("input");
+        h.type = "hidden"; h.name = kv[0]; h.value = kv[1];
+        form.appendChild(h);
+      });
+      if (form.requestSubmit) form.requestSubmit(); else form.submit();
+    });
+  });
+
+  // Tela mudou de largura: as etiquetas podem ter de trocar de lado
+  if ("ResizeObserver" in window) { var ro = new ResizeObserver(function () { desenhar(); }); escalas.forEach(function (t) { ro.observe(t); }); }
+  else window.addEventListener("resize", desenhar);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(desenhar);
+  escolher(0, false);
 })();

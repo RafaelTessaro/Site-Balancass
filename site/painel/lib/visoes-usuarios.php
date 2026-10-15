@@ -54,15 +54,24 @@ function telaConta(string $erro = ''): void
     $comAcesso = count($usuarios) - $desativados;   // desativado não tem acesso
     $recuperar = $admin ? arquivosRecuperacao() : [];
     $pacotes = $admin ? idsPacotes() : [];   // atualizações do catálogo no servidor (painel/pacotes/)
+    $categorias = null;   // para o resumo do cartão Categorias (só administradores)
+    if ($admin) { try { $categorias = lerCatalogo()['categorias']; } catch (ErroCatalogo $e) { $categorias = null; } }
 
-    pagina('Conta', static function () use ($eu, $admin, $minhas, $comAcesso, $esperando, $desativados, $recuperar, $erro, $pacotes): void {
+    pagina('Conta', static function () use ($eu, $admin, $minhas, $comAcesso, $esperando, $desativados, $recuperar, $erro, $pacotes, $categorias): void {
         cabecalhoPagina('Acesso', 'Conta',
             '<span>Você entrou como <b>' . e($eu['nome']) . '</b></span><span>usuário <b>' . e($eu['usuario']) . '</b></span><span>' . e(PAPEIS[$eu['papel']]) . '</span>',
             $admin ? '<a class="btn btn--linha btn--p" href="' . e(link_('usuario-editar', ['u' => $eu['usuario']])) . '">' . icone('edit') . 'Mudar o meu nome</a>' : '');
         if ($recuperar): ?>
   <div class="aviso aviso--erro aviso--fixo" role="alert"><?= icone('alert') ?><p><b>O arquivo <?= e(implode(' e ', $recuperar)) ?> ainda está na pasta privada.</b> Enquanto ele existir, quem não está logado vê a tela “Recuperar acesso” em vez da tela de entrar. Apague pelo Gerenciador de Arquivos do cPanel (pasta <code><?= e(ondeFicaPastaPrivada()) ?></code>).</p></div>
-<?php   endif;
-        if ($admin): ?>
+<?php   endif; ?>
+  <section class="hub" aria-labelledby="hub-site-tit">
+    <h2 class="secao-tit" id="hub-site-tit">Site</h2>
+    <div class="hub__cartoes">
+      <?php cartaoProcurados();   /* todos (lib/visoes-procurados.php) */ ?>
+      <?php if ($admin) cartaoCategorias($categorias);   /* só administradores (lib/visoes-categorias.php) */ ?>
+    </div>
+  </section>
+<?php   if ($admin): ?>
   <section class="hub" aria-labelledby="hub-tit">
     <h2 class="secao-tit" id="hub-tit">Administração</h2>
     <div class="hub__cartoes<?= $pacotes ? ' hub__cartoes--4' : '' ?>">
@@ -91,7 +100,7 @@ function telaConta(string $erro = ''): void
     </div>
   </section>
 <?php   else: ?>
-  <p class="dica dica--papel"><?= icone('user') ?><span>Você é <b>Editor</b>: cuida dos produtos e dos clientes (logos). Usuários, dados da empresa e cópias de segurança ficam com os administradores do painel.</span></p>
+  <p class="dica dica--papel"><?= icone('user') ?><span>Você é <b>Editor</b>: cuida dos produtos e dos clientes (logos). Usuários, categorias, dados da empresa (e a capa do site) e cópias de segurança ficam com os administradores do painel.</span></p>
 <?php   endif; ?>
   <h2 class="secao-tit">Minha conta</h2>
   <div class="conta">
@@ -164,8 +173,8 @@ function telaUsuarios(array $lista): void
             count($lista) < MAX_USUARIOS ? '<a class="btn btn--verde" href="' . e(link_('usuario-novo')) . '">' . icone('plus') . 'Novo usuário</a>' : '');
         ?>
   <div class="papeis-info">
-    <p><span class="selo selo--admin">Administrador</span> Faz tudo: produtos, clientes, dados da empresa, cópias de segurança, usuários e as atividades de todos.</p>
-    <p><span class="selo selo--editor">Editor</span> Cadastra e edita produtos (foto, estoque, destaque, ordem, excluir) e os logos de clientes. Não mexe em usuários, dados da empresa nem cópias de segurança.</p>
+    <p><span class="selo selo--admin">Administrador</span> Faz tudo: produtos, clientes, categorias, dados da empresa e capa do site, cópias de segurança, usuários e as atividades de todos.</p>
+    <p><span class="selo selo--editor">Editor</span> Cadastra e edita produtos (foto, estoque, destaque, ordem, excluir, um ou vários de uma vez) e os logos de clientes, e vê os Mais procurados. Não mexe em categorias, usuários, dados da empresa (nem na capa do site) nem cópias de segurança.</p>
   </div>
   <ol class="usuarios" role="list">
     <?php foreach ($lista as $u) itemUsuario($u); ?>
@@ -279,8 +288,8 @@ function telaUsuarioForm(?array $atual, array $v = [], array $erros = []): void
 function opcaoPapel(string $papel, string $marcado, bool $travado): void
 {
     $itens = $papel === 'admin'
-        ? [['sim', 'Tudo o que o editor faz'], ['sim', 'Dados da empresa (telefone, horário, aviso no site…)'], ['sim', 'Usuários, atividades de todos e cópias de segurança']]
-        : [['sim', 'Produtos: cadastrar, editar, foto, estoque, destaque, ordem, excluir'], ['sim', 'Clientes (logos do site)'], ['nao', 'Usuários, dados da empresa e cópias de segurança']];
+        ? [['sim', 'Tudo o que o editor faz'], ['sim', 'Dados da empresa e capa do site (telefone, horário, aviso no site…)'], ['sim', 'Categorias, usuários, atividades de todos e cópias de segurança']]
+        : [['sim', 'Produtos: cadastrar, editar, foto, estoque, destaque, ordem, excluir (um ou vários de uma vez)'], ['sim', 'Clientes (logos do site) e Mais procurados'], ['nao', 'Categorias, usuários, dados da empresa e cópias de segurança']];
     ?>
         <label class="papel">
           <input type="radio" name="papel" value="<?= e($papel) ?>"<?= $marcado === $papel ? ' checked' : '' ?><?= $travado ? ' disabled' : ' required' ?>>

@@ -17,6 +17,25 @@ Options -Indexes
   </IfModule>
 </FilesMatch>
 
+# Contagem anônima do site ("Mais procurados"): contar.php é o ÚNICO endereço do painel que
+# os visitantes do site usam (o site manda para ele um aviso a cada página vista e a cada clique
+# no WhatsApp). Ele continua aberto mesmo que esta pasta ganhe senha no cPanel ("Privacidade de
+# diretórios"), senão todo visitante veria uma janela pedindo senha. Nunca fica em cache: o
+# próprio contar.php manda "Cache-Control: no-store" e aqui o cache de 1 hora da raiz não vale.
+<Files "contar.php">
+  <IfModule mod_authz_core.c>
+    Require all granted
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Satisfy Any
+    Order allow,deny
+    Allow from all
+  </IfModule>
+  <IfModule mod_expires.c>
+    ExpiresActive Off
+  </IfModule>
+</Files>
+
 # O painel nunca pode ser aberto dentro de outro site nem aparecer no Google
 # (o index.php também manda esses cabeçalhos; aqui vale para CSS/JS/imagens)
 <IfModule mod_headers.c>

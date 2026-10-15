@@ -15,10 +15,15 @@ require __DIR__ . '/lib/imagens.php';
 require __DIR__ . '/lib/clientes.php';
 require __DIR__ . '/lib/ajustes.php';
 require __DIR__ . '/lib/pacotes.php';
+require __DIR__ . '/lib/estatisticas.php';   // Mais procurados (contagem anônima do site; contar.php usa o mesmo)
+require __DIR__ . '/lib/lote.php';
+require __DIR__ . '/lib/categorias.php';     // depois do lote.php: usa moverProdutosPara()
 require __DIR__ . '/lib/visoes.php';
 require __DIR__ . '/lib/visoes-usuarios.php';
 require __DIR__ . '/lib/visoes-empresa.php';
 require __DIR__ . '/lib/visoes-pacotes.php';
+require __DIR__ . '/lib/visoes-procurados.php';
+require __DIR__ . '/lib/visoes-categorias.php';
 
 iniciarPainel();
 
@@ -43,16 +48,19 @@ iniciarSessao();
 migrarContaAntiga();   // config.php antigo (um usuário só) → usuarios.php, sem derrubar a sessão aberta
 verificarSessao();
 
-const ACOES = ['lista', 'novo', 'editar', 'salvar', 'rapido', 'mover', 'excluir', 'desfazer', 'copias', 'restaurar', 'conta', 'senha', 'sair', 'entrar', 'instalar', 'sessao',
+const ACOES = ['lista', 'novo', 'editar', 'salvar', 'rapido', 'mover', 'excluir', 'desfazer', 'lote', 'lote-desfazer', 'copias', 'restaurar', 'conta', 'senha', 'sair', 'entrar', 'instalar', 'sessao',
     'clientes', 'cliente-novo', 'cliente-editar', 'cliente-salvar', 'cliente-mover', 'cliente-excluir', 'cliente-desfazer',
     'usuarios', 'usuario-novo', 'usuario-editar', 'usuario-salvar', 'usuario-senha', 'usuario-ativo', 'usuario-excluir', 'senha-temporaria',
-    'atividades', 'criar-senha', 'recuperar', 'empresa', 'empresa-salvar', 'pacote', 'pacote-aplicar', 'pacote-dispensar'];
-const SO_POST = ['salvar', 'rapido', 'mover', 'desfazer', 'senha', 'sair', 'cliente-salvar', 'cliente-mover', 'cliente-desfazer', 'usuario-salvar', 'empresa-salvar',
-    'pacote-aplicar', 'pacote-dispensar'];
+    'atividades', 'criar-senha', 'recuperar', 'empresa', 'empresa-salvar', 'pacote', 'pacote-aplicar', 'pacote-dispensar',
+    'procurados', 'categorias', 'categoria-salvar', 'categoria-mover', 'categoria-excluir', 'subcategoria-salvar', 'subcategoria-mover', 'subcategoria-excluir'];
+const SO_POST = ['salvar', 'rapido', 'mover', 'desfazer', 'lote', 'lote-desfazer', 'senha', 'sair', 'cliente-salvar', 'cliente-mover', 'cliente-desfazer', 'usuario-salvar', 'empresa-salvar',
+    'pacote-aplicar', 'pacote-dispensar', 'categoria-salvar', 'categoria-mover', 'subcategoria-salvar', 'subcategoria-mover'];
 // Só administradores. O papel é lido do usuarios.php a cada pedido (mudou, vale na hora).
 // Vale para GET, POST e fetch (JSON): editor recebe 403.
 const SO_ADMIN = ['usuarios', 'usuario-novo', 'usuario-editar', 'usuario-salvar', 'usuario-senha', 'usuario-ativo', 'usuario-excluir', 'senha-temporaria',
-    'atividades', 'copias', 'restaurar', 'empresa', 'empresa-salvar', 'pacote', 'pacote-aplicar', 'pacote-dispensar'];
+    'atividades', 'copias', 'restaurar', 'empresa', 'empresa-salvar', 'pacote', 'pacote-aplicar', 'pacote-dispensar',
+    'categorias', 'categoria-salvar', 'categoria-mover', 'categoria-excluir', 'subcategoria-salvar', 'subcategoria-mover', 'subcategoria-excluir'];
+// "Mais procurados" (procurados) fica de fora: todos os usuários veem (só leitura)
 // Enquanto a pessoa não cria a própria senha (entrou com a senha temporária), só estas
 const SEM_SENHA_PROPRIA = ['criar-senha', 'sair'];
 $acao = is_string($_GET['a'] ?? null) && in_array($_GET['a'], ACOES, true) ? $_GET['a'] : 'lista';
@@ -153,6 +161,11 @@ if (usuarioLogado() === null) {
         } elseif ($acao === 'empresa-salvar') {
             $_SESSION['voltar'] = link_('empresa');
             avisar('Sua sessão terminou e os dados da empresa não foram salvos. Entre de novo e salve outra vez.', 'info');
+        } elseif (str_starts_with($acao, 'categoria') || str_starts_with($acao, 'subcategoria')) {
+            $_SESSION['voltar'] = link_('categorias');
+            avisar('Sua sessão terminou e nada mudou nas categorias. Entre de novo e repita a mudança.', 'info');
+        } elseif ($acao === 'lote') {
+            avisar('Sua sessão terminou e nada mudou nos produtos marcados. Entre de novo, marque os produtos e repita a ação.', 'info');
         } elseif ($acao === 'pacote-aplicar') {
             $idPac = is_string($_POST['id'] ?? null) && preg_match(RE_PACOTE, $_POST['id']) ? $_POST['id'] : '';
             $_SESSION['voltar'] = $idPac !== '' ? link_('pacote', ['id' => $idPac]) : link_('pacote');
@@ -220,6 +233,9 @@ try {
         'mover'     => acaoMover(),
         'excluir'   => acaoExcluir($post),
         'desfazer'  => acaoDesfazer(),
+        // Edição em lote (vários produtos de uma vez): lib/lote.php
+        'lote'          => acaoLote(),
+        'lote-desfazer' => acaoLoteDesfazer(),
         'copias'    => acaoCopias(),
         'restaurar' => acaoRestaurar($post),
         'conta'     => telaConta(),
@@ -242,6 +258,16 @@ try {
         'pacote'           => acaoPacote(),
         'pacote-aplicar'   => acaoPacoteAplicar(),
         'pacote-dispensar' => acaoPacoteDispensar(),
+        // Mais procurados (contagem anônima do site): lib/estatisticas.php e lib/visoes-procurados.php
+        'procurados'       => acaoProcurados(),
+        // Categorias e subcategorias (só administradores): lib/categorias.php e lib/visoes-categorias.php
+        'categorias'           => acaoCategorias(),
+        'categoria-salvar'     => acaoCategoriaSalvar(),
+        'categoria-mover'      => acaoCategoriaMover(),
+        'categoria-excluir'    => acaoCategoriaExcluir($post),
+        'subcategoria-salvar'  => acaoSubcategoriaSalvar(),
+        'subcategoria-mover'   => acaoSubcategoriaMover(),
+        'subcategoria-excluir' => acaoSubcategoriaExcluir($post),
     };
 } catch (ErroCatalogo $e) {
     if (pedidoJson()) responderJson(['ok' => false, 'msg' => 'Não consegui ler o catálogo: ' . $e->getMessage()], 500);
@@ -265,7 +291,7 @@ exit;
 function destinoSeguro($url): ?string
 {
     if (!is_string($url) || strlen($url) > 300) return null;
-    if (!preg_match('/^index\.php\?a=(novo|editar|copias|conta|clientes|cliente-novo|cliente-editar|usuarios|usuario-novo|usuario-editar|atividades|empresa|pacote)(&[A-Za-z0-9_=%.\-]*)*$/', $url)) return null;
+    if (!preg_match('/^index\.php\?a=(novo|editar|copias|conta|clientes|cliente-novo|cliente-editar|usuarios|usuario-novo|usuario-editar|atividades|empresa|pacote|procurados|categorias)(&[A-Za-z0-9_=%.\-]*)*$/', $url)) return null;
     return $url;
 }
 
@@ -275,18 +301,22 @@ function nomeDaArea(string $acao): string
     if (str_starts_with($acao, 'usuario') || $acao === 'senha-temporaria') return 'Usuários';
     if (str_starts_with($acao, 'empresa')) return 'Empresa';
     if (str_starts_with($acao, 'pacote')) return 'Atualização do catálogo';
+    if (str_starts_with($acao, 'categoria') || str_starts_with($acao, 'subcategoria')) return 'Categorias';
     return ['copias' => 'Cópias de segurança', 'restaurar' => 'Cópias de segurança (restaurar)', 'atividades' => 'Atividades'][$acao] ?? $acao;
 }
 
 /** Para onde volta quando uma ação dá erro (ErroUsuario): a lista da mesma área. */
 function voltarDepoisDoErro(string $acao): string
 {
+    // Ação em lote: a mesma lista, no modo "Selecionar", com os mesmos marcados (lib/lote.php)
+    if ($acao === 'lote') return linkLista(filtroDoPost(), ['sel' => '1']);
     if (str_starts_with($acao, 'cliente')) return link_('clientes');
     if (str_starts_with($acao, 'usuario') || $acao === 'usuarios' || $acao === 'senha-temporaria') return link_('usuarios');
     if ($acao === 'criar-senha') return link_('criar-senha');
     if (in_array($acao, ['conta', 'senha', 'atividades'], true)) return link_('conta');
     if (in_array($acao, ['copias', 'restaurar'], true)) return link_('copias');
     if (str_starts_with($acao, 'empresa')) return link_('empresa');
+    if (str_starts_with($acao, 'categoria') || str_starts_with($acao, 'subcategoria')) return link_('categorias');
     if (str_starts_with($acao, 'pacote')) {
         // De volta à mesma atualização (se o id for de uma que existe); senão, à lista delas
         $id = $_POST['id'] ?? $_GET['id'] ?? '';
@@ -314,8 +344,14 @@ function filtroDaUrl(array $categorias): array
 function acaoLista(): void
 {
     $cat = catalogoOuTela();
+    // Edição em lote: ?sel=1 abre a lista no modo "Selecionar" (&todos=1 marca todos os desta lista);
+    // depois de uma ação em lote sem JavaScript, os mesmos produtos voltam marcados (uma vez)
+    $sel = ($_GET['sel'] ?? '') === '1';
+    $marcados = $sel && is_array($_SESSION['loteMarcados'] ?? null) ? array_values(array_filter($_SESSION['loteMarcados'], 'is_string')) : [];
+    unset($_SESSION['loteMarcados']);
+    $lote = ['sel' => $sel, 'todos' => $sel && ($_GET['todos'] ?? '') === '1', 'marcados' => $marcados];
     // Atualização do catálogo pronta (painel/pacotes/): aviso no topo, só para administradores
-    telaLista($cat, filtroDaUrl($cat['categorias']), ehAdmin() ? avisosDePacotes($cat) : []);
+    telaLista($cat, filtroDaUrl($cat['categorias']), ehAdmin() ? avisosDePacotes($cat) : [], $lote);
 }
 
 function produtoDaUrl(array $cat, string $fonte = 'get'): array
@@ -385,13 +421,13 @@ function acaoSalvar(): void
                 if ($p['id'] !== $original && indicePorId($prods, $p['id']) !== null) throw new ErroUsuario('Já existe outro produto com o código “' . $p['id'] . '”.');
                 if (($prods[$i]['categoria'] ?? '') !== $p['categoria']) {
                     array_splice($prods, $i, 1);
-                    array_splice($prods, posicaoNaCategoria($prods, $p['categoria']), 0, [$p]);
+                    array_splice($prods, posicaoNaCategoria($prods, $p['categoria'], $c['categorias']), 0, [$p]);
                 } else {
                     $prods[$i] = $p;
                 }
             } else {
                 if (indicePorId($prods, $p['id']) !== null) throw new ErroUsuario('Já existe um produto com o código “' . $p['id'] . '”.');
-                array_splice($prods, posicaoNaCategoria($prods, $p['categoria']), 0, [$p]);
+                array_splice($prods, posicaoNaCategoria($prods, $p['categoria'], $c['categorias']), 0, [$p]);
             }
             return ['produtos' => $prods];
         });
@@ -406,11 +442,12 @@ function acaoSalvar(): void
     }
     $oculto = ($p['visivel'] ?? true) === false ? ' Ele está oculto: não aparece no site.' : '';
     $extra = ['rascunho' => $atual ? 'editar:' . $original : 'novo'] + ($oculto ? [] : linkSite($p['id']));
-    avisar('“' . $nome . '” ' . ($atual ? 'foi salvo.' : 'foi cadastrado.') . $oculto . ($oculto ? '' : fraseHome($p, $novoCat['produtos'])), 'ok', $extra);
+    avisar('“' . $nome . '” ' . ($atual ? 'foi salvo.' : 'foi cadastrado.') . $oculto . ($oculto ? '' : fraseHome($p, $novoCat['produtos']))
+        . (!empty($novoCat['capaFoto']) ? ' A foto nova já vale na capa do site: confira se os pontos das etiquetas continuam no lugar certo em Empresa → Capa do site.' : ''), 'ok', $extra);
     // A capa do site aponta para o código antigo
     $capa = produtoCapa();
     if ($original !== null && $original === $capa && ($mudouCodigo || $oculto)) {
-        avisar('Atenção: a capa do site usa este produto pelo código “' . $capa . '”. A foto da capa continua lá, mas o link dela agora abre o catálogo com o aviso “produto fora do catálogo”. '
+        avisar('Atenção: a capa do site usa este produto pelo código “' . $capa . '”. ' . fraseCapaFora(true) . ' '
             . ($mudouCodigo ? 'Para corrigir, volte o código para “' . $capa . '”.' : 'Para corrigir, deixe o produto visível no site.'), 'erro');
     }
     redirecionar('index.php#p-' . $p['id']);
@@ -429,7 +466,9 @@ function acaoRapido(): void
     } else {
         throw new ErroUsuario('Ação inválida.');
     }
-    $p = produtoDaUrl(catalogoOuTela(), 'post');
+    $catAntes = catalogoOuTela();
+    $p = produtoDaUrl($catAntes, 'post');
+    $capaAntes = capaEfetiva($catAntes['produtos']);   // o produto que o topo do site mostra de fato
     $nome = nomeCompleto($p);
     $atual = $campo === 'visivel' ? (($p['visivel'] ?? true) !== false) : ($campo === 'destaque' ? !empty($p['destaque']) : ($p['estoque'] ?? 'consulte'));
     $txt = match ($campo) {
@@ -458,8 +497,8 @@ function acaoRapido(): void
     $depois = $p;
     $depois[$campo] = $novo;
     if ($campo === 'destaque' && $novo) $txt .= fraseHome($depois, $produtos);
-    if ($campo === 'visivel' && !$novo && (string) $p['id'] === produtoCapa()) {
-        $txt .= ' Atenção: é o produto da capa. A foto da capa continua lá, mas o link dela agora abre o catálogo com o aviso “produto fora do catálogo”.';
+    if ($campo === 'visivel' && !$novo && (string) $p['id'] === $capaAntes) {
+        $txt .= ' Atenção: é o produto da capa. ' . fraseCapaFora(true, $capaAntes, $produtos);
     }
     if (pedidoJson()) responderJson(['ok' => true, 'msg' => $txt, 'id' => $p['id'], 'campo' => $campo, 'valor' => is_bool($novo) ? ($novo ? '1' : '0') : $novo, 'home' => destaquesDaHome($produtos)]);
     avisar($txt);
@@ -491,9 +530,10 @@ function acaoExcluir(bool $post): void
     $cat = catalogoOuTela();
     $p = produtoDaUrl($cat, $post ? 'post' : 'get');
     $nome = nomeCompleto($p);
-    $ehCapa = (string) $p['id'] === produtoCapa();
+    $capa = capaEfetiva($cat['produtos']);   // o produto que o topo do site mostra de fato
+    $ehCapa = (string) $p['id'] === $capa;
     if (!$post || ($_POST['confirmado'] ?? '') !== '1') {
-        telaConfirmar('Excluir produto?', textoExcluir($p),
+        telaConfirmar('Excluir produto?', textoExcluir($p, $capa),
             link_('excluir'), ['id' => (string) $p['id']], 'Sim, excluir', 'index.php#p-' . $p['id']);
         return;
     }
@@ -506,7 +546,7 @@ function acaoExcluir(bool $post): void
             return ['produtos' => $prods];
         });
     guardarDesfazer($r['copia']);
-    avisar('“' . $nome . '” foi excluído.' . ($ehCapa ? ' Atenção: era o produto da capa; a foto da capa continua, mas o link dela agora abre o catálogo com o aviso “produto fora do catálogo”.' : ''), 'ok',
+    avisar('“' . $nome . '” foi excluído.' . ($ehCapa ? ' Atenção: era o produto da capa. ' . fraseCapaFora(true, $capa, $r['produtos']) : ''), 'ok',
         ['form' => ['acao' => link_('desfazer'), 'campos' => ['copia' => $r['copia'], 'id' => (string) $p['id']], 'botao' => 'Desfazer']]);
     redirecionar('index.php');
 }
@@ -522,31 +562,23 @@ function acaoDesfazer(): void
     if ($i === null) throw new ErroUsuario('Esse produto não está nessa cópia de segurança.');
     $p = $copia['produtos'][$i];
     $nome = nomeCompleto($p);
+    $troca = '';
     alterarCatalogo(['tipo' => 'desfazer', 'antes' => 'Antes de: trazer de volta “' . $nome . '”', 'feito' => 'Trouxe de volta “' . $nome . '”', 'alvo' => $id, 'alvoNome' => $nome],
-        static function (array $c) use ($copia, $i, $p, $nome): array {
-            $prods = $c['produtos'];
-            if (indicePorId($prods, (string) $p['id']) !== null) throw new ErroUsuario('“' . $nome . '” já está no catálogo.');
+        static function (array $c) use ($copia, $p, $nome, &$troca): array {
+            if (indicePorId($c['produtos'], (string) $p['id']) !== null) throw new ErroUsuario('“' . $nome . '” já está no catálogo.');
             if (!categoriaPorId($c['categorias'], (string) ($p['categoria'] ?? ''))) throw new ErroUsuario('A categoria de “' . $nome . '” não existe mais. Use Cópias de segurança → Restaurar.');
-            // Mesmo lugar: logo depois do vizinho de cima (da mesma categoria) que ainda existir…
-            $pos = null;
-            for ($j = $i - 1; $j >= 0 && $pos === null; $j--) {
-                if (($copia['produtos'][$j]['categoria'] ?? '') !== $p['categoria']) continue;
-                $k = indicePorId($prods, (string) $copia['produtos'][$j]['id']);
-                if ($k !== null) $pos = $k + 1;
-            }
-            // …ou logo antes do vizinho de baixo; senão, no fim da categoria
-            for ($j = $i + 1; $j < count($copia['produtos']) && $pos === null; $j++) {
-                if (($copia['produtos'][$j]['categoria'] ?? '') !== $p['categoria']) continue;
-                $k = indicePorId($prods, (string) $copia['produtos'][$j]['id']);
-                if ($k !== null) $pos = $k;
-            }
-            array_splice($prods, $pos ?? posicaoNaCategoria($prods, (string) $p['categoria']), 0, [$p]);
-            return ['produtos' => $prods];
+            // Mesmo lugar: logo depois do vizinho de cima (da mesma categoria) que ainda existir, ou logo
+            // antes do de baixo; senão, no fim da categoria. Subcategoria renomeada ou apagada depois da
+            // exclusão: volta na nova (ou na primeira da categoria), com aviso (lib/lote.php, o mesmo do Desfazer em lote)
+            [$prods, , , $trocas] = devolverProdutos($c['produtos'], $c['categorias'], $copia['produtos'], [(string) $p['id']], (array) $copia['categorias']);
+            $troca = (string) ($trocas[(string) $p['id']] ?? '');
+            return ['produtos' => $prods] + ($troca !== '' ? ['feito' => 'Trouxe de volta “' . $nome . '”; ' . $troca] : []);
         });
     unset($_SESSION['desfazer'][$nomeCopia]);
     $semFoto = is_string($p['imagem'] ?? null) && $p['imagem'] !== '' && !@is_file(pastaFotos() . '/' . $p['imagem']);
-    avisar('“' . $nome . '” voltou para o catálogo, no mesmo lugar' . ($semFoto ? '. A foto não estava mais na lixeira: escolha outra em Editar.' : ' e com a foto.'), $semFoto ? 'erro' : 'ok',
-        ($p['visivel'] ?? true) === false ? [] : linkSite($id));
+    avisar('“' . $nome . '” voltou para o catálogo, no mesmo lugar' . ($semFoto ? '. A foto não estava mais na lixeira: escolha outra em Editar.' : ' e com a foto.')
+        . ($troca !== '' ? ' Atenção: ' . $troca . '. Confira o tipo dele em Editar.' : ''), $semFoto || $troca !== '' ? 'erro' : 'ok',
+        $troca !== '' ? ['link' => link_('editar', ['id' => $id]), 'textoLink' => 'Editar'] : (($p['visivel'] ?? true) === false ? [] : linkSite($id)));
     redirecionar('index.php#p-' . $id);
 }
 

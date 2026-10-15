@@ -4,9 +4,11 @@
    Lê e grava compartilhado/dados/ajustes.js (window.AJUSTES = {JSON};),
    que guarda SÓ o que foi mudado pelo painel: contato, endereço e mapa,
    horário, feriados, aviso no site, Google e redes, equipe, depoimentos
-   e marcas. Chave ausente = o site usa compartilhado/dados/empresa.js
+   e marcas, e o produto da capa do site (a balança grande do topo da
+   página inicial). Chave ausente = o site usa compartilhado/dados/empresa.js
    (os valores originais, que vêm com as atualizações do site; o
    ajustes.js nunca vem nelas, então o que o painel gravou continua).
+   Sem a chave "capa", a capa é a Toledo Prix 7E do index.html.
    Cada parte da tela grava as suas chaves inteiras; antes, o painel
    guarda uma cópia do arquivo (copias/ajustes-*.php, com as mesmas
    regras de retenção das outras cópias). Telas em lib/visoes-empresa.php.
@@ -27,13 +29,15 @@ const SECOES_AJUSTES = [
     'equipe'      => 'Equipe',
     'depoimentos' => 'Depoimentos',
     'marcas'      => 'Marcas',
+    'capa'        => 'Capa do site',
 ];
 const CHAVES_DA_SECAO = [
     'contato' => ['contato'], 'endereco' => ['endereco', 'mapa'], 'horario' => ['horario'], 'feriados' => ['feriados'],
     'aviso' => ['aviso'], 'google' => ['google', 'redes'], 'equipe' => ['equipe'], 'depoimentos' => ['depoimentos'], 'marcas' => ['marcas'],
+    'capa' => ['capa'],
 ];
 // Ordem das chaves no arquivo (chaves desconhecidas são mantidas, depois destas)
-const ORDEM_AJUSTES = ['versao', 'contato', 'endereco', 'mapa', 'horario', 'feriados', 'aviso', 'google', 'redes', 'equipe', 'depoimentos', 'marcas'];
+const ORDEM_AJUSTES = ['versao', 'contato', 'endereco', 'mapa', 'horario', 'feriados', 'aviso', 'google', 'redes', 'equipe', 'depoimentos', 'marcas', 'capa'];
 // Cópias de segurança dos ajustes (mesmos grupos de RE_COPIA: data, hora, tipo)
 const RE_COPIA_AJUSTES = '/^ajustes-(\d{8})-(\d{6})-\d{3}-[0-9a-f]{4}-([a-z]{3,12})\.php$/';
 const LIMITES_AJUSTES = [
@@ -42,6 +46,7 @@ const LIMITES_AJUSTES = [
     'equipe' => 12, 'equipe_nome' => 60, 'equipe_cargo' => 60, 'equipe_texto' => 220,
     'depoimentos' => 12, 'dep_texto' => 300, 'dep_nome' => 60, 'dep_empresa' => 60,
     'marcas' => 40, 'marca' => 30,
+    'capa_pontos' => 4, 'capa_rotulo' => 14, 'capa_valor' => 24, 'capa_detalhe' => 32, 'capa_texto' => 48,
 ];
 // Campos de cada pessoa da equipe / depoimento: campo => [rótulo, limite, obrigatório, sem < >]
 const CAMPOS_LISTA = [
@@ -116,9 +121,9 @@ function cabecalhoAjustes(string $linhaData): string
         '   Arquivo GERADO pelo painel de administração do site (área Empresa).',
         '   Guarda só o que foi mudado pelo painel: contato, endereço e mapa,',
         '   horário, feriados, aviso no site, Google e redes sociais, equipe,',
-        '   depoimentos e marcas. Para mudar, use o painel: ele confere os',
-        '   dados e guarda cópias de segurança. O que for editado à mão aqui',
-        '   some na próxima vez que o painel salvar.',
+        '   depoimentos, marcas e o produto da capa. Para mudar, use o painel:',
+        '   ele confere os dados e guarda cópias de segurança. O que for',
+        '   editado à mão aqui some na próxima vez que o painel salvar.',
         '',
         '   Formato: JSON puro dentro de window.AJUSTES. Toda chave é opcional:',
         '   a que não estiver aqui vem de compartilhado/dados/empresa.js (os',
@@ -377,6 +382,8 @@ function valoresAtuais(array $aj, array $p): array
     foreach (['equipe', 'depoimentos', 'marcas'] as $k) {
         $out[$k] = is_array($aj[$k] ?? null) && $aj[$k] ? $aj[$k] : (is_array($p[$k] ?? null) ? array_values($p[$k]) : []);
     }
+    // Capa: null = a Prix 7E do index.html (CAPA_ORIGINAL)
+    $out['capa'] = is_array($aj['capa'] ?? null) ? $aj['capa'] : null;
     return $out;
 }
 
@@ -712,6 +719,7 @@ function conferirAjustes(array $d): ?string
         if (!is_array($d['marcas']) || !array_is_list($d['marcas']) || count($d['marcas']) > LIMITES_AJUSTES['marcas']) return $parte('marcas');
         foreach ($d['marcas'] as $m) if (!$str($m) || tamanho($m) > LIMITES_AJUSTES['marca']) return $parte('marcas');
     }
+    if (array_key_exists('capa', $d) && ($e = conferirCapa($d['capa'])) !== null) return $e;
     return null;
 }
 
@@ -761,6 +769,8 @@ function valoresDaTela(string $secao, array $atual): array
             return ['itens' => $itens];
         case 'marcas':
             return ['texto' => implode("\n", array_map('strval', $atual['marcas']))];
+        case 'capa':
+            return capaParaTela($atual['capa'] ?? CAPA_ORIGINAL);
     }
     return [];
 }
@@ -822,6 +832,7 @@ function formularioSecao(string $secao, array $post, array $atual): array
         'google'      => formGoogle($post),
         'equipe', 'depoimentos' => formLista($secao, $post),
         'marcas'      => formMarcas($post),
+        'capa'        => formCapa($post),
     };
 }
 
@@ -1069,6 +1080,532 @@ function formMarcas(array $post): array
     if (!$erros && !$marcas) $erros['marcas'] = 'Marcas: escreva pelo menos uma (uma por linha).';
     if (!$erros && count($marcas) > LIMITES_AJUSTES['marcas']) $erros['marcas'] = 'Marcas: no máximo ' . LIMITES_AJUSTES['marcas'] . ' (há ' . count($marcas) . ').';
     return ['v' => $v, 'valor' => $erros ? null : ['marcas' => $marcas], 'erros' => $erros, 'nota' => ''];
+}
+
+/* ------------------------------------------------------------------
+   Capa do site: a balança grande do topo da página inicial
+   ajustes.js → "capa": {"produto": "<código>", "pontos": [{"rotulo",
+   "valor", "detalhe", "x", "y"}, … até 4], "texto": "<legenda>",
+   "largura": px, "altura": px}. x/y = onde fica o ponto da etiqueta,
+   em % da caixa da foto (recorte), com uma casa decimal; largura e
+   altura = tamanho do recorte quando os pontos foram marcados (o site
+   reserva o espaço certo antes de a foto chegar). Sem a chave, o site
+   mostra a Toledo Prix 7E do index.html (CAPA_ORIGINAL). Quem desenha:
+   linha-verde/js/home-v3.js (mesma validação em compartilhado/js/balancas.js).
+   ------------------------------------------------------------------ */
+// A capa que vem no index.html (textos e pontos de linha-verde/index-3.html e css/home-v3.css)
+const CAPA_ORIGINAL = [
+    'produto' => 'toledo-prix-7e',
+    'pontos' => [
+        ['rotulo' => 'Capacidade', 'valor' => '32 kg multifaixa', 'detalhe' => 'divisão de 2 g até 6 kg', 'x' => 33, 'y' => 21],
+        ['rotulo' => 'Teclado', 'valor' => '60 teclas rápidas', 'detalhe' => 'acesso a até 180 itens', 'x' => 25, 'y' => 61],
+        ['rotulo' => 'Impressão', 'valor' => 'Térmica integrada', 'detalhe' => 'até 100 mm/s', 'x' => 66, 'y' => 47],
+        ['rotulo' => 'Etiqueta', 'valor' => 'GS1 QR Code', 'detalhe' => 'com validade e lote', 'x' => 64, 'y' => 66],
+    ],
+    'texto' => 'balança computadora com impressora integrada',
+];
+const NOME_CAPA_ORIGINAL = 'Toledo Prix 7E';
+// Onde ficam os pontos quando a pessoa troca de produto (1 e 3 em cima, 2 e 4 embaixo); o painel
+// puxa cada um para o pedaço do recorte que não é transparente mais perto daqui
+const CAPA_PONTOS_PADRAO = [[32, 24], [30, 70], [68, 32], [66, 72]];
+// Palavras que não terminam bem uma etiqueta cortada ("Largura de" → "Largura")
+const CAPA_PALAVRAS_SOLTAS = ['a', 'o', 'as', 'os', 'e', 'de', 'da', 'do', 'das', 'dos', 'em', 'no', 'na', 'nos', 'nas', 'com', 'sem', 'para', 'por', 'pelo', 'pela', 'via', 'ao', 'à', 'ou', 'até', 'que'];
+
+/** Código do produto da capa escolhido no painel (ajustes.js "capa"), ou null: sem a chave (ou com o ajustes.js ilegível), vale a Prix 7E do index.html. */
+function produtoCapaAjustes(): ?string
+{
+    try {
+        $id = lerAjustes()['ajustes']['capa']['produto'] ?? null;
+    } catch (Throwable $t) {
+        return null;
+    }
+    return is_string($id) && preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $id) ? $id : null;
+}
+
+/** Fotos antigas que já têm recorte sem o campo "recorte" no produto: a lista RECORTES de compartilhado/js/balancas.js. */
+function recortesDoSite(): array
+{
+    static $lista = null;
+    if ($lista !== null) return $lista;
+    $lista = [];
+    $js = @file_get_contents(cfg('compartilhado') . '/js/balancas.js');
+    if (is_string($js) && preg_match('/\bRECORTES\s*=\s*\[([^\]]*)\]/', $js, $m) && preg_match_all('/"([^"\\\\]{1,140})"/', $m[1], $mm)) $lista = $mm[1];
+    return $lista;
+}
+
+/** Arquivo do recorte (fundo transparente) que o site usa para o produto, ou null. Mesma regra de BC.temRecorte(). */
+function recorteDoProduto(array $p): ?string
+{
+    $arq = null;
+    if (is_string($p['recorte'] ?? null) && $p['recorte'] !== '') $arq = $p['recorte'];
+    elseif (is_string($p['imagem'] ?? null) && in_array($p['imagem'], recortesDoSite(), true)) $arq = $p['imagem'];
+    if ($arq === null || !preg_match(RE_ARQUIVO_FOTO, $arq) || !@is_file(pastaFotos('recortes') . '/' . $arq)) return null;
+    return $arq;
+}
+
+/**
+ * A capa guarda o arquivo e o tamanho da foto do produto escolhido (o <head> da página inicial já começa
+ * a baixá-la antes dos scripts). Quando a foto desse produto muda — foto nova no formulário, cópia
+ * restaurada, atualização do catálogo —, acompanha: senão cada visita pediria o arquivo antigo, que foi
+ * para a lixeira. Só arquivo e tamanho mudam; textos e pontos ficam. Devolve o nome do produto quando
+ * atualizou (para o aviso "confira os pontos"), ou null.
+ */
+function sincronizarFotoDaCapa(array $produtos): ?string
+{
+    $capa = lerAjustes()['ajustes']['capa'] ?? null;
+    if (!is_array($capa) || !is_string($capa['produto'] ?? null)) return null;
+    $p = null;
+    foreach ($produtos as $x) if (($x['id'] ?? null) === $capa['produto']) { $p = $x; break; }
+    if ($p === null) return null;   // saiu do catálogo: o site já volta sozinho para a capa original
+    $arq = recorteDoProduto($p);
+    $tam = $arq !== null ? @getimagesize(pastaFotos('recortes') . '/' . $arq) : false;
+    $novo = $arq === null ? [] : ['recorte' => $arq] + (is_array($tam) ? ['largura' => (int) $tam[0], 'altura' => (int) $tam[1]] : []);
+    $atual = array_intersect_key($capa, array_flip(['recorte', 'largura', 'altura']));
+    ksort($atual); ksort($novo);
+    if ($atual === $novo) return null;
+    $nome = nomeCompleto($p);
+    alterarAjustes(['tipo' => 'capa', 'secao' => 'capa', 'antes' => 'Antes de: atualizar a foto da capa do site',
+        'feito' => 'Atualizou a foto da capa do site (' . $nome . ')'],
+        static function (array $aj) use ($capa, $novo): array {
+            if (!is_array($aj['capa'] ?? null) || ($aj['capa']['produto'] ?? null) !== $capa['produto']) return $aj;   // a capa mudou nesse meio-tempo
+            $c = $aj['capa'];
+            unset($c['recorte'], $c['largura'], $c['altura']);
+            $aj['capa'] = $c + $novo;
+            return $aj;
+        });
+    return $nome;
+}
+
+/** Por que o produto não pode ficar na capa ('' = pode): precisa estar no site e ter recorte. */
+function motivoForaDaCapa(?array $p): string
+{
+    if ($p === null) return 'não está mais no catálogo';
+    if (($p['visivel'] ?? true) === false) return 'está escondido do site';
+    if (recorteDoProduto($p) === null) return 'não tem foto com fundo transparente (recorte)';
+    return '';
+}
+
+/**
+ * Produtos do catálogo para a parte "Capa do site": [código => item], na ordem do catálogo.
+ * item: id, nome (marca + nome), marca, modelo, categoria, ok (pode ir para a capa), motivo,
+ * arquivo e url do recorte (ou da foto), largura e altura da foto, sugestao (etiquetas e legenda).
+ */
+function infoCapa(): array
+{
+    static $info = null;
+    if ($info !== null) return $info;
+    try {
+        $cat = lerCatalogo();
+    } catch (Throwable $t) {
+        return $info = ['produtos' => [], 'categorias' => [], 'lista' => [], 'erro' => $t->getMessage()];
+    }
+    $lista = [];
+    foreach ($cat['produtos'] as $p) {
+        if (!is_string($p['id'] ?? null)) continue;
+        $arq = recorteDoProduto($p);
+        $tipo = $arq !== null ? 'recortes' : 'produtos';
+        $arqFoto = $arq ?? (is_string($p['imagem'] ?? null) && preg_match(RE_ARQUIVO_FOTO, $p['imagem']) ? $p['imagem'] : '');
+        $tam = $arqFoto !== '' ? @getimagesize(pastaFotos($tipo) . '/' . $arqFoto) : false;
+        $motivo = motivoForaDaCapa($p);
+        $lista[$p['id']] = [
+            'id' => $p['id'], 'nome' => nomeCompleto($p), 'marca' => (string) ($p['marca'] ?? ''), 'modelo' => (string) ($p['nome'] ?? ''),
+            'categoria' => (string) ($p['categoria'] ?? ''), 'ok' => $motivo === '', 'motivo' => $motivo,
+            'arquivo' => $arqFoto, 'caminho' => $arqFoto !== '' ? pastaFotos($tipo) . '/' . $arqFoto : '',
+            'url' => $arqFoto !== '' ? urlFoto($arqFoto, $tipo) : '',
+            'largura' => is_array($tam) ? (int) $tam[0] : 0, 'altura' => is_array($tam) ? (int) $tam[1] : 0,
+            'sugestao' => sugestaoCapa($p),
+        ];
+    }
+    return $info = ['produtos' => $lista, 'categorias' => $cat['categorias'], 'lista' => $cat['produtos'], 'erro' => null];
+}
+
+/** Nome do produto para avisos e registro ("Toledo Prix 7T"); o código, se ele saiu do catálogo. */
+function nomeProdutoCapa(string $id): string
+{
+    if ($id === CAPA_ORIGINAL['produto']) return NOME_CAPA_ORIGINAL;
+    return infoCapa()['produtos'][$id]['nome'] ?? '“' . $id . '”';
+}
+
+/** Corta um texto em até $max letras sem quebrar palavra nem terminar em "de", "com", "ou"… (nem num número solto, se cortou). */
+function cortarCapa(string $t, int $max): string
+{
+    $t = trim(preg_replace('/\s+/u', ' ', $t) ?? '', " \t,;:.-–—/");
+    $out = explode(' ', $t);
+    $cortou = tamanho($t) > $max;
+    if ($cortou) {
+        $out = [];
+        foreach (explode(' ', $t) as $w) {
+            if (tamanho(implode(' ', array_merge($out, [$w]))) > $max) break;
+            $out[] = $w;
+        }
+        // Cortou no meio de "… de alta [resolução]": sai o pedaço que ficou pela metade ("LCD extragrande")
+        if (count($out) >= 3 && in_array(mb_strtolower($out[count($out) - 2], 'UTF-8'), CAPA_PALAVRAS_SOLTAS, true)) array_splice($out, -2);
+    }
+    while ($out) {
+        $ult = mb_strtolower(trim((string) end($out), ',;:'), 'UTF-8');
+        if (!in_array($ult, CAPA_PALAVRAS_SOLTAS, true) && !($cortou && preg_match('/^\d+(?:[.,]\d+)?$/', $ult))) break;
+        array_pop($out);
+    }
+    $r = trim(implode(' ', $out), " ,;:-–—/");
+    return $r !== '' ? $r : cortar($t, $max);
+}
+
+/** Junta partes ("2 g até 6 kg", "5 g até 15 kg"…) enquanto couberem em $max letras. Nem a primeira cabe: '' . */
+function juntarAte(array $partes, string $sep, int $max): string
+{
+    $out = '';
+    foreach ($partes as $x) {
+        $x = trim($x);
+        if ($x === '') continue;
+        $novo = $out === '' ? $x : $out . $sep . $x;
+        if (tamanho($novo) > $max) break;
+        $out = $novo;
+    }
+    return $out;
+}
+
+/**
+ * O maior começo de $t que cabe em $max letras terminando num separador natural (vírgula, ponto e vírgula,
+ * parêntese, " com ", " e ", " ou ", " de ", " para "): "estrutura em aço carbono e tampa em aço inox" → "estrutura em aço carbono".
+ * O resto vai fora (nunca vira outro pedaço da etiqueta). null = nenhum começo assim cabe.
+ */
+function cortarNoSeparador(string $t, int $max): ?string
+{
+    $t = trim($t);
+    if (tamanho($t) <= $max) return $t;
+    $melhor = null;
+    if (preg_match_all('/\s*[,;(]|\s(?:com|e|ou|de|para)\s/u', $t, $m, PREG_OFFSET_CAPTURE)) {
+        foreach ($m[0] as [, $pos]) {
+            $antes = trim(substr($t, 0, $pos), " \t,;:-–—/");
+            if ($antes === '' || tamanho($antes) > $max) break;   // os separadores vêm em ordem: daqui em diante só fica maior
+            $ult = mb_strtolower((string) preg_replace('/^.*\s/u', '', $antes), 'UTF-8');
+            if (!in_array($ult, CAPA_PALAVRAS_SOLTAS, true)) $melhor = $antes;
+        }
+    }
+    return $melhor;
+}
+
+/**
+ * Uma linha da ficha técnica → [rótulo, valor, detalhe] curtos para a etiqueta da capa.
+ * "Capacidade" + "32 kg (2 g até 6 kg / 5 g até 15 kg / 10 g até 32 kg)" → Capacidade · 32 kg · 2 g até 6 kg / 5 g até 15 kg.
+ * É só um ponto de partida: a pessoa revê tudo antes de salvar.
+ */
+function etiquetaDaFicha(string $nome, string $valor): array
+{
+    $max = LIMITES_AJUSTES;
+    $nome = trim(preg_split('~\s+/\s+|\s*\(~u', $nome)[0] ?? $nome);
+    $rotulo = cortarCapa($nome, $max['capa_rotulo']);
+    $valor = trim(preg_replace('/\s+/u', ' ', $valor) ?? '');
+    // Principal = antes do "(" ou do ";"; o que vem entre parênteses ou depois vira o detalhe
+    if (preg_match('/^([^(;]+?)\s*\((.+?)\)\s*[;,]?\s*(.*)$/u', $valor, $m)) { $principal = $m[1]; $resto = trim($m[2] . ($m[3] !== '' ? '; ' . $m[3] : '')); }
+    elseif (preg_match('/^([^;]+?)\s*;\s*(.*)$/u', $valor, $m)) { $principal = $m[1]; $resto = $m[2]; }
+    else { $principal = $valor; $resto = ''; }
+    if (tamanho($principal) > $max['capa_valor']) {
+        // Pedaços inteiros (até a vírgula) que cabem; as frases depois da vírgula vão para a frente do detalhe.
+        // Nem a primeira frase cabe: corta num separador natural (" com ", " e "…) ou numa palavra inteira, e o
+        // resto sai (uma frase nunca fica dividida entre o destaque e o detalhe)
+        $partes = preg_split('/,\s+/u', $principal) ?: [$principal];
+        $curto = juntarAte($partes, ', ', $max['capa_valor']);
+        if ($curto !== '') {
+            $sobra = str_starts_with($principal, $curto) ? trim(substr($principal, strlen($curto)), ' ,;') : '';
+            $resto = trim($sobra . ($sobra !== '' && $resto !== '' ? '; ' : '') . $resto);
+        } else {
+            $curto = cortarNoSeparador((string) $partes[0], $max['capa_valor']) ?? cortarCapa((string) $partes[0], $max['capa_valor']);
+        }
+        $principal = $curto;
+    }
+    $detalhe = '';
+    if ($resto !== '') {
+        $primeiro = trim(preg_split('/\s*;\s*/u', $resto)[0] ?? $resto);
+        if (tamanho($primeiro) <= $max['capa_detalhe']) $detalhe = $primeiro;
+        else {
+            // Partes inteiras que cabem ("2 g até 6 kg / 5 g até 15 kg"); senão, até um separador natural; senão, vazio
+            $sep = str_contains($primeiro, ' / ') ? ' / ' : ', ';
+            $detalhe = juntarAte(explode($sep, $primeiro), $sep, $max['capa_detalhe']);
+            if ($detalhe === '') $detalhe = cortarNoSeparador($primeiro, $max['capa_detalhe']) ?? '';
+        }
+    }
+    return [$rotulo, $principal, $detalhe];
+}
+
+/** Legenda sugerida ("Marca Nome — <texto>"): o começo do resumo do produto, curto e com inicial minúscula. */
+function legendaSugerida(array $p): string
+{
+    $r = trim((string) ($p['resumo'] ?? ''));
+    $r = preg_split('/\s*(?:[,;.(]|\s—\s|\s–\s|\scom\s|\sque\s|\spara\s)\s*/u', $r)[0] ?? '';
+    $r = cortarCapa($r, LIMITES_AJUSTES['capa_texto']);
+    // "Etiquetadora de 32 kg" → "etiquetadora de 32 kg" (siglas e marcas ficam como estão)
+    if (preg_match('/^(\p{Lu})(\p{Ll})/u', $r)) $r = mb_strtolower(mb_substr($r, 0, 1, 'UTF-8'), 'UTF-8') . mb_substr($r, 1, null, 'UTF-8');
+    return $r;
+}
+
+/** Etiquetas sugeridas para um produto: as 4 primeiras linhas da ficha, nos pontos padrão; e a legenda. */
+function sugestaoCapa(array $p): array
+{
+    $pontos = [];
+    foreach (array_slice(is_array($p['especificacoes'] ?? null) ? $p['especificacoes'] : [], 0, LIMITES_AJUSTES['capa_pontos']) as $i => $s) {
+        if (!is_array($s) || !is_string($s[0] ?? null) || !is_string($s[1] ?? null)) continue;
+        [$r, $v, $d] = etiquetaDaFicha($s[0], $s[1]);
+        if ($r === '' || $v === '') continue;
+        $pontos[] = ['rotulo' => $r, 'valor' => $v, 'detalhe' => $d, 'x' => CAPA_PONTOS_PADRAO[count($pontos)][0], 'y' => CAPA_PONTOS_PADRAO[count($pontos)][1]];
+    }
+    return ['pontos' => $pontos, 'texto' => legendaSugerida($p)];
+}
+
+/**
+ * Puxa os pontos para cima do produto: para cada ponto, o lugar não transparente do recorte mais
+ * perto dele (de preferência longe da borda). Sem GD ou sem o arquivo, devolve os pontos como vieram.
+ */
+function pontosNoProduto(string $caminho, array $pontos): array
+{
+    if ($caminho === '' || !@is_file($caminho)) return $pontos;
+    $ext = strtolower(pathinfo($caminho, PATHINFO_EXTENSION));
+    $abrir = ['webp' => 'imagecreatefromwebp', 'png' => 'imagecreatefrompng', 'jpg' => 'imagecreatefromjpeg', 'jpeg' => 'imagecreatefromjpeg'][$ext] ?? null;
+    if ($abrir === null || !function_exists($abrir) || $ext === 'jpg' || $ext === 'jpeg') return $pontos;   // JPEG não tem transparência
+    $img = @$abrir($caminho);
+    if (!$img) return $pontos;
+    $w = imagesx($img); $h = imagesy($img); $n = 40;
+    $cheio = [];
+    for ($j = 0; $j < $n; $j++) for ($i = 0; $i < $n; $i++) {
+        $a = (imagecolorat($img, (int) min($w - 1, ($i + .5) * $w / $n), (int) min($h - 1, ($j + .5) * $h / $n)) >> 24) & 0x7F;
+        $cheio[$j][$i] = $a < 60;
+    }
+    $dentro = static function (int $i, int $j) use ($cheio, $n): bool {
+        foreach ([[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]] as [$di, $dj]) if (!($cheio[$j + $dj][$i + $di] ?? false)) return false;
+        return true;
+    };
+    foreach ($pontos as $k => $pt) {
+        $alvo = [(float) $pt['x'] / 100 * $n - .5, (float) $pt['y'] / 100 * $n - .5];
+        if (($cheio[(int) round($alvo[1])][(int) round($alvo[0])] ?? false) && $dentro((int) round($alvo[0]), (int) round($alvo[1]))) continue;
+        $melhor = null;
+        foreach ([true, false] as $exigeDentro) {
+            for ($j = 0; $j < $n; $j++) for ($i = 0; $i < $n; $i++) {
+                if (!$cheio[$j][$i] || ($exigeDentro && !$dentro($i, $j))) continue;
+                $d = ($i - $alvo[0]) ** 2 + ($j - $alvo[1]) ** 2;
+                if ($melhor === null || $d < $melhor[0]) $melhor = [$d, $i, $j];
+            }
+            if ($melhor !== null) break;
+        }
+        if ($melhor !== null) {
+            $pontos[$k]['x'] = numeroCapa(($melhor[1] + .5) / $n * 100);
+            $pontos[$k]['y'] = numeroCapa(($melhor[2] + .5) / $n * 100);
+        }
+    }
+    imagedestroy($img);
+    return $pontos;
+}
+
+/** Posição com uma casa decimal; número inteiro sem ".0" (o JSON grava 33 e 33.5, e lê de volta igual). */
+function numeroCapa(float $v)
+{
+    $v = round(max(0.0, min(100.0, $v)), 1);
+    return abs($v - round($v)) < 1e-9 ? (int) round($v) : $v;
+}
+
+/** "33", "33.5", "33,5" → número de 0 a 100 com uma casa; null = inválido. */
+function posicaoDoForm(string $t)
+{
+    $t = str_replace(',', '.', trim($t));
+    if (!preg_match('/^\d{1,3}(?:\.\d+)?$/', $t) || (float) $t > 100) return null;
+    return numeroCapa((float) $t);
+}
+
+/** Confere a parte "capa" lida do arquivo (null = no formato). Campos desconhecidos dentro dela passam. */
+function conferirCapa($c): ?string
+{
+    $erro = 'a parte “capa” não está no formato do painel';
+    if (!is_array($c) || ($c && array_is_list($c))) return $erro;
+    if (!is_string($c['produto'] ?? null) || !preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $c['produto']) || strlen($c['produto']) > 80) return 'o produto da capa não está certo';
+    $pontos = $c['pontos'] ?? [];
+    if (!is_array($pontos) || !array_is_list($pontos) || count($pontos) > LIMITES_AJUSTES['capa_pontos']) return $erro;
+    foreach ($pontos as $pt) {
+        if (!is_array($pt)) return $erro;
+        foreach (['rotulo' => 'capa_rotulo', 'valor' => 'capa_valor', 'detalhe' => 'capa_detalhe'] as $k => $lim) {
+            if (array_key_exists($k, $pt) && (!is_string($pt[$k]) || tamanho($pt[$k]) > LIMITES_AJUSTES[$lim])) return 'uma etiqueta da capa não está certa';
+        }
+        foreach (['x', 'y'] as $k) if (!(is_int($pt[$k] ?? null) || is_float($pt[$k] ?? null)) || $pt[$k] < 0 || $pt[$k] > 100) return 'a posição de uma etiqueta da capa não está certa';
+    }
+    if (array_key_exists('texto', $c) && (!is_string($c['texto']) || tamanho($c['texto']) > LIMITES_AJUSTES['capa_texto'])) return 'a legenda da capa não está certa';
+    foreach (['largura', 'altura'] as $k) if (array_key_exists($k, $c) && (!is_int($c[$k]) || $c[$k] < 1 || $c[$k] > 20000)) return 'o tamanho da foto da capa não está certo';
+    if (array_key_exists('recorte', $c) && (!is_string($c['recorte']) || !preg_match(RE_ARQUIVO_FOTO, $c['recorte']))) return 'a foto da capa não está certa';
+    return null;
+}
+
+/**
+ * A capa original (a Prix 7E do index.html) pode ficar no topo? '' = pode; senão, por quê. O site mostra a foto
+ * do HTML de qualquer jeito (sem precisar de recorte no catálogo), mas o link da legenda abre a ficha dela.
+ */
+function motivoOriginalForaDoSite(array $produtos): string
+{
+    $id = produtoCapaHtml();
+    foreach ($produtos as $p) if (($p['id'] ?? null) === $id) return ($p['visivel'] ?? true) === false ? 'está escondida do site' : '';
+    return 'não está mais no catálogo';
+}
+
+/**
+ * Aviso quando a capa do topo da página inicial não está certa, ou null:
+ * - a escolhida no painel não pode aparecer (o site mostra a Prix 7E no lugar);
+ * - e/ou a capa original (a Prix 7E) saiu do site: o topo mostra a foto dela com o link para um produto fora do catálogo.
+ * $produtos = catálogo atual (lista de produtos); $id = código escolhido (null: lê o ajustes.js).
+ * Para a lista de Produtos e a parte "Capa do site" da área Empresa.
+ */
+function problemaCapa(array $produtos, ?string $id = null): ?string
+{
+    $id ??= produtoCapaAjustes();
+    $orig = motivoOriginalForaDoSite($produtos);
+    $quebrada = 'a página inicial mostra a foto dela com o link para um produto fora do catálogo';
+    if ($id === null || $id === produtoCapaHtml()) {
+        if ($orig === '') return null;
+        return 'A capa do site, a ' . NOME_CAPA_ORIGINAL . ', ' . $orig . ': ' . $quebrada . '. '
+            . ($orig === 'está escondida do site' ? 'Mostre a ' . NOME_CAPA_ORIGINAL . ' no site de novo ou escolha' : 'Escolha') . ' outro produto em Empresa → Capa do site.';
+    }
+    $p = null;
+    foreach ($produtos as $x) if (($x['id'] ?? null) === $id) { $p = $x; break; }
+    $motivo = motivoForaDaCapa($p);
+    if ($motivo === '') return null;
+    $nome = $p !== null ? nomeCompleto($p) : '“' . $id . '”';
+    $saida = match (true) {
+        $p === null => 'Escolha outro produto',
+        ($p['visivel'] ?? true) === false => 'Mostre o produto no site de novo ou escolha outro',
+        default => 'Ponha de novo uma foto com fundo transparente no produto ou escolha outro',
+    };
+    if ($orig !== '') {
+        return 'O produto escolhido para a capa do site, ' . $nome . ', ' . $motivo . ', e a ' . NOME_CAPA_ORIGINAL . ' (a capa original, que entraria no lugar) também '
+            . $orig . ': ' . $quebrada . '. ' . $saida . ' em Empresa → Capa do site.';
+    }
+    return 'O produto escolhido para a capa do site, ' . $nome . ', ' . $motivo . ': por isso a página inicial mostra a '
+        . NOME_CAPA_ORIGINAL . ' (a capa original) no lugar. ' . $saida . ' em Empresa → Capa do site.';
+}
+
+/**
+ * O que acontece com a capa quando o produto que está nela sai do site (esconder, excluir, mudar o código).
+ * $feito = false: "vai…" (confirmação, antes); true: "agora…" (aviso, depois). $quem = o produto que sai (o que
+ * o topo do site mostra de fato: capaEfetiva(); vazio = produtoCapa()). $produtos = catálogo de agora (ou de
+ * depois, com $feito), para saber se a capa original ainda pode entrar no lugar (null: lê o catálogo).
+ */
+function fraseCapaFora(bool $feito = false, string $quem = '', ?array $produtos = null): string
+{
+    $id = produtoCapaAjustes();
+    $quem = $quem !== '' ? $quem : produtoCapa();
+    if ($id !== null && $id !== CAPA_ORIGINAL['produto'] && $quem === $id) {
+        if ($produtos === null) {
+            try { $produtos = lerCatalogo()['produtos']; } catch (Throwable $t) { $produtos = []; }
+        }
+        $orig = $produtos ? motivoOriginalForaDoSite($produtos) : '';
+        if ($orig !== '') {
+            return ($feito ? 'A página inicial voltou para a ' : 'A página inicial volta para a ') . NOME_CAPA_ORIGINAL . ' (a capa original), mas ela também ' . $orig
+                . ': o topo ' . ($feito ? 'mostra' : 'vai mostrar') . ' a foto dela com o link para um produto fora do catálogo. Escolha outro produto em Empresa → Capa do site.';
+        }
+        return $feito ? 'A página inicial voltou a mostrar a ' . NOME_CAPA_ORIGINAL . ' (a capa original). Para pôr outro produto na capa, use Empresa → Capa do site.'
+            : 'A página inicial volta a mostrar a ' . NOME_CAPA_ORIGINAL . ' (a capa original) até você escolher outro produto em Empresa → Capa do site.';
+    }
+    return $feito ? 'A foto da capa continua, mas o link dela agora abre o catálogo com o aviso “produto fora do catálogo”. Para pôr outro produto na capa, use Empresa → Capa do site.'
+        : 'A foto da capa continua lá, mas o link dela vai abrir o catálogo com o aviso “produto fora do catálogo”. Para pôr outro produto na capa, use Empresa → Capa do site.';
+}
+
+/** Valores da tela (4 etiquetas, sempre) a partir de uma capa no formato do arquivo. */
+function capaParaTela(array $c): array
+{
+    $pontos = [];
+    for ($i = 0; $i < LIMITES_AJUSTES['capa_pontos']; $i++) {
+        $pt = $c['pontos'][$i] ?? null;
+        $pontos[] = is_array($pt)
+            ? ['rotulo' => (string) ($pt['rotulo'] ?? ''), 'valor' => (string) ($pt['valor'] ?? ''), 'detalhe' => (string) ($pt['detalhe'] ?? ''),
+                'x' => isset($pt['x']) ? (string) $pt['x'] : '', 'y' => isset($pt['y']) ? (string) $pt['y'] : '']
+            : ['rotulo' => '', 'valor' => '', 'detalhe' => '', 'x' => '', 'y' => ''];
+    }
+    return ['produto' => (string) ($c['produto'] ?? ''), 'texto' => (string) ($c['texto'] ?? ''), 'pontos' => $pontos];
+}
+
+/** Etiquetas sugeridas para o produto (pontos já sobre o produto), no formato da tela. */
+function capaSugeridaParaTela(array $item): array
+{
+    $s = $item['sugestao'];
+    return capaParaTela(['produto' => $item['id'], 'texto' => $s['texto'], 'pontos' => pontosNoProduto($item['caminho'], $s['pontos'])]);
+}
+
+function formCapa(array $post): array
+{
+    $info = infoCapa();
+    $v = ['produto' => campoPost($post, 'produto'), 'texto' => campoPost($post, 'texto'), 'pontos' => []];
+    $lin = is_array($post['ponto'] ?? null) ? $post['ponto'] : [];
+    for ($i = 0; $i < LIMITES_AJUSTES['capa_pontos']; $i++) {
+        $l = is_array($lin[$i] ?? null) ? $lin[$i] : [];
+        $pt = [];
+        foreach (['rotulo', 'valor', 'detalhe', 'x', 'y'] as $k) $pt[$k] = cortar(campoPost($l, $k), 80);
+        $v['pontos'][] = $pt;
+    }
+    // "Voltar para a Prix 7E": tira a chave "capa"
+    if (($post['original'] ?? '') === '1') return ['v' => $v, 'valor' => ['capa' => null], 'erros' => [], 'nota' => ''];
+    if ($info['erro'] !== null) return ['v' => $v, 'valor' => null, 'erros' => ['produto' => 'Não consegui ler o catálogo de produtos (' . $info['erro'] . '). Resolva isso em Produtos e tente de novo.'], 'nota' => ''];
+    $item = $info['produtos'][$v['produto']] ?? null;
+    // Ajudante sem JavaScript: "Usar este produto" preenche as etiquetas com a ficha dele (ainda sem gravar)
+    if (($post['trocar'] ?? '') === '1') {
+        if ($item === null || !$item['ok']) return ['v' => $v, 'valor' => null, 'erros' => ['produto' => 'Produto: escolha um produto da lista.'], 'nota' => ''];
+        $nova = $v['produto'] === CAPA_ORIGINAL['produto'] ? capaParaTela(CAPA_ORIGINAL) : capaSugeridaParaTela($item);
+        return ['v' => $nova, 'valor' => null, 'erros' => [], 'nota' => 'As etiquetas foram preenchidas com a ficha de ' . $item['nome'] . ', mas ainda não foram salvas. Confira os textos e a posição de cada ponto e toque em Salvar capa.'];
+    }
+    $erros = [];
+    if ($item === null) $erros['produto'] = 'Produto: escolha um produto da lista.';
+    elseif (!$item['ok']) $erros['produto'] = 'Produto: ' . $item['nome'] . ' ' . $item['motivo'] . '. Escolha outro (ou ' . (str_contains($item['motivo'], 'escondido') ? 'mostre ele no site antes' : 'ponha uma foto com fundo transparente nele antes') . ').';
+    $pontos = [];
+    $vazioDepois = null;
+    foreach ($v['pontos'] as $i => $pt) {
+        $n = $i + 1;
+        if (trim($pt['rotulo'] . $pt['valor'] . $pt['detalhe']) === '') { $vazioDepois ??= $n; continue; }
+        if ($vazioDepois !== null) { $erros['p' . $i . '-rotulo'] = 'Etiqueta ' . $vazioDepois . ' está vazia, mas a ' . $n . ' não: preencha a ' . $vazioDepois . ' ou passe o texto da ' . $n . ' para ela (só as últimas podem ficar vazias).'; continue; }
+        $novo = [];
+        [$novo['rotulo'], $e] = linhaAjuste($pt['rotulo'], 'Etiqueta ' . $n . ', nome', 1, LIMITES_AJUSTES['capa_rotulo'], true); if ($e) $erros['p' . $i . '-rotulo'] = $e;
+        [$novo['valor'], $e] = linhaAjuste($pt['valor'], 'Etiqueta ' . $n . ', destaque', 1, LIMITES_AJUSTES['capa_valor'], true); if ($e) $erros['p' . $i . '-valor'] = $e;
+        [$novo['detalhe'], $e] = linhaAjuste($pt['detalhe'], 'Etiqueta ' . $n . ', detalhe', 0, LIMITES_AJUSTES['capa_detalhe'], true); if ($e) $erros['p' . $i . '-detalhe'] = $e;
+        foreach (['x' => 'da esquerda para a direita', 'y' => 'de cima para baixo'] as $k => $sentido) {
+            $num = posicaoDoForm($pt[$k]);
+            if ($num === null) $erros['p' . $i . '-' . $k] = 'Etiqueta ' . $n . ': marque o ponto tocando na foto (ou escreva a posição ' . $sentido . ', de 0 a 100).';
+            $novo[$k] = $num ?? 0;
+        }
+        $pontos[] = $novo;
+    }
+    [$texto, $e] = linhaAjuste($v['texto'], 'Legenda', 0, LIMITES_AJUSTES['capa_texto'], true);
+    if ($e) $erros['texto'] = $e;
+    if ($erros) return ['v' => $v, 'valor' => null, 'erros' => $erros, 'nota' => ''];
+    $capa = ['produto' => $item['id'], 'pontos' => $pontos, 'texto' => $texto];
+    if ($item['largura'] > 0 && $item['altura'] > 0) $capa += ['largura' => $item['largura'], 'altura' => $item['altura']];
+    // Arquivo do recorte: o <head> do index.html já começa a baixar a foto certa (sem esperar os scripts)
+    if (preg_match(RE_ARQUIVO_FOTO, $item['arquivo'])) $capa['recorte'] = $item['arquivo'];   // produto ok = arquivo é o recorte
+    // Igual à capa que vem no index.html: não precisa da chave (o site mostra a original, do jeito de sempre)
+    if (capaIgualOriginal($capa)) return ['v' => $v, 'valor' => ['capa' => null], 'erros' => [], 'nota' => ''];
+    return ['v' => $v, 'valor' => ['capa' => $capa], 'erros' => [], 'nota' => ''];
+}
+
+function capaIgualOriginal(array $c): bool
+{
+    return ($c['produto'] ?? '') === CAPA_ORIGINAL['produto'] && ($c['texto'] ?? '') === CAPA_ORIGINAL['texto'] && ($c['pontos'] ?? null) == CAPA_ORIGINAL['pontos'];
+}
+
+/** Frase do registro para a capa: "Trocou a capa do site para Toledo Prix 7T", "Mudou as etiquetas da capa do site"… */
+function mudancaCapa(?array $a, ?array $d): string
+{
+    if ($d === null) return 'Voltou a capa do site para a ' . NOME_CAPA_ORIGINAL . ' (a original)';
+    $a ??= CAPA_ORIGINAL;
+    if (($a['produto'] ?? '') !== $d['produto']) return 'Trocou a capa do site para ' . nomeProdutoCapa($d['produto']);
+    $p = [];
+    $ta = array_map(static fn(array $x): array => [$x['rotulo'] ?? '', $x['valor'] ?? '', $x['detalhe'] ?? ''], $a['pontos'] ?? []);
+    $td = array_map(static fn(array $x): array => [$x['rotulo'] ?? '', $x['valor'] ?? '', $x['detalhe'] ?? ''], $d['pontos']);
+    $pa = array_map(static fn(array $x): array => [(float) ($x['x'] ?? 0), (float) ($x['y'] ?? 0)], $a['pontos'] ?? []);
+    $pd = array_map(static fn(array $x): array => [(float) $x['x'], (float) $x['y']], $d['pontos']);
+    if ($ta !== $td) $p[] = 'as etiquetas';
+    if ($pa !== $pd && count($pa) === count($pd)) $p[] = 'a posição dos pontos';
+    if (($a['texto'] ?? '') !== ($d['texto'] ?? '')) $p[] = 'a legenda';
+    return 'Mudou ' . ($p ? juntarFrases($p) : 'a capa') . ' da capa do site (' . nomeProdutoCapa($d['produto']) . ')';
+}
+
+/** Texto da confirmação de "Voltar para a Prix 7E (capa original)". $produtos: para avisar se a Prix 7E saiu do site. */
+function textoVoltarCapaOriginal(array $capa, array $produtos = []): string
+{
+    $orig = $produtos ? motivoOriginalForaDoSite($produtos) : '';
+    return 'A página inicial deixa de mostrar ' . nomeProdutoCapa((string) ($capa['produto'] ?? '')) . ' e volta para a ' . NOME_CAPA_ORIGINAL
+        . ', com as etiquetas de sempre. As etiquetas que você escreveu ficam guardadas na cópia de segurança (aba Empresa em Cópias), se quiser voltar atrás.'
+        . ($orig !== '' ? ' Atenção: a ' . NOME_CAPA_ORIGINAL . ' ' . $orig . ': o topo vai mostrar a foto dela com o link para um produto fora do catálogo.' : '');
 }
 
 /* ------------------------------------------------------------------
@@ -1329,6 +1866,9 @@ function descreverMudancaAjustes(string $secao, array $antes, array $depois, int
             if (!$p && $antes['marcas'] !== $depois['marcas']) $p[] = 'mudou a ordem';
             if ($p) $frase = 'Marcas: ' . juntarFrases($p);
             break;
+        case 'capa':
+            $frase = mudancaCapa($antes['capa'] ?? null, $depois['capa'] ?? null);
+            break;
     }
     if ($frase === '') return 'Alterou “' . SECOES_AJUSTES[$secao] . '”';
     return tamanho($frase) > 290 ? cortar($frase, 289) . '…' : $frase;
@@ -1365,7 +1905,7 @@ function acaoEmpresa(): void
 function linkSiteAjustes(string $secao): array
 {
     $pag = match ($secao) {
-        'equipe' => 'empresa.html#equipe', 'depoimentos', 'google' => 'empresa.html#clientes', 'marcas', 'aviso' => '',
+        'equipe' => 'empresa.html#equipe', 'depoimentos', 'google' => 'empresa.html#clientes', 'marcas', 'aviso', 'capa' => '',
         default => 'contato.html#canais',
     };
     return ['link' => cfg('url_site') . $pag, 'textoLink' => 'Ver no site', 'externo' => true];
@@ -1390,6 +1930,14 @@ function textoSalvoAjustes(string $secao, array $valor, int $saiu = 0): string
         case 'equipe': return $t . 'O site já mostra a equipe nova, na página Empresa.';
         case 'depoimentos': return $t . 'O site já mostra os depoimentos novos.';
         case 'marcas': return $t . 'O site já mostra a faixa de marcas nova.';
+        case 'capa':
+            $c = $valor['capa'] ?? null;
+            if ($c === null) {
+                $orig = motivoOriginalForaDoSite(infoCapa()['lista']);
+                return '“' . SECOES_AJUSTES[$secao] . '” foi salva. A página inicial voltou a mostrar a ' . NOME_CAPA_ORIGINAL . ' (a capa original).'
+                    . ($orig !== '' ? ' Atenção: ela ' . $orig . ', então o link da capa abre um produto fora do catálogo. Escolha outro produto aqui.' : '');
+            }
+            return '“' . SECOES_AJUSTES[$secao] . '” foi salva. A página inicial já mostra ' . nomeProdutoCapa($c['produto']) . ' no topo, com as etiquetas novas.';
     }
     return $t;
 }
@@ -1407,6 +1955,12 @@ function acaoEmpresaSalvar(): void
         return;
     }
     $ctx = contextoEmpresa($dados);
+    // "Voltar para a Prix 7E" sem JavaScript: confirma numa tela própria (com JavaScript, numa janela)
+    if ($secao === 'capa' && ($_POST['original'] ?? '') === '1' && ($_POST['confirmado'] ?? '') !== '1' && $ctx['atual']['capa'] !== null) {
+        telaConfirmar('Voltar para a capa original?', textoVoltarCapaOriginal($ctx['atual']['capa'], infoCapa()['lista']), link_('empresa-salvar', ['secao' => 'capa']),
+            ['original' => '1'], 'Sim, voltar para a ' . NOME_CAPA_ORIGINAL, link_('empresa') . '#e-capa', 'empresa');
+        return;
+    }
     $f = formularioSecao($secao, $_POST, $ctx['atual']);
     if ($f['nota'] !== '') { telaEmpresa($ctx, [$secao => $f]); return; }   // ajudante sem JavaScript: mostra, não grava
     if ($f['erros']) {
@@ -1426,7 +1980,10 @@ function acaoEmpresaSalvar(): void
     $feito = descreverMudancaAjustes($secao, $ctx['atual'], $f['valor'], (int) ($f['saiu'] ?? 0));
     alterarAjustes(['tipo' => $secao, 'secao' => $secao, 'antes' => 'Antes de: alterar “' . $titulo . '”', 'feito' => $feito],
         static function (array $aj) use ($f): array {
-            foreach ($f['valor'] as $k => $v) $aj[$k] = $v;
+            foreach ($f['valor'] as $k => $v) {
+                if ($v === null) unset($aj[$k]);   // ex.: "capa" → volta a valer o index.html
+                else $aj[$k] = $v;
+            }
             return ['versao' => 1] + $aj;
         });
     avisar(textoSalvoAjustes($secao, $f['valor'], (int) ($f['saiu'] ?? 0)), 'ok', linkSiteAjustes($secao));
@@ -1457,7 +2014,7 @@ function acaoRecomecarAjustes(): void
 
 function textoRecomecarAjustes(): string
 {
-    return 'O site volta a mostrar os dados originais (de empresa.js) em todas as partes: contato, endereço, horário, feriados, aviso, Google, equipe, depoimentos e marcas. '
+    return 'O site volta a mostrar os dados originais (de empresa.js) em todas as partes: contato, endereço, horário, feriados, aviso, Google, equipe, depoimentos e marcas; e a capa volta a ser a ' . NOME_CAPA_ORIGINAL . '. '
         . 'O arquivo com problema fica guardado na pasta privada do painel. Depois, é só ajustar de novo o que precisar.';
 }
 

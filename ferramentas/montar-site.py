@@ -73,6 +73,8 @@ import re
 import shutil
 import sys
 import tempfile
+import unicodedata
+import urllib.parse
 import zipfile
 from pathlib import Path
 
@@ -122,6 +124,14 @@ CAMPOS_PRODUTO = {"id", "nome", "marca", "categoria", "subcategoria", "resumo", 
                   "imagem", "recorte", "estoque", "condicao", "preco", "destaque", "visivel"}
 LIMITES = {"id": 80, "nome": 90, "marca": 40, "resumo": 220, "descricao": 3000, "spec_nome": 60, "spec_valor": 300,
            "specs": 24, "preco": 60}
+# Categorias (tela Categorias do painel: LIMITES_CATEGORIA e IDS_CATEGORIA_RESERVADOS em painel/lib/catalogo.php).
+# Quantas são e como se chamam vem do produtos.js: nada aqui supõe as 3 categorias de hoje.
+LIMITES_CATEGORIA = {"nome": 40, "descricao": 200, "subcategoria": 60, "categorias": 12, "subcategorias": 30}
+IDS_CATEGORIA_RESERVADOS = {"todos", "constructor"}   # a aba "Todos" do catálogo do site (js/catalogo.js); "constructor": função de todo objeto do JavaScript
+# Nome curto das categorias que vieram com o site (CATEGORIAS_CURTAS do painel, CAT_CURTO do js/core.js): vale enquanto
+# a categoria tem o nome original. Duas categorias não podem aparecer com o mesmo nome nas abas do site.
+CATEGORIAS_CURTAS = {"balancas": ("Balanças", "Balanças"), "automacao": ("Automação", "Automação Comercial"),
+                     "informatica": ("Informática", "Informática e PDV")}
 ESTOQUES = {"consulte", "disponivel", "encomenda", "esgotado"}
 CONDICOES = {"novo", "seminovo"}
 
@@ -317,11 +327,85 @@ def conferir_catalogo(arquivo):
     ids = [p.get("id") for p in prods]
     if len(ids) != len(set(ids)):
         erro("produtos.js: há produtos com o mesmo id")
+    conferir_categorias(cats, prods)
     fotos = COMPARTILHADO / "img" / "produtos"
     for p in prods:
         if p.get("imagem") and not (fotos / p["imagem"]).is_file():
             erro(f"produtos.js: foto não encontrada para {p.get('id')}: img/produtos/{p['imagem']}")
     return len(cats), len(prods), sum(1 for p in prods if p.get("visivel") is not False)
+
+
+def chave_nome(s):
+    """Nome comparável (o mesmo de chaveDeNome no painel): sem acento, sem maiúsculas, espaços simples."""
+    s = unicodedata.normalize("NFD", str(s)).encode("ascii", "ignore").decode("ascii")
+    return " ".join(s.lower().replace("&", " e ").replace("+", " plus ").split())
+
+
+def conferir_categorias(cats, prods):
+    """As mesmas regras do painel (problemasDasCategorias): códigos únicos e válidos, nomes sem repetição,
+    subcategorias sem repetição na categoria; e cada produto numa categoria e subcategoria que existem."""
+    if not isinstance(cats, list) or not cats:
+        erro("produtos.js: window.CATEGORIAS precisa ter pelo menos uma categoria")
+        return
+    if len(cats) > LIMITES_CATEGORIA["categorias"]:
+        erro(f"produtos.js: {len(cats)} categorias (o painel aceita até {LIMITES_CATEGORIA['categorias']})")
+    subs, nomes = {}, set()
+    for n, c in enumerate(cats, 1):
+        if not isinstance(c, dict):
+            erro(f"produtos.js: a categoria {n} não é um objeto")
+            continue
+        cid, nome, lista = c.get("id"), c.get("nome"), c.get("subcategorias")
+        if not isinstance(cid, str) or not RE_ID.match(cid) or cid in IDS_CATEGORIA_RESERVADOS:
+            erro(f"produtos.js: código de categoria inválido: {cid!r}")
+            continue
+        if cid in subs:
+            erro(f"produtos.js: categoria repetida: {cid}")
+        if not isinstance(nome, str) or not nome.strip() or len(nome) > LIMITES_CATEGORIA["nome"]:
+            erro(f"produtos.js: a categoria {cid} precisa de um nome de até {LIMITES_CATEGORIA['nome']} caracteres")
+        else:
+            # o nome e o nome curto (o que as abas do site mostram) não repetem os de outra categoria
+            orig = CATEGORIAS_CURTAS.get(cid)
+            curto = orig[0] if orig and nome == orig[1] else nome
+            minhas = {chave_nome(nome), chave_nome(curto)}
+            if minhas & nomes:
+                erro(f"produtos.js: duas categorias que aparecem com o nome {curto!r}")
+            nomes.update(minhas)
+        if "descricao" in c and (not isinstance(c["descricao"], str) or len(c["descricao"]) > LIMITES_CATEGORIA["descricao"]):
+            erro(f"produtos.js: a descrição da categoria {cid} precisa ser texto de até {LIMITES_CATEGORIA['descricao']} caracteres")
+        if not isinstance(lista, list) or not all(isinstance(s, str) and s.strip() and len(s) <= LIMITES_CATEGORIA["subcategoria"] for s in lista):
+            erro(f"produtos.js: as subcategorias de {cid} precisam ser uma lista de nomes (até {LIMITES_CATEGORIA['subcategoria']} caracteres)")
+            lista = [s for s in lista if isinstance(s, str)] if isinstance(lista, list) else []
+        vistas = set()
+        for s in lista:
+            if chave_nome(s) in vistas:
+                erro(f"produtos.js: subcategoria repetida em {cid}: {s!r}")
+            vistas.add(chave_nome(s))
+        subs[cid] = set(lista)
+    for p in prods:
+        cid, sub = p.get("categoria"), p.get("subcategoria")
+        if cid not in subs:
+            erro(f"produtos.js: o produto {p.get('id')} está na categoria {cid!r}, que não existe em window.CATEGORIAS")
+        elif sub not in subs[cid]:
+            erro(f"produtos.js: o produto {p.get('id')} está na subcategoria {sub!r}, que não existe em {cid}")
+
+
+def conferir_links_de_categoria(site):
+    """Links fixos das páginas para o catálogo (produtos.html?cat=…, data-pn-cat="…") apontam para categorias que
+    existem no produtos.js do pacote. No servidor o dono pode criar, renomear e apagar categorias pelo painel: o
+    catálogo do site trata sozinho uma categoria que não existe mais (abre "Todos")."""
+    try:
+        cats = json_depois(ler(site / "compartilhado" / "dados" / "produtos.js"), "CATEGORIAS")
+        subs = {c.get("id"): set(c.get("subcategorias") or []) for c in cats if isinstance(c, dict)}
+    except Exception:
+        return   # conferir_catalogo já aponta o problema
+    for publicado, _ in PAGINAS:
+        t = ler(site / publicado)
+        for m in re.finditer(r'(?:produtos\.html\?cat=|data-pn-cat=")([a-z0-9-]+)(?:&amp;sub=([^"&#]+))?', t):
+            cid, sub = m.group(1), m.group(2)
+            if cid not in subs:
+                erro(f"{publicado}: link para a categoria {cid!r}, que não existe no catálogo")
+            elif sub is not None and urllib.parse.unquote_plus(sub) not in subs[cid]:
+                erro(f"{publicado}: link para a subcategoria {urllib.parse.unquote_plus(sub)!r}, que não existe em {cid}")
 
 
 def conferir_clientes(arquivo):
@@ -428,7 +512,8 @@ def conferir_empresa(arquivo):
 
 # Ajustes do painel (área Empresa): chaves e o tipo de cada uma (contrato com painel/lib/ajustes.php)
 AJUSTES_CHAVES = {"versao": int, "contato": dict, "endereco": dict, "mapa": str, "horario": dict, "feriados": dict,
-                  "aviso": dict, "google": dict, "redes": dict, "equipe": list, "depoimentos": list, "marcas": list}
+                  "aviso": dict, "google": dict, "redes": dict, "equipe": list, "depoimentos": list, "marcas": list,
+                  "capa": dict}   # capa: produto da capa escolhido em Empresa → Capa do site (sem a chave = a Prix 7E do HTML)
 RE_DIA = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 
@@ -496,13 +581,21 @@ ORDEM_DADOS = ["compartilhado/dados/empresa.js", "compartilhado/dados/ajustes.js
 
 def conferir_scripts_dados(rel, texto, completa=True):
     """A página carrega os dados na ordem empresa.js → ajustes.js → clientes.js → produtos.js → balancas.js,
-    nenhum com async. completa=False (404.html): clientes.js e produtos.js são opcionais."""
+    nenhum com async. completa=False (404.html): clientes.js e produtos.js são opcionais.
+    A ordem é a de execução: scripts sem defer (o ajustes.js no <head> da página inicial, para a capa do topo)
+    rodam antes dos com defer; empresa.js e ajustes.js não dependem um do outro."""
     ordem = []
     for m in RE_SCRIPT.finditer(texto):
         src = re.search(r'\bsrc="([^"]+)"', m.group(1))
         if src:
             ordem.append((src.group(1).split("?")[0].lstrip("/"), m.group(1)))
+    ordem.sort(key=lambda x: 1 if re.search(r"\bdefer\b", x[1]) else 0)   # estável: sem defer primeiro, cada grupo na ordem da página
     nomes = [s for s, _ in ordem]
+    if "compartilhado/dados/ajustes.js" in nomes and "compartilhado/dados/empresa.js" in nomes:
+        i, j = nomes.index("compartilhado/dados/empresa.js"), nomes.index("compartilhado/dados/ajustes.js")
+        if j < i:   # ajustes.js antes de empresa.js: tanto faz entre os dois (o balancas.js junta depois)
+            nomes[i], nomes[j] = nomes[j], nomes[i]
+            ordem[i], ordem[j] = ordem[j], ordem[i]
     if "compartilhado/js/balancas.js" not in nomes:
         return False
     exigidos = ORDEM_DADOS if completa else [ORDEM_DADOS[0], ORDEM_DADOS[1], ORDEM_DADOS[4]]
@@ -841,9 +934,15 @@ def conferir(site):
         if f.is_file() and f.suffix == ".php" and f.read_bytes().startswith(b"<?php exit; ?>"):
             erro(f"{rel}: arquivo da pasta privada (começa com <?php exit; ?>) no pacote")
     for obrig in ("index.php", "config.php", ".htaccess", ".user.ini", "lib/.htaccess", "assets/painel.css", "assets/painel.js",
-                  "lib/pacotes.php", "lib/visoes-pacotes.php", "pacotes/.htaccess"):
+                  "lib/pacotes.php", "lib/visoes-pacotes.php", "pacotes/.htaccess", "lib/lote.php",
+                  "lib/categorias.php", "lib/visoes-categorias.php",
+                  "contar.php", "lib/estatisticas.php", "lib/visoes-procurados.php"):
         if not (pnl / obrig).is_file():
             erro(f"painel/{obrig} faltando no pacote")
+    # "Mais procurados": o contar.php é público mesmo com a "Privacidade de diretórios" do cPanel no painel/
+    if (pnl / ".htaccess").is_file() and '<Files "contar.php">' not in ler(pnl / ".htaccess"):
+        erro('painel/.htaccess sem o bloco <Files "contar.php"> (sem ele, com a senha extra do cPanel no painel, '
+             'o site não consegue contar as visitas)')
     for pasta in PASTAS_DO_PAINEL:
         if not (site / "compartilhado" / "img" / pasta / ".htaccess").is_file():
             erro(f"compartilhado/img/{pasta}/.htaccess faltando (bloqueia scripts na pasta de fotos/logos; "
@@ -859,6 +958,8 @@ def conferir(site):
     for obrig in (".htaccess", "robots.txt", "sitemap.xml", "404.html", "favicon.ico"):
         if not (site / obrig).is_file():
             erro(f"{obrig} faltando no pacote")
+
+    conferir_links_de_categoria(site)
 
     # Produto da capa: o data-hero-id do index.html existe no catálogo e é o mesmo do painel/config.php
     m = re.search(r'\bdata-hero-id="([a-z0-9-]+)"', ler(site / "index.html"))
@@ -1044,7 +1145,7 @@ def compactar_atualizacao(site, incluir_clientes, incluir_ajustes=False):
     with zipfile.ZipFile(tmp) as z:
         nomes = z.namelist()
     problemas = [n for n in nomes if fica_fora_da_atualizacao(n, incluir_clientes, incluir_ajustes)]
-    for obrig in ["index.html", ".htaccess", "painel/index.php", "compartilhado/js/balancas.js"] + \
+    for obrig in ["index.html", ".htaccess", "painel/index.php", "painel/contar.php", "compartilhado/js/balancas.js"] + \
                  [f"compartilhado/img/{p}/.htaccess" for p in PASTAS_DO_PAINEL]:
         if obrig not in nomes:
             problemas.append("faltou " + obrig)

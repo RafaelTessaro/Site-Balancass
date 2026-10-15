@@ -14,7 +14,7 @@ if (!defined('PAINEL')) { http_response_code(404); exit; }
 
 // Nome curto de cada parte (índice do topo) e onde ela aparece no site
 const CURTO_SECOES = ['contato' => 'Contato', 'endereco' => 'Endereço', 'horario' => 'Horário', 'feriados' => 'Feriados', 'aviso' => 'Aviso',
-    'google' => 'Google e redes', 'equipe' => 'Equipe', 'depoimentos' => 'Depoimentos', 'marcas' => 'Marcas'];
+    'google' => 'Google e redes', 'equipe' => 'Equipe', 'depoimentos' => 'Depoimentos', 'marcas' => 'Marcas', 'capa' => 'Capa do site'];
 const ONDE_SECOES = [
     'contato'     => 'No rodapé de todas as páginas, na página Contato e nos botões de ligar e de WhatsApp. A busca do Google pode levar alguns dias para mostrar o número novo; o resumo do link do site compartilhado no WhatsApp ou no Facebook é um texto fixo das páginas.',
     'endereco'    => 'No rodapé de todas as páginas e na página Contato (com o botão “Abrir no mapa”). A busca do Google pode levar alguns dias para mostrar o endereço novo; o resumo do link do site compartilhado no WhatsApp ou no Facebook é um texto fixo das páginas.',
@@ -25,9 +25,11 @@ const ONDE_SECOES = [
     'equipe'      => 'Na página Empresa, na parte “Equipe”.',
     'depoimentos' => 'Na página Empresa (os 3 primeiros) e na página Sistema (os 3 seguintes).',
     'marcas'      => 'Na faixa de marcas que corre na página inicial e na página Empresa.',
+    'capa'        => 'No topo da página inicial: a foto grande sobre a faixa verde, com as etiquetas técnicas presas por um fio a partes do produto e a legenda com o link para a ficha dele.',
 ];
 const BOTAO_SECOES = ['contato' => 'Salvar contato', 'endereco' => 'Salvar endereço', 'horario' => 'Salvar horário', 'feriados' => 'Salvar feriados',
-    'aviso' => 'Salvar aviso', 'google' => 'Salvar Google e redes', 'equipe' => 'Salvar equipe', 'depoimentos' => 'Salvar depoimentos', 'marcas' => 'Salvar marcas'];
+    'aviso' => 'Salvar aviso', 'google' => 'Salvar Google e redes', 'equipe' => 'Salvar equipe', 'depoimentos' => 'Salvar depoimentos', 'marcas' => 'Salvar marcas',
+    'capa' => 'Salvar capa'];
 
 /* ------------------------------------------------------------------
    Pedaços dos formulários
@@ -84,7 +86,7 @@ function caixaEmpresa(string $secao, int $n, array $ctx, array $est, callable $m
       <div class="emp-sec__txt">
         <h2 class="emp-sec__tit" id="e-<?= e($secao) ?>-tit"><?= e(SECOES_AJUSTES[$secao]) ?></h2>
         <p class="emp-sec__onde"><?= e(ONDE_SECOES[$secao]) ?> <a href="<?= e($link) ?>" target="_blank" rel="noopener"><span>Ver no site</span><?= icone('ext') ?></a></p>
-        <p class="emp-sec__selos"><?php if ($ajustado): ?><span class="selo selo--ajustado">Mudado pelo painel</span><?php else: ?><span class="selo">Dados originais do site</span><?php endif; ?><span class="selo selo--sujo" data-emp-sujo hidden>Não salvo</span></p>
+        <p class="emp-sec__selos"><?php if ($ajustado): ?><span class="selo selo--ajustado"><?= $secao === 'capa' ? 'Escolhida pelo painel' : 'Mudado pelo painel' ?></span><?php else: ?><span class="selo"><?= $secao === 'capa' ? 'Capa original (' . e(NOME_CAPA_ORIGINAL) . ')' : 'Dados originais do site' ?></span><?php endif; ?><span class="selo selo--sujo" data-emp-sujo hidden>Não salvo</span></p>
       </div>
     </header>
     <?php if ($erros): ?>
@@ -430,6 +432,178 @@ function partesMarcas(array $v, array $erros): void
 }
 
 /* ------------------------------------------------------------------
+   Capa do site: produto, 4 etiquetas com ponto (toque na foto),
+   legenda e prévias (computador e celular). Sem JavaScript: os pontos
+   vão pelos campos de posição e a prévia usa as classes cx-N/cy-N de
+   assets/painel.css (nada de style=""); com assets/painel.js: troca de
+   produto na hora, toque/arraste na foto, setas do teclado.
+   ------------------------------------------------------------------ */
+// Em cima ou embaixo da foto, como no site (css/home-v3.css): no computador 1 e 3 em cima, 2 e 4 embaixo;
+// no celular aparecem só a 1 (em cima) e a 3 (embaixo)
+const CAPA_EMBAIXO = ['pc' => [1, 3], 'cel' => [2]];
+const CAPA_NO_CELULAR = [0, 2];
+
+/** Classes de cada ponto na prévia ($tela = pc|cel): posição, em cima/embaixo e para que lado a etiqueta cresce. */
+function classesPontosCapa(array $pontos, string $tela): array
+{
+    $baixo = CAPA_EMBAIXO[$tela];
+    $visiveis = [];
+    foreach ($pontos as $i => $pt) {
+        if ($tela === 'cel' && !in_array($i, CAPA_NO_CELULAR, true)) continue;
+        if (trim($pt['rotulo'] . $pt['valor'] . $pt['detalhe']) === '') continue;
+        $visiveis[$i] = $pt;
+    }
+    $lado = [];
+    foreach ([false, true] as $emBaixo) {
+        $fila = array_filter($visiveis, static fn(int $i): bool => in_array($i, $baixo, true) === $emBaixo, ARRAY_FILTER_USE_KEY);
+        uasort($fila, static fn(array $a, array $b): int => (float) $a['x'] <=> (float) $b['x']);
+        $k = array_keys($fila);
+        // Duas na mesma fila: a da esquerda cresce para a esquerda, a da direita para a direita; sozinha: para o lado com mais espaço
+        if (count($k) === 1) $lado[$k[0]] = (float) $fila[$k[0]]['x'] < 50 ? 'd' : 'e';
+        else foreach ($k as $j => $i) $lado[$i] = $j === 0 ? 'e' : 'd';
+    }
+    $out = [];
+    foreach ($pontos as $i => $pt) {
+        $x = is_numeric(str_replace(',', '.', $pt['x'])) ? (int) round(max(0, min(100, (float) str_replace(',', '.', $pt['x'])))) : 50;
+        $y = is_numeric(str_replace(',', '.', $pt['y'])) ? (int) round(max(0, min(100, (float) str_replace(',', '.', $pt['y'])))) : 50;
+        $out[$i] = 'capa-pt cx-' . $x . ' cy-' . $y . (in_array($i, $baixo, true) ? ' capa-pt--dn' : '') . ' capa-pt--' . ($lado[$i] ?? 'e')
+            . (isset($visiveis[$i]) ? '' : ' is-vazio');
+    }
+    return $out;
+}
+
+/** Uma tela de prévia (computador ou celular) da capa. */
+function previaCapa(string $tela, ?array $item, array $v): void
+{
+    $classes = classesPontosCapa($v['pontos'], $tela);
+    $cel = $tela === 'cel';
+    $marca = $item['marca'] ?? '';
+    $modelo = $item['modelo'] ?? '';
+    ?>
+          <div class="capa-escala capa-escala--<?= e($tela) ?>" data-capa-escala="<?= $cel ? 292 : 560 ?>">
+          <div class="capa-tela capa-tela--<?= e($tela) ?>" data-capa-tela="<?= e($tela) ?>">
+            <span class="capa-tela__faixa" aria-hidden="true"></span>
+            <!-- As duas prévias aceitam o toque para marcar o ponto (os mesmos % da foto); no celular a do celular é a maior -->
+            <div class="capa-foto" data-capa-alvo="<?= e($tela) ?>">
+              <img src="<?= e($item['url'] ?? '') ?>" width="<?= (int) ($item['largura'] ?? 0) ?: 900 ?>" height="<?= (int) ($item['altura'] ?? 0) ?: 600 ?>" alt="" data-capa-img draggable="false">
+              <ol class="capa-pontos" role="list" aria-hidden="true">
+                <?php foreach ($v['pontos'] as $i => $pt): ?>
+                <li class="<?= e($classes[$i]) ?>" data-capa-pt="<?= $i ?>"><span class="capa-pt__caixa"><span class="capa-pt__k"><b><?= sprintf('%02d', $i + 1) ?></b> <span data-capa-txt="rotulo"><?= e($pt['rotulo']) ?></span></span><span class="capa-pt__v" data-capa-txt="valor"><?= e($pt['valor']) ?></span><?php if (!$cel): ?><span class="capa-pt__s" data-capa-txt="detalhe"<?= trim($pt['detalhe']) === '' ? ' hidden' : '' ?>><?= e($pt['detalhe']) ?></span><?php endif; ?></span></li>
+                <?php endforeach; ?>
+              </ol>
+            </div>
+            <p class="capa-tela__legenda"><span data-capa-leg="marca"><?= e($marca) ?></span> <span data-capa-leg="modelo"><?= e($modelo) ?></span><?php if (!$cel): ?><span class="capa-tela__legx" data-capa-leg="texto"<?= trim($v['texto']) === '' ? ' hidden' : '' ?>> — <?= e(trim($v['texto'])) ?></span><?php endif; ?></p>
+          </div>
+          </div>
+<?php
+}
+
+function partesCapa(array $v, array $erros, array $ctx): void
+{
+    $info = infoCapa();
+    if ($info['erro'] !== null): ?>
+      <div class="aviso aviso--erro" role="alert"><?= icone('alert') ?><p><b>Não consegui ler o catálogo de produtos</b> (<?= e($info['erro']) ?>). A capa do site continua como está; resolva o catálogo em Produtos e volte aqui.</p></div>
+<?php
+        return;
+    endif;
+    $itens = $info['produtos'];
+    $salva = $ctx['atual']['capa'];
+    // Capa escolhida que não pode aparecer, ou a capa original (a Prix 7E) fora do site (o topo mostraria o link quebrado)
+    $problema = problemaCapa($info['lista'], $salva !== null ? (string) ($salva['produto'] ?? '') : null);
+    $origFora = motivoOriginalForaDoSite($info['lista']);
+    // Produto escolhido que saiu do catálogo: a tela recomeça da capa original (o aviso explica)
+    if (!isset($itens[$v['produto']]) && !$erros) $v = capaParaTela(CAPA_ORIGINAL);
+    $item = $itens[$v['produto']] ?? null;
+    $podem = array_filter($itens, static fn(array $x): bool => $x['ok']);
+    $nomesCat = [];
+    foreach ($info['categorias'] as $c) if (is_array($c) && is_string($c['id'] ?? null)) $nomesCat[$c['id']] = (string) ($c['nome'] ?? $c['id']);
+    $grupos = [];
+    foreach ($itens as $id => $x) if ($x['ok'] || $id === $v['produto']) $grupos[$x['categoria']][] = $x;
+    ?>
+      <?php if ($problema !== null): ?>
+      <div class="aviso aviso--erro capa-problema" role="alert"><?= icone('alert') ?><p><?= e($problema) ?></p></div>
+      <?php endif; ?>
+      <p class="ajuda ajuda--topo">Escolha o produto da foto grande e escreva até 4 etiquetas. Cada etiqueta tem um ponto preso por um fio a uma parte do produto: escolha a etiqueta e toque na foto do produto (em qualquer uma das duas prévias), no lugar de que ela fala.</p>
+
+      <div class="capa" data-capa-parte>
+        <div class="capa__produto">
+          <div class="campo">
+            <label for="emp-capa-produto">Produto da capa</label>
+            <div class="capa__escolha">
+              <select id="emp-capa-produto" name="produto" data-capa-produto aria-describedby="emp-capa-produto-ajuda<?= isset($erros['produto']) ? ' erro-emp-capa-produto' : '' ?>"<?= isset($erros['produto']) ? ' aria-invalid="true"' : '' ?>>
+                <?php foreach ($grupos as $cat => $lista): ?>
+                <optgroup label="<?= e($nomesCat[$cat] ?? ($cat !== '' ? $cat : 'Outros')) ?>">
+                  <?php foreach ($lista as $x):
+                      $orig = $x['id'] === CAPA_ORIGINAL['produto'];
+                      $sug = $orig ? capaParaTela(CAPA_ORIGINAL) : capaParaTela(['produto' => $x['id']] + $x['sugestao']); ?>
+                  <option value="<?= e($x['id']) ?>"<?= $x['id'] === $v['produto'] ? ' selected' : '' ?> data-url="<?= e($x['url']) ?>" data-w="<?= (int) $x['largura'] ?>" data-h="<?= (int) $x['altura'] ?>"
+                    data-marca="<?= e($x['marca']) ?>" data-modelo="<?= e($x['modelo']) ?>" data-sug="<?= e(json_encode($sug, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?>"<?= $orig ? ' data-original' : '' ?><?= $x['ok'] ? '' : ' data-fora="' . e($x['motivo']) . '"' ?>><?= e($x['nome'] . ($orig ? ' (capa original)' : '') . ($x['ok'] ? '' : ' — ' . $x['motivo'])) ?></option>
+                  <?php endforeach; ?>
+                </optgroup>
+                <?php endforeach; ?>
+              </select>
+              <button type="submit" class="btn btn--linha btn--p" name="trocar" value="1" formnovalidate data-capa-trocar><?= icone('check') ?>Usar este produto</button>
+            </div>
+            <?= erroEmpresa('capa', 'produto', $erros) ?>
+            <?php $noSite = count(array_filter($info['lista'], static fn($p): bool => is_array($p) && ($p['visivel'] ?? true) !== false)); ?>
+            <p class="ajuda" id="emp-capa-produto-ajuda">Só aparecem produtos que estão no site e têm foto com fundo transparente (recorte): <?= count($podem) === $noSite ? 'hoje são todos os ' . $noSite : count($podem) . ' dos ' . $noSite . ' do site' ?>. Na capa, o produto fica “solto” sobre a faixa verde: uma foto com fundo branco viraria um retângulo branco no meio da página. Produto escondido também não entra, porque a capa leva para a ficha dele.</p>
+          </div>
+          <?php campoEmpresa('capa', 'texto', 'Legenda', $v['texto'], $erros, ['max' => LIMITES_AJUSTES['capa_texto'], 'opcional' => true, 'exemplo' => 'Ex.: balança computadora com impressora integrada',
+              'attrs' => ' data-capa-campo="texto" data-emp-contador',
+              'ajuda' => 'Vem depois da marca e do nome, no link para a ficha do produto (ex.: <b>Toledo Prix 7E — balança computadora com impressora integrada</b>). No celular aparecem só a marca e o nome.']); ?>
+        </div>
+
+        <div class="capa__previas">
+          <div class="capa-previa capa-previa--pc">
+            <p class="capa-previa__rot" id="capa-previa-pc">No computador<span class="capa-previa__dica" data-capa-dica hidden> · toque na foto para marcar o ponto da etiqueta <b data-capa-qual>1</b></span></p>
+            <?php previaCapa('pc', $item, $v); ?>
+          </div>
+          <div class="capa-previa capa-previa--cel">
+            <p class="capa-previa__rot">No celular <span>· só as etiquetas 1 e 3, sem o detalhe</span><span class="capa-previa__dica" data-capa-dica hidden> · aqui também dá para tocar na foto e marcar o ponto da etiqueta <b data-capa-qual>1</b></span></p>
+            <?php previaCapa('cel', $item, $v); ?>
+          </div>
+          <p class="capa-aviso-ponto" data-capa-status role="status" aria-live="polite"></p>
+        </div>
+
+        <ol class="capa-etiquetas" role="list">
+          <?php foreach ($v['pontos'] as $i => $pt): $n = $i + 1;
+              $temErro = (bool) array_filter(array_keys($erros), static fn($k): bool => str_starts_with((string) $k, 'p' . $i . '-')); ?>
+          <li class="capa-et<?= $temErro ? ' is-erro' : '' ?>" data-capa-et="<?= $i ?>">
+            <fieldset>
+              <legend class="capa-et__tit"><b><?= sprintf('%02d', $n) ?></b> Etiqueta <?= $n ?> <small><?= in_array($i, CAPA_EMBAIXO['pc'], true) ? 'embaixo da foto' : 'em cima da foto' ?><?= in_array($i, CAPA_NO_CELULAR, true) ? ' · aparece no celular' : ' · só no computador' ?></small></legend>
+              <div class="capa-et__campos">
+                <?php campoEmpresa('capa', 'p' . $i . '-rotulo', 'Nome', $pt['rotulo'], $erros, ['nome' => 'ponto[' . $i . '][rotulo]', 'max' => LIMITES_AJUSTES['capa_rotulo'], 'exemplo' => $i === 0 ? 'Capacidade' : '', 'attrs' => ' data-capa-campo="rotulo"', 'classe' => 'capa-et__rot']); ?>
+                <?php campoEmpresa('capa', 'p' . $i . '-valor', 'Destaque', $pt['valor'], $erros, ['nome' => 'ponto[' . $i . '][valor]', 'max' => LIMITES_AJUSTES['capa_valor'], 'exemplo' => $i === 0 ? '32 kg multifaixa' : '', 'attrs' => ' data-capa-campo="valor"', 'classe' => 'capa-et__val']); ?>
+                <?php campoEmpresa('capa', 'p' . $i . '-detalhe', 'Detalhe', $pt['detalhe'], $erros, ['nome' => 'ponto[' . $i . '][detalhe]', 'max' => LIMITES_AJUSTES['capa_detalhe'], 'opcional' => true, 'exemplo' => $i === 0 ? 'divisão de 2 g até 6 kg' : '', 'attrs' => ' data-capa-campo="detalhe"', 'classe' => 'capa-et__det']); ?>
+              </div>
+              <div class="capa-et__ponto">
+                <button type="button" class="btn btn--linha btn--p capa-et__marcar" data-capa-marcar="<?= $i ?>" aria-pressed="false" hidden><?= icone('up') ?><span>Marcar o ponto na foto</span></button>
+                <div class="capa-et__xy" role="group" aria-label="Posição do ponto da etiqueta <?= $n ?>">
+                  <?php campoEmpresa('capa', 'p' . $i . '-x', 'Ponto: da esquerda (%)', $pt['x'], $erros, ['nome' => 'ponto[' . $i . '][x]', 'max' => 5, 'modo' => 'decimal', 'exemplo' => '0 a 100', 'attrs' => ' data-capa-campo="x"', 'classe' => 'capa-et__num']); ?>
+                  <?php campoEmpresa('capa', 'p' . $i . '-y', 'de cima (%)', $pt['y'], $erros, ['nome' => 'ponto[' . $i . '][y]', 'max' => 5, 'modo' => 'decimal', 'exemplo' => '0 a 100', 'attrs' => ' data-capa-campo="y"', 'classe' => 'capa-et__num']); ?>
+                </div>
+              </div>
+            </fieldset>
+          </li>
+          <?php endforeach; ?>
+        </ol>
+        <p class="ajuda capa-vazias">Para usar menos etiquetas, deixe vazias as últimas (nome, destaque e detalhe em branco).</p>
+      </div>
+      <?php if ($salva !== null): ?>
+      <div class="capa-original">
+        <button type="submit" class="btn btn--linha" name="original" value="1" formnovalidate data-capa-original
+          data-confirmar-txt="<?= e(textoVoltarCapaOriginal($salva, $info['lista'])) ?>"><?= icone('restore') ?><span>Voltar para a Prix 7E (capa original)</span></button>
+        <?php if ($origFora !== ''): ?>
+        <p class="ajuda ajuda--alerta"><?= icone('alert') ?><span><b>Atenção:</b> a <?= e(NOME_CAPA_ORIGINAL) ?> <?= e($origFora) ?>. Voltando para ela, o topo da página inicial mostra a foto dela com o link para um produto fora do catálogo: prefira escolher outro produto acima.</span></p>
+        <?php else: ?>
+        <p class="ajuda">Tira a capa escolhida aqui: a página inicial volta a mostrar a <?= e(NOME_CAPA_ORIGINAL) ?> com as etiquetas de sempre.</p>
+        <?php endif; ?>
+      </div>
+      <?php endif; ?>
+<?php
+}
+
+/* ------------------------------------------------------------------
    Telas
    ------------------------------------------------------------------ */
 /** $estado[seção] = resultado de formularioSecao() (o que foi digitado, erros, nota) para mostrar de novo. */
@@ -455,7 +629,7 @@ function telaEmpresa(array $ctx, array $estado = []): void
         foreach (array_keys(SECOES_AJUSTES) as $s) {
             $n++;
             $est = $estado[$s] ?? ['v' => valoresDaTela($s, $ctx['atual']), 'erros' => [], 'nota' => ''];
-            caixaEmpresa($s, $n, $ctx, $est, static function (array $v, array $erros) use ($s): void {
+            caixaEmpresa($s, $n, $ctx, $est, static function (array $v, array $erros) use ($s, $ctx): void {
                 match ($s) {
                     'contato' => partesContato($v, $erros),
                     'endereco' => partesEndereco($v, $erros),
@@ -465,6 +639,7 @@ function telaEmpresa(array $ctx, array $estado = []): void
                     'google' => partesGoogle($v, $erros),
                     'equipe', 'depoimentos' => partesLista($s, $v, $erros),
                     'marcas' => partesMarcas($v, $erros),
+                    'capa' => partesCapa($v, $erros, $ctx),
                 };
             });
         }
@@ -510,7 +685,7 @@ function telaCopiasAjustes(array $copias): void
         cabecalhoPagina('Desfazer alterações', 'Cópias de segurança',
             'Antes de cada mudança nos <b>dados da empresa</b> (área Empresa) o painel guarda uma cópia de como eles estavam, com as mesmas regras das outras cópias (as '
             . (int) cfg('copias_max') . ' mais recentes, tudo dos últimos ' . (int) cfg('copias_dias') . ' dias; as de <b>restaurar</b> ficam ' . (int) cfg('copias_protegidas_dias') . ' dias). '
-            . '<b>Restaurar</b> volta todas as partes juntas (contato, endereço, horário, feriados, aviso, Google, equipe, depoimentos e marcas).');
+            . '<b>Restaurar</b> volta todas as partes juntas (contato, endereço, horário, feriados, aviso, Google, equipe, depoimentos, marcas e a capa do site).');
         abasCopias('empresa');
         if (!$copias): ?>
   <div class="vazio"><p><b>Ainda não há cópias dos dados da empresa.</b> Elas aparecem aqui depois da primeira alteração na área Empresa.</p></div>

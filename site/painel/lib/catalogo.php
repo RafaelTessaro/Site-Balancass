@@ -46,6 +46,21 @@ const TIPOS_PROTEGIDOS = ['excluir', 'restaurar', 'pacote'];
 // Página inicial do site (js/home-v3.js): quantos destaques cabem e a ordem do estoque no site
 const HOME_MAX_DESTAQUES = 8;
 const ORDEM_ESTOQUE_SITE = ['disponivel' => 0, 'consulte' => 1, 'encomenda' => 1, 'esgotado' => 2];
+// Categorias e subcategorias (tela Categorias, só administradores: lib/categorias.php). O código (id)
+// da categoria nunca muda depois de criada: links antigos (produtos.html?cat=balancas) continuam valendo.
+// Os produtos guardam o id da categoria e o NOME da subcategoria.
+const LIMITES_CATEGORIA = ['nome' => 40, 'descricao' => 200, 'subcategoria' => 60, 'categorias' => 12, 'subcategorias' => 30];
+// "todos" é a aba "Todos" do catálogo do site (js/catalogo.js): nenhuma categoria pode ter esse código;
+// "constructor" é nome de uma função de todo objeto do JavaScript (uma segunda trava: o site usa mapas sem protótipo)
+const IDS_CATEGORIA_RESERVADOS = ['todos', 'constructor'];
+// Nome curto das categorias que vieram com o site (abas do catálogo, chips do painel): vale enquanto a
+// categoria tiver o nome original; renomeada (ou categoria nova), vale o nome do catálogo. O mesmo
+// CAT_CURTO de linha-verde/js/core.js: se mudar aqui, mude lá.
+const CATEGORIAS_CURTAS = [
+    'balancas'    => ['Balanças', 'Balanças'],
+    'automacao'   => ['Automação', 'Automação Comercial'],
+    'informatica' => ['Informática', 'Informática e PDV'],
+];
 
 final class ErroCatalogo extends RuntimeException {}
 
@@ -139,9 +154,16 @@ function interpretarCatalogo(string $src): array
     if (!is_array($cats) || !array_is_list($cats) || !is_array($prods) || !array_is_list($prods)) {
         throw new ErroCatalogo('CATEGORIAS e PRODUTOS precisam ser listas');
     }
+    $idsCat = [];
     foreach ($cats as $c) {
         if (!is_array($c) || !is_string($c['id'] ?? null) || !is_string($c['nome'] ?? null) || !is_array($c['subcategorias'] ?? null)) {
             throw new ErroCatalogo('categoria sem id, nome ou subcategorias');
+        }
+        if (!preg_match(RE_ID, $c['id'])) throw new ErroCatalogo('código de categoria inválido: "' . cortar($c['id'], 40) . '"');
+        if (isset($idsCat[$c['id']])) throw new ErroCatalogo('categoria repetida: ' . $c['id']);
+        $idsCat[$c['id']] = true;
+        if (!array_is_list($c['subcategorias']) || count(array_filter($c['subcategorias'], 'is_string')) !== count($c['subcategorias'])) {
+            throw new ErroCatalogo('as subcategorias de "' . cortar($c['nome'], 40) . '" precisam ser uma lista de nomes');
         }
     }
     $ids = [];
@@ -223,7 +245,7 @@ function gravarCatalogo(array $categorias, array $produtos): string
  */
 function alterarCatalogo(array $acao, callable $fn): array
 {
-    return comTrava('catalogo', static function () use ($acao, $fn): array {
+    $r = comTrava('catalogo', static function () use ($acao, $fn): array {
         $antes = lerCatalogo();
         $novo = $fn($antes);
         // Quem só sabe o que fez depois de olhar o catálogo (ex.: atualização do catálogo) devolve a frase final
@@ -249,13 +271,32 @@ function alterarCatalogo(array $acao, callable $fn): array
         registrar('catalogo', (string) ($acao['feito'] ?? $acao['antes'] ?? ''));
         return ['categorias' => $categorias, 'produtos' => $produtos, 'copia' => $copia];
     });
+    // A foto do produto da capa pode ter mudado: a capa (ajustes.js) acompanha. Fora da trava do
+    // catálogo; um problema aqui não desfaz o que já foi gravado.
+    $r['capaFoto'] = null;
+    if (function_exists('sincronizarFotoDaCapa')) {
+        try { $r['capaFoto'] = sincronizarFotoDaCapa($r['produtos']); }
+        catch (Throwable $t) { error_log('painel: capa: ' . $t->getMessage()); }
+    }
+    return $r;
 }
 
 /* ------------------------------------------------------------------
    Capa e página inicial do site (mesma regra de js/home-v3.js)
    ------------------------------------------------------------------ */
-/** Código do produto da capa: o data-hero-id do index.html do site; senão o do config.php. */
+/** Código do produto da capa: o escolhido em Empresa → Capa do site (ajustes.js "capa", lib/ajustes.php);
+ *  sem escolha, o data-hero-id do index.html do site; senão o do config.php. */
 function produtoCapa(): string
+{
+    static $id = null;
+    if ($id !== null) return $id;
+    $aj = function_exists('produtoCapaAjustes') ? produtoCapaAjustes() : null;   // capa escolhida no painel
+    if ($aj !== null) return $id = $aj;
+    return $id = produtoCapaHtml();
+}
+
+/** A capa que vem no index.html (a Toledo Prix 7E): o data-hero-id; senão o produto_capa do config.php. */
+function produtoCapaHtml(): string
 {
     static $id = null;
     if ($id !== null) return $id;
@@ -263,6 +304,15 @@ function produtoCapa(): string
     $html = @file_get_contents(dirname((string) cfg('compartilhado')) . '/index.html', false, null, 0, 600000);
     if (is_string($html) && preg_match('/\bdata-hero-id="([a-z0-9]+(?:-[a-z0-9]+)*)"/', $html, $m)) $id = $m[1];
     return $id;
+}
+
+/** O produto que a página inicial mostra de fato na capa, com estes $produtos: o escolhido no painel, ou — se ele
+ *  saiu do site, foi excluído ou ficou sem recorte (problemaCapa) — a capa do index.html, como faz o js/home-v3.js. */
+function capaEfetiva(array $produtos): string
+{
+    $id = produtoCapa();
+    if (!function_exists('problemaCapa') || $id === produtoCapaHtml()) return $id;
+    return problemaCapa($produtos, $id) === null ? $id : produtoCapaHtml();
 }
 
 /**
@@ -273,7 +323,7 @@ function produtoCapa(): string
  */
 function destaquesDaHome(array $produtos): array
 {
-    $capa = produtoCapa();
+    $capa = capaEfetiva($produtos);
     $lista = [];
     foreach (array_values($produtos) as $i => $p) {
         if (empty($p['destaque']) || ($p['visivel'] ?? true) === false || ($p['id'] ?? '') === $capa) continue;
@@ -297,7 +347,7 @@ function destaquesDaHome(array $produtos): array
 function fraseHome(array $p, array $produtos): string
 {
     $id = (string) ($p['id'] ?? '');
-    if ($id === produtoCapa()) return ' É o produto da capa: já aparece no topo da página inicial.';
+    if ($id === capaEfetiva($produtos)) return ' É o produto da capa: já aparece no topo da página inicial.';
     if (empty($p['destaque']) || ($p['visivel'] ?? true) === false) return '';
     $home = destaquesDaHome($produtos);
     $pos = array_search($id, $home, true);
@@ -319,6 +369,80 @@ function categoriaPorId(array $categorias, string $id): ?array
 {
     foreach ($categorias as $c) if ($c['id'] === $id) return $c;
     return null;
+}
+
+/* ------------------------------------------------------------------
+   Categorias: nomes, contagens e conferência (a tela fica em lib/categorias.php)
+   ------------------------------------------------------------------ */
+/** Nome curto da categoria (abas e chips): o original encurtado enquanto não foi renomeada; senão o nome. */
+function categoriaCurta(array $c): string
+{
+    $id = (string) ($c['id'] ?? '');
+    $nome = (string) ($c['nome'] ?? '');
+    $orig = CATEGORIAS_CURTAS[$id] ?? null;
+    if ($orig !== null && ($nome === '' || $nome === $orig[1])) return $orig[0];
+    return $nome !== '' ? $nome : $id;
+}
+
+/** Nome comparável: sem acento, sem diferença de maiúsculas e de espaços ("Balanças " = "balancas"). */
+function chaveDeNome(string $s): string
+{
+    return trim(preg_replace('/\s+/u', ' ', semAcento($s)) ?? '');
+}
+
+/** Quantos produtos há em cada categoria e subcategoria: [id => ['total' => n, 'subs' => [nome => n]]]. */
+function contagemCategorias(array $produtos): array
+{
+    $n = [];
+    foreach ($produtos as $p) {
+        $c = (string) ($p['categoria'] ?? '');
+        $s = (string) ($p['subcategoria'] ?? '');
+        $n[$c]['total'] = ($n[$c]['total'] ?? 0) + 1;
+        $n[$c]['subs'][$s] = ($n[$c]['subs'][$s] ?? 0) + 1;
+    }
+    return $n;
+}
+
+/** Produtos cuja categoria ou subcategoria não existe no catálogo (editados à mão ou vindos de cópia antiga). */
+function produtosForaDasCategorias(array $categorias, array $produtos): array
+{
+    $subs = [];
+    foreach ($categorias as $c) $subs[(string) $c['id']] = array_fill_keys(array_map('strval', $c['subcategorias']), true);
+    return array_values(array_filter($produtos, static fn($p) => !isset($subs[(string) ($p['categoria'] ?? '')][(string) ($p['subcategoria'] ?? '')])));
+}
+
+/**
+ * Confere a lista de categorias antes de gravar (a tela Categorias e quem mais mexer nelas):
+ * códigos únicos e válidos, nomes preenchidos e sem repetição, subcategorias sem repetição na
+ * mesma categoria. Devolve a lista de problemas (vazia = tudo certo).
+ */
+function problemasDasCategorias(array $categorias): array
+{
+    $out = [];
+    $ids = []; $nomes = [];
+    if (count($categorias) > LIMITES_CATEGORIA['categorias']) $out[] = 'no máximo ' . LIMITES_CATEGORIA['categorias'] . ' categorias';
+    foreach ($categorias as $c) {
+        $id = (string) ($c['id'] ?? '');
+        $nome = (string) ($c['nome'] ?? '');
+        if (!preg_match(RE_ID, $id) || strlen($id) > LIMITES['id'] || in_array($id, IDS_CATEGORIA_RESERVADOS, true)) $out[] = 'código de categoria inválido: ' . $id;
+        if (isset($ids[$id])) $out[] = 'categoria repetida: ' . $id;
+        $ids[$id] = true;
+        if (trim($nome) === '' || tamanho($nome) > LIMITES_CATEGORIA['nome']) $out[] = 'nome de categoria vazio ou comprido demais: ' . $id;
+        // O nome e o nome curto (o que as abas do site e os chips mostram) não podem repetir o de outra categoria
+        $minhas = array_unique([chaveDeNome($nome), chaveDeNome(categoriaCurta($c))]);
+        foreach ($minhas as $k) if (isset($nomes[$k])) { $out[] = 'duas categorias que aparecem com o nome “' . $nomes[$k] . '”'; break; }
+        foreach ($minhas as $k) $nomes[$k] ??= categoriaCurta($c);
+        if (tamanho((string) ($c['descricao'] ?? '')) > LIMITES_CATEGORIA['descricao']) $out[] = 'descrição comprida demais: ' . $id;
+        $subs = is_array($c['subcategorias'] ?? null) ? $c['subcategorias'] : [];
+        if (count($subs) > LIMITES_CATEGORIA['subcategorias']) $out[] = 'subcategorias demais em ' . $nome;
+        $vistas = [];
+        foreach ($subs as $s) {
+            if (!is_string($s) || trim($s) === '' || tamanho($s) > LIMITES_CATEGORIA['subcategoria']) { $out[] = 'subcategoria vazia ou comprida demais em ' . $nome; continue; }
+            if (isset($vistas[chaveDeNome($s)])) $out[] = 'subcategoria repetida em ' . $nome . ': ' . $s;
+            $vistas[chaveDeNome($s)] = true;
+        }
+    }
+    return $out;
 }
 
 function nomeCompleto(array $p): string
@@ -482,12 +606,28 @@ function ordenarCampos(array $p): array
     return $out;
 }
 
-/** Posição para um produto novo (ou que mudou de categoria): logo após o último da mesma categoria. */
-function posicaoNaCategoria(array $produtos, string $categoria): int
+/**
+ * Posição para um produto novo (ou que mudou de categoria): logo após o último da mesma categoria.
+ * Categoria ainda vazia: no lugar dela na ordem das categorias ($categorias) — depois do último produto das
+ * categorias de cima, ou antes do primeiro das de baixo (no catálogo "Todos", a categoria de cima vem antes).
+ */
+function posicaoNaCategoria(array $produtos, string $categoria, array $categorias = []): int
 {
     $pos = null;
     foreach ($produtos as $i => $p) if (($p['categoria'] ?? '') === $categoria) $pos = $i + 1;
-    return $pos ?? count($produtos);
+    if ($pos !== null) return $pos;
+    $ordem = array_values(array_map(static fn($c) => (string) ($c['id'] ?? ''), $categorias));
+    $k = array_search($categoria, $ordem, true);
+    if ($k === false) return count($produtos);
+    $antes = array_fill_keys(array_slice($ordem, 0, $k), true);
+    $depois = array_fill_keys(array_slice($ordem, $k + 1), true);
+    $ultimoAntes = null; $primeiroDepois = null;
+    foreach (array_values($produtos) as $i => $p) {
+        $c = (string) ($p['categoria'] ?? '');
+        if (isset($antes[$c])) $ultimoAntes = $i + 1;
+        if (isset($depois[$c]) && $primeiroDepois === null) $primeiroDepois = $i;
+    }
+    return $ultimoAntes ?? $primeiroDepois ?? count($produtos);
 }
 
 /** Troca o produto de lugar com o vizinho da mesma categoria. */
@@ -548,6 +688,8 @@ function fazerCopia(array $catalogo, array $acao, ?callable &$desfazer = null): 
         'juntou' => 1,
         'alvo' => (string) ($acao['alvo'] ?? ''),
         'alvoNome' => (string) ($acao['alvoNome'] ?? ''),
+        // Ações em lote: os códigos dos produtos (excluir vários: o "Trazer de volta" das Cópias de segurança)
+        'alvos' => array_values(array_filter(is_array($acao['alvos'] ?? null) ? $acao['alvos'] : [], static fn($x) => is_string($x) && preg_match(RE_ID, $x))),
         'categorias' => $catalogo['categorias'],
         'produtos' => $catalogo['produtos'],
     ]);
@@ -623,9 +765,23 @@ function listarCopias(): array
             'juntou' => max(1, (int) ($d['juntou'] ?? 1)),
             'alvo' => (string) ($d['alvo'] ?? ''),
             'alvoNome' => (string) ($d['alvoNome'] ?? ''),
+            'alvos' => nomesDosAlvos($d),
             'total' => count($d['produtos']),
             'visiveis' => count(array_filter($d['produtos'], static fn($p) => ($p['visivel'] ?? true) !== false)),
         ];
+    }
+    return $out;
+}
+
+/** Produtos de uma ação em lote guardados na cópia ("alvos"): [código => "Marca Nome"], na ordem da cópia. */
+function nomesDosAlvos(array $d): array
+{
+    $alvos = is_array($d['alvos'] ?? null) ? array_fill_keys(array_filter($d['alvos'], 'is_string'), true) : [];
+    $out = [];
+    if (!$alvos) return $out;
+    foreach ($d['produtos'] as $p) {
+        $id = is_array($p) ? (string) ($p['id'] ?? '') : '';
+        if (isset($alvos[$id])) $out[$id] = nomeCompleto($p);
     }
     return $out;
 }
@@ -783,12 +939,14 @@ function textoRestaurar(array $copias, int $i, ?int $totalAtual): string
         . ' O estado atual vira uma cópia, então dá para desfazer.';
 }
 
-/** Texto da confirmação de excluir (avisa quando é o produto da capa do site). */
-function textoExcluir(array $p): string
+/** Texto da confirmação de excluir (avisa quando é o produto da capa do site). $capa = o produto que o topo do site
+ *  mostra de fato (capaEfetiva; null: produtoCapa()); $frase = fraseCapaFora() já pronta, se quem chama tiver. */
+function textoExcluir(array $p, ?string $capa = null, ?string $frase = null): string
 {
     $t = 'Excluir “' . nomeCompleto($p) . '” do catálogo? A foto vai para a lixeira do painel. Logo depois aparece o botão Desfazer, e a exclusão fica em Cópias de segurança por 30 dias.';
-    if ((string) ($p['id'] ?? '') === produtoCapa()) {
-        $t .= "\nAtenção: este é o produto da capa do site. A foto da capa continua lá, mas o link dela vai abrir o catálogo com o aviso “produto fora do catálogo”.";
+    $capa ??= produtoCapa();
+    if ((string) ($p['id'] ?? '') === $capa) {
+        $t .= "\nAtenção: este é o produto da capa do site. " . ($frase ?? (function_exists('fraseCapaFora') ? fraseCapaFora(false, $capa) : 'A foto da capa continua lá, mas o link dela vai abrir o catálogo com o aviso “produto fora do catálogo”.'));
     }
     return $t;
 }

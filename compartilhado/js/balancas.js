@@ -8,8 +8,10 @@
      <script src="../compartilhado/js/balancas.js"></script>
    Os ajustes do painel valem no lugar dos valores de empresa.js, no
    MESMO objeto (window.EMPRESA = BC.empresa). Sem ajustes.js, ou com ele
-   quebrado, o site mostra empresa.js. Não precisa editar este arquivo
-   para adicionar produtos, clientes nem mudar os dados da empresa.
+   quebrado, o site mostra empresa.js. A capa escolhida no painel fica em
+   EMPRESA.capa (só existe quando o ajustes.js tem uma capa válida).
+   Não precisa editar este arquivo para adicionar produtos, clientes
+   nem mudar os dados da empresa.
    ===================================================================== */
 (function () {
   "use strict";
@@ -161,6 +163,30 @@
     marcas: function (a) {
       var l = lista(a, 40, function (m) { return txt(m, 40); });
       if (l) E.marcas = l;
+    },
+    /* Capa do site (área Empresa → Capa do site): produto + até 4 etiquetas com o ponto em % da foto.
+       Qualquer parte fora do formato invalida a capa inteira: o site mostra a Prix 7E do HTML.
+       Se o produto existe, está visível e tem recorte, quem confere é o js/home-v3.js. */
+    capa: function (a) {
+      var id = a.produto;
+      if (typeof id !== "string" || id.length > 80 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) return;
+      var pos = function (n) { return typeof n === "number" && isFinite(n) && n >= 0 && n <= 100; };
+      var opc = function (v, max) { return v == null || v === "" ? "" : txt(v, max); };   // vazio = "", inválido = null
+      var pts = [];
+      if (a.pontos != null && !Array.isArray(a.pontos)) return;
+      var lis = a.pontos || [];
+      if (lis.length > 4) return;
+      for (var i = 0; i < lis.length; i++) {
+        var p = lis[i];
+        if (!ehObj(p)) return;
+        var r = txt(p.rotulo, 14), v = txt(p.valor, 24), d = opc(p.detalhe, 32);
+        if (!r || !v || d === null || !pos(p.x) || !pos(p.y)) return;
+        pts.push({ rotulo: r, valor: v, detalhe: d, x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10 });
+      }
+      var texto = opc(a.texto, 48);
+      if (texto === null) return;
+      var w = inteiro(a.largura, 1, 20000) ? a.largura : 0, h = inteiro(a.altura, 1, 20000) ? a.altura : 0;
+      E.capa = { produto: id, pontos: pts, texto: texto, largura: w && h ? w : 0, altura: w && h ? h : 0 };
     }
   };
   var AJ = window.AJUSTES, aplicados = [];

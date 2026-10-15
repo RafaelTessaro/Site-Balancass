@@ -4,7 +4,7 @@ Site da **Balanças.com** (Rio Claro-SP): balanças, PDV, sistema BC System e as
 
 ## Site final
 
-Escolhido: **Linha Verde · Variação 3 (Painel)**, com a frase **“A medida certa para o seu negócio.”** abrindo a página e a balança Toledo **Prix 7E** na capa.
+Escolhido: **Linha Verde · Variação 3 (Painel)**, com a frase **“A medida certa para o seu negócio.”** abrindo a página e a balança Toledo **Prix 7E** na capa (o dono pode pôr outro produto na capa pelo painel, em **Empresa → Capa do site**).
 
 A pasta **`site/`** é o pacote pronto para a HostGator: o conteúdo dela vai inteiro para a `public_html`.
 
@@ -13,11 +13,11 @@ A pasta **`site/`** é o pacote pronto para a HostGator: o conteúdo dela vai in
 | `balancass.com/` | Início (variação 3 · Painel) |
 | `/assistencia.html` · `/produtos.html` · `/sistema.html` · `/empresa.html` · `/contato.html` | Abas do site |
 | `/produtos.html#p=toledo-prix-7e` | Link direto de um produto (abre os detalhes) |
-| `/painel/` | **Painel com login** para adicionar, editar, esconder e excluir produtos, mudar o estoque e trocar fotos, para cuidar dos **logos de clientes** (área **Clientes**: incluir, trocar, reordenar, excluir) e dos **dados da empresa** que o site mostra (área **Empresa**: contato, endereço, horário, feriados, aviso no site, Google e redes, equipe, depoimentos, marcas). Cada pessoa com o seu usuário, como **Administrador** ou **Editor**. Entrada pelo link discreto **“Área restrita”** no rodapé (fora do Google) |
+| `/painel/` | **Painel com login** para adicionar, editar, esconder e excluir produtos (um ou **vários de uma vez**), mudar o estoque e trocar fotos, para cuidar das **categorias e subcategorias** do catálogo, dos **logos de clientes** (área **Clientes**: incluir, trocar, reordenar, excluir) e dos **dados da empresa** que o site mostra (área **Empresa**: contato, endereço, horário, feriados, aviso no site, Google e redes, equipe, depoimentos, marcas e o **produto da capa**), e para ver os **produtos mais procurados** e de onde vêm os contatos pelo WhatsApp. Cada pessoa com o seu usuário, como **Administrador** ou **Editor**. Entrada pelo link discreto **“Área restrita”** no rodapé (fora do Google) |
 | qualquer endereço inexistente | Página 404 no estilo do site |
 
 **Publicar:** [`docs/PUBLICAR-NO-CPANEL.md`](docs/PUBLICAR-NO-CPANEL.md) (PHP 8.3, envio do `site.zip`, primeiro acesso ao painel, testes).
-**Produtos, logos de clientes, usuários e dados da empresa no dia a dia:** [`docs/COMO-ADICIONAR-PRODUTOS.md`](docs/COMO-ADICIONAR-PRODUTOS.md) (pelo painel; edição manual como plano B).
+**Produtos (um ou vários de uma vez), categorias, capa do site, Mais procurados, logos de clientes, usuários e dados da empresa no dia a dia:** [`docs/COMO-ADICIONAR-PRODUTOS.md`](docs/COMO-ADICIONAR-PRODUTOS.md) (pelo painel; edição manual como plano B).
 **Atualizar o site que já está no ar:** `atualizacao.zip` (guia de publicação, item 6).
 
 **Gerar o pacote de novo** (depois de mudar `linha-verde/`, `compartilhado/`, `painel/` ou `hospedagem/`):
@@ -58,7 +58,8 @@ compartilhado/
   dados/clientes.js        logos de clientes, na ordem do site (gerado pelo painel; vale no lugar da lista de empresa.js)
   js/balancas.js           funções comuns (junta empresa.js + ajustes.js, WhatsApp por produto, filtros, busca)
   img/                     logo em SVG, fotos de produtos, logos de clientes, telas do sistema
-painel/                    painel em PHP: produtos, clientes, área Empresa, usuários e papéis (LEIA-ME.md com instalação e segurança)
+painel/                    painel em PHP: produtos (e em lote), categorias, clientes, área Empresa (com a capa), Mais procurados, usuários e papéis (LEIA-ME.md com instalação e segurança)
+  contar.php               recebe a contagem anônima do site (Mais procurados): sem sessão, sem cookie
   pacotes/<id>/            atualizações do catálogo (pacote.json + fotos/ + recortes/), aplicadas pelo administrador no painel
 hospedagem/                .htaccess do site e das pastas de fotos, favicon.ico
 ferramentas/
@@ -81,7 +82,7 @@ index.html                 página que apresenta as 3 propostas da 1ª rodada
 
 ## Tecnologia
 
-Páginas 100% estáticas (HTML, CSS e JavaScript), sem banco de dados e sem WordPress. Animações com GSAP e Lenis, carregados por CDN. Sem cookies nem rastreadores no site. O painel é PHP puro (8.1 a 8.3), também sem banco de dados: grava direto no `compartilhado/dados/produtos.js`, no `compartilhado/dados/clientes.js`, no `compartilhado/dados/ajustes.js` e nas pastas de fotos e de logos, com usuários (Administrador ou Editor), cópias de segurança automáticas e proteção contra os ataques comuns.
+Páginas 100% estáticas (HTML, CSS e JavaScript), sem banco de dados e sem WordPress. Animações com GSAP e Lenis, carregados por CDN. Sem cookies nem rastreadores no site: a única contagem é a própria, anônima (sem cookies, sem serviços de fora, sem guardar o IP), para o painel mostrar os produtos mais procurados. O painel é PHP puro (8.1 a 8.3), também sem banco de dados: grava direto no `compartilhado/dados/produtos.js`, no `compartilhado/dados/clientes.js`, no `compartilhado/dados/ajustes.js` e nas pastas de fotos e de logos, com usuários (Administrador ou Editor), cópias de segurança automáticas e proteção contra os ataques comuns.
 
 ## Histórico das propostas
 

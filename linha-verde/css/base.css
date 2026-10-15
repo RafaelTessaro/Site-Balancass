@@ -528,13 +528,15 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
    FICHA DE PRODUTO (LV.cardProduto) e grade de produtos (.pgrid)
    ===================================================================== */
 .spec {
-  --cat: var(--green);
+  --cat: #E4E4DD;   /* categoria criada no painel: tom neutro (o verde é de Balanças; automação e informática têm o seu) */
   position: relative; display: flex; flex-direction: column;
   background: var(--white); color: var(--ink);
   border: 1px solid #CFCFC8; min-width: 0;
 }
 .spec__tab {
   position: absolute; top: -1px; right: -1px; z-index: 2;
+  /* Nome comprido (categoria criada ou renomeada no painel): uma linha só, com reticências (o nome inteiro vai no title) */
+  max-width: 72%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
   padding: 8px 14px 7px calc(14px + 30px * var(--tan));
   background: var(--cat); color: var(--ink);
   font: 500 10px/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase;
@@ -609,6 +611,7 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .spec .btn--line { --b-fg: var(--ink); --b-hv: var(--ink); --b-hfg: var(--paper); }
 .spec .btn--green { --b-hv: var(--ink); --b-hfg: var(--paper); }
 .spec :focus-visible { outline-color: var(--ink); }
+.spec[data-cat="balancas"] { --cat: var(--green); }
 .spec[data-cat="automacao"] { --cat: var(--volt); }
 .spec[data-cat="informatica"] { --cat: #D9D9D2; }
 /* Variante compacta: sem nº, resumo e tabela */

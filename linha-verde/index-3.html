@@ -27,6 +27,22 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
+<!-- Capa do topo escolhida no painel (Empresa → Capa do site, ajustes.js → "capa"): o ajustes.js vem aqui, sem
+     defer (é pequeno). Sem capa escolhida, nada muda: a Prix 7E do HTML aparece como sempre, sem esperar
+     script nenhum. Com capa, a foto do topo fica escondida (html.tem-capa) até o js/home-v3.js montar a
+     escolhida — a Prix 7E não aparece antes — e a foto escolhida já começa a baixar aqui. -->
+<script src="../compartilhado/dados/ajustes.js"></script>
+<script>
+  (function (d, c) {
+    if (!c || typeof c !== "object" || typeof c.produto !== "string") return;
+    d.documentElement.className += " tem-capa";
+    if (typeof c.recorte !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(?:webp|jpe?g|png)$/.test(c.recorte)) return;
+    var l = d.createElement("link");
+    l.rel = "preload"; l.as = "image"; l.setAttribute("fetchpriority", "high");
+    l.href = "../compartilhado/img/produtos-recorte/" + c.recorte;
+    d.head.appendChild(l);
+  })(document, window.AJUSTES && window.AJUSTES.capa);
+</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders:opsz,wght@10..72,700..900&family=Archivo:wdth,wght@62..125,400..800&family=Martian+Mono:wght@400..500&display=swap">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/paginas.css">
@@ -41,9 +57,13 @@
        "lv-late" (+ "via-vt"): quando o GSAP chegar, nada do que já está na tela some para
        animar de novo e as aberturas vão direto ao fim. lv-tarde/LV_LIBEROU = nomes antigos. */
     setTimeout(function () {
+      /* capa do topo: se o js/home-v3.js não chegou, fica a do HTML (com capa escolhida no painel, só aos 8 s:
+         antes disso a Prix 7E apareceria e depois trocaria pela escolhida) */
+      if (!d.classList.contains("tem-capa")) d.classList.add("hero-pronto");
       if (!d.classList.contains("is-loading")) return;
       d.classList.add("lv-late", "lv-tarde", "via-vt"); d.classList.remove("is-loading"); w.LV_LIBEROU = true;
     }, 2600);
+    setTimeout(function () { d.classList.add("hero-pronto"); }, 8000);
     /* Chegou pela transição diagonal entre páginas: o destino aparece pronto.
        LV_REVELOU: o 1º quadro já saiu (o js/core.js usa para evitar corridas). */
     addEventListener("pagereveal", function (e) { w.LV_REVELOU = true; if (e.viewTransition) d.classList.add("via-vt"); });
@@ -161,7 +181,7 @@
 </script>
 <!-- Scripts locais primeiro (dados, fichas e links funcionam enquanto o CDN carrega); depois GSAP/Lenis -->
 <script defer src="../compartilhado/dados/empresa.js"></script>
-<script defer src="../compartilhado/dados/ajustes.js"></script>
+<!-- ajustes.js: no <head> (a capa do topo precisa dele antes de pintar) -->
 <script defer src="../compartilhado/dados/clientes.js"></script>
 <script defer src="../compartilhado/dados/produtos.js"></script>
 <script defer src="../compartilhado/js/balancas.js"></script>
@@ -279,7 +299,10 @@
       <div class="pn-hero__band" aria-hidden="true"></div>
       <figure class="pn-hero__fig">
         <!-- data-hero-id: o código do produto da capa. O js/home-v3.js tira este produto da vitrine e
-             das fichas da página inicial, e o painel mostra o selo "Na capa do site" nele. -->
+             das fichas da página inicial, e o painel mostra o selo "Na capa do site" nele.
+             Se a área Empresa do painel escolheu outro produto (ajustes.js → "capa"), o home-v3.js
+             troca a foto, as etiquetas, a legenda e este código antes de a capa aparecer; sem
+             JavaScript (e para o Google) fica esta, a Prix 7E. -->
         <div class="pn-hero__prod" data-pn-par data-hero-id="toledo-prix-7e">
           <img src="../compartilhado/img/produtos-recorte/prix7e.webp" width="900" height="549" alt="Balança Toledo Prix 7E, computadora com impressora de etiquetas integrada, teclado alfanumérico e prato de aço inox" fetchpriority="high" decoding="async">
           <!-- Etiquetas técnicas (catálogo oficial da Toledo do Brasil). Cada uma é presa por um fio

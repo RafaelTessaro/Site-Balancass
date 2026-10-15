@@ -223,6 +223,12 @@ h1 { font: 800 clamp(38px, 10vw, 60px)/.92 var(--f-display); text-transform: upp
 .toast > span { min-width: 0; }
 .toast a { color: var(--volt); font-weight: 700; white-space: nowrap; }
 .toast a:hover { color: var(--paper); }   /* o aviso é preto: nunca o hover preto */
+.toast__desfazer { display: inline; margin: 0; }
+.toast__desfazer button {
+  display: inline-flex; align-items: center; min-height: 44px; margin: -12px 0; padding: 0 2px; border: 0; background: none; cursor: pointer;
+  font: inherit; font-weight: 700; color: var(--volt); text-decoration: underline; text-underline-offset: 3px; white-space: nowrap;
+}
+.toast__desfazer button:hover { color: var(--paper); }
 .toast__x { flex: none; display: grid; place-items: center; width: 36px; height: 36px; margin: -8px -10px -8px 0; border: 0; background: none; color: #B5B5AE; }
 .toast__x:hover { color: var(--paper); }
 .toast__x .i { width: 18px; height: 18px; color: inherit !important; }
@@ -251,8 +257,9 @@ h1 { font: 800 clamp(38px, 10vw, 60px)/.92 var(--f-display); text-transform: upp
 .chip b { font: 500 11px/1 var(--f-mono); color: var(--muted); }
 .chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 .chip[aria-pressed="true"] b { color: var(--volt); }
-.ver { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); font-weight: 600; }
-.ver select { min-height: 44px; }
+.ver { display: inline-flex; flex: none; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); font-weight: 600; }
+/* Largura própria: com muitas categorias (ou nomes longos), quem quebra em mais linhas são os chips, nunca o "Mostrar" */
+.ver select { min-height: 44px; min-width: 10.5rem; }
 .contagem { font-size: 14px; color: var(--muted); margin: 6px 0 2px; }
 .dica { display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; color: var(--muted); margin-bottom: 18px; line-height: 1.4; }
 .dica .i { flex: none; width: 16px; height: 16px; margin-top: 1px; color: var(--green-deep); }
@@ -365,6 +372,8 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
 .selo--destaque { background: var(--volt); border-color: var(--volt); color: var(--ink); }
 .selo--destaque.is-fora { background: var(--white); border: 1px dashed #8DBF1A; color: #4D6B00; }
 .selo--capa { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+/* Escolhido em Empresa → Capa do site, mas fora do site (o topo mostra outro produto no lugar) */
+.selo--capa-fora { border-style: dashed; border-color: var(--ink); color: var(--ink); }
 .selo--oculto { border-style: dashed; border-color: var(--red); color: var(--red); }
 .selo--preco { color: var(--ink); }
 
@@ -481,6 +490,12 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
 .copia__ate { font-size: .62em; color: var(--muted); }
 .copia__mais { font-weight: 500; color: var(--muted); }
 .copia__bts { display: flex; flex-wrap: wrap; gap: 8px; }
+/* Exclusão em lote: os produtos que continuam fora do catálogo, cada um com "Trazer de volta" */
+.copia__prods { margin-top: 8px; }
+.copia__prods summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; font-weight: 600; font-size: 14.5px; color: var(--green-deep); }
+.copia__prods ul { display: grid; gap: 6px; margin: 4px 0 0; padding: 0; list-style: none; }
+.copia__prods li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; padding: 6px 0; border-top: 1px solid var(--paper-3); font-size: 14.5px; }
+.copia__prods li span { min-width: 0; overflow-wrap: anywhere; }
 
 /* ---------- Clientes (logos do site) ---------- */
 /* Chapa branca igual à do site (compartilhado: .clients__i em paginas.css): 3:2, logo em cor
@@ -840,6 +855,28 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
   .pg-produto .menu { display: flex; }
 }
 
+/* Celular: o topo da lista de produtos mais curto, para o 1º produto aparecer na primeira tela — "Mais procurados"
+   numa linha (título e números curtos), "Mostrando todos os N" só para leitores de tela (o cabeçalho já diz N
+   produtos; com filtro, a contagem aparece), a explicação da ordem fechada num "Ordem no site e página inicial" */
+.dica__cel { display: none; }
+@media (max-width: 699px) {
+  .proc-atalho { grid-template-columns: 30px minmax(0, 1fr) 20px; gap: 10px; min-height: 48px; padding: 6px 12px; margin: -6px 0 12px; }
+  .proc-atalho__ic { width: 30px; height: 30px; padding: 6px; }
+  .proc-atalho__txt { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+  .proc-atalho__txt b { font-size: 19px; }
+  .proc-atalho__longo { display: none; }
+  .proc-atalho .proc-atalho__curto { display: inline; font-size: 13px; }
+  .lista-topo .contagem.is-todos { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .dica .dica__texto { display: none; }
+  .dica__cel { display: block; flex: 1 1 auto; min-width: 0; }
+  .dica__cel summary { display: flex; align-items: center; min-height: 44px; margin: -12px 0; cursor: pointer; font-weight: 600; color: var(--green-deep); }
+  .dica__cel p { display: grid; gap: 4px; margin-top: 12px; }
+}
+/* 900–1199 px: busca numa linha, chips e "Mostrar" na de baixo (lado a lado com a busca, o "Mostrar" ficava sem texto) */
+@media (min-width: 900px) and (max-width: 1199px) {
+  .filtros { grid-template-columns: minmax(0, 1fr); }
+  .filtros .busca { max-width: 560px; }
+}
 /* 900–1199 px: menu de 5 itens no topo sem encostar na marca */
 @media (min-width: 900px) and (max-width: 1099px) {
   .menu { margin-left: 8px; }
@@ -1230,3 +1267,585 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
 @media (min-width: 1100px) {
   .hub__cartoes--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
+
+/* =====================================================================
+   Edição em lote (lista de produtos): botão "Selecionar", caixinha em
+   cada produto e a barra de ações presa embaixo. No celular a barra fica
+   no lugar do menu de baixo (ele volta ao sair da seleção). Sem
+   JavaScript tudo funciona igual: ?sel=1, menus em <details>, um botão
+   por ação.
+   ===================================================================== */
+.lista-topo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; margin: 6px 0 12px; }
+.lista-topo .contagem { margin: 0; }
+.lista-topo__sel .i { width: 17px; height: 17px; }
+.lista-topo__sel[aria-pressed="true"] { --b-bg: var(--ink); --b-bd: var(--ink); --b-fg: var(--paper); }
+.lista-topo__sel[aria-pressed="true"]:hover::before { filter: none; background: var(--ink-3); }
+.lote-dica { display: none; }
+.is-selecionando .lote-dica {
+  display: flex; gap: 10px; align-items: flex-start; margin: 0 0 16px; padding: 10px 12px;
+  background: var(--green-soft); border-left: 4px solid var(--green); font-size: 14px; line-height: 1.45; color: var(--text);
+}
+.lote-dica .i { flex: none; width: 18px; height: 18px; margin-top: 1px; color: var(--green-deep); }
+.lote-dica b { color: var(--ink); }
+.is-selecionando .dica[data-capa] { display: none; }   /* a dica da ordem volta ao sair da seleção */
+
+/* Cada produto: no modo "Selecionar", o cartão inteiro marca/desmarca (rótulo por cima de tudo) */
+.item__marcar, .selo--estoque { display: none; }
+.is-selecionando .item {
+  position: relative; grid-template-columns: 64px minmax(0, 1fr); grid-template-areas: "foto txt";
+  padding-left: 54px; cursor: pointer; -webkit-user-select: none; user-select: none;
+}
+.is-selecionando .item__rapido, .is-selecionando .item__acoes { display: none; }
+.is-selecionando .item__marcar { display: block; position: absolute; inset: 0; z-index: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.item__marcar input { position: absolute; left: 14px; top: 50%; width: 26px; height: 26px; margin: -13px 0 0; accent-color: var(--green-deep); cursor: pointer; }
+.is-selecionando .item:hover { border-color: var(--ink); }
+.is-selecionando .item.is-marcado,
+.is-selecionando .item:has(> .item__marcar input:checked) { border: 1px solid var(--green); background: #F1FAF4; box-shadow: inset 4px 0 0 var(--green); }
+.is-selecionando .selo--estoque { display: inline-flex; }
+:where(.selo--estoque)::before { content: ""; width: 7px; height: 7px; flex: none; background: #8E8E86; transform: skewX(var(--slash)); }
+.selo--estoque { color: var(--ink); }
+
+/* Barra de ações (escura, como o menu) */
+.lote {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 45;
+  padding: 6px var(--gut) calc(8px + env(safe-area-inset-bottom));
+  background: var(--ink); color: var(--paper); border-top: 3px solid var(--green);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, .18);
+}
+.lote__in { max-width: 1240px; margin: 0 auto; display: grid; gap: 4px; }
+.lote__topo { display: flex; align-items: center; gap: 6px; min-height: 44px; min-width: 0; }
+.lote__sair { display: grid; place-items: center; flex: none; width: 44px; height: 44px; margin-left: -10px; color: #B5B5AE; }
+.lote__sair:hover { color: var(--volt); }   /* fundo escuro: nunca o hover preto */
+.lote__sair .i { width: 22px; height: 22px; }
+.lote__conta { flex: 1 1 auto; min-width: 0; font: 700 15px/1.2 var(--f-text); }
+.lote.is-vazio .lote__conta { color: #B5B5AE; font-weight: 600; }
+.lote__todos {
+  flex: none; display: inline-block; padding: 12px 2px; line-height: 20px;
+  color: var(--volt); font-weight: 700; font-size: 14px; text-decoration: underline; text-underline-offset: 3px;
+}
+.lote__todos:hover { color: var(--paper); }
+.lote__todos-mais { display: none; }
+.lote__acoes { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; }
+.lote__menu { min-width: 0; }
+.lote__bt {
+  list-style: none; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  min-height: 54px; padding: 4px 2px; border: 1px solid #3A3A37; background: var(--ink-2); color: var(--paper);
+  font: 600 12px/1 var(--f-text); letter-spacing: .02em; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.lote__bt::-webkit-details-marker { display: none; }
+.lote__bt::marker { content: ""; }
+.lote__bt .i { width: 20px; height: 20px; color: var(--green); }
+.lote__bt:hover { border-color: #8E8E86; }
+.lote__menu[open] > .lote__bt { background: var(--paper); border-color: var(--paper); color: var(--ink); }
+.lote__menu[open] > .lote__bt .i { color: var(--green-deep); }
+.lote__bt--perigo { color: #FFB4AB; }
+.lote__bt--perigo .i { color: #FF6B5E; }
+.lote__bt--perigo:hover { border-color: #FF6B5E; }
+.lote__bt[aria-disabled="true"] { opacity: .45; }
+.lote[aria-busy="true"] .lote__acoes { opacity: .5; pointer-events: none; }
+
+/* Menu de cada ação: no celular, uma folha da largura da tela logo acima da barra */
+.lote__pop {
+  position: absolute; left: 0; right: 0; bottom: 100%; z-index: 2;
+  display: grid; gap: 8px; max-height: calc(100vh - 220px); overflow-y: auto; padding: 14px var(--gut) 16px;
+  background: var(--paper); color: var(--text); border-top: 3px solid var(--green);
+  box-shadow: 0 -14px 30px rgba(0, 0, 0, .25);
+}
+.lote__pop-tit { font: 800 22px/1 var(--f-display); text-transform: uppercase; color: var(--ink); margin-bottom: 2px; }
+.lote__op {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 0 14px;
+  border: 1.5px solid var(--line-2); background: var(--white); color: var(--ink);
+  font: 600 15px/1.2 var(--f-text); text-align: left; -webkit-tap-highlight-color: transparent;
+}
+.lote__op:hover { border-color: var(--ink); }
+.lote__op .i { width: 18px; height: 18px; color: var(--green-deep); }
+:where(.lote__op--consulte, .lote__op--disponivel, .lote__op--encomenda, .lote__op--esgotado)::before {
+  content: ""; width: 9px; height: 9px; flex: none; background: #8E8E86; transform: skewX(var(--slash));
+}
+.lote__pop-ajuda { font-size: 13px; line-height: 1.4; color: var(--muted); }
+.lote__pop select { width: 100%; }
+.lote__pop .btn { justify-self: start; }
+
+/* No celular a barra fica no lugar do menu de baixo; a página e o aviso rápido sobem */
+@media (max-width: 899px) {
+  .is-selecionando .menu { display: none; }
+}
+.is-selecionando .pagina { padding-bottom: calc(160px + env(safe-area-inset-bottom)); }
+.is-selecionando .toast { bottom: calc(136px + env(safe-area-inset-bottom)); }
+@media (min-width: 600px) {
+  .lote__todos-mais { display: inline; }
+  .lote__bt { font-size: 13px; }
+}
+/* Tablet e computador estreito: duas linhas (contador; ações com o ícone ao lado do nome) */
+@media (min-width: 700px) {
+  .lote__bt { flex-direction: row; gap: 8px; min-height: 48px; font-size: 14px; }
+  .lote__bt .i { width: 18px; height: 18px; }
+}
+@media (min-width: 900px) {
+  .lote__menu { position: relative; }
+  .lote__pop {
+    left: 0; right: auto; bottom: calc(100% + 14px); width: 300px; max-height: calc(100vh - 200px);
+    padding: 14px 16px 16px; border: 1px solid var(--ink); border-top: 3px solid var(--green);
+  }
+  .lote__menu--mover .lote__pop { left: auto; right: 0; width: 340px; }
+  .is-selecionando .pagina { padding-bottom: 150px; }
+  .is-selecionando .toast { bottom: 128px; }
+}
+/* Telas largas: uma linha só (contador à esquerda, ações à direita) */
+@media (min-width: 1100px) {
+  .lote { padding: 10px var(--gut); }
+  .lote__in { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 18px; }
+  .lote__topo { gap: 14px; }
+  .lote__conta { flex: 0 1 auto; }
+  .lote__acoes { grid-auto-columns: auto; gap: 6px; }
+  .lote__bt { min-height: 44px; padding: 0 14px; }
+  .lote__pop { left: auto; right: 0; }
+  .is-selecionando .pagina { padding-bottom: 120px; }
+  .is-selecionando .toast { bottom: 92px; }
+}
+@media (min-width: 1000px) {
+  .is-selecionando .item { grid-template-columns: 76px minmax(0, 1fr); grid-template-areas: "foto txt"; padding-left: 58px; }
+}
+
+/* =====================================================================
+   Painel — "Mais procurados" (a=procurados) e os atalhos para ela
+   (cartão na lista de produtos e no hub da Conta, seção "Site"); usa só
+   as variáveis e peças do painel.
+   ===================================================================== */
+
+/* Atalho no topo da lista de produtos */
+.proc-atalho {
+  display: grid; grid-template-columns: 40px minmax(0, 1fr) 22px; align-items: center; gap: 12px;
+  min-height: 60px; padding: 10px 14px; margin: -4px 0 16px;
+  background: var(--white); border: 1px solid var(--line); color: var(--text); text-decoration: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.proc-atalho:hover { color: var(--text); border-color: var(--ink); box-shadow: inset 4px 0 0 var(--green); }
+.proc-atalho__ic { width: 40px; height: 40px; padding: 9px; background: var(--ink); color: var(--volt); transform: skewX(var(--slash)); }
+.proc-atalho__txt { display: grid; gap: 2px; min-width: 0; }
+.proc-atalho__txt b { font: 800 21px/1 var(--f-display); text-transform: uppercase; color: var(--ink); }
+.proc-atalho__txt span { font-size: 13.5px; color: var(--muted); line-height: 1.35; }
+.proc-atalho__seta { color: var(--green-deep); transition: transform .2s; }
+.proc-atalho__curto { display: none; }
+.proc-atalho:hover .proc-atalho__seta { transform: translateX(3px); }
+
+/* Períodos (links com cara de chip; quebram em duas linhas no celular, nada fica escondido) */
+.chips.proc-periodos { margin: 0 0 12px; padding: 2px 0; flex-wrap: wrap; overflow: visible; }
+.proc-periodos .chip { text-decoration: none; padding: 0 14px; }
+.proc-periodos .chip:hover { border-color: var(--ink); color: var(--ink); }
+.proc-periodos .chip[aria-current="page"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.proc-desde { display: block; margin-top: 4px; font-size: 13.5px; }
+.proc-quando { display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; margin: 0 0 14px; font-size: 14px; color: var(--muted); }
+.proc-quando b { font: 500 12px/1.4 var(--f-mono); color: var(--ink); letter-spacing: .02em; }
+
+/* Nada contado ainda */
+.proc-vazio {
+  display: grid; gap: 12px; justify-items: start; max-width: 720px; margin: 8px 0 22px; padding: 24px 20px;
+  background: var(--white); border: 1.5px dashed var(--line-2);
+}
+.proc-vazio .i { color: var(--green-deep); }
+.proc-vazio h2 { font: 800 clamp(28px, 7vw, 38px)/1 var(--f-display); text-transform: uppercase; color: var(--ink); }
+.proc-vazio p { color: var(--muted); font-size: 15px; max-width: 62ch; }
+
+/* Totais */
+.proc-totais { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+.proc-total { display: grid; align-content: start; gap: 4px; min-width: 0; padding: 14px 14px 12px; background: var(--white); border: 1px solid var(--line); }
+.proc-total__n { font: 800 clamp(38px, 11vw, 52px)/.9 var(--f-display); color: var(--ink); letter-spacing: .01em; }
+.proc-total__rot { font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.25; }
+.proc-total--whatsapp { border-color: var(--ink); box-shadow: inset 0 4px 0 var(--green); }
+.proc-var {
+  justify-self: start; margin-top: 2px; padding: 3px 7px 2px;
+  font: 500 11.5px/1.3 var(--f-mono); letter-spacing: .02em; border: 1px solid var(--line);
+}
+.proc-var--sobe { background: var(--green-soft); border-color: #8CCB9F; color: var(--green-deep); }
+.proc-var--desce { background: var(--red-soft); border-color: #E7B0AB; color: var(--red); }
+.proc-var--novo { background: var(--green-soft); border-color: #8CCB9F; color: var(--green-deep); }
+.proc-var--igual { color: var(--muted); }
+.proc-var--sem { border: 0; padding: 0; color: var(--muted); font-family: var(--f-text); font-size: 12.5px; letter-spacing: 0; }
+
+/* Gráfico (SVG feito no servidor) */
+.proc-caixa { margin-bottom: 26px; gap: 10px; }
+.proc-graf { position: relative; padding-top: 18px; }
+.proc-graf__max { position: absolute; top: 0; left: 0; font: 500 11px/1 var(--f-mono); color: var(--muted); }
+.proc-graf__svg { display: block; width: 100%; height: 150px; max-width: none; overflow: visible; }
+.proc-graf__linha { stroke: var(--paper-3); stroke-width: 1; stroke-dasharray: 3 3; }
+.proc-graf__barra { fill: var(--green); }
+.proc-graf__barra.is-zero { fill: var(--paper-3); }
+.proc-graf__barra.is-hoje { fill: var(--ink); }
+.proc-graf__barra:hover { fill: var(--green-deep); }
+.proc-graf__eixo { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1.5px solid var(--ink); font: 500 11px/1 var(--f-mono); color: var(--muted); }
+.proc-graf__antes { fill: var(--paper-2); }
+.proc-graf__legenda { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 8px; font-size: 12.5px; line-height: 1.35; color: var(--muted); }
+.proc-graf__legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.proc-graf__cor { flex: none; display: inline-block; width: 10px; height: 10px; background: var(--ink); }
+.proc-graf__cor--antes { background: var(--paper-2); outline: 1px solid var(--paper-3); }
+.proc-tabela__antes td { color: var(--muted); font-size: 13px; }
+.proc-limitado .i { color: var(--amber); }
+.proc-tabela summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; font-weight: 600; font-size: 14.5px; color: var(--green-deep); }
+.proc-tabela table { width: 100%; max-width: 420px; border-collapse: collapse; font-size: 14px; }
+.proc-tabela th, .proc-tabela td { padding: 6px 8px; border-bottom: 1px solid var(--paper-3); text-align: left; }
+.proc-tabela th { font: 500 11px/1.3 var(--f-mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.proc-tabela td + td, .proc-tabela th + th { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Seções e barras */
+.proc-secao { margin-bottom: 26px; min-width: 0; }
+.proc-secao .dica { margin-bottom: 12px; }
+.proc-secao .dica span { max-width: 92ch; }
+.proc-nada { padding: 14px 0; }
+.proc-sub { margin: 18px 0 8px; font: 800 19px/1 var(--f-display); text-transform: uppercase; color: var(--ink); }
+.proc-barra { display: block; width: 100%; height: 6px; max-width: none; }
+.proc-barra__fundo { fill: var(--paper-2); }
+.proc-barra__valor { fill: var(--green); }
+
+/* Ranking de produtos */
+.proc-prods { display: grid; gap: 8px; }
+.proc-prods + .proc-mais, .proc-mais .proc-prods { margin-top: 8px; }
+.proc-prod {
+  display: grid; grid-template-columns: 22px 56px minmax(0, 1fr) 44px;
+  grid-template-areas: "pos foto txt ed" "pos foto nums nums" "barra barra barra barra";
+  align-items: center; gap: 4px 12px; padding: 10px 12px 12px; background: var(--white); border: 1px solid var(--line);
+}
+.proc-prod__pos { grid-area: pos; align-self: start; padding-top: 4px; font: 500 12px/1 var(--f-mono); color: var(--muted); text-align: right; }
+.proc-prod__foto { grid-area: foto; display: grid; place-items: center; width: 56px; height: 56px; background: var(--paper); color: var(--line-2); overflow: hidden; }
+.proc-prod__foto img { width: 100%; height: 100%; object-fit: contain; }
+.proc-prod__txt { grid-area: txt; display: grid; gap: 1px; min-width: 0; justify-items: start; }
+.proc-prod__txt small { font: 500 11px/1.3 var(--f-mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.proc-prod__txt b { font: 800 20px/1.05 var(--f-display); text-transform: uppercase; color: var(--ink); overflow-wrap: anywhere; }
+.proc-prod__txt .selo { margin-top: 4px; }
+.proc-prod__nums { grid-area: nums; display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 13.5px; color: var(--muted); }
+.proc-prod__nums b { font: 700 15px/1 var(--f-text); color: var(--ink); font-variant-numeric: tabular-nums; }
+.proc-prod__wa b { color: var(--green-deep); }
+.proc-prod__barra { grid-area: barra; margin-top: 6px; }
+.proc-prod__editar { grid-area: ed; align-self: start; color: var(--ink); text-decoration: none; }
+.proc-prod__editar:hover { color: var(--ink); }
+.proc-prod.is-fora { background: var(--paper); border-style: dashed; }
+.proc-prod.is-fora .proc-prod__txt b, .proc-prod.is-fora .proc-prod__nums b { color: var(--muted); }
+.proc-prod.is-fora .proc-barra__valor { fill: var(--line-2); }
+.proc-mais summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; font-weight: 600; font-size: 14.5px; color: var(--green-deep); }
+
+/* De onde vêm os cliques / páginas */
+.proc-lista { display: grid; background: var(--white); border: 1px solid var(--line); }
+.proc-lista li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 12px; align-items: baseline; padding: 10px 14px 11px; border-top: 1px solid var(--paper-3); }
+.proc-lista li:first-child { border-top: 0; }
+.proc-lista .proc-barra { grid-column: 1 / -1; }
+.proc-lista__txt { display: grid; gap: 1px; min-width: 0; }
+.proc-lista__txt b { font-size: 15px; font-weight: 650; color: var(--ink); }
+.proc-lista__txt small { font-size: 13px; color: var(--muted); line-height: 1.35; }
+.proc-mais .proc-lista { margin-top: 0; }
+.proc-lista__n { font: 700 18px/1 var(--f-text); color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.proc-lista__n small { font: 500 12px/1 var(--f-text); color: var(--muted); }
+
+/* Este aparelho + privacidade */
+.proc-aparelho { margin: 4px 0 16px; max-width: 760px; }
+.proc-aparelho .ajuda b { color: var(--ink); font-weight: 600; }
+.proc-priv { max-width: 760px; }
+.proc-priv .i { margin-top: 2px; }
+.proc-priv span { display: block; }
+
+@media (min-width: 600px) {
+  .proc-prod {
+    grid-template-columns: 26px 56px minmax(0, 1fr) minmax(220px, 320px) 44px;
+    grid-template-areas: "pos foto txt nums ed" "pos foto txt barra ed";
+    row-gap: 6px;
+  }
+  .proc-prod__pos { align-self: center; padding-top: 0; }
+  .proc-prod__nums { justify-content: flex-end; align-self: end; }
+  .proc-prod__barra { margin-top: 0; align-self: start; }
+  .proc-prod__editar { align-self: center; }
+}
+@media (min-width: 900px) {
+  .proc-totais { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .proc-total { padding: 16px 18px 14px; }
+  .proc-graf__svg { height: 190px; }
+  .proc-atalho { margin-top: 0; }
+}
+@media (min-width: 1000px) {
+  .proc-colunas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 24px; align-items: start; }
+}
+
+/* =====================================================================
+   Painel Balanças.com — área Empresa, parte "Capa do site"
+   Telas em lib/visoes-empresa.php (partesCapa), comportamento no bloco
+   "Capa do site" do fim de assets/painel.js.
+   A prévia imita o topo da página inicial (linha-verde/css/home-v3.css):
+   fundo preto, faixa verde inclinada, o recorte do produto e as
+   etiquetas com ponto + fio. Sem style="": a posição de cada ponto vem
+   das classes cx-N / cy-N (0 a 100, de 1 em 1); com JavaScript, o
+   painel.js troca --x/--y pelo valor exato (uma casa decimal).
+   ===================================================================== */
+.capa { display: grid; gap: 20px; min-width: 0; }
+.capa__produto { display: grid; gap: 16px; min-width: 0; }
+.capa__escolha { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.capa__escolha select { flex: 1 1 240px; min-width: 0; }
+.capa-problema { margin: 0; }
+
+/* ---------- Prévias (computador e celular) ---------- */
+.capa__previas { display: grid; gap: 14px; min-width: 0; }
+.capa-previa { display: grid; gap: 8px; min-width: 0; align-content: start; }
+.capa-previa__rot { font: 500 10.5px/1.4 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.capa-previa__rot span { letter-spacing: .02em; }
+.capa-previa__dica b { display: inline-grid; place-items: center; min-width: 1.9em; padding: 1px 4px; background: var(--ink); color: var(--volt); font-weight: 500; }
+
+.capa-tela {
+  --off: 12px;
+  container-type: inline-size;   /* textos das etiquetas na escala da tela (cqw), como uma miniatura do site */
+  position: relative; isolation: isolate; overflow: hidden;
+  display: grid; place-items: center; min-width: 0;
+  padding: 76px 30px 72px 18px;
+  background: var(--ink); color: var(--paper);
+  background-image: repeating-linear-gradient(90deg, transparent 0 calc(25% - 1px), rgba(255, 255, 255, .045) calc(25% - 1px) 25%);
+}
+/* Faixa verde diagonal (a mesma do site: verde, fios escuros por dentro, −12°) */
+.capa-tela__faixa { position: absolute; top: -12%; bottom: -12%; left: 50%; width: 46%; margin-left: -23%; z-index: -1; pointer-events: none; }
+.capa-tela__faixa::before, .capa-tela__faixa::after { content: ""; position: absolute; transform: skewX(var(--slash)); }
+.capa-tela__faixa::before { inset: 0; background: var(--green); }
+.capa-tela__faixa::after { inset: 0 12px; border-left: 1px solid rgba(10, 10, 10, .35); border-right: 1px solid rgba(10, 10, 10, .35); }
+
+/* Com JavaScript, cada tela tem a largura de verdade (computador: 560 px, como a coluna da foto no site;
+   celular: 292 px) e é reduzida por inteiro para caber: o que cabe ali cabe no site */
+.capa-escala { min-width: 0; }
+.capa-escala--cel { justify-self: center; width: min(100%, 292px); }
+.capa-escala.is-escala { overflow: hidden; }
+.capa-escala.is-escala .capa-tela { transform-origin: 0 0; }
+.capa-escala.is-escala .capa-tela--pc { width: 560px; min-height: 420px; padding: 76px 36px 72px 24px; }
+.capa-escala.is-escala .capa-tela--pc .capa-foto img { max-height: 250px; }
+.capa-escala.is-escala .capa-tela--cel { width: 292px; }
+
+/* Caixa da foto = a caixa do recorte: os pontos ficam em % dela, como no site */
+.capa-foto { position: relative; max-width: 74%; line-height: 0; }
+.capa-foto img {
+  display: block; width: auto; height: auto; max-width: 100%; max-height: 240px;
+  filter: drop-shadow(0 18px 16px rgba(0, 0, 0, .55));
+  -webkit-user-select: none; user-select: none; -webkit-user-drag: none;
+}
+.capa-foto[data-capa-alvo] { cursor: crosshair; touch-action: manipulation; }
+.capa-foto[data-capa-alvo]:focus-visible { outline: 3px solid var(--volt); outline-offset: 6px; }
+
+/* Etiqueta: o li ocupa a altura da foto (largura 0) no x do ponto; o ponto desce até y */
+.capa-pontos { position: absolute; inset: 0; z-index: 2; margin: 0; padding: 0; list-style: none; pointer-events: none; }
+.capa-pt { position: absolute; top: 0; bottom: 0; left: var(--x, 50%); width: 0; line-height: 1.15; }
+.capa-pt.is-vazio { display: none; }
+.capa-pt::before {
+  content: ""; position: absolute; z-index: 2; left: -5px; top: var(--y, 50%); width: 10px; height: 10px; margin-top: -5px; border-radius: 50%;
+  background: var(--volt); box-shadow: 0 0 0 3px rgba(10, 10, 10, .82);
+}
+.capa-pt::after {
+  content: ""; position: absolute; z-index: 1; left: 0; width: 1px;
+  top: calc(-1 * (var(--off) + var(--extra, 0px))); height: calc(var(--y, 50%) + var(--off) + var(--extra, 0px));
+  background: rgba(244, 244, 240, .85); box-shadow: 1px 0 0 rgba(10, 10, 10, .28), -1px 0 0 rgba(10, 10, 10, .28);
+}
+.capa-pt--dn::after { top: var(--y, 50%); height: auto; bottom: calc(-1 * (var(--off) + var(--extra, 0px))); }
+.capa-pt__caixa {
+  position: absolute; right: -1px; bottom: calc(100% + var(--off) + var(--extra, 0px));
+  display: grid; justify-items: end; gap: 2px; padding: .5em .7em .55em .85em; text-align: right; white-space: nowrap; font-size: max(8.5px, min(12px, 2.2cqw));
+  background: var(--ink); color: var(--paper); border: 1px solid #2E2E2C; border-right: 2px solid var(--volt);
+}
+.capa-pt--dn .capa-pt__caixa { bottom: auto; top: calc(100% + var(--off) + var(--extra, 0px)); }
+.capa-pt--d .capa-pt__caixa { right: auto; left: -1px; justify-items: start; text-align: left; padding: .5em .85em .55em .7em; border-right: 1px solid #2E2E2C; border-left: 2px solid var(--volt); }
+.capa-pt__k { font: 500 max(7px, min(9.5px, 1.75cqw))/1.2 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: #8A8A85; }
+.capa-pt__k b { margin-right: 2px; color: var(--volt); font-weight: 500; }
+.capa-pt__v { font-weight: 650; font-size: max(8.5px, min(13px, 2.45cqw)); letter-spacing: -.003em; }
+.capa-pt__s { font-size: max(7.5px, min(11px, 2.1cqw)); color: #A9A9A3; }
+.capa-pt__v:empty::before { content: "…"; color: #8A8A85; }
+/* Etiqueta escolhida para marcar o ponto */
+.capa-pt.is-escolhida::before { box-shadow: 0 0 0 3px var(--ink), 0 0 0 5px var(--volt); }
+.capa-pt.is-escolhida .capa-pt__caixa { border-color: var(--volt); }
+@media (prefers-reduced-motion: no-preference) {
+  .capa-pt.is-escolhida::before { animation: capa-pulso 1.4s ease-out infinite; }
+  @keyframes capa-pulso { 0% { box-shadow: 0 0 0 3px var(--ink), 0 0 0 5px var(--volt); } 70% { box-shadow: 0 0 0 3px var(--ink), 0 0 0 11px rgba(198, 255, 61, 0); } 100% { box-shadow: 0 0 0 3px var(--ink), 0 0 0 5px rgba(198, 255, 61, 0); } }
+}
+
+/* Legenda: no computador, vertical na borda direita (como no site); no celular, etiqueta no canto de baixo */
+.capa-tela__legenda {
+  position: absolute; right: 7px; top: 50%; z-index: 3;
+  writing-mode: vertical-rl; transform: translateY(-50%) rotate(180deg);
+  max-height: calc(100% - 20px); overflow: hidden; text-overflow: ellipsis;
+  font: 500 9px/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; color: #8A8A85;
+}
+.capa-tela__legenda [data-capa-leg="marca"] { color: var(--paper); }
+
+/* Celular: um celular de 390 px em miniatura (3/4), etiquetas 1 e 3 só com nome e destaque */
+.capa-tela--cel { --off: 8px; padding: 46px 12px 50px; }
+.capa-tela--cel .capa-foto { max-width: 82%; }
+.capa-tela--cel .capa-foto img { max-height: 188px; }
+.capa-tela--cel .capa-pt__caixa { font-size: 3cqw; padding: .45em .65em .5em .75em; }
+.capa-tela--cel .capa-pt--d .capa-pt__caixa { padding: .45em .75em .5em .65em; }
+.capa-tela--cel .capa-pt__k { font-size: 3cqw; letter-spacing: .02em; }
+.capa-tela--cel .capa-pt__v { font-size: 3.45cqw; }
+.capa-tela--cel .capa-tela__legenda {
+  top: auto; bottom: 8px; left: 10px; right: auto; writing-mode: horizontal-tb; transform: none;
+  max-width: calc(100% - 20px); padding: 4px 7px; background: var(--ink); border: 1px solid #2E2E2C; font-size: 9px;
+}
+.capa-tela--cel .capa-tela__legenda.is-dir { left: auto; right: 10px; }
+.capa-tela--cel .capa-tela__legenda.is-topo { bottom: auto; top: 8px; }
+.capa-tela--cel.tem-linha { padding-bottom: 92px; }
+.capa-tela--cel .capa-tela__legenda.is-linha { left: 50%; transform: translateX(-50%); }
+.capa-aviso-ponto { min-height: 1.2em; font-size: 13.5px; font-weight: 600; color: var(--green-deep); }
+.capa-aviso-ponto.is-alerta { color: var(--amber); }
+
+/* ---------- As 4 etiquetas ---------- */
+.capa-etiquetas { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.capa-et { border: 1px solid var(--line); background: var(--white); transition: border-color .2s, box-shadow .2s; }
+.capa-et fieldset { display: grid; gap: 12px; min-width: 0; margin: 0; padding: 12px 12px 14px; border: 0; }
+.capa-et.is-erro { border-color: var(--red); box-shadow: inset 5px 0 0 var(--red); }
+.capa-et.is-escolhida { border-color: var(--ink); box-shadow: inset 5px 0 0 var(--green); }
+.capa-et__tit { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding: 0; font: 800 20px/1 var(--f-display); text-transform: uppercase; color: var(--ink); }
+.capa-et__tit b {
+  position: relative; isolation: isolate; padding: 3px 7px 2px; font: 500 11px/1 var(--f-mono); color: var(--volt);
+}
+.capa-et__tit b::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--ink); transform: skewX(var(--slash)); }
+.capa-et__tit small { font: 400 13px/1.3 var(--f-text); text-transform: none; color: var(--muted); }
+.capa-et__campos { display: grid; gap: 12px; }
+.capa-et__ponto { display: grid; gap: 10px; }
+.capa-et__xy { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.capa-et__marcar { justify-self: start; }
+.capa-et__num input { font-family: var(--f-mono); font-size: 15px; }
+.capa-et__num > label { font-size: 13.5px; font-weight: 600; }
+.capa-et__marcar[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); box-shadow: inset 0 -4px 0 var(--green); }
+.capa-vazias { margin-top: -8px; }
+.capa-original { display: grid; gap: 6px; justify-items: start; min-width: 0; padding-top: 14px; border-top: 1px dashed var(--line-2); }
+.capa-original .btn { max-width: 100%; white-space: normal; text-align: left; }
+
+@media (min-width: 560px) {
+  .capa-et__campos { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); }
+  .capa-et__det { grid-column: 1 / -1; }
+  .capa-tela { padding-inline: 24px 36px; }
+}
+@media (min-width: 1000px) {
+  .capa__previas { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); align-items: start; }
+  .capa-aviso-ponto { grid-column: 1 / -1; }
+  .capa-tela--pc { min-height: 420px; }
+  .capa-tela--pc .capa-foto img { max-height: 250px; }
+  .capa-etiquetas { grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .capa-et { transition: none; }
+}
+
+/* Posição do ponto sem JavaScript: cx-N → --x: N%, cy-N → --y: N% (de 0 a 100) */
+.capa-pt.cx-0{--x:0%}.capa-pt.cx-1{--x:1%}.capa-pt.cx-2{--x:2%}.capa-pt.cx-3{--x:3%}.capa-pt.cx-4{--x:4%}.capa-pt.cx-5{--x:5%}.capa-pt.cx-6{--x:6%}.capa-pt.cx-7{--x:7%}.capa-pt.cx-8{--x:8%}.capa-pt.cx-9{--x:9%}
+.capa-pt.cx-10{--x:10%}.capa-pt.cx-11{--x:11%}.capa-pt.cx-12{--x:12%}.capa-pt.cx-13{--x:13%}.capa-pt.cx-14{--x:14%}.capa-pt.cx-15{--x:15%}.capa-pt.cx-16{--x:16%}.capa-pt.cx-17{--x:17%}.capa-pt.cx-18{--x:18%}.capa-pt.cx-19{--x:19%}
+.capa-pt.cx-20{--x:20%}.capa-pt.cx-21{--x:21%}.capa-pt.cx-22{--x:22%}.capa-pt.cx-23{--x:23%}.capa-pt.cx-24{--x:24%}.capa-pt.cx-25{--x:25%}.capa-pt.cx-26{--x:26%}.capa-pt.cx-27{--x:27%}.capa-pt.cx-28{--x:28%}.capa-pt.cx-29{--x:29%}
+.capa-pt.cx-30{--x:30%}.capa-pt.cx-31{--x:31%}.capa-pt.cx-32{--x:32%}.capa-pt.cx-33{--x:33%}.capa-pt.cx-34{--x:34%}.capa-pt.cx-35{--x:35%}.capa-pt.cx-36{--x:36%}.capa-pt.cx-37{--x:37%}.capa-pt.cx-38{--x:38%}.capa-pt.cx-39{--x:39%}
+.capa-pt.cx-40{--x:40%}.capa-pt.cx-41{--x:41%}.capa-pt.cx-42{--x:42%}.capa-pt.cx-43{--x:43%}.capa-pt.cx-44{--x:44%}.capa-pt.cx-45{--x:45%}.capa-pt.cx-46{--x:46%}.capa-pt.cx-47{--x:47%}.capa-pt.cx-48{--x:48%}.capa-pt.cx-49{--x:49%}
+.capa-pt.cx-50{--x:50%}.capa-pt.cx-51{--x:51%}.capa-pt.cx-52{--x:52%}.capa-pt.cx-53{--x:53%}.capa-pt.cx-54{--x:54%}.capa-pt.cx-55{--x:55%}.capa-pt.cx-56{--x:56%}.capa-pt.cx-57{--x:57%}.capa-pt.cx-58{--x:58%}.capa-pt.cx-59{--x:59%}
+.capa-pt.cx-60{--x:60%}.capa-pt.cx-61{--x:61%}.capa-pt.cx-62{--x:62%}.capa-pt.cx-63{--x:63%}.capa-pt.cx-64{--x:64%}.capa-pt.cx-65{--x:65%}.capa-pt.cx-66{--x:66%}.capa-pt.cx-67{--x:67%}.capa-pt.cx-68{--x:68%}.capa-pt.cx-69{--x:69%}
+.capa-pt.cx-70{--x:70%}.capa-pt.cx-71{--x:71%}.capa-pt.cx-72{--x:72%}.capa-pt.cx-73{--x:73%}.capa-pt.cx-74{--x:74%}.capa-pt.cx-75{--x:75%}.capa-pt.cx-76{--x:76%}.capa-pt.cx-77{--x:77%}.capa-pt.cx-78{--x:78%}.capa-pt.cx-79{--x:79%}
+.capa-pt.cx-80{--x:80%}.capa-pt.cx-81{--x:81%}.capa-pt.cx-82{--x:82%}.capa-pt.cx-83{--x:83%}.capa-pt.cx-84{--x:84%}.capa-pt.cx-85{--x:85%}.capa-pt.cx-86{--x:86%}.capa-pt.cx-87{--x:87%}.capa-pt.cx-88{--x:88%}.capa-pt.cx-89{--x:89%}
+.capa-pt.cx-90{--x:90%}.capa-pt.cx-91{--x:91%}.capa-pt.cx-92{--x:92%}.capa-pt.cx-93{--x:93%}.capa-pt.cx-94{--x:94%}.capa-pt.cx-95{--x:95%}.capa-pt.cx-96{--x:96%}.capa-pt.cx-97{--x:97%}.capa-pt.cx-98{--x:98%}.capa-pt.cx-99{--x:99%}.capa-pt.cx-100{--x:100%}
+.capa-pt.cy-0{--y:0%}.capa-pt.cy-1{--y:1%}.capa-pt.cy-2{--y:2%}.capa-pt.cy-3{--y:3%}.capa-pt.cy-4{--y:4%}.capa-pt.cy-5{--y:5%}.capa-pt.cy-6{--y:6%}.capa-pt.cy-7{--y:7%}.capa-pt.cy-8{--y:8%}.capa-pt.cy-9{--y:9%}
+.capa-pt.cy-10{--y:10%}.capa-pt.cy-11{--y:11%}.capa-pt.cy-12{--y:12%}.capa-pt.cy-13{--y:13%}.capa-pt.cy-14{--y:14%}.capa-pt.cy-15{--y:15%}.capa-pt.cy-16{--y:16%}.capa-pt.cy-17{--y:17%}.capa-pt.cy-18{--y:18%}.capa-pt.cy-19{--y:19%}
+.capa-pt.cy-20{--y:20%}.capa-pt.cy-21{--y:21%}.capa-pt.cy-22{--y:22%}.capa-pt.cy-23{--y:23%}.capa-pt.cy-24{--y:24%}.capa-pt.cy-25{--y:25%}.capa-pt.cy-26{--y:26%}.capa-pt.cy-27{--y:27%}.capa-pt.cy-28{--y:28%}.capa-pt.cy-29{--y:29%}
+.capa-pt.cy-30{--y:30%}.capa-pt.cy-31{--y:31%}.capa-pt.cy-32{--y:32%}.capa-pt.cy-33{--y:33%}.capa-pt.cy-34{--y:34%}.capa-pt.cy-35{--y:35%}.capa-pt.cy-36{--y:36%}.capa-pt.cy-37{--y:37%}.capa-pt.cy-38{--y:38%}.capa-pt.cy-39{--y:39%}
+.capa-pt.cy-40{--y:40%}.capa-pt.cy-41{--y:41%}.capa-pt.cy-42{--y:42%}.capa-pt.cy-43{--y:43%}.capa-pt.cy-44{--y:44%}.capa-pt.cy-45{--y:45%}.capa-pt.cy-46{--y:46%}.capa-pt.cy-47{--y:47%}.capa-pt.cy-48{--y:48%}.capa-pt.cy-49{--y:49%}
+.capa-pt.cy-50{--y:50%}.capa-pt.cy-51{--y:51%}.capa-pt.cy-52{--y:52%}.capa-pt.cy-53{--y:53%}.capa-pt.cy-54{--y:54%}.capa-pt.cy-55{--y:55%}.capa-pt.cy-56{--y:56%}.capa-pt.cy-57{--y:57%}.capa-pt.cy-58{--y:58%}.capa-pt.cy-59{--y:59%}
+.capa-pt.cy-60{--y:60%}.capa-pt.cy-61{--y:61%}.capa-pt.cy-62{--y:62%}.capa-pt.cy-63{--y:63%}.capa-pt.cy-64{--y:64%}.capa-pt.cy-65{--y:65%}.capa-pt.cy-66{--y:66%}.capa-pt.cy-67{--y:67%}.capa-pt.cy-68{--y:68%}.capa-pt.cy-69{--y:69%}
+.capa-pt.cy-70{--y:70%}.capa-pt.cy-71{--y:71%}.capa-pt.cy-72{--y:72%}.capa-pt.cy-73{--y:73%}.capa-pt.cy-74{--y:74%}.capa-pt.cy-75{--y:75%}.capa-pt.cy-76{--y:76%}.capa-pt.cy-77{--y:77%}.capa-pt.cy-78{--y:78%}.capa-pt.cy-79{--y:79%}
+.capa-pt.cy-80{--y:80%}.capa-pt.cy-81{--y:81%}.capa-pt.cy-82{--y:82%}.capa-pt.cy-83{--y:83%}.capa-pt.cy-84{--y:84%}.capa-pt.cy-85{--y:85%}.capa-pt.cy-86{--y:86%}.capa-pt.cy-87{--y:87%}.capa-pt.cy-88{--y:88%}.capa-pt.cy-89{--y:89%}
+.capa-pt.cy-90{--y:90%}.capa-pt.cy-91{--y:91%}.capa-pt.cy-92{--y:92%}.capa-pt.cy-93{--y:93%}.capa-pt.cy-94{--y:94%}.capa-pt.cy-95{--y:95%}.capa-pt.cy-96{--y:96%}.capa-pt.cy-97{--y:97%}.capa-pt.cy-98{--y:98%}.capa-pt.cy-99{--y:99%}.capa-pt.cy-100{--y:100%}
+
+/* ---------- Categorias (a=categorias, só administradores) ----------
+   Cada linha (categoria ou
+   subcategoria) é um flex com quebra: no celular o nome ocupa a 1ª linha
+   e os botões a 2ª; a partir de 700 px fica tudo numa linha. "Editar",
+   "Renomear" e "Apagar" são <details>: abertos, descem para baixo da linha,
+   na largura toda (sem JavaScript também). */
+.dica--cat code { font-size: .8em; }
+.cat-orfaos ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+.cat-orfaos__onde { font: 500 11px/1.3 var(--f-mono); color: var(--muted); overflow-wrap: anywhere; }
+
+.ctgs { display: grid; gap: 18px; margin: 4px 0 0; }
+.ctg { background: var(--white); border: 1px solid var(--line); padding: 14px 12px 10px; scroll-margin-top: calc(var(--topo) + 16px); transition: border-color .3s, box-shadow .3s; }
+.ctg:target, .ctg.is-movendo { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+
+.ctg__linha, .sb { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ctg__linha { padding-bottom: 12px; border-bottom: 3px solid var(--ink); }
+.ctg__txt, .sb__txt { flex: 1 1 100%; min-width: 0; }
+.ctg__pos { font: 500 10.5px/1.4 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); overflow-wrap: anywhere; }
+.ctg__cod { text-transform: none; letter-spacing: 0; }
+.ctg__oculta { color: var(--amber); }
+.ctg__nome { margin-top: 5px; font: 800 30px/1 var(--f-display); text-transform: uppercase; color: var(--ink); overflow-wrap: anywhere; }
+.ctg__nome span { font: 500 12px/1 var(--f-mono); letter-spacing: .02em; text-transform: none; color: var(--muted); white-space: nowrap; }
+.ctg__desc { margin-top: 6px; font-size: 14px; line-height: 1.4; color: var(--muted); max-width: 70ch; }
+.ctg__seta { display: flex; }
+
+/* Botões que abrem um painel (summary) */
+.ctg__bt {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-height: 44px; min-width: 44px; padding: 0 13px;
+  border: 1.5px solid var(--line-2); background: var(--white); color: var(--ink);
+  font-weight: 700; font-size: 13.5px; cursor: pointer; list-style: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.ctg__bt::-webkit-details-marker { display: none; }
+.ctg__bt::marker { content: ""; }
+.ctg__bt .i { width: 18px; height: 18px; color: var(--green-deep); }
+.ctg__bt:hover { border-color: var(--ink); }
+.ctg__bt--perigo { padding: 0; color: var(--red); }
+.ctg__bt--perigo .i { color: var(--red); }
+.ctg__bt--perigo:hover { border-color: var(--red); background: var(--red-soft); }
+
+/* Aberto: desce para baixo da linha, na largura toda */
+.ctg__det[open] { flex: 1 1 100%; order: 5; min-width: 0; }
+.ctg__det[open] > .ctg__bt { width: 100%; justify-content: flex-start; padding: 0 13px; background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.ctg__det[open] > .ctg__bt .i { color: var(--volt); }
+.ctg__det[open] > .ctg__bt::after { content: "×" / ""; margin-left: auto; font: 400 26px/1 var(--f-text); }
+.ctg__det--perigo[open] > .ctg__bt { background: var(--red); border-color: var(--red); color: var(--white); }
+.ctg__det--perigo[open] > .ctg__bt .i { color: var(--white); }
+.ctg__det--perigo[open] > .ctg__bt::before { content: "Apagar" / ""; font-weight: 700; order: 2; }
+.ctg__det--perigo[open] > .ctg__bt .i { order: 1; }
+.ctg__det--perigo[open] > .ctg__bt::after { order: 3; }
+
+.ctg__painel { display: grid; gap: 12px; padding: 14px 14px 16px; border: 1.5px solid var(--ink); border-top: 0; background: var(--paper); }
+.ctg__det--perigo .ctg__painel { border-color: var(--red); background: var(--red-soft); }
+.ctg__painel-tit { font: 800 21px/1.05 var(--f-display); text-transform: uppercase; color: var(--ink); overflow-wrap: anywhere; }
+.ctg__painel .ajuda b { color: var(--ink); }
+.ctg__painel .campo__erro { margin: 0; }
+.ctg__bts { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* Subcategorias */
+.sbs { display: grid; margin-top: 2px; }
+.sb { padding: 10px 0; border-bottom: 1px solid var(--paper-3); scroll-margin-top: calc(var(--topo) + 16px); transition: background .4s; }
+.sb:target, .sb.is-movendo { background: var(--green-soft); box-shadow: -12px 0 0 var(--green-soft), 12px 0 0 var(--green-soft); }
+.sb__nome { font-weight: 700; font-size: 16px; line-height: 1.3; color: var(--ink); overflow-wrap: anywhere; }
+.sb__n { font: 500 11px/1 var(--f-mono); color: var(--muted); white-space: nowrap; }
+.sb.is-vazia .sb__n { color: var(--amber); }
+.sbs__vazio { padding: 12px 0; font-size: 14px; color: var(--amber); }
+
+.sb-nova { margin-top: 10px; }
+.sb-nova__bt {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 4px;
+  font-weight: 700; font-size: 14.5px; color: var(--green-deep); cursor: pointer; list-style: none;
+}
+.sb-nova__bt::-webkit-details-marker { display: none; }
+.sb-nova__bt::marker { content: ""; }
+.sb-nova__bt:hover { color: var(--ink); }
+.sb-nova[open] > .sb-nova__bt { color: var(--ink); }
+.sb-nova[open] > .ctg__painel { border-top: 1.5px solid var(--ink); }
+
+.ctg-nova { margin-top: 26px; max-width: 760px; scroll-margin-top: calc(var(--topo) + 16px); }
+.ctg-nova:focus { outline: none; }
+.ctg-nova:target { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.ctg-nova__form { display: grid; gap: 16px; }
+
+@media (min-width: 700px) {
+  .ctg { padding: 18px 20px 12px; }
+  .ctg__txt, .sb__txt { flex: 1 1 0; }
+  .ctg__nome { font-size: 34px; }
+  .sb { padding: 8px 0; }
+  .ctg__painel { padding: 16px 18px 18px; }
+  .ctg__painel .campo { max-width: 560px; }
+}
+@media (max-width: 380px) {
+  .ctg__bt:not(.ctg__bt--perigo) { padding: 0 10px; font-size: 13px; }
+}
+
+/* Atalhos em outras telas (visoes-categorias.php: atalhoCategorias, ajudaCategoriasNoForm) */
+.lista-topo__cat .i { width: 17px; height: 17px; }
+/* Telas largas: "Categorias" fica junto de "Selecionar", à direita (a contagem fica sozinha à esquerda) */
+@media (min-width: 700px) { .lista-topo__cat { margin-left: auto; } }
+.ajuda--cat { margin-top: -4px; }
+/* Aviso dentro dos painéis de Categorias (ex.: link fixo do site para a subcategoria) */
+.ajuda--alerta { display: flex; gap: 6px; align-items: flex-start; color: var(--amber); }
+.ajuda--alerta .i { flex: none; width: 16px; height: 16px; margin-top: 2px; }
+.ajuda--alerta b { color: var(--amber); }

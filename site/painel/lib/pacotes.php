@@ -14,6 +14,8 @@
    inclusive). O que foi aplicado/dispensado fica em pacotes.php (privado).
    O pacote é conferido com as MESMAS regras do formulário do produto; com
    qualquer problema ele aparece como "Pacote com problema" e não aplica.
+   Categoria/subcategoria que não existe mais no catálogo do servidor (o
+   dono renomeou ou apagou em Categorias) trava só aquela mudança.
    Também usado pela linha de comando (ferramentas/aplicar-pacote.php).
    ===================================================================== */
 declare(strict_types=1);
@@ -81,7 +83,8 @@ function lerPacote(string $id, array $categorias): array
     static $cache = [];
     $chave = $id . '|' . md5(serialize($categorias));
     if (isset($cache[$chave])) return $cache[$chave];
-    $pac = ['id' => $id, 'titulo' => $id, 'resumo' => '', 'criado' => '', 'operacoes' => [], 'versao' => '', 'erro' => null];
+    $pac = ['id' => $id, 'titulo' => $id, 'resumo' => '', 'criado' => '', 'operacoes' => [], 'versao' => '', 'erro' => null,
+        'categorias' => $categorias];   // as de agora: estadoOperacao confere em qual categoria/subcategoria cada produto entra
     try {
         $pac = conferirPacote($id, $categorias) + $pac;
     } catch (ErroPacote $e) {
@@ -256,8 +259,17 @@ function produtoDoPacote($d, array $categorias, string $pasta): array
         'spec_nome' => array_column($specs, 0), 'spec_valor' => array_column($specs, 1),
         'destaque' => !empty($d['destaque']) ? '1' : '', 'visivel' => ($d['visivel'] ?? true) ? '1' : '',
     ];
+    // Categoria e subcategoria: aqui só o formato (código e nome válidos). Se elas existem no catálogo
+    // de AGORA é situação de cada mudança (estadoOperacao → destinoDoProdutoDoPacote): o dono pode ter
+    // renomeado ou apagado uma subcategoria (tela Categorias) e o resto do pacote continua aplicável.
+    $catPac = is_string($d['categoria'] ?? null) ? $d['categoria'] : '';
+    $subPac = limparLinha($d['subcategoria'] ?? '') ?? '';
+    $catsForm = $categorias;
+    if (strlen($catPac) <= LIMITES['id'] && preg_match(RE_ID, $catPac) && $subPac !== '' && tamanho($subPac) <= LIMITES_CATEGORIA['subcategoria']) {
+        $catsForm = [['id' => $catPac, 'nome' => $catPac, 'subcategorias' => [$subPac]]];
+    }
     // Sem outros produtos: código repetido é situação ("Já está no catálogo"), não erro do pacote
-    [$p, $errosForm] = produtoDoFormulario($f, $categorias, [], null);
+    [$p, $errosForm] = produtoDoFormulario($f, $catsForm, [], null);
     foreach ($errosForm as $m) $erros[] = $m;
     if (($p['id'] ?? '') !== $id) $erros[] = 'Código (id) inválido.';
 
@@ -504,7 +516,7 @@ function estadoOperacao(array $pac, int $i, array $produtos, array $reg = []): a
             if ($idx === null) $st = ['estado' => 'feito', 'situacao' => 'Já não está no catálogo.'] + $st;
             elseif ($o['alvo'] === produtoCapa()) {
                 $st = ['estado' => 'opcional', 'situacao' => 'Desmarcada porque é o produto da capa do site.',
-                    'aviso' => 'É o produto da capa do site: a foto da capa continua lá, mas o link dela passa a abrir o catálogo com o aviso “produto fora do catálogo”.'] + $st;
+                    'aviso' => 'É o produto da capa do site. ' . (function_exists('fraseCapaFora') ? fraseCapaFora() : 'A foto da capa continua lá, mas o link dela vai abrir o catálogo com o aviso “produto fora do catálogo”.')] + $st;
             }
             break;
     }
@@ -516,6 +528,17 @@ function estadoOperacao(array $pac, int $i, array $produtos, array $reg = []): a
             // Foi aplicada e depois desfeita (cópia restaurada, ou mudada à mão no painel)
             $st['estado'] = 'opcional';
             $st['situacao'] = 'Foi aplicada em ' . quando($ap['quando'], false) . ' e depois desfeita (cópia de segurança restaurada ou mudança no painel). Marque para aplicar de novo.';
+        }
+    }
+    // Categoria e subcategoria do produto novo diante do catálogo de AGORA (tela Categorias)
+    if (($st['estado'] === 'aplicavel' || $st['estado'] === 'opcional') && isset($o['produto']) && is_array($pac['categorias'] ?? null)) {
+        $dest = destinoDoProdutoDoPacote($o, $pac['categorias'], $idx !== null ? $produtos[$idx] : null);
+        if ($dest['erro'] !== null) {
+            $st['estado'] = 'impossivel';
+            $st['situacao'] = $dest['erro'];
+        } elseif ($dest['sub'] !== null) {
+            $st['subcategoria'] = $dest['sub'];
+            $st['aviso'] = trim($st['aviso'] . ' ' . $dest['aviso']);
         }
     }
     // Foto do pacote com o mesmo nome de uma foto DIFERENTE que já está no site: nunca sobrescreve
@@ -532,6 +555,30 @@ function estadoOperacao(array $pac, int $i, array $produtos, array $reg = []): a
     }
     $st['marcado'] = $st['estado'] === 'aplicavel';
     return $st;
+}
+
+/**
+ * Onde o produto novo de uma mudança entra no catálogo de agora: ['erro' => motivo|null, 'sub' => subcategoria
+ * trocada|null, 'aviso' => texto]. Categoria apagada ou subcategoria que não existe mais: não dá para aplicar
+ * (com a explicação). Exceção: na troca de modelo, se a subcategoria do pacote não existe mais (foi renomeada),
+ * o novo entra na subcategoria do modelo antigo, quando o antigo está na mesma categoria.
+ */
+function destinoDoProdutoDoPacote(array $o, array $categorias, ?array $antigo): array
+{
+    $p = $o['produto'];
+    $c = categoriaPorId($categorias, (string) ($p['categoria'] ?? ''));
+    if (!$c) {
+        return ['erro' => 'A categoria deste produto (“' . $p['categoria'] . '”) não existe mais no catálogo (foi apagada em Categorias). Avise quem cuida do site.', 'sub' => null, 'aviso' => ''];
+    }
+    $sub = (string) ($p['subcategoria'] ?? '');
+    if (in_array($sub, $c['subcategorias'], true)) return ['erro' => null, 'sub' => null, 'aviso' => ''];
+    $subAntigo = (string) ($antigo['subcategoria'] ?? '');
+    if ($o['tipo'] === 'substituir' && $antigo !== null && ($antigo['categoria'] ?? '') === $c['id'] && in_array($subAntigo, $c['subcategorias'], true)) {
+        return ['erro' => null, 'sub' => $subAntigo,
+            'aviso' => 'Entra em “' . $subAntigo . '”, a subcategoria do modelo antigo (a “' . $sub . '” do pacote não existe mais em ' . $c['nome'] . ').'];
+    }
+    return ['erro' => 'A subcategoria “' . $sub . '” não existe mais em ' . $c['nome'] . ' (foi renomeada ou apagada em Categorias). Para aplicar esta mudança, crie de novo uma subcategoria com esse nome, ou avise quem cuida do site.',
+        'sub' => null, 'aviso' => ''];
 }
 
 function fotosIguais(string $a, string $b): bool
@@ -618,6 +665,7 @@ function avisosDePacotes(array $catalogo): array
 function executarOperacoes(array $pac, array $catalogo, array $indices, array $reg, array &$copiadas, bool $copiarFotos = true): array
 {
     $prods = array_values($catalogo['produtos']);
+    $pac['categorias'] = $catalogo['categorias'];   // as do catálogo travado (podem ter mudado desde a tela)
     $feitas = [];
     $puladas = [];
     $n = array_fill_keys(TIPOS_OPERACAO, 0);
@@ -627,6 +675,8 @@ function executarOperacoes(array $pac, array $catalogo, array $indices, array $r
         $st = estadoOperacao($pac, $i, $prods, $reg);
         if ($st['estado'] !== 'aplicavel' && $st['estado'] !== 'opcional') { $puladas[$i] = $st['situacao']; continue; }
         $o = $pac['operacoes'][$i];
+        // Subcategoria do pacote que não existe mais: o modelo novo entra na do antigo (destinoDoProdutoDoPacote)
+        if (isset($st['subcategoria'], $o['produto'])) $o['produto']['subcategoria'] = $st['subcategoria'];
         if ($copiarFotos) {
             foreach (fotosDaOperacao($o) as [$tipo, $arq]) copiarFotoDoPacote($pac['id'], $tipo, $arq, $copiadas);
         }
@@ -825,7 +875,7 @@ function acaoPacoteAplicar(): void
     foreach ($r['feitas'] as $i) {
         $o = $pac['operacoes'][$i];
         if ($o['tipo'] === 'remover' && $o['alvo'] === produtoCapa()) {
-            avisar('Atenção: saiu do site o produto da capa. A foto da capa continua lá, mas o link dela agora abre o catálogo com o aviso “produto fora do catálogo”.', 'erro');
+            avisar('Atenção: saiu do site o produto da capa. ' . fraseCapaFora(true), 'erro');
         }
     }
     redirecionar(link_('pacote', ['id' => $id]));

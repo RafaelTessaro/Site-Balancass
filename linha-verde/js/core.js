@@ -12,6 +12,8 @@
      de WhatsApp, abas de kits, botões flutuantes.
    - Animação: GSAP + ScrollTrigger (+ SplitText/DrawSVG se houver) e Lenis,
      com o sistema de revelação data-reveal. Respeita "reduzir movimento".
+   - Contagem anônima para o painel ("Mais procurados", seção 12): páginas,
+     produtos abertos e cliques no WhatsApp/Ligar, sem cookies.
    API pública em window.LV — documentada em COMPONENTES.md.
    ===================================================================== */
 (function () {
@@ -577,8 +579,13 @@
   /* ------------------------------------------------------------------
      3. Ficha de produto (LV.cardProduto) e listas (data-produtos)
      ------------------------------------------------------------------ */
-  var CAT_CURTO = { balancas: "Balanças", automacao: "Automação", informatica: "Informática" };
-  LV.catCurto = function (id) { return CAT_CURTO[id] || (BC ? BC.categoriaNome(id) : id); };
+  // Nome curto das categorias que vieram com o site, enquanto a categoria tem o nome original; renomeada
+  // no painel (ou categoria nova), vale o nome do catálogo. O mesmo de CATEGORIAS_CURTAS (painel/lib/catalogo.php).
+  var CAT_CURTO = { balancas: ["Balanças", "Balanças"], automacao: ["Automação", "Automação Comercial"], informatica: ["Informática", "Informática e PDV"] };
+  LV.catCurto = function (id) {
+    var nome = BC ? BC.categoriaNome(id) : "", c = Object.prototype.hasOwnProperty.call(CAT_CURTO, id) ? CAT_CURTO[id] : null;
+    return c && (!nome || nome === c[1]) ? c[0] : (nome || id);
+  };
 
   function corta(v, max, seps) {
     v = String(v == null ? "" : v).split(" (")[0].split(";")[0].trim();
@@ -678,7 +685,7 @@
     var semi = p.condicao === "seminovo", h = opts.h || "h3";
     var cls = "spec" + (opts.variante && opts.variante !== "ficha" ? " spec--" + opts.variante : "") + (opts.classe ? " " + opts.classe : "");
     return '<article class="' + cls + '" data-cat="' + esc(p.categoria) + '" data-id="' + esc(p.id) + '">' +
-      '<span class="spec__tab">' + esc(LV.catCurto(p.categoria)) + "</span>" +
+      '<span class="spec__tab" title="' + esc(BC.categoriaNome(p.categoria) || LV.catCurto(p.categoria)) + '">' + esc(LV.catCurto(p.categoria)) + "</span>" +
       '<div class="spec__head" aria-hidden="true"><span>Nº ' + LV.pad(n) + "</span></div>" +
       '<figure class="spec__fig' + (rec ? "" : " spec__fig--photo") + '">' + LV.imgProduto(p, opts) + "</figure>" +
       '<div class="spec__body">' +
@@ -915,6 +922,7 @@
         if (field) field.classList.remove("is-err"); f.nome.removeAttribute("aria-invalid"); if (err) err.textContent = "";
         var texto = "Olá! Meu nome é " + nome + "." + (assunto ? "\n*Assunto:* " + assunto : "") + (msg ? "\n" + msg : "") + "\n(Mensagem enviada pelo site)";
         var url = BC.whatsLink(texto);
+        contar("whatsapp", "", "formulario");   // 12. contagem anônima
         var w = window.open(url, "_blank");
         if (w) { try { w.opener = null; } catch (er) { /* ok */ } } else { location.href = url; }
       });
@@ -932,7 +940,7 @@
   // remover em vez de esconder mantém a regra do celular (só os 2 primeiros) contando certo.
   function hidratarKits() {
     $$(".kit__prods").forEach(function (ul) {
-      var usados = {};
+      var usados = Object.create(null);   // sem protótipo: código "constructor" não engana
       $$(".kit__p[data-detail]", ul).forEach(function (a) {
         var li = a.closest("li") || a, p = null;
         var ids = [a.getAttribute("data-detail")].concat((a.getAttribute("data-ou") || "").split(/\s+/));
@@ -1304,8 +1312,109 @@
   }
 
   /* ------------------------------------------------------------------
+     12. Contagem anônima ("Mais procurados", no painel)
+     Manda um aviso pequeno para painel/contar.php a cada página vista,
+     a cada produto aberto no catálogo (produtos.html#p=… e o "Detalhes"
+     das fichas) e a cada clique no WhatsApp ou em "Ligar":
+       { t: "pagina" | "produto" | "whatsapp" | "ligar",
+         p: a página (classe pg-… do <body>), id: código do produto (botões
+         de um produto só: ficha do catálogo e cartão) ou "",
+         o: o lugar do botão ("topo", "flutuante", "rodape"…; ver lugar()) ou "" }
+     Sem cookies, sem identificador guardado no aparelho, nada pessoal: o
+     painel só soma quantos, por dia. Não conta navegador automatizado
+     (navigator.webdriver), a página 404 nem o aparelho que pediu para não
+     contar (localStorage "bc-nao-contar" = "1": o painel liga sozinho
+     quando alguém entra nele). Nunca atrasa nem quebra a página: a visita
+     sai depois da carga, nada espera resposta e todo erro é ignorado.
+     Um link pode dizer o próprio lugar: data-contar-o="…" (e data-contar-id).
+     ------------------------------------------------------------------ */
+  var CONTAR_PAGINA = (function () {
+    var m = /(?:^|\s)pg-(inicio|produtos|assistencia|sistema|empresa|contato)(?=\s|$|-)/.exec((document.body && document.body.className) || "");
+    return m ? m[1] : "";
+  })();
+  var contarURL = "", contados = 0, abertos = Object.create(null);   // mapa sem protótipo (código "constructor")
+  function semContar() {
+    if (!CONTAR_PAGINA || navigator.webdriver || !/^https?:$/.test(location.protocol)) return true;
+    try { return window.localStorage.getItem("bc-nao-contar") === "1"; } catch (e) { return false; }
+  }
+  function contar(t, id, o) {
+    try {
+      if (semContar() || ++contados > 80) return;
+      if (!contarURL) {
+        // painel/ fica ao lado de compartilhado/ (BC.img("") = …/compartilhado/img/)
+        try { contarURL = new URL("../../painel/contar.php", new URL(BC.img(""), location.href)).href; }
+        catch (e) { contarURL = "painel/contar.php"; }
+      }
+      var corpo = JSON.stringify({ t: t, p: CONTAR_PAGINA, id: id || "", o: o || "" });
+      if (navigator.sendBeacon && navigator.sendBeacon(contarURL, corpo)) return;
+      if (window.fetch) fetch(contarURL, { method: "POST", body: corpo, keepalive: true, credentials: "omit", headers: { "Content-Type": "text/plain" } }).catch(function () { /* ok */ });
+    } catch (e) { /* a contagem nunca atrapalha o site */ }
+  }
+  LV.contar = contar;
+  function idDoEndereco() {
+    var m = /^#p=(.+)$/.exec(location.hash);
+    if (!m) return "";
+    try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; }
+  }
+  function produtoExiste(id) { return !!(id && BC && BC.porId(id)); }
+  // Seções com id que viram o lugar do clique (as outras: "secao")
+  var LUGAR_SECAO = { ipem: "ipem", faq: "faq", recursos: "recursos", informatica: "informatica", fichas: "fichas", ajuda: "assunto", canais: "canais", fiscal: "sat" };
+  function lugar(a) {
+    var c = function (s) { return a.closest(s); }, el;
+    if ((el = c("[data-contar-o]"))) return [el.getAttribute("data-contar-o"), el.getAttribute("data-contar-id") || ""];
+    if (c("[data-drawer]")) { var id = idDoEndereco(); return produtoExiste(id) ? ["ficha", id] : ["naoachou", ""]; }
+    if ((el = c(".spec[data-id]"))) return produtoExiste(el.getAttribute("data-id")) ? ["cartao", el.getAttribute("data-id")] : ["secao", ""];
+    if (c("[data-float]")) return ["flutuante", ""];
+    if (c(".hdr")) return ["topo", ""];
+    if (c("[data-menu]")) return ["menu", ""];
+    if (c(".ftr")) return ["rodape", ""];
+    if (c(".kit, [data-kits]")) return ["kit", ""];
+    if (c(".pn-hero, .phero")) return ["hero", ""];
+    if (c(".ask")) return ["chamada", ""];
+    if (c(".pn-panel, #painel")) return ["quadros", ""];
+    if (c(".empty, [data-cta]")) return ["naoachou", ""];
+    if (c(".cat__sat, .sat")) return ["sat", ""];
+    var sec = c("section[id]");
+    return [sec && LUGAR_SECAO[sec.id] || "secao", ""];
+  }
+  function contagem() {
+    if (!CONTAR_PAGINA) return;
+    // Página vista: depois da carga, quando o navegador estiver livre (ou ao sair antes disso)
+    var foi = false;
+    var vista = function () { if (!foi) { foi = true; contar("pagina"); } };
+    var folga = function () { if (window.requestIdleCallback) requestIdleCallback(vista, { timeout: 3000 }); else setTimeout(vista, 1200); };
+    if (document.prerendering) document.addEventListener("prerenderingchange", folga, { once: true });   // pré-carregada: só conta se abrir
+    else if (document.readyState === "complete") folga();
+    else window.addEventListener("load", folga, { once: true });
+    window.addEventListener("pagehide", function () { if (!document.prerendering) vista(); }, { once: true });
+    // Produto aberto no catálogo: o painel de detalhes ([data-dw-body]) recebe o produto do endereço (#p=…).
+    // Uma vez por produto em cada visita à página (voltar e avançar não somam de novo).
+    var dw = $("[data-drawer] [data-dw-body]");
+    if (dw && window.MutationObserver) new MutationObserver(function () {
+      var id = idDoEndereco();
+      if (abertos[id] || !produtoExiste(id)) return;
+      abertos[id] = true;
+      contar("produto", id);
+    }).observe(dw, { childList: true });
+    // Cliques no WhatsApp e em "Ligar" (também com o botão do meio, que abre em outra aba)
+    var clique = function (e) {
+      if (e.type === "auxclick" && e.button !== 1) return;
+      var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+      if (!a) return;
+      var href = a.getAttribute("href") || "";
+      var t = /^tel:/i.test(href) ? "ligar" : /(?:\/\/|\.)(?:wa\.me|whatsapp\.com)\//i.test(href) ? "whatsapp" : "";
+      if (!t) return;
+      var l = lugar(a);
+      contar(t, l[1], l[0]);
+    };
+    document.addEventListener("click", clique, true);
+    document.addEventListener("auxclick", clique, true);
+  }
+
+  /* ------------------------------------------------------------------
      Início
      ------------------------------------------------------------------ */
+  try { contagem(); } catch (e) { /* a contagem nunca atrapalha o site */ }
   if (BC) {
     try { aviso(); } catch (e) { if (window.console) console.warn(e); }   // antes do resto: a página já nasce com a faixa
     fill();
