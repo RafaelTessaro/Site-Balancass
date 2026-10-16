@@ -429,7 +429,7 @@
       '<div class="dw__buy">' +
         '<p class="dw__price"><span>Preço</span><b>' + (p.preco ? esc(p.preco) : "Consulte") + "</b></p>" +
         '<div class="dw__ctas">' +
-          '<a class="btn btn--green btn--lg" href="' + BC.whatsProduto(p) + '" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Pedir orçamento no WhatsApp">Pedir orçamento no WhatsApp</span><span class="sr-only"> (abre em nova aba)</span></a>' +
+          '<a class="btn btn--green btn--lg" href="' + BC.whatsProduto(p) + '" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Solicitar orçamento no WhatsApp">Solicitar orçamento no WhatsApp</span><span class="sr-only"> (abre em nova aba)</span></a>' +
           '<a class="btn btn--line" href="' + BC.telLink() + '"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg><span class="st" data-t="Ligar">Ligar</span></a>' +
           '<button class="btn btn--line dw__copy" type="button" data-copy><svg class="i" aria-hidden="true"><use href="#i-link"/></svg><span class="st" data-t="Copiar link">Copiar link</span></button>' +
         "</div>" +
@@ -471,7 +471,7 @@
         '<div class="dw__rel"><p class="mono dw__rel-t">Modelo atual</p><ul role="list"><li><a href="#p=' + encodeURIComponent(novo.id) + '" data-detail="' + esc(novo.id) + '">' +
           '<img src="' + BC.imgProduto(novo, true) + '" alt="" width="64" height="44" loading="lazy"><span><small>' + esc(novo.marca) + "</small><b>" + esc(novo.nome) + '</b></span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></li></ul></div>' +
         '<div class="dw__buy"><div class="dw__ctas">' +
-          '<a class="btn btn--green btn--lg" href="' + BC.whatsLink(msgNovo) + '" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Pedir orçamento no WhatsApp">Pedir orçamento no WhatsApp</span><span class="sr-only"> (abre em nova aba)</span></a>' +
+          '<a class="btn btn--green btn--lg" href="' + BC.whatsLink(msgNovo) + '" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Solicitar orçamento no WhatsApp">Solicitar orçamento no WhatsApp</span><span class="sr-only"> (abre em nova aba)</span></a>' +
           '<button class="btn btn--line" type="button" data-close><span class="st" data-t="Ver o catálogo">Ver o catálogo</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></button>' +
         "</div></div>";
     }
