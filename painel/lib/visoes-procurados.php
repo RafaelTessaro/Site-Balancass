@@ -251,7 +251,7 @@ function telaProcurados(array $per, array $r, array $antes, ?string $primeiro, ?
 
   <section class="proc-secao" aria-labelledby="proc-prod-tit">
     <h2 class="secao-tit" id="proc-prod-tit">Produtos mais procurados</h2>
-    <p class="dica"><?= icone('box') ?><span><b>Abertos:</b> quantas vezes a ficha do produto foi aberta no catálogo. <b>WhatsApp:</b> cliques em “Pedir orçamento” desse produto (no cartão ou na ficha). A ordem soma aberturas, cliques no WhatsApp e em Ligar.</span></p>
+    <p class="dica"><?= icone('box') ?><span><b>Abertos:</b> quantas vezes a ficha do produto foi aberta no catálogo. <b>WhatsApp:</b> cliques em “Solicitar orçamento” desse produto (no cartão ou na ficha). A ordem soma aberturas, cliques no WhatsApp e em Ligar.</span></p>
     <?php if (!$r['produtos']): ?>
     <p class="ajuda proc-nada">Nenhum produto aberto neste período.</p>
     <?php else:
