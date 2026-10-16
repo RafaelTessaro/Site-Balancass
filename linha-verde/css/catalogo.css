@@ -104,6 +104,9 @@
 
 /* ---------- Grade ---------- */
 .cat__body { padding-top: 26px; }
+/* Troca de filtro (js/catalogo.js): as fichas que deslizam ganham z-index 1 por cima das que entram e saem;
+   o isolamento deixa isso dentro da grade (a seção seguinte continua por cima de uma ficha que passe da caixa) */
+.cat .pgrid { isolation: isolate; }
 .cat__note { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--muted); margin-bottom: 22px; }
 .pgrid__cta {
   position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 22px;

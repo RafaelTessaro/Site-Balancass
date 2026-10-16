@@ -141,7 +141,7 @@
       t.setAttribute("aria-selected", String(on)); t.tabIndex = on ? 0 : -1;
     });
     (panelBox || grid).setAttribute("aria-labelledby", "tab-" + id);
-    renderSubs(); apply(true);
+    apply(true, false, renderSubs);   // os tipos mudam DEPOIS de o Flip ler a tela (a barra pode mudar de altura)
   }
 
   /* ---------- Tipos (subcategorias) ---------- */
@@ -201,7 +201,7 @@
   }
   function resetFiltros() {
     state.q = ""; qIn.value = ""; qClear.hidden = true; state.sub = ""; state.estoque = false; if (stock) stock.checked = false;
-    if (state.cat !== "todos") setCat("todos"); else { renderSubs(); apply(true); }
+    if (state.cat !== "todos") setCat("todos"); else apply(true, false, renderSubs);
   }
   $("[data-reset]").addEventListener("click", function () { resetFiltros(); qIn.focus({ preventScroll: true }); });
   // Estado vazio: a busca tem resultado em outra categoria
@@ -255,14 +255,71 @@
     return true;
   }
 
-  function apply(animate, aoInicio) {
+  /* Troca animada (GSAP Flip). Quem fica desliza até o lugar novo; quem sai esmaece rápido onde estava
+     (fora do fluxo: absoluteOnLeave); quem entra sobe depois que a saída quase acabou — os textos de
+     uma ficha que sai e de uma que entra no mesmo lugar não se misturam. A caixa da grade (.cat__body:
+     grade, aviso e estado vazio) fica com a altura que está na tela e vai até a altura nova numa tween
+     só: a seção de baixo (Kits) anda uma vez, suave, só a diferença real. (Com todas as fichas
+     absolutas, a grade ficava com altura 0 durante a troca: os Kits subiam até a barra de filtros e
+     desciam de volta no fim.) Troca nova no meio de outra: o Flip.getState lê o que está na tela e
+     termina a anterior; a caixa continua da altura do momento. */
+  var caixa = grid.closest(".cat__body") || panelBox || grid;
+  var anim = null, trocando = false;
+  var SAI = 0.2, ENTRA = 0.16;   // saída curta; a entrada começa quando a saída já está quase em 0
+  function fimAnim() {
+    if (trocando) return;   // terminada à força por uma troca nova: ela segura a caixa e mede de novo
+    anim = null;
+    $$(".pgrid__i", grid).forEach(function (li) {   // quem saiu volta ao [hidden] de sempre
+      if (li._lvSai) { li._lvSai = false; li.style.display = ""; li.hidden = true; li.removeAttribute("inert"); }
+    });
+    caixa.style.height = "";
+    if (LV.lenis) LV.lenis.resize();
+    LV.refresh();
+  }
+
+  // antes(): mudança da barra de filtros (os tipos da categoria) feita depois de ler a tela
+  function apply(animate, aoInicio, antes) {
     var lista = filtrar({ categoria: state.cat, subcategoria: state.sub, texto: state.q, somenteEstoque: state.estoque });
     var show = Object.create(null); lista.forEach(function (p) { show[p.id] = true; });
     var all = $$(".pgrid__i", grid);
-    var useFlip = animate && motion();
+    var vazio = lista.length === 0;
+    var naGrade = function (li) { return li.hasAttribute("data-cta") ? !vazio : !!show[li.getAttribute("data-id")]; };
+    var sat = /(^|\s)(cf-?e\s*)?sat(\s|$)/.test(BC.normaliza(state.q));
+    // Mesmas fichas de antes (ex.: mais uma letra na busca): nada a animar, e uma troca em curso segue
+    var igual = empty.hidden === !vazio && (!satNote || satNote.hidden === !sat) &&
+      all.every(function (li) { return naGrade(li) === !(li.hidden || li._lvSai); });
+    var useFlip = animate && motion() && !igual;
     var rolou = animate ? voltaAoInicio(aoInicio) : false;
-    var flipState = useFlip ? Flip.getState(all) : null;
-    all.forEach(function (li) { li.hidden = li.hasAttribute("data-cta") ? lista.length === 0 : !show[li.getAttribute("data-id")]; });
+    var flipState = null, h0 = 0, topo0 = 0, vazioAntes = !empty.hidden;
+    if (useFlip) {
+      var r0 = caixa.getBoundingClientRect();
+      h0 = r0.height; topo0 = r0.top;              // a altura na tela (no meio de uma troca, a da tween)
+      trocando = true;
+      // Só quem está à vista agora ou vai estar: escondida antes e depois não entra (nem na cascata do stagger)
+      flipState = Flip.getState(all.filter(function (li) { return !li.hidden || naGrade(li); }));   // lê a tela e termina a troca anterior
+      if (anim) anim.progress(1).kill();
+      trocando = false;
+      caixa.style.height = h0 + "px";
+    } else if (anim && !igual) {                   // sem movimento no meio de uma troca: termina ela já
+      trocando = true; anim.progress(1).kill(); trocando = false; anim = null;
+      caixa.style.height = "";
+    }
+    if (antes) antes();
+    if (useFlip) {
+      // A barra mudou de altura (outra fileira de tipos): a caixa compensa, e a seção de baixo não salta
+      h0 = Math.max(0, h0 - (caixa.getBoundingClientRect().top - topo0));
+      caixa.style.height = h0 + "px";
+    }
+    if (!igual) all.forEach(function (li) {
+      var on = naGrade(li), es = flipState && !on && flipState.getElementState(li);
+      li._lvSai = !!(es && es.isVisible);
+      if (li._lvSai) {
+        // Sai esmaecendo: escondida só pelo style (o [hidden] do CSS é !important e o Flip não a mostraria)
+        li.hidden = false; li.style.display = "none"; li.setAttribute("inert", "");
+      } else {
+        li.hidden = !on; li.style.display = ""; li.removeAttribute("inert");
+      }
+    });
     grid.classList.toggle("is-impar", lista.length % 2 === 1);
     countEl.innerHTML = plural(lista.length);
     updateCounts();
@@ -278,21 +335,38 @@
       var allT = $(".st", allBtn);
       if (nTodos && allT) { var tx = "Ver " + nProdutos(nTodos).replace("produto", "resultado") + " em todas as categorias"; allT.textContent = tx; allT.setAttribute("data-t", tx); }
     }
-    if (satNote) satNote.hidden = !/(^|\s)(cf-?e\s*)?sat(\s|$)/.test(BC.normaliza(state.q));
+    if (satNote) satNote.hidden = !sat;
     writeURL();
     if (animate) mostraAtivos();
-    if (animate && lista.length === 0 && !rolou) showEmpty();
+    if (animate && vazio && !rolou) showEmpty();
     if (useFlip) {
-      Flip.from(flipState, {
-        duration: 0.6, ease: "power3.inOut", absolute: true, stagger: 0.012, nested: true,
-        onEnter: function (els) { return gsap.fromTo(els, { opacity: 0, y: 30, skewX: -6 }, { opacity: 1, y: 0, skewX: 0, duration: 0.6, stagger: 0.03, ease: "expo.out" }); },
-        onLeave: function (els) { return gsap.to(els, { opacity: 0, scale: 0.94, duration: 0.3, ease: "power2.in" }); },
-        onComplete: LV.refresh
+      caixa.style.height = "";
+      var h1 = caixa.getBoundingClientRect().height;   // altura natural nova (quem sai já está fora do fluxo)
+      caixa.style.height = h0 + "px";
+      anim = Flip.from(flipState, {
+        duration: 0.6, ease: "power3.inOut", absoluteOnLeave: true, stagger: 0.012, nested: true,
+        zIndex: 1,   // quem fica passa POR CIMA de quem entra ou sai (opaca: um texto nunca aparece através do outro)
+        onEnter: function (els) {
+          return gsap.fromTo(els, { opacity: 0, y: 30, skewX: -6 }, { opacity: 1, y: 0, skewX: 0, duration: 0.6, ease: "expo.out", delay: ENTRA,
+            stagger: function (i) { return Math.min(i, 12) * 0.03; } });   // cascata nas primeiras; as de baixo da dobra não atrasam o fim
+        },
+        onLeave: function (els) {
+          return gsap.fromTo(els, { opacity: function (i, el) { return flipState.getProperty(el, "opacity"); } },
+            { opacity: 0, scale: 0.94, duration: SAI, ease: "power2.out" });
+        },
+        onComplete: fimAnim
       });
+      anim.to(caixa, { height: h1, duration: 0.6, ease: "power3.inOut" }, 0);
+      all.forEach(function (li) {
+        // Ficha que estava entrando (meio transparente) e fica: termina de aparecer, sem saltar para 1
+        var es = !li.hidden && !li._lvSai && flipState.getElementState(li);
+        if (es && es.isVisible && es.opacity < 0.98) anim.fromTo(li, { opacity: es.opacity }, { opacity: 1, duration: 0.35, ease: "power1.out" }, 0);
+      });
+      if (vazio && !vazioAntes) anim.fromTo(empty.children, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out", stagger: 0.05 }, ENTRA);
       // fichas que entram na grade já ficam visíveis (podiam estar esperando a revelação por rolagem)
-      var vis = $$(".pgrid__i:not([hidden]) > .spec", grid);
+      var vis = $$(".pgrid__i:not([hidden]) > .spec", grid).filter(function (s) { return !s.parentNode._lvSai; });
       if (vis.length) gsap.set(vis, { opacity: 1, y: 0 });
-    } else {
+    } else if (!anim) {
       LV.refresh();
     }
   }
