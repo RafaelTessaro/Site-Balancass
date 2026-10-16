@@ -515,7 +515,7 @@ LV.spec(p, "capacidade")       // → valor de uma especificação
 | Bloco IPEM (fatos + multas + carimbo) | `.ipem`, `.facts`, `.ipem__cta`, `.stamp[data-stamp]` | `assistencia.html#ipem` | verde |
 | Nota Google + depoimentos | `.proof`, `.gscore`, `.quotes__list`, `.quote` | `empresa.html#clientes` | escuro/claro |
 | Logos de clientes (em cor) | `.clients` | `empresa.html#clientes` | escuro/claro |
-| Números (2010 → hoje, 25+ anos, 5,0) | `.deltas`, `.delta` | `empresa.html#quem-somos` | claro/escuro |
+| Números (2010 → hoje, 30+ anos, 5,0) | `.deltas`, `.delta` | `empresa.html#quem-somos` | claro/escuro |
 | Como trabalhamos | `.values`, `.value` | `empresa.html#como-trabalhamos` | escuro |
 | Equipe (monogramas) | `.team__list`, `.member` | `empresa.html#equipe` | claro/escuro |
 | Kits por segmento (abas + produtos) | `.kits[data-kits]` | `produtos.html#kits` | escuro |
@@ -666,7 +666,7 @@ primeiro quadro, use `.is-loading .minha-classe { opacity: 0 }` dentro de
 
 ## 10. Conteúdo: o que pode e o que não pode (resumo do briefing)
 
-- Pode: "A medida certa para o seu negócio" · desde 2010 · fundador Fábio Godoy, 25+ anos · **Oficina autorizada pelo IPEM-SP** ·
+- Pode: "A medida certa para o seu negócio" · desde 2010 · fundador Fábio Godoy, 30+ anos · **Oficina autorizada pelo IPEM-SP** ·
   5,0 no Google com 56 avaliações · Rio Claro e região · Rua 13, 650 – entre as Avenidas 9 e 11 – Boa Morte ·
   seg–sex 8h–11h e 13h–18h, sáb 8h–12h · "Trabalhamos com as marcas…" · depoimentos reais de `EMPRESA.depoimentos`.
 - Não pode: "calibração"/"verificação feita por nós" (diga manutenção, conserto, regularização, "pronta para a verificação do IPEM");

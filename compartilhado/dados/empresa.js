@@ -52,7 +52,7 @@ window.EMPRESA = {
   "razaoSocial": "Fabio de Godoy Lima Ltda",
   "cnpj": "12.403.843/0001-18",
   "desde": 2010,
-  "anosExperiencia": 25,
+  "anosExperiencia": 30,
 
   "google": {
     "nota": "5,0",
@@ -118,7 +118,7 @@ window.EMPRESA = {
   ],
 
   "equipe": [
-    { "nome": "Fábio Godoy", "cargo": "Fundador e diretor", "texto": "Mais de 25 anos de experiência em balanças e automação comercial." },
+    { "nome": "Fábio Godoy", "cargo": "Fundador e diretor", "texto": "Mais de 30 anos de experiência em balanças e automação comercial." },
     { "nome": "Maurício Ritter", "cargo": "Técnico de balanças", "texto": "Departamento técnico de balanças comerciais e atendimento aos clientes." },
     { "nome": "Lizi Ellen", "cargo": "Administrativo e vendas", "texto": "Responsável pelo administrativo, vendas e financeiro." },
     { "nome": "Rafael Tessaro", "cargo": "Sistemas e suporte", "texto": "Suporte técnico em sistemas, implantação e treinamento aos clientes." }
