@@ -276,6 +276,23 @@
     if (LV.lenis) LV.lenis.resize();
     LV.refresh();
   }
+  /* Altura natural da caixa sem soltar a altura travada. (Soltar para medir encolhia a página por um
+     instante: o navegador puxava a rolagem para cima e um segundo clique rápido caía em outro lugar.)
+     Pelos offsets, que ignoram os transforms das animações. */
+  function alturaNatural() {
+    var cs = getComputedStyle(caixa), num = function (v) { return parseFloat(v) || 0; };
+    var pb = num(cs.paddingBottom) + num(cs.borderBottomWidth);
+    var soma = pb > 0 || /flex|grid/.test(cs.display);   // senão a margem de baixo do último escapa da caixa
+    var fundo = caixa.clientTop + num(cs.paddingTop);
+    Array.prototype.forEach.call(caixa.children, function (el) {
+      if (!el.getClientRects().length) return;
+      var s = getComputedStyle(el);
+      if (s.position === "absolute" || s.position === "fixed") return;
+      var top = el.offsetParent === caixa ? el.offsetTop + caixa.clientTop : el.offsetTop - caixa.offsetTop;
+      fundo = Math.max(fundo, top + el.offsetHeight + (soma ? num(s.marginBottom) : 0));
+    });
+    return fundo + pb;
+  }
 
   // antes(): mudança da barra de filtros (os tipos da categoria) feita depois de ler a tela
   function apply(animate, aoInicio, antes) {
@@ -295,8 +312,11 @@
       var r0 = caixa.getBoundingClientRect();
       h0 = r0.height; topo0 = r0.top;              // a altura na tela (no meio de uma troca, a da tween)
       trocando = true;
-      // Só quem está à vista agora ou vai estar: escondida antes e depois não entra (nem na cascata do stagger)
-      flipState = Flip.getState(all.filter(function (li) { return !li.hidden || naGrade(li); }));   // lê a tela e termina a troca anterior
+      // Só quem fica, quem entra e quem sai à vista. Quem sai fora da tela some já, fora do Flip
+      // (saindo de "Todos" eram umas 40 fichas postas em absoluto: a troca travava o dobro do tempo).
+      var vh = window.innerHeight;
+      var aVista = function (li) { var r = li.getBoundingClientRect(); return r.height > 0 && r.bottom > -80 && r.top < vh + 80; };
+      flipState = Flip.getState(all.filter(function (li) { return naGrade(li) || (!li.hidden && aVista(li)); }));   // lê a tela e termina a troca anterior
       if (anim) anim.progress(1).kill();
       trocando = false;
       caixa.style.height = h0 + "px";
@@ -340,9 +360,7 @@
     if (animate) mostraAtivos();
     if (animate && vazio && !rolou) showEmpty();
     if (useFlip) {
-      caixa.style.height = "";
-      var h1 = caixa.getBoundingClientRect().height;   // altura natural nova (quem sai já está fora do fluxo)
-      caixa.style.height = h0 + "px";
+      var h1 = alturaNatural();   // altura nova (quem sai já está fora do fluxo)
       anim = Flip.from(flipState, {
         duration: 0.6, ease: "power3.inOut", absoluteOnLeave: true, stagger: 0.012, nested: true,
         zIndex: 1,   // quem fica passa POR CIMA de quem entra ou sai (opaca: um texto nunca aparece através do outro)
