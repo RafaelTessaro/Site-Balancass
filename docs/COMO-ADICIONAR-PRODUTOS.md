@@ -46,6 +46,7 @@ O código vale 24 horas. Se vencer, abra o painel de novo e leia o código novo 
 | **Preço** | Opcional. Vazio mostra **“Consulte”**. Ex.: `R$ 2.490,00 à vista`. |
 | **No site** | Ligado = aparece no site. Desligado = guardado no painel, escondido do site. |
 | **Destaque** | Sobe no catálogo e entra na página inicial, que mostra até **8** destaques (veja o item 3). |
+| **Lugar na lista** | **Junto da mesma subcategoria** (o padrão: um fatiador novo entra logo depois dos outros fatiadores) ou **Em 1º na categoria**. Para mudar depois: **Mudar lugar** (item 3). |
 
 3. **Salvar.** O produto já está no site, com link próprio (`balancass.com/produtos.html#p=toledo-prix-7e`).
 
@@ -62,13 +63,15 @@ O **código do produto** (o final desse link) é criado sozinho a partir da marc
 Na tela **Produtos** (a inicial do painel) estão todos, separados por categoria, com foto. Use a **busca** (nome, marca ou código, sem precisar de acento) ou os filtros.
 
 - **Editar**: abre o formulário completo do produto.
-- **★ Destaque**: o produto sobe no catálogo e entra na **página inicial**. Ela mostra **até 8 destaques**, revezando as categorias na ordem das abas (o 1º destaque de Balanças, o 1º de Automação, o 1º de Informática, o 2º de Balanças…). O selo diz onde ele está: *Destaque · página inicial* ou *Destaque · fora da página inicial*. Para um destaque “de fora” entrar, tire a estrela de outro ou suba este com as setas.
+- **★ Destaque**: o produto sobe no catálogo e entra na **página inicial**. Ela mostra **até 8 destaques**, revezando as categorias na ordem das abas (o 1º destaque de Balanças, o 1º de Automação, o 1º de Informática, o 2º de Balanças…). O selo diz onde ele está: *Destaque · página inicial* ou *Destaque · fora da página inicial*. Para um destaque “de fora” entrar, tire a estrela de outro ou ponha este mais para cima na categoria com **Mudar lugar**.
 - **Na capa do site**: selo do produto grande do topo da página inicial (a Toledo **Prix 7E**, ou o que um administrador escolheu em **Empresa → Capa do site**, item 14). Ele não se repete na vitrine logo abaixo. Esconder, excluir ou mudar o código dele pede confirmação: com a Prix 7E, o link da capa deixaria de abrir os detalhes; com uma capa escolhida no painel, a página inicial volta a mostrar a Prix 7E (e o topo da lista de produtos avisa até você resolver).
 - **Selecionar** (vários de uma vez): veja o item 13.
 - **Mais procurados** (cartão no topo da lista): veja o item 16.
 - **👁 No site**: esconde o produto **sem apagar** (ele ganha o selo *Fora do site* no painel). Bom para produto que acabou e vai voltar.
 - **🗑 Excluir**: pede confirmação. Logo depois, o aviso “foi excluído” tem o botão **Desfazer**: o produto volta no mesmo lugar e com a foto.
-- **↑ ↓**: muda a ordem dentro da categoria. No site vale: **Pronta entrega** primeiro, depois os **destaques**, depois **esta ordem**; **Esgotado** fica por último.
+- **Mudar lugar**: abre a lista de lugares da categoria (*“1º no começo, antes de …”*, *“5º depois de Toledo Prix 4 Trend”*, *“10º fica onde está”*). Toque no lugar novo e pronto: o produto vai para lá na hora, e o aviso tem **Desfazer**. A lista mostra a categoria inteira, mesmo com a busca ligada. No site vale: **Pronta entrega** primeiro, depois os **destaques**, depois **esta ordem**; **Esgotado** fica por último (o aviso explica quando isso muda o lugar no site, e quem entrou ou saiu da página inicial).
+- **Arrastar** (só no computador, com mouse): segure a alça **⠿** à esquerda do produto e solte no lugar certo, dentro da mesma categoria. **Esc** cancela. Com a busca ligada a alça some: use **Mudar lugar**.
+- Produto editado que **troca de categoria** entra logo depois dos outros da mesma subcategoria na categoria nova.
 - No celular, os botões ★ e 👁 mostram o nome embaixo (*Destaque*, *No site*).
 
 ## 4. Estoque
@@ -96,7 +99,7 @@ O catálogo sempre mostra a nota “Estoque sujeito à disponibilidade. Confirme
 
 As cópias ficam em **Conta → Cópias de segurança** (só administradores), com as abas **Produtos**, **Clientes** e **Empresa**. Quem é editor tem o **Desfazer** logo depois de excluir; para o resto, peça a um administrador.
 
-Antes de **cada** alteração o painel guarda uma **cópia de segurança** do catálogo: as 30 mais recentes sempre, tudo dos últimos 14 dias (até 200) e as de **excluir** e **restaurar** por 30 dias. Mudanças seguidas do mesmo tipo (setas, estoque, destaque, no site) feitas em menos de 10 minutos ficam numa cópia só.
+Antes de **cada** alteração o painel guarda uma **cópia de segurança** do catálogo: as 30 mais recentes sempre, tudo dos últimos 14 dias (até 200) e as de **excluir** e **restaurar** por 30 dias. Mudanças seguidas do mesmo tipo (mudanças de lugar, estoque, destaque, no site) feitas em menos de 10 minutos ficam numa cópia só.
 
 - **Trazer de volta** (nas cópias de exclusão): devolve só aquele produto, no mesmo lugar e com a foto. É o mesmo que o **Desfazer** do aviso. Numa exclusão de vários de uma vez: **Trazer de volta os N** (todos) ou, em *Ver os N produtos…*, um por um.
 - **Restaurar**: volta o catálogo **inteiro**, com as fotos, para aquele momento, e desfaz também o que foi feito depois. A janela de confirmação diz quantas alterações serão desfeitas e quais. O estado atual também vira cópia, então dá para desfazer a própria restauração.
@@ -124,7 +127,8 @@ Os logos da faixa **“Quem confia na gente”** (página inicial) e de **“Alg
 2. Toque em **Escolher logo** e escolha o arquivo (no computador, também dá para arrastar o arquivo para a prévia).
 3. Confira a prévia **“Como fica no site”**: é a mesma chapa branca do site, com as sobras vazias já cortadas. A tela avisa (em amarelo) quando o logo vai ficar ruim: fundo colorido (vira um retângulo dentro da chapa), logo quase todo branco (some na chapa branca) ou logo pequeno demais (fica sem nitidez). Dá para salvar assim mesmo, mas vale procurar uma versão melhor.
 4. Escreva o **nome do cliente** (ex.: `Supermercado Bom Preço`). Ele não aparece escrito no site: é o texto do logo para o Google, para leitores de tela e para quando a imagem não carrega.
-5. **Cadastrar.** O cliente novo entra no **fim da lista**.
+5. Escolha o **Lugar no site**: o padrão é **1º, no começo** (antes de todos); dá para escolher outro, ex.: *“6º, depois de Mercado Qualidade”*.
+6. **Cadastrar.** O cliente aparece no site no lugar escolhido. Dá para mudar depois em **Clientes → Mudar lugar**.
 
 O painel confere o arquivo, corta as sobras transparentes ou brancas, reduz para no máximo 600 × 300 px e salva em WebP, com a transparência.
 
@@ -132,7 +136,7 @@ O painel confere o arquivo, corta as sobras transparentes ou brancas, reduz para
 
 Na tela **Clientes** aparecem todos, na **ordem do site** (“1º no site”, “2º no site”…), cada um com o logo na chapa branca.
 
-- **↑ ↓**: muda a posição do logo no site (a mesma ordem vale para a página inicial e para a página Empresa).
+- **Mudar lugar**: abre a lista de lugares (*“1º no começo, antes de DANNISOM”*, *“2º depois de DANNISOM”*…); toque no lugar novo e pronto, com **Desfazer** no aviso. A mesma ordem vale para a página inicial e para a página Empresa. No computador, dá também para **arrastar** pela alça **⠿**.
 - **Editar**: troca o nome e/ou o logo (escolha o arquivo novo e **Salvar**). O logo antigo vai para a lixeira do painel.
 - **🗑 Excluir**: pede confirmação; o logo sai do site na hora. Logo depois, o aviso “foi excluído” tem o botão **Desfazer**: o cliente volta no mesmo lugar e com o logo.
 - **Errou mais de uma coisa?** **Cópias** → aba **Clientes**: as mesmas cópias de segurança dos produtos, só que da lista de clientes (**Trazer de volta** um cliente excluído ou **Restaurar** a lista inteira de um momento). As cópias de produtos e de clientes são separadas: restaurar uma não mexe na outra.
@@ -194,7 +198,7 @@ Mudou e se arrependeu? **Conta → Cópias de segurança → aba Empresa → Res
 Na tela **Produtos**, toque em **Selecionar**. Aparece uma caixinha em cada produto (no celular, o cartão inteiro marca) e a barra de baixo vira a barra dos marcados.
 
 - **Marcar todos os N desta lista** marca de uma vez os que aparecem com a busca e o filtro de agora (ex.: filtre **Balanças** e busque `toledo`). No computador, **Shift+clique** marca um trecho.
-- Na barra: **Estoque** (*Pronta entrega*, *Consulte*, *Sob encomenda*, *Esgotado*), **Destaque** (pôr ou tirar), **No site** (mostrar ou esconder), **Mover** (outra categoria e tipo; quem muda de categoria entra no fim dela) e **Excluir** (a janela mostra os nomes; logo depois, **Desfazer** traz todos de volta de uma vez, cada um no seu lugar e com a foto — vale uma vez, para quem excluiu). **Estoque**, **Destaque** e **No site** também têm **Desfazer** no aviso: cada produto volta a ficar como estava antes (vale uma vez, para quem fez).
+- Na barra: **Estoque** (*Pronta entrega*, *Consulte*, *Sob encomenda*, *Esgotado*), **Destaque** (pôr ou tirar), **No site** (mostrar ou esconder), **Mover** (outra categoria e tipo; quem muda de categoria entra logo depois dos outros do mesmo tipo) e **Excluir** (a janela mostra os nomes; logo depois, **Desfazer** traz todos de volta de uma vez, cada um no seu lugar e com a foto — vale uma vez, para quem excluiu). **Estoque**, **Destaque** e **No site** também têm **Desfazer** no aviso: cada produto volta a ficar como estava antes (vale uma vez, para quem fez).
 - Os mesmos avisos de um produto só: esconder ou excluir o produto da capa, e quem ficou de fora dos 8 destaques da página inicial.
 - Cada ação guarda **uma** cópia de segurança (ex.: *“Antes de: mudar o estoque de 8 produtos para Esgotado”*) e uma linha em Atividades. Quem já estava assim fica de fora. No máximo 200 por vez. Editor também pode. Funciona sem JavaScript.
 - Para sair: **Sair da seleção** (ou o **×** da barra).

@@ -230,7 +230,11 @@
               return enviar(form, true);
             });
           }
-          if (!r.ok || !d || !d.ok) throw new Error((d && d.msg) || "Não foi possível salvar. Tente de novo.");
+          if (!r.ok || !d || !d.ok) {
+            var erro = new Error((d && d.msg) || "Não foi possível salvar. Tente de novo.");
+            erro.dados = d;   // ex.: { recarregar: true } quando a lista mudou em outro aparelho
+            throw erro;
+          }
           return d;
         });
     }, function () { throw new Error("Sem conexão com a internet. Tente de novo."); });
@@ -321,39 +325,396 @@
     });
   });
 
-  // Ordem: troca de lugar com o vizinho da mesma categoria
-  function acertarSetas(lista) {
-    var itens = $$(".item", lista);
-    itens.forEach(function (li, i) {
-      var c = $("[data-mover-cima]", li), b = $("[data-mover-baixo]", li);
-      if (c) c.disabled = i === 0;
-      if (b) b.disabled = i === itens.length - 1;
+  /* ------------------------------------------------------------------
+     Mudar lugar (Clientes e Produtos). Com JavaScript: o botão abre uma
+     janela com a lista de lugares; um toque no lugar grava (sem
+     recarregar) e o aviso traz Desfazer. No computador, dá também para
+     arrastar pela alça. Sem JavaScript (ou sem <dialog>), o mesmo link
+     abre a página com a mesma lista (index.php?a=lugar / cliente-lugar).
+     A lista de lugares segue as MESMAS regras do PHP (lib/ordem.php).
+     ------------------------------------------------------------------ */
+  (function lugar() {
+    // Busca/filtro na lista de produtos: o link da página sem JavaScript leva o filtro junto, e a
+    // alça some do grupo que tem itens escondidos (o vizinho de cima precisa ser o da lista inteira)
+    function acertarFiltro() {
+      var p = null;
+      try { p = new URL(window.location.href).searchParams; } catch (err) { /* navegador antigo */ }
+      $$("a[data-lugar]").forEach(function (a) {
+        var li = a.closest(".item");
+        if (!li || !p) return;
+        var q = "index.php?a=lugar&id=" + encodeURIComponent(li.dataset.id);
+        ["q", "cat", "ver"].forEach(function (k) { var v = p.get(k); if (v) q += "&" + k + "=" + encodeURIComponent(v).replace(/%20/g, "+"); });
+        a.setAttribute("href", q);
+      });
+      $$(".grupo").forEach(function (g) { g.classList.toggle("is-filtrado", $$(".item", g).some(function (li) { return li.hidden; })); });
+    }
+    document.addEventListener("bc:filtrou", acertarFiltro);
+    acertarFiltro();
+
+    // Página sem a janela: um envio por vez (sem preventDefault no 1º: o name/value do botão precisa ir)
+    $$("form[data-lugar-pagina]").forEach(function (f) {
+      f.addEventListener("submit", function (e) {
+        if (f.dataset.enviado === "1") { e.preventDefault(); return; }
+        f.dataset.enviado = "1";
+        if (e.submitter) e.submitter.setAttribute("aria-busy", "true");
+      });
+      window.addEventListener("pageshow", function () {
+        f.dataset.enviado = "";
+        $$("[aria-busy]", f).forEach(function (b) { b.removeAttribute("aria-busy"); });
+      });
     });
-  }
-  document.addEventListener("submit", function (e) {
-    var f = e.target;
-    if (!f.matches || !f.matches("[data-mover]")) return;
-    e.preventDefault();
-    var bt = $("button", f), li = f.closest(".item");
-    bt.setAttribute("aria-busy", "true");
-    enviar(f).then(function (d) {
-      var viz = document.getElementById("p-" + d.com);
-      if (viz && viz.parentNode === li.parentNode) {
-        if (d.dir === "cima") li.parentNode.insertBefore(li, viz);
-        else li.parentNode.insertBefore(viz, li);
+
+    // "Mudar lugar" apagado (único da lista/categoria, ou sem categoria): tocar nele diz o motivo
+    document.addEventListener("click", function (e) {
+      var off = e.target.closest && e.target.closest("[data-lugar-off]");
+      if (off) toast(off.getAttribute("title"));
+    });
+
+    var jan = $("[data-lugar-dialogo]");
+    if (!jan || typeof jan.showModal !== "function") return;   // sem <dialog>: o link abre a página
+    var prod = jan.dataset.area === "produtos", SEL = prod ? ".item" : ".cli";
+    var form = $("[data-lugar-form]", jan), lista = $("[data-lugar-lista]", jan);
+    var tNome = $("[data-lugar-nome]", jan), tHoje = $("[data-lugar-hoje]", jan), tFiltro = $("[data-lugar-filtro]", jan);
+    var reduzir = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    var aberto = null;   // { link, li, escolheu }
+    var ATALHO = /Mac|iP(hone|ad|od)/.test(navigator.platform || "") ? "⌘Z" : "Ctrl+Z";   // Desfazer pelo teclado
+
+    // Clique ou toque duplo: o 1º abre ou fecha a janela (ou desfaz) e o 2º cairia no que está embaixo
+    // (outro lugar, o Destaque de outro produto…). Por meio segundo, o 2º clique de um clique duplo (ou
+    // um toque: no iPhone o toque duplo não é contado) é engolido. Teclado (detail 0) nunca.
+    var guarda = 0, ponteiro = "mouse";
+    function proteger(e) { if (e && e.detail > 0) guarda = Date.now() + 500; }
+    document.addEventListener("pointerdown", function (e) { ponteiro = e.pointerType || "mouse"; }, true);
+    ["mousedown", "click"].forEach(function (tipo) {
+      document.addEventListener(tipo, function (e) {
+        if (e.detail > 0 && Date.now() < guarda && (e.detail > 1 || ponteiro !== "mouse")) { e.preventDefault(); e.stopImmediatePropagation(); }
+      }, true);
+    });
+
+    function campo(nome, valor) { var c = form.elements.namedItem(nome); if (c) c.value = valor; }
+    function itensDe(ol) { return Array.prototype.filter.call(ol.children, function (x) { return x.matches(SEL); }); }
+    // Nome curto (mais de 45 letras: 44 + "…"), como rotuloCurto() no PHP
+    function curto(s) { var a = Array.from(String(s || "")); return a.length > 45 ? a.slice(0, 44).join("") + "…" : a.join(""); }
+    // A lista inteira, inclusive o que a busca/o filtro escondem: [{li, nome, valor, sub}] (itensLugar* no PHP)
+    function itens(ol) {
+      return itensDe(ol).map(function (li, i) {
+        if (prod) return { li: li, nome: curto(li.dataset.nome) + (li.dataset.visivel === "0" ? " (fora do site)" : ""), valor: li.dataset.id, sub: li.dataset.sub || "" };
+        var logo = li.dataset.logo || "";
+        return { li: li, nome: curto(li.dataset.nome) + (logo ? "" : " (sem logo)"), valor: (i + 1) + ":" + logo, sub: "" };
+      });
+    }
+    // Tradução literal de opcoesLugar() (lib/ordem.php): o lugar k+1 = "depois do k-ésimo dos que sobraram"
+    function opcoes(its, atual, cat) {
+      var resto = its.filter(function (x, k) { return k !== atual; }), n = resto.length + 1, de = cat ? " de " + cat : "", out = [];
+      for (var k = 0; k < n; k++) {
+        var eAtual = atual !== null && k === atual, sub = "", texto;
+        if (eAtual) texto = "fica onde está";
+        else if (k === 0) texto = "no começo" + de + (resto.length ? ", antes de " + resto[0].nome : "");
+        else if (k === n - 1) texto = "no fim" + de + ", depois de " + resto[k - 1].nome;
+        else {
+          texto = "depois de " + resto[k - 1].nome;
+          if (resto[k].sub !== "" && resto[k].sub !== resto[k - 1].sub) sub = resto[k].sub;
+        }
+        out.push({ pos: k + 1, valor: k === 0 ? "inicio" : String(resto[k - 1].valor), texto: texto, sub: sub, atual: eAtual });
       }
-      acertarSetas(li.parentNode);
-      li.classList.add("is-movendo");
-      setTimeout(function () { li.classList.remove("is-movendo"); }, 900);
-      if (!bt.disabled) bt.focus({ preventScroll: true });
-      else { var outro = $(d.dir === "cima" ? "[data-mover-baixo]" : "[data-mover-cima]", li); if (outro && !outro.disabled) outro.focus({ preventScroll: true }); }
-      if (li.scrollIntoView) li.scrollIntoView({ block: "nearest", behavior: "smooth" });
-      aplicarHome(d.home);
-      toast(d.msg);
-    }).catch(function (err) {
-      if (err.message !== "login") toast(err.message, true);
-    }).then(function () { bt.removeAttribute("aria-busy"); });
-  });
+      return out;
+    }
+    function botao(o) {
+      var li = document.createElement("li"), b = document.createElement("button"), num = document.createElement("b"), txt = document.createElement("span");
+      b.type = "button"; b.className = "lugar__op"; b.tabIndex = -1;
+      b.setAttribute("data-para", o.valor);
+      if (o.atual) b.setAttribute("aria-current", "true");
+      num.className = "lugar__num"; num.textContent = o.pos + "º";
+      txt.className = "lugar__txt"; txt.textContent = o.texto;
+      if (o.sub) { var sm = document.createElement("small"); sm.textContent = " · começo de " + o.sub; txt.appendChild(sm); }
+      b.appendChild(num); b.appendChild(document.createTextNode(" ")); b.appendChild(txt);
+      li.appendChild(b);
+      return li;
+    }
+    function nomeCat(li) { var g = li.closest(".grupo"); return g ? g.getAttribute("data-cat-nome") || "" : ""; }
+    // (32 px de folga: o lugar escolhido no teclado não fica embaixo da borda esmaecida)
+    function rolarLista(b, centro) {
+      var topo = b.offsetTop, alto = b.offsetHeight, vis = lista.clientHeight;
+      if (centro) lista.scrollTop = topo - (vis - alto) / 2;
+      else if (topo < lista.scrollTop + 32) lista.scrollTop = topo - 32;
+      else if (topo + alto > lista.scrollTop + vis - 32) lista.scrollTop = topo + alto - vis + 32;
+    }
+    // Pista de que a lista continua (CSS: a borda esmaece do lado em que há mais lugares)
+    function pistas() {
+      lista.classList.toggle("is-mais-acima", lista.scrollTop > 1);
+      lista.classList.toggle("is-mais-abaixo", lista.scrollTop < lista.scrollHeight - lista.clientHeight - 1);
+    }
+    lista.addEventListener("scroll", pistas, { passive: true });
+    window.addEventListener("resize", function () { if (jan.open) pistas(); });
+
+    function abrir(link) {
+      var li = link.closest(SEL), ol = li && li.parentNode;
+      if (!li || ol.getAttribute("aria-busy") === "true" || jan.open) return;
+      var its = itens(ol), i = itensDe(ol).indexOf(li), cat = prod ? nomeCat(li) : "";
+      tNome.textContent = "“" + (li.dataset.nome || "") + "”";
+      tHoje.textContent = prod
+        ? "Hoje: " + (i + 1) + "º de " + its.length + " em " + cat + "." + (li.dataset.visivel === "0" ? " Está fora do site." : "")
+        : "Hoje: " + (i + 1) + "º no site (de " + its.length + ").";
+      if (tFiltro) {
+        var escondidos = itensDe(ol).some(function (x) { return x.hidden; });
+        tFiltro.hidden = !escondidos;
+        tFiltro.textContent = escondidos ? "A lista tem todos os " + its.length + " de " + cat + ", inclusive os que a busca ou o filtro estão escondendo." : "";
+      }
+      lista.textContent = "";
+      opcoes(its, i, cat).forEach(function (o) { lista.appendChild(botao(o)); });
+      aberto = { link: link, li: li, escolheu: false };
+      jan.showModal();
+      var at = $("[aria-current]", lista);
+      at.tabIndex = 0;
+      at.focus({ preventScroll: true });
+      rolarLista(at, true);
+      pistas();
+    }
+
+    // O botão é um link (sem JavaScript, a página); como botão, abre a janela com clique, Enter e Espaço
+    $$("a[data-lugar]").forEach(function (a) { a.setAttribute("role", "button"); a.setAttribute("aria-haspopup", "dialog"); });
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest && e.target.closest("a[data-lugar]");
+      if (!a || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;   // Ctrl/⌘/Shift: a página em outra aba
+      e.preventDefault();
+      abrir(a);
+      if (jan.open) proteger(e);
+    });
+    document.addEventListener("keydown", function (e) {
+      var a = e.key === " " && e.target.closest && e.target.closest("a[data-lugar]");
+      if (!a) return;
+      e.preventDefault();
+      abrir(a);
+    });
+
+    // Teclado na lista: um botão focável por vez (↑ ↓, PageUp/PageDown de 5, Home/End); Tab vai para Cancelar
+    lista.addEventListener("keydown", function (e) {
+      var bs = $$(".lugar__op", lista), i = bs.indexOf(document.activeElement);
+      var passo = { ArrowDown: 1, ArrowUp: -1, PageDown: 5, PageUp: -5 }[e.key];
+      if (i < 0 || (passo === undefined && e.key !== "Home" && e.key !== "End")) return;
+      e.preventDefault();
+      var j = e.key === "Home" ? 0 : e.key === "End" ? bs.length - 1 : Math.max(0, Math.min(bs.length - 1, i + passo));
+      bs[i].tabIndex = -1; bs[j].tabIndex = 0;
+      bs[j].focus({ preventScroll: true });
+      rolarLista(bs[j], false);
+    });
+    lista.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest(".lugar__op");
+      if (!b || !aberto) return;
+      var ab = aberto;
+      if (!b.hasAttribute("aria-current")) ab.escolheu = true;   // o lugar de hoje só fecha
+      proteger(e);
+      jan.close();
+      if (ab.escolheu) mudar(ab.li, camposDo(ab.li), b.getAttribute("data-para"), null, e.detail === 0);
+    });
+    $("[data-lugar-fechar]", jan).addEventListener("click", function (e) { proteger(e); jan.close(); });
+    jan.addEventListener("click", function (e) { if (e.target === jan) { proteger(e); jan.close(); } });   // toque fora da janela
+    jan.addEventListener("close", function () {
+      var ab = aberto;
+      aberto = null;
+      if (ab && !ab.escolheu && document.contains(ab.link)) ab.link.focus({ preventScroll: true });
+    });
+
+    // Quem é o item para o servidor: produto pelo código; cliente pela posição de agora + logo (+ nome: sem logo)
+    function camposDo(li) {
+      if (prod) return { id: li.dataset.id };
+      return { n: String(itensDe(li.parentNode).indexOf(li) + 1), logo: li.dataset.logo || "", nome: li.dataset.nome || "" };
+    }
+    function linkRecarregar() {
+      var a = document.createElement("a");
+      a.href = window.location.pathname + window.location.search;
+      a.textContent = "Recarregar";
+      return a;
+    }
+    function erroLugar(err) {
+      if (err.message === "login") return;
+      toast(err.message, true, err.dados && err.dados.recarregar ? { link: linkRecarregar(), tempo: 0 } : null);
+    }
+    // A tela segue a ordem que o servidor gravou (ordem: códigos; clientes: [nome, logo], aceita repetidos).
+    // Algum item a mais ou a menos (outro aparelho incluiu/excluiu): não mexe e devolve false.
+    function reordenar(ol, ordem) {
+      var lis = itensDe(ol);
+      if (!Array.isArray(ordem) || ordem.length !== lis.length) return false;
+      var chave = function (li) { return prod ? li.dataset.id : (li.dataset.nome || "") + "\n" + (li.dataset.logo || ""); };
+      var grupos = {}, nova = [];
+      lis.forEach(function (li) { (grupos[chave(li)] = grupos[chave(li)] || []).push(li); });
+      for (var i = 0; i < ordem.length; i++) {
+        var k = prod ? String(ordem[i]) : String((ordem[i] || [])[0]) + "\n" + String((ordem[i] || [])[1]);
+        var g = grupos[k];
+        if (!g || !g.length) return false;
+        nova.push(g.shift());
+      }
+      nova.forEach(function (li) { ol.appendChild(li); });
+      return true;
+    }
+    function aplicar(d, li, ol, arrastou, teclado) {
+      var bate = reordenar(ol, d.ordem);
+      if (bate && !prod) numerarClientes(ol);
+      if (prod) aplicarHome(d.home);
+      if (d.mudou) {
+        li.classList.add("is-movendo");
+        setTimeout(function () { li.classList.remove("is-movendo"); }, 900);
+      }
+      if (!arrastou) {
+        var lk = $("[data-lugar]", li);
+        if (lk) lk.focus({ preventScroll: true });
+        if (li.scrollIntoView) li.scrollIntoView({ block: "center", behavior: reduzir ? "auto" : "smooth" });
+      }
+      if (!bate) toast(d.msg + " A lista mudou em outro aparelho: recarregue a página para ver como ela está agora.", false, { link: linkRecarregar(), tempo: 0 });
+      else toast(d.msg + (d.desfazer && teclado ? " Para desfazer pelo teclado: " + ATALHO + "." : ""), false, d.desfazer ? { link: formDesfazer(d.desfazer, li, ol), tempo: 30000 } : null);
+    }
+    // "Desfazer" no aviso: outra mudança de lugar (de volta para depois do vizinho de cima de antes).
+    // Com JavaScript vai pelo fetch; sem ele, o formulário faria um envio normal e funcionaria igual.
+    function formDesfazer(des, li, ol) {
+      var fm = document.createElement("form"), b = document.createElement("button");
+      fm.method = "post"; fm.action = des.acao; fm.className = "toast__desfazer";
+      fm.setAttribute("data-lugar-desfazer", "");
+      var campos = [["csrf", ($("input[name=csrf]", form) || {}).value || ""]];
+      Object.keys(des.campos || {}).forEach(function (k) { campos.push([k, des.campos[k]]); });
+      campos.forEach(function (c) {
+        var i = document.createElement("input");
+        i.type = "hidden"; i.name = c[0]; i.value = c[1];
+        fm.appendChild(i);
+      });
+      b.type = "submit"; b.textContent = "Desfazer";
+      b.setAttribute("aria-keyshortcuts", "Control+Z Meta+Z");
+      b.addEventListener("click", proteger);
+      fm.appendChild(b);
+      fm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (fm.dataset.enviado === "1" || ol.getAttribute("aria-busy") === "true") return;
+        fm.dataset.enviado = "1";
+        b.setAttribute("aria-busy", "true");
+        ol.setAttribute("aria-busy", "true");
+        enviar(fm).then(function (d) { aplicar(d, li, ol, false); }, function (err) { fm.dataset.enviado = ""; erroLugar(err); })
+          .then(function () { b.removeAttribute("aria-busy"); ol.removeAttribute("aria-busy"); });
+      });
+      return fm;
+    }
+    // Desfazer pelo teclado: Ctrl+Z (⌘Z) enquanto o aviso com Desfazer está aberto (fora dos campos de texto)
+    document.addEventListener("keydown", function (e) {
+      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || String(e.key).toLowerCase() !== "z" || jan.open) return;
+      var fm = $("[data-toast]:not([hidden]) form[data-lugar-desfazer]");
+      if (!fm || (e.target.closest && e.target.closest("input, textarea, select, [contenteditable]"))) return;
+      e.preventDefault();
+      if (fm.requestSubmit) fm.requestSubmit(); else fm.dispatchEvent(new Event("submit", { cancelable: true }));
+    });
+    // Grava o lugar escolhido (janela ou arrasto). antes: a ordem da tela antes do arrasto (volta se der erro);
+    // teclado: a escolha veio do teclado (o aviso ensina o atalho do Desfazer)
+    function mudar(li, campos, para, antes, teclado) {
+      var ol = li.parentNode, lk = $("[data-lugar]", li);
+      Object.keys(campos).forEach(function (k) { campo(k, campos[k]); });
+      campo("para", para);
+      campo("desfazer", "");
+      if (lk) lk.setAttribute("aria-busy", "true");
+      ol.setAttribute("aria-busy", "true");
+      enviar(form).then(function (d) {
+        aplicar(d, li, ol, !!antes, teclado);
+      }, function (err) {
+        if (antes) {
+          antes.forEach(function (x) { ol.appendChild(x); });
+          if (!prod) numerarClientes(ol);
+        }
+        erroLugar(err);
+      }).then(function () {
+        if (lk) lk.removeAttribute("aria-busy");
+        ol.removeAttribute("aria-busy");
+      });
+    }
+
+    /* Arrastar pela alça (só no computador, com mouse: o CSS só mostra a alça lá). Clientes: a lista
+       inteira; produtos: só dentro da categoria. Soltar = o mesmo envio da janela; Esc cancela. */
+    var arr = null;
+    function pararArrasto() {
+      var a = arr;
+      arr = null;
+      if (!a) return;
+      cancelAnimationFrame(a.raf);
+      a.li.classList.remove("is-arrastando");
+      a.li.style.removeProperty("transform");
+      document.documentElement.classList.remove("arrastando", "arrastando-fora");
+      if (a.marca) a.marca.remove();
+      try { a.alca.releasePointerCapture(a.id); } catch (err) { /* já solto */ }
+      return a;
+    }
+    function moverArrasto() {
+      var a = arr, sy = window.scrollY, y = a.y + sy;
+      a.li.style.transform = "translateY(" + Math.round(y - (a.y0 + a.s0)) + "px)";
+      // Produto fora da categoria (outro grupo, cabeçalho de outra categoria): não dá para soltar
+      a.k = prod && (y < a.olTopo - 40 || y > a.olBase + 40) ? -1 : a.outros.filter(function (o) { return (o.topo + o.base) / 2 < y; }).length;
+      a.marca.hidden = a.k < 0;
+      document.documentElement.classList.toggle("arrastando-fora", a.k < 0);   // cursor "não pode"
+      if (a.k < 0) return;
+      var meio = a.k === 0 ? a.outros[0].topo - 5 : a.outros[a.k - 1].base + 5;
+      a.marca.style.top = Math.round(meio - 1.5) + "px";
+    }
+    function rolarArrasto() {
+      if (!arr) return;
+      var topo = $(".topo"), lim = Math.max(0, topo ? topo.getBoundingClientRect().bottom : 0), zona = 70, v = 0;
+      if (arr.y < lim + zona) v = -Math.ceil(Math.min(zona, lim + zona - arr.y) / zona * 16);
+      else if (arr.y > window.innerHeight - zona) v = Math.ceil(Math.min(zona, arr.y - (window.innerHeight - zona)) / zona * 16);
+      if (v) { window.scrollBy(0, v); moverArrasto(); }
+      arr.raf = requestAnimationFrame(rolarArrasto);
+    }
+    function comecarArrasto() {
+      var a = arr, sy = window.scrollY, ro = a.ol.getBoundingClientRect();
+      a.lis = itensDe(a.ol);
+      a.i = a.lis.indexOf(a.li);
+      a.outros = a.lis.filter(function (x) { return x !== a.li; }).map(function (x) {
+        var r = x.getBoundingClientRect();
+        return { li: x, topo: r.top + sy, base: r.bottom + sy };
+      });
+      a.olTopo = ro.top + sy; a.olBase = ro.bottom + sy;
+      a.marca = document.createElement("div");
+      a.marca.className = "lugar-marca";
+      a.marca.setAttribute("aria-hidden", "true");
+      a.marca.style.left = Math.round(ro.left + window.scrollX) + "px";
+      a.marca.style.width = Math.round(ro.width) + "px";
+      document.body.appendChild(a.marca);
+      a.li.classList.add("is-arrastando");
+      document.documentElement.classList.add("arrastando");
+      a.ativo = true;
+      a.raf = requestAnimationFrame(rolarArrasto);
+    }
+    document.addEventListener("pointerdown", function (e) {
+      var h = e.target.closest && e.target.closest("[data-alca]");
+      if (!h || arr || e.button !== 0 || !e.isPrimary || jan.open) return;
+      var li = h.closest(SEL), ol = li && li.parentNode;
+      // Alça escondida (celular, busca, Selecionar) ou lista gravando: nada
+      if (!ol || ol.getAttribute("aria-busy") === "true" || getComputedStyle(h).visibility !== "visible" || !h.offsetWidth) return;
+      e.preventDefault();
+      try { h.setPointerCapture(e.pointerId); } catch (err) { /* segue sem captura */ }
+      arr = { alca: h, li: li, ol: ol, id: e.pointerId, y0: e.clientY, s0: window.scrollY, y: e.clientY, ativo: false, k: -1, raf: 0 };
+    });
+    document.addEventListener("pointermove", function (e) {
+      if (!arr || e.pointerId !== arr.id) return;
+      arr.y = e.clientY;
+      if (!arr.ativo) {
+        if (Math.abs(e.clientY - arr.y0) < 4) return;   // só começa depois de 4 px
+        comecarArrasto();
+      }
+      e.preventDefault();
+      moverArrasto();
+    });
+    document.addEventListener("pointerup", function (e) {
+      if (!arr || e.pointerId !== arr.id) return;
+      var a = pararArrasto();
+      if (a.ativo && a.k < 0) toast("Arrastando, ele só muda de lugar dentro de " + nomeCat(a.li) + ". Para levar para outra categoria, use Editar ou Selecionar → Mover.");
+      if (!a.ativo || a.k < 0 || a.k === a.i) return;   // não arrastou, fora da categoria ou no mesmo lugar: nada é enviado
+      var its = itens(a.ol), viz = a.k === 0 ? null : a.outros[a.k - 1].li;
+      var para = viz ? its[a.lis.indexOf(viz)].valor : "inicio";
+      var campos = camposDo(a.li);   // antes de mexer na tela (a posição do cliente é a de agora)
+      a.ol.insertBefore(a.li, viz ? viz.nextSibling : a.outros[0].li);
+      if (!prod) numerarClientes(a.ol);
+      mudar(a.li, campos, para, a.lis);
+    });
+    document.addEventListener("pointercancel", function (e) { if (arr && e.pointerId === arr.id) pararArrasto(); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape" || !arr) return;
+      e.preventDefault();
+      pararArrasto();   // volta ao lugar, nada enviado
+    });
+  })();
 
   /* ------------------------------------------------------------------
      Busca e filtros instantâneos na lista
@@ -1062,9 +1423,9 @@
   }
 
   /* ------------------------------------------------------------------
-     Clientes: ordem (troca com o vizinho) e formulário com prévia do logo
+     Clientes: numeração depois de mudar o lugar e formulário com prévia do logo
      ------------------------------------------------------------------ */
-  // Depois de mudar a ordem: posição, campos n= dos formulários, links e setas
+  // Depois de mudar a ordem: id c-N, "Nº no site", campos n= dos formulários e links (Editar, Mudar lugar)
   function numerarClientes(lista) {
     var itens = Array.prototype.filter.call(lista.children, function (x) { return x.matches(".cli"); });
     itens.forEach(function (li, i) {
@@ -1074,35 +1435,8 @@
       if (pos) pos.textContent = n + "º no site";
       $$("input[name=n]", li).forEach(function (inp) { inp.value = n; });
       $$("a[href*='n=']", li).forEach(function (a) { a.setAttribute("href", a.getAttribute("href").replace(/([?&]n=)\d+/, "$1" + n)); });
-      var c = $("[data-mover-cima]", li), b = $("[data-mover-baixo]", li);
-      if (c) c.disabled = i === 0;
-      if (b) b.disabled = i === itens.length - 1;
     });
   }
-  document.addEventListener("submit", function (e) {
-    var f = e.target;
-    if (!f.matches || !f.matches("[data-mover-cliente]")) return;
-    e.preventDefault();
-    var bt = $("button", f), li = f.closest(".cli"), lista = li && li.parentNode;
-    if (!li) return;
-    bt.setAttribute("aria-busy", "true");
-    enviar(f).then(function (d) {
-      var viz = d.dir === "cima" ? li.previousElementSibling : li.nextElementSibling;
-      if (viz) {
-        if (d.dir === "cima") lista.insertBefore(li, viz);
-        else lista.insertBefore(viz, li);
-      }
-      numerarClientes(lista);
-      li.classList.add("is-movendo");
-      setTimeout(function () { li.classList.remove("is-movendo"); }, 900);
-      if (!bt.disabled) bt.focus({ preventScroll: true });
-      else { var outro = $(d.dir === "cima" ? "[data-mover-baixo]" : "[data-mover-cima]", li); if (outro && !outro.disabled) outro.focus({ preventScroll: true }); }
-      if (li.scrollIntoView) li.scrollIntoView({ block: "nearest", behavior: "smooth" });
-      toast(d.msg);
-    }).catch(function (err) {
-      if (err.message !== "login") toast(err.message, true);
-    }).then(function () { bt.removeAttribute("aria-busy"); });
-  });
 
   var fc = $("[data-form-cliente]");
   if (fc) {
@@ -1372,9 +1706,17 @@
   if (alvoHash && primeiro) {
     alvoHash.classList.add("is-novo");
     setTimeout(function () { alvoHash.classList.remove("is-novo"); }, 8000);
-    var pTxt = $("p", primeiro), link = pTxt && $("a", pTxt);
+    var pTxt = $("p", primeiro), link = pTxt && $("a", pTxt), fAviso = $(".aviso__form", primeiro);
     var msg = pTxt ? (pTxt.firstChild && pTxt.firstChild.nodeType === 3 ? pTxt.firstChild.nodeValue : pTxt.textContent).trim() : "";
-    if (msg) toast(msg, primeiro.classList.contains("aviso--erro"), { link: link ? link.cloneNode(true) : null, tempo: link ? 30000 : 10000 });
+    // Com Desfazer (Mudar lugar sem a janela): o formulário vai junto, perto do item
+    var acao = null;
+    if (fAviso) {
+      acao = fAviso.cloneNode(true);
+      acao.className = "toast__desfazer";
+      var bDesf = $("button", acao);
+      if (bDesf) { bDesf.className = ""; bDesf.textContent = bDesf.textContent.trim(); }
+    } else if (link) acao = link.cloneNode(true);
+    if (msg) toast(msg, primeiro.classList.contains("aviso--erro"), { link: acao, tempo: acao ? 30000 : 10000 });
   }
 
   /* ------------------------------------------------------------------

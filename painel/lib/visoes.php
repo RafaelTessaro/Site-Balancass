@@ -51,6 +51,8 @@ function spriteIcones(): void
   <symbol id="i-show" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="currentColor"/></symbol>
   <symbol id="i-marcar" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7.5 12.3l3 3 6-6.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-categorias" viewBox="0 0 24 24"><path d="M4 4h6.5v6.5H4zM13.5 4H20v6.5h-6.5zM4 13.5h6.5V20H4zM13.5 13.5H20V20h-6.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-lugar" viewBox="0 0 24 24"><path d="M8 20V4M4 8l4-4 4 4M16 4v16M12 16l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-arrastar" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="9" cy="5.5" r="1.8"/><circle cx="15" cy="5.5" r="1.8"/><circle cx="9" cy="12" r="1.8"/><circle cx="15" cy="12" r="1.8"/><circle cx="9" cy="18.5" r="1.8"/><circle cx="15" cy="18.5" r="1.8"/></g></symbol>
   <symbol id="i-mover" viewBox="0 0 24 24"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2l2 2.2h8.8A1.5 1.5 0 0 1 21 8.7v9.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 13.5h6.5M13 11l2.5 2.5L13 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 </svg>
 <?php
@@ -340,7 +342,7 @@ function telaLista(array $cat, array $filtro, array $pacotes = [], array $lote =
     $sel = !empty($lote['sel']) && $total > 0;
     $capaSite = capaEfetiva($produtos);   // o produto que o topo do site mostra de fato (o escolhido, ou a Prix 7E no lugar dele)
     $ctx = ['home' => destaquesDaHome($produtos), 'capa' => produtoCapa(), 'capaSite' => $capaSite, 'capaFrase' => fraseCapaFora(false, $capaSite, $produtos),
-        'marcados' => array_fill_keys($lote['marcados'] ?? [], true), 'todos' => $sel && !empty($lote['todos'])];
+        'marcados' => array_fill_keys($lote['marcados'] ?? [], true), 'todos' => $sel && !empty($lote['todos']), 'filtro' => $filtro];
     $capaFora = problemaCapa($produtos);   // capa escolhida em Empresa → Capa do site que não pode aparecer (lib/ajustes.php)
     $porCat = [];
     foreach ($produtos as $p) $porCat[$p['categoria'] ?? ''][] = $p;
@@ -408,8 +410,9 @@ function telaLista(array $cat, array $filtro, array $pacotes = [], array $lote =
   </div>
   <p class="lote-dica" data-lote-dica><?= icone('marcar') ?><span><b>Toque nos produtos para marcar.</b> Depois escolha, na barra de baixo, o que fazer com todos os marcados: estoque, destaque, no site, mover para outra categoria ou excluir.</span></p>
   <div class="dica" data-capa="<?= e($ctx['capa']) ?>" data-capa-site="<?= e($ctx['capaSite']) ?>" data-capa-frase="<?= e($ctx['capaFrase']) ?>">
-    <?= icone('up') ?>
-    <?php $dicaOrdem = '<span><b>Ordem no site:</b> Pronta entrega primeiro, depois os destaques, depois a ordem das setas; Esgotado fica por último.</span>'
+    <?= icone('lugar') ?>
+    <?php $dicaOrdem = '<span><b>Ordem no site:</b> Pronta entrega primeiro, depois os destaques, depois a ordem desta lista (para mudar, use <b>Mudar lugar</b>); Esgotado fica por último.'
+        . '<span class="so-pc"> No computador, dá também para arrastar pela alça ⠿.</span></span>'
         . '<span><b>Página inicial:</b> mostra até ' . HOME_MAX_DESTAQUES . ' destaques, revezando as categorias (o de cima de cada categoria entra primeiro). Destaque além disso aparece como “fora da página inicial”.</span>'; ?>
     <p class="dica__texto"><?= $dicaOrdem ?></p>
     <?php /* No celular, a explicação fica fechada (uma linha): a lista de produtos aparece na primeira tela */ ?>
@@ -425,10 +428,10 @@ function telaLista(array $cat, array $filtro, array $pacotes = [], array $lote =
         $lista = $porCat[$c['id']] ?? [];
         if (!$lista) continue;
         $mostra = count(array_filter($lista, $passa)); ?>
-  <section class="grupo" data-grupo="<?= e($c['id']) ?>"<?= $mostra ? '' : ' hidden' ?> aria-labelledby="g-<?= e($c['id']) ?>">
+  <section class="grupo" data-grupo="<?= e($c['id']) ?>" data-cat-nome="<?= e($c['nome']) ?>"<?= $mostra ? '' : ' hidden' ?> aria-labelledby="g-<?= e($c['id']) ?>">
     <h2 class="grupo__tit" id="g-<?= e($c['id']) ?>"><?= e($c['nome']) ?> <span><?= count($lista) ?></span></h2>
     <ol class="lista" role="list">
-      <?php foreach ($lista as $i => $p) itemProduto($p, $categorias, $i === 0, $i === count($lista) - 1, $passa($p), $ctx); ?>
+      <?php foreach ($lista as $p) itemProduto($p, $categorias, count($lista) > 1, $passa($p), $ctx); ?>
     </ol>
   </section>
   <?php endforeach; ?>
@@ -439,11 +442,12 @@ function telaLista(array $cat, array $filtro, array $pacotes = [], array $lote =
   <section class="grupo grupo--alerta" data-grupo="">
     <h2 class="grupo__tit">Sem categoria válida <span><?= count($orfaos) ?></span></h2>
     <ol class="lista" role="list">
-      <?php foreach (array_values($orfaos) as $i => $p) itemProduto($p, $categorias, true, true, true, $ctx); ?>
+      <?php foreach ($orfaos as $p) itemProduto($p, $categorias, false, true, $ctx); ?>
     </ol>
   </section>
   <?php endif; ?>
   <?php if ($produtos) barraLote($categorias, $filtro, $sel, $nMarcados, $achados, $todosDaLista); ?>
+  <?php if ($produtos) dialogoLugar('produtos', $filtro); ?>
 <?php
     }, ['menu' => 'produtos', 'classe' => 'pg-lista' . ($sel ? ' is-selecionando' : '')]);
 }
@@ -516,7 +520,7 @@ function barraLote(array $categorias, array $filtro, bool $sel, int $nMarcados, 
               <?php endforeach; ?>
             </select>
             <button type="submit" name="acao" value="mover" class="btn btn--verde btn--p"><?= icone('mover') ?>Mover</button>
-            <p class="lote__pop-ajuda">Quem muda de categoria entra no fim dela (depois, use as setas para a ordem).</p>
+            <p class="lote__pop-ajuda">Quem muda de categoria entra logo depois dos outros do mesmo tipo (para mudar, use Mudar lugar).</p>
           </div>
         </details>
         <?php endif; ?>
@@ -572,7 +576,8 @@ function textoSeloDestaque(string $id, array $ctx): array
         : ['Destaque · fora da página inicial', ' is-fora'];
 }
 
-function itemProduto(array $p, array $categorias, bool $primeiro, bool $ultimo, bool $mostra, array $ctx = []): void
+/** $lugar: o produto tem categoria válida com 2 ou mais produtos (dá para mudar o lugar). */
+function itemProduto(array $p, array $categorias, bool $lugar, bool $mostra, array $ctx = []): void
 {
     $id = (string) $p['id'];
     $nome = nomeCompleto($p);
@@ -589,7 +594,8 @@ function itemProduto(array $p, array $categorias, bool $primeiro, bool $ultimo, 
     // Edição em lote: caixinha (só aparece no modo "Selecionar"); fica fora do formulário da barra, ligada a ele por form="f-lote"
     $marcado = isset($ctx['marcados'][$id]) || (!empty($ctx['todos']) && $mostra);
     ?>
-      <li class="item<?= $vis ? '' : ' is-oculto' ?><?= $marcado ? ' is-marcado' : '' ?>" id="p-<?= e($id) ?>" data-id="<?= e($id) ?>"<?= $capa ? ' data-na-capa' : '' ?> data-cat="<?= e($p['categoria'] ?? '') ?>" data-busca="<?= e(textoBusca($p, $categorias)) ?>" data-visivel="<?= $vis ? '1' : '0' ?>" data-destaque="<?= $dest ? '1' : '0' ?>" data-nome="<?= e($nome) ?>"<?= $mostra ? '' : ' hidden' ?>>
+      <li class="item<?= $vis ? '' : ' is-oculto' ?><?= $marcado ? ' is-marcado' : '' ?>" id="p-<?= e($id) ?>" data-id="<?= e($id) ?>"<?= $capa ? ' data-na-capa' : '' ?> data-cat="<?= e($p['categoria'] ?? '') ?>" data-busca="<?= e(textoBusca($p, $categorias)) ?>" data-visivel="<?= $vis ? '1' : '0' ?>" data-destaque="<?= $dest ? '1' : '0' ?>" data-nome="<?= e($nome) ?>" data-sub="<?= e($p['subcategoria'] ?? '') ?>"<?= $mostra ? '' : ' hidden' ?>>
+        <?php if ($lugar): ?><span class="alca" data-alca aria-hidden="true" tabindex="-1" title="Arraste para mudar o lugar"><?= icone('arrastar') ?></span><?php endif; ?>
         <label class="item__marcar"><input type="checkbox" name="ids[]" value="<?= e($id) ?>" form="f-lote" data-marcar<?= $marcado ? ' checked' : '' ?>><span class="sr-only">Marcar <?= e($nome) ?></span></label>
         <a class="item__foto" href="<?= e($editar) ?>" tabindex="-1" aria-hidden="true">
           <?php if ($img): ?><img src="<?= e($img) ?>" alt="" loading="lazy" decoding="async" width="80" height="80"><?php else: ?><span class="item__semfoto"><?= icone('camera') ?></span><?php endif; ?>
@@ -619,14 +625,12 @@ function itemProduto(array $p, array $categorias, bool $primeiro, bool $ultimo, 
           ?>
         </div>
         <div class="item__acoes">
-          <form method="post" action="<?= e(link_('mover')) ?>" data-mover>
-            <?= campoCsrf() ?><input type="hidden" name="id" value="<?= e($id) ?>"><input type="hidden" name="dir" value="cima">
-            <button type="submit" class="ic" aria-label="Subir <?= e($nome) ?>" title="Subir"<?= $primeiro ? ' disabled' : '' ?> data-mover-cima><?= icone('up') ?></button>
-          </form>
-          <form method="post" action="<?= e(link_('mover')) ?>" data-mover>
-            <?= campoCsrf() ?><input type="hidden" name="id" value="<?= e($id) ?>"><input type="hidden" name="dir" value="baixo">
-            <button type="submit" class="ic" aria-label="Descer <?= e($nome) ?>" title="Descer"<?= $ultimo ? ' disabled' : '' ?> data-mover-baixo><?= icone('down') ?></button>
-          </form>
+          <?php if ($lugar): ?>
+          <a class="btn btn--linha btn--p item__lugar" href="<?= e(link_('lugar', ['id' => $id] + array_filter($ctx['filtro'] ?? [], static fn($x) => $x !== ''))) ?>" data-lugar><?= icone('lugar') ?><span><span class="item__lugar-mudar">Mudar </span>lugar</span><span class="sr-only"> de <?= e($nome) ?></span></a>
+          <?php else: ?>
+          <?php $catP = categoriaPorId($categorias, (string) ($p['categoria'] ?? '')); /* o motivo aparece ao tocar (painel.js) e ao passar o mouse */ ?>
+          <span class="btn btn--linha btn--p item__lugar is-off" aria-disabled="true" title="<?= e($catP ? 'Ele é o único de ' . $catP['nome'] . ': não há outro lugar.' : ERRO_SEM_CATEGORIA) ?>" data-lugar-off><?= icone('lugar') ?><span><span class="item__lugar-mudar">Mudar </span>lugar</span><span class="sr-only"><?= $catP ? ' (é o único da categoria)' : ' (escolha a categoria em Editar)' ?></span></span>
+          <?php endif; ?>
           <a class="btn btn--linha btn--p item__editar" href="<?= e($editar) ?>"><?= icone('edit') ?><span>Editar</span><span class="sr-only"> <?= e($nome) ?></span></a>
           <form method="post" action="<?= e(link_('excluir')) ?>" data-confirmar="<?= e(textoExcluir($p, $ctx['capaSite'] ?? null, $ctx['capaFrase'] ?? null)) ?>" data-confirmar-ok="Excluir">
             <?= campoCsrf() ?><input type="hidden" name="id" value="<?= e($id) ?>">
@@ -666,7 +670,10 @@ function telaProduto(array $cat, ?array $p, array $erros = [], ?string $original
         $situacao = in_array($original, $home, true) ? 'Hoje: aparece na página inicial.' : 'Hoje: fora da página inicial (já há ' . HOME_MAX_DESTAQUES . ' destaques na frente dele).';
     }
 
-    pagina($titulo, static function () use ($novo, $p, $categoriasForm, $marcas, $specs, $img, $titulo, $acao, $erros, $err, $inv, $original, $capa, $capaPainel, $situacao): void {
+    // Produto novo: "Junto da mesma subcategoria" (padrão) ou "Em 1º na categoria"; a escolha volta marcada depois de um erro
+    $lugar = ($_POST['lugar'] ?? '') === 'inicio' ? 'inicio' : 'tipo';
+
+    pagina($titulo, static function () use ($novo, $p, $categoriasForm, $marcas, $specs, $img, $titulo, $acao, $erros, $err, $inv, $original, $capa, $capaPainel, $situacao, $lugar): void {
         $categorias = $categoriasForm;
         $siteLink = !$novo ? '<a class="btn btn--linha btn--p" href="' . e(cfg('url_site') . 'produtos.html#p=' . rawurlencode((string) $original)) . '" target="_blank" rel="noopener">' . icone('ext') . 'Ver no site</a>' : '';
         ?>
@@ -756,6 +763,18 @@ function telaProduto(array $cat, ?array $p, array $erros = [], ?string $original
             <?= $err('subcategoria') ?>
           </div>
         </div>
+        <?php if ($novo): ?>
+        <div class="campo">
+          <p class="rotulo" id="r-lugar">Lugar na lista</p>
+          <div class="opcoes" role="radiogroup" aria-labelledby="r-lugar">
+            <label class="opcao"><input type="radio" name="lugar" value="tipo"<?= $lugar !== 'inicio' ? ' checked' : '' ?>><span>Junto da mesma subcategoria</span></label>
+            <label class="opcao"><input type="radio" name="lugar" value="inicio"<?= $lugar === 'inicio' ? ' checked' : '' ?>><span>Em 1º na categoria</span></label>
+          </div>
+          <p class="ajuda">Junto da mesma subcategoria: logo depois dos outros do mesmo tipo (um fatiador novo entra depois dos outros fatiadores). Em 1º: antes de todos da categoria. Para mudar depois: Produtos → Mudar lugar.</p>
+        </div>
+        <?php else: ?>
+        <p class="ajuda">Se trocar a categoria, ele entra logo depois dos outros da mesma subcategoria na categoria nova. Para mudar o lugar: Produtos → Mudar lugar.</p>
+        <?php endif; ?>
         <?= ajudaCategoriasNoForm() /* só administradores (lib/visoes-categorias.php) */ ?>
         <div class="campo">
           <label for="f-resumo">Resumo <small>uma frase, aparece no cartão</small></label>
@@ -992,8 +1011,8 @@ function telaClientes(array $dados): void
         if (!$dados['existe']) avisoSemArquivoClientes();
         ?>
   <div class="dica">
-    <?= icone('up') ?>
-    <p><span><b>Ordem no site:</b> a mesma desta lista. Use as setas para mudar.</span>
+    <?= icone('lugar') ?>
+    <p><span><b>Ordem no site:</b> a mesma desta lista (da esquerda para a direita, de cima para baixo). Para mudar, toque em <b>Mudar lugar</b>.<span class="so-pc"> No computador, dá também para arrastar pela alça ⠿.</span></span>
     <span><b>Logo bom:</b> PNG com fundo transparente (ou fundo branco). O painel corta as sobras e reduz sozinho; a prévia mostra a chapa branca do site.</span></p>
   </div>
   <?php if (!$lista): ?>
@@ -1005,6 +1024,7 @@ function telaClientes(array $dados): void
   <ol class="clientes" role="list" data-clientes>
     <?php foreach ($lista as $i => $c) itemCliente($c, $i, count($lista)); ?>
   </ol>
+  <?php if (count($lista) > 1) dialogoLugar('clientes'); ?>
   <?php endif; ?>
   <p class="clientes__rodape">
     <?php if (ehAdmin()): ?><a href="<?= e(link_('copias', ['de' => 'clientes'])) ?>"><?= icone('restore') ?>Cópias de segurança da lista de clientes</a><?php endif; ?>
@@ -1024,7 +1044,8 @@ function itemCliente(array $c, int $i, int $total): void
     $editar = link_('cliente-editar', $ref);
     $campos = campoCsrf() . '<input type="hidden" name="n" value="' . $n . '"><input type="hidden" name="logo" value="' . e($logo) . '">';
     ?>
-    <li class="cli" id="c-<?= $n ?>">
+    <li class="cli" id="c-<?= $n ?>" data-nome="<?= e($nome) ?>" data-logo="<?= e($logo) ?>">
+      <?php if ($total > 1): ?><span class="alca" data-alca aria-hidden="true" tabindex="-1" title="Arraste para mudar o lugar"><?= icone('arrastar') ?></span><?php endif; ?>
       <a class="cli__chapa" href="<?= e($editar) ?>" tabindex="-1" aria-hidden="true"><?= chapaLogo($info) ?></a>
       <div class="cli__txt">
         <p class="cli__pos" data-pos><?= $n ?>º no site</p>
@@ -1032,14 +1053,11 @@ function itemCliente(array $c, int $i, int $total): void
         <?php if (!$info): ?><p class="item__selos"><span class="selo selo--oculto"><?= $logo === '' ? 'Sem logo: não aparece no site' : 'Logo não encontrado no servidor' ?></span></p><?php endif; ?>
       </div>
       <div class="cli__acoes">
-        <form method="post" action="<?= e(link_('cliente-mover')) ?>" data-mover-cliente>
-          <?= $campos ?><input type="hidden" name="dir" value="cima">
-          <button type="submit" class="ic" aria-label="Subir <?= e($nome) ?>" title="Subir"<?= $i === 0 ? ' disabled' : '' ?> data-mover-cima><?= icone('up') ?></button>
-        </form>
-        <form method="post" action="<?= e(link_('cliente-mover')) ?>" data-mover-cliente>
-          <?= $campos ?><input type="hidden" name="dir" value="baixo">
-          <button type="submit" class="ic" aria-label="Descer <?= e($nome) ?>" title="Descer"<?= $i === $total - 1 ? ' disabled' : '' ?> data-mover-baixo><?= icone('down') ?></button>
-        </form>
+        <?php if ($total > 1): ?>
+        <a class="btn btn--linha btn--p cli__lugar" href="<?= e(link_('cliente-lugar', $ref)) ?>" data-lugar><?= icone('lugar') ?><span>Mudar lugar</span><span class="sr-only"> de <?= e($nome) ?></span></a>
+        <?php else: ?>
+        <span class="btn btn--linha btn--p cli__lugar is-off" aria-disabled="true" title="Ele é o único da lista: não há outro lugar." data-lugar-off><?= icone('lugar') ?><span>Mudar lugar</span><span class="sr-only"> (é o único da lista)</span></span>
+        <?php endif; ?>
         <a class="btn btn--linha btn--p cli__editar" href="<?= e($editar) ?>"><?= icone('edit') ?><span>Editar</span><span class="sr-only"> <?= e($nome) ?></span></a>
         <form method="post" action="<?= e(link_('cliente-excluir')) ?>" data-confirmar="<?= e(textoExcluirCliente($c)) ?>" data-confirmar-ok="Excluir" data-confirmar-tit="Excluir cliente?">
           <?= $campos ?>
@@ -1048,6 +1066,113 @@ function itemCliente(array $c, int $i, int $total): void
       </div>
     </li>
 <?php
+}
+
+/* ------------------------------------------------------------------
+   "Mudar lugar" (clientes e produtos): a janela (com JavaScript) e a
+   página (sem JavaScript, ou navegador sem <dialog>) mostram a mesma
+   lista de lugares (opcoesLugar, lib/ordem.php = opcoes, painel.js).
+   ------------------------------------------------------------------ */
+/** Casca da janela "Mudar o lugar" (uma por página; o painel.js preenche). $area: produtos ou clientes. */
+function dialogoLugar(string $area, array $filtro = []): void
+{
+    $prod = $area === 'produtos';
+    ?>
+  <dialog class="dialogo dialogo--ok dialogo--lugar" data-lugar-dialogo data-area="<?= e($area) ?>" aria-labelledby="lugar-tit" aria-describedby="lugar-hoje">
+    <div class="dialogo__in">
+      <h2 id="lugar-tit">Mudar o lugar</h2>
+      <p class="lugar__nome" data-lugar-nome></p>
+      <p class="lugar__hoje" id="lugar-hoje" data-lugar-hoje></p>
+      <?php if ($prod): ?><p class="lugar__nota" data-lugar-filtro hidden></p><?php endif; ?>
+      <p class="lugar__rot" id="lugar-rot">Escolha o novo lugar:</p>
+      <p class="sr-only" id="lugar-teclas">Use as setas para escolher e Enter para confirmar. Esc fecha sem mudar.</p>
+      <ol class="lugar__lista" role="list" aria-labelledby="lugar-rot" aria-describedby="lugar-teclas" data-lugar-lista></ol>
+      <?php if ($prod): ?><p class="lugar__nota"><?= e(TEXTO_ORDEM_SITE) ?></p><?php endif; ?>
+      <div class="dialogo__bts"><button type="button" class="btn btn--linha" data-lugar-fechar>Cancelar</button></div>
+    </div>
+    <?php /* Fica no documento para atualizarCsrf() trocar o csrf depois de entrar de novo */ ?>
+    <form method="post" action="<?= e(link_($prod ? 'lugar' : 'cliente-lugar')) ?>" data-lugar-form hidden>
+      <?= campoCsrf() ?>
+      <?php if ($prod): ?><input type="hidden" name="id"><?php foreach (['q', 'cat', 'ver'] as $k): ?><input type="hidden" name="<?= $k ?>" value="<?= e($filtro[$k] ?? '') ?>"><?php endforeach; ?>
+      <?php else: ?><input type="hidden" name="n"><input type="hidden" name="logo"><input type="hidden" name="nome"><?php endif; ?>
+      <input type="hidden" name="para"><input type="hidden" name="desfazer">
+    </form>
+  </dialog>
+<?php
+}
+
+/** Um lugar: "12º depois de X · começo de Pesadoras" (o mesmo desenho dos botões da janela). */
+function textoOpcaoLugar(array $o): string
+{
+    return '<b class="lugar__num">' . (int) $o['pos'] . 'º</b> <span class="lugar__txt">' . e($o['texto'])
+        . ($o['sub'] !== '' ? '<small> · começo de ' . e($o['sub']) . '</small>' : '') . '</span>';
+}
+
+/** Os lugares como botões de envio (name="para"); o lugar de hoje é um link de volta ($voltar). */
+function listaLugar(array $opcoes, string $voltar): void
+{
+    ?>
+      <ol class="lugar__lista" role="list" aria-labelledby="lugar-rot">
+        <?php foreach ($opcoes as $o): ?>
+        <li><?php if ($o['atual']): ?><a class="lugar__op" href="<?= e($voltar) ?>" aria-current="true"><?= textoOpcaoLugar($o) ?></a><?php else: ?><button type="submit" class="lugar__op" name="para" value="<?= e($o['valor']) ?>"><?= textoOpcaoLugar($o) ?></button><?php endif; ?></li>
+        <?php endforeach; ?>
+      </ol>
+<?php
+}
+
+/** Página "Mudar o lugar" de um produto: a categoria inteira (inclusive o que a busca/o filtro escondem). */
+function telaLugarProduto(array $cat, array $p, array $filtro, string $erro = ''): void
+{
+    $id = (string) $p['id'];
+    $c = categoriaPorId($cat['categorias'], (string) ($p['categoria'] ?? '')) ?? ['id' => '', 'nome' => ''];
+    $itens = itensLugarProdutos($cat['produtos'], (string) $c['id']);
+    $i = (int) array_search($id, array_column($itens, 'valor'), true);
+    $opcoes = opcoesLugar($itens, $i, (string) $c['nome']);
+    $voltar = linkLista($filtro) . '#p-' . $id;
+    $oculto = ($p['visivel'] ?? true) === false;
+    pagina('Mudar o lugar', static function () use ($p, $id, $c, $itens, $i, $opcoes, $voltar, $oculto, $filtro, $erro): void { ?>
+  <p class="migalha"><a href="<?= e($voltar) ?>"><?= icone('up', 'i i--esq') ?>Produtos</a></p>
+  <?php cabecalhoPagina('Catálogo do site', 'Mudar o lugar'); ?>
+  <form method="post" action="<?= e(link_('lugar')) ?>" class="lugar" data-lugar-pagina>
+    <?= campoCsrf() ?><input type="hidden" name="id" value="<?= e($id) ?>">
+    <?php foreach (['q', 'cat', 'ver'] as $k): ?><input type="hidden" name="<?= $k ?>" value="<?= e($filtro[$k] ?? '') ?>"><?php endforeach; ?>
+    <div class="lugar__cab">
+      <p class="lugar__nome">“<?= e(nomeCompleto($p)) ?>”</p>
+      <p class="lugar__hoje">Hoje: <?= $i + 1 ?>º de <?= count($itens) ?> em <?= e($c['nome']) ?>.<?= $oculto ? ' Está fora do site.' : '' ?></p>
+    </div>
+    <?php if ($erro !== ''): ?><div class="aviso aviso--erro" role="alert"><?= icone('alert') ?><p><?= e($erro) ?></p></div><?php endif; ?>
+    <?php if (($filtro['q'] ?? '') !== '' || ($filtro['ver'] ?? '') !== ''): ?><p class="lugar__nota">A lista tem todos os <?= count($itens) ?> de <?= e($c['nome']) ?>, inclusive os que a busca ou o filtro estão escondendo.</p><?php endif; ?>
+    <p class="lugar__nota"><?= e(TEXTO_ORDEM_SITE) ?></p>
+    <p class="lugar__rot" id="lugar-rot">Escolha o novo lugar:</p>
+    <?php listaLugar($opcoes, $voltar); ?>
+    <?php if (count($itens) < 2): ?><p class="lugar__nota">Ele é o único de <?= e($c['nome']) ?>: não há outro lugar.</p><?php endif; ?>
+    <p class="lugar__bts"><a class="btn btn--linha" href="<?= e($voltar) ?>">Cancelar</a></p>
+  </form>
+<?php }, ['menu' => 'produtos', 'classe' => 'pg-lugar']);
+}
+
+/** Página "Mudar o lugar" de um cliente (o da posição $i). */
+function telaLugarCliente(array $lista, int $i, string $erro = ''): void
+{
+    $lista = array_values($lista);
+    $c = $lista[$i];
+    $opcoes = opcoesLugar(itensLugarClientes($lista), $i);
+    $voltar = link_('clientes') . '#c-' . ($i + 1);
+    pagina('Mudar o lugar', static function () use ($lista, $c, $i, $opcoes, $voltar, $erro): void { ?>
+  <p class="migalha"><a href="<?= e($voltar) ?>"><?= icone('up', 'i i--esq') ?>Clientes</a></p>
+  <?php cabecalhoPagina('Logos no site', 'Mudar o lugar'); ?>
+  <form method="post" action="<?= e(link_('cliente-lugar')) ?>" class="lugar" data-lugar-pagina>
+    <?= campoCsrf() ?><input type="hidden" name="n" value="<?= $i + 1 ?>"><input type="hidden" name="logo" value="<?= e((string) ($c['logo'] ?? '')) ?>"><input type="hidden" name="nome" value="<?= e((string) ($c['nome'] ?? '')) ?>">
+    <div class="lugar__cab">
+      <p class="lugar__nome">“<?= e((string) ($c['nome'] ?? '')) ?>”</p>
+      <p class="lugar__hoje">Hoje: <?= $i + 1 ?>º no site (de <?= count($lista) ?>).</p>
+    </div>
+    <?php if ($erro !== ''): ?><div class="aviso aviso--erro" role="alert"><?= icone('alert') ?><p><?= e($erro) ?></p></div><?php endif; ?>
+    <p class="lugar__rot" id="lugar-rot">Escolha o novo lugar:</p>
+    <?php listaLugar($opcoes, $voltar); ?>
+    <p class="lugar__bts"><a class="btn btn--linha" href="<?= e($voltar) ?>">Cancelar</a></p>
+  </form>
+<?php }, ['menu' => 'clientes', 'classe' => 'pg-lugar']);
 }
 
 /** Formulário do cliente. $ref = ['n' => posição (1…), 'logo' => arquivo] ao editar; null = novo. */
@@ -1063,8 +1188,11 @@ function telaCliente(array $dados, ?array $c, array $erros = [], ?array $ref = n
     $inv = static fn(string $k): string => isset($erros[$k]) ? ' aria-invalid="true" aria-describedby="erro-' . e($k) . '"' : '';
     $minL = (int) (cfg('logo_min_largura') ?? 80);
     $maxB = (int) (cfg('logo_max_bytes') ?? 5242880);
+    // Cliente novo: "Lugar no site" (padrão: 1º); a escolha volta marcada depois de um erro
+    $lugares = $novo && $dados['clientes'] ? opcoesLugar(itensLugarClientes($dados['clientes']), null) : [];
+    $escolhido = is_string($_POST['lugar'] ?? null) && in_array($_POST['lugar'], array_column($lugares, 'valor'), true) ? $_POST['lugar'] : 'inicio';
 
-    pagina($titulo, static function () use ($dados, $c, $erros, $novo, $info, $titulo, $acao, $voltar, $err, $inv, $minL, $maxB): void { ?>
+    pagina($titulo, static function () use ($dados, $c, $erros, $novo, $info, $titulo, $acao, $voltar, $err, $inv, $minL, $maxB, $lugares, $escolhido): void { ?>
   <p class="migalha"><a href="<?= e($voltar) ?>"><?= icone('up', 'i i--esq') ?>Clientes</a></p>
   <?php cabecalhoPagina($novo ? 'Logos no site' : (string) $c['nome'], $titulo); ?>
   <?php if ($erros): ?>
@@ -1105,8 +1233,16 @@ function telaCliente(array $dados, ?array $c, array $erros = [], ?array $ref = n
           <?= $err('nome') ?>
           <p class="ajuda">Não aparece escrito no site: é o texto do logo para o Google, para leitores de tela e para quando a imagem não carrega. Até <?= LIMITE_NOME_CLIENTE ?> caracteres.</p>
         </div>
+        <?php if ($lugares): ?>
+        <div class="campo">
+          <label for="f-lugar">Lugar no site</label>
+          <select id="f-lugar" name="lugar"><?php foreach ($lugares as $o): ?>
+            <option value="<?= e($o['valor']) ?>"<?= $o['valor'] === $escolhido ? ' selected' : '' ?>><?= e($o['pos'] . 'º, ' . $o['texto']) ?></option><?php endforeach; ?>
+          </select>
+          <p class="ajuda">Os logos aparecem no site nesta ordem (da esquerda para a direita, de cima para baixo). Dá para mudar depois em Clientes → Mudar lugar.</p>
+        </div>
+        <?php elseif ($novo): ?><input type="hidden" name="lugar" value="inicio"><?php endif; ?>
         <?php if (isset($erros['geral'])): ?><?= $err('geral') ?><?php endif; ?>
-        <?php if ($novo): ?><p class="ajuda">O cliente novo entra no <b>fim da lista</b>. Depois, use as setas da tela Clientes para escolher a posição no site.</p><?php endif; ?>
       </fieldset>
     </div>
     <div class="barra-salvar">

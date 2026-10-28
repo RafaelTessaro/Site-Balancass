@@ -287,7 +287,7 @@ h1 { font: 800 clamp(38px, 10vw, 60px)/.92 var(--f-display); text-transform: upp
   grid-template-areas:
     "foto foto txt txt txt"
     "est  est  est dest vis"
-    "up   down edit edit del";
+    "acoes acoes acoes acoes acoes";
   gap: 10px 8px; padding: 12px;
   background: var(--white); border: 1px solid var(--line);
   scroll-margin: calc(var(--topo) + 16px);
@@ -295,7 +295,7 @@ h1 { font: 800 clamp(38px, 10vw, 60px)/.92 var(--f-display); text-transform: upp
 }
 .item:target, .item.is-novo { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
 .item.is-movendo { box-shadow: 0 0 0 3px var(--volt); }
-.item__rapido, .item__acoes { display: contents; }
+.item__rapido { display: contents; }
 .item__foto { grid-area: foto; align-self: start; display: grid; place-items: center; aspect-ratio: 1; background: var(--white); border: 1px solid var(--paper-3); overflow: hidden; }
 .item__foto img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
 .item__semfoto { color: var(--line-2); }
@@ -313,10 +313,16 @@ h1 { font: 800 clamp(38px, 10vw, 60px)/.92 var(--f-display); text-transform: upp
 .rapido--estoque { grid-area: est; min-width: 0; }
 .rapido--destaque { grid-area: dest; }
 .rapido--visivel { grid-area: vis; }
-.item__acoes form:nth-child(1) { grid-area: up; }
-.item__acoes form:nth-child(2) { grid-area: down; }
-.item__editar { grid-area: edit; }
-.item__acoes form:last-child { grid-area: del; justify-self: end; }
+/* Ações da linha: Mudar lugar · Editar · Excluir (no celular, Editar ocupa o que sobra) */
+.item__acoes { grid-area: acoes; display: grid; grid-template-columns: auto minmax(0, 1fr) 44px; gap: 8px; align-items: center; }
+.item__acoes form { margin: 0; }
+.item__editar { width: 100%; }
+/* Apagado (único da lista/categoria, sem categoria): tocar mostra o motivo (title, painel.js) */
+.item__lugar.is-off, .cli__lugar.is-off { opacity: .35; cursor: not-allowed; }
+.btn.is-off:hover::before, .btn.is-off:active::before { background: var(--b-bg); filter: none; }
+/* Celular estreito: os rótulos ficam, os ícones saem (390: só o do Mudar lugar; 360: os dois) */
+@media (max-width: 399px) { .item__lugar .i, .cli__lugar .i { display: none; } }
+@media (max-width: 379px) { .item__editar .i, .cli__editar .i { display: none; } }
 .rapido { margin: 0; }
 
 /* Seletor de estoque com ponto colorido */
@@ -549,7 +555,7 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
 .cli__nome a { color: var(--ink); text-decoration: none; }
 .cli__nome a:hover { color: var(--green-deep); text-decoration: underline; }
 .cli__txt .item__selos { margin-top: 8px; }
-.cli__acoes { grid-area: acoes; display: grid; grid-template-columns: 44px 44px minmax(0, 1fr) 44px; gap: 8px; align-items: center; }
+.cli__acoes { grid-area: acoes; display: grid; grid-template-columns: auto minmax(0, 1fr) 44px; gap: 8px; align-items: center; }
 .cli__acoes form { margin: 0; }
 .cli__editar { width: 100%; }
 .clientes__rodape { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 22px; font-size: 14.5px; }
@@ -912,16 +918,82 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
     grid-template-areas: "chapa txt acoes";
     gap: 18px; padding: 10px 12px;
   }
-  .cli__acoes { grid-template-columns: 44px 44px auto 44px; }
+  .cli__acoes { grid-template-columns: auto auto 44px; }
   .item {
-    grid-template-columns: 76px minmax(0, 1fr) 200px auto auto 44px 44px auto 44px;
-    grid-template-areas: "foto txt est dest vis up down edit del";
+    grid-template-columns: 76px minmax(0, 1fr) 200px auto auto auto;
+    grid-template-areas: "foto txt est dest vis acoes";
     gap: 10px; padding: 10px 12px;
   }
   .item__foto { width: 76px; align-self: center; }
   .item__nome { font-size: 24px; margin: 3px 0 5px; }
-  .item__acoes form:last-child { justify-self: auto; }
+  .item__acoes { grid-template-columns: auto auto 44px; }
+  .item__editar { width: auto; }
 }
+/* 1000–1199 px: "Lugar" (o "Mudar" fica só para leitores de tela), para o nome do produto não ficar espremido */
+@media (min-width: 1000px) and (max-width: 1199px) {
+  .item__lugar-mudar { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+
+/* ---------- Mudar lugar: a janela (com JavaScript) e a página (sem JavaScript) ---------- */
+.dialogo--lugar { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); }
+/* Uma coluna: só a lista encolhe, para o Cancelar caber sempre na tela (uma rolagem só, a da lista) */
+.dialogo--lugar[open] { display: flex; flex-direction: column; }
+.dialogo--lugar .dialogo__in { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.dialogo--lugar .dialogo__in > * { flex: none; }
+.dialogo--lugar .lugar__lista { flex: 0 1 auto; min-height: 112px; }
+:is(.dialogo--lugar, .lugar) .lugar__nome { font: 800 22px/1.05 var(--f-display); text-transform: uppercase; color: var(--ink); overflow-wrap: anywhere; }
+:is(.dialogo--lugar, .lugar) .lugar__hoje { font: 500 12px/1.4 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+:is(.dialogo--lugar, .lugar) .lugar__rot { font-size: 15.5px; font-weight: 600; color: var(--ink); }
+:is(.dialogo--lugar, .lugar) .lugar__nota { font-size: 13px; line-height: 1.4; color: var(--muted); }
+.lugar__lista { position: relative; display: grid; gap: 6px; margin: 0; padding: 2px; list-style: none; max-height: 480px; overflow: auto; overscroll-behavior: contain; }
+/* A lista continua: a borda esmaece do lado em que há mais lugares (o painel.js põe as classes) */
+.lugar__lista.is-mais-acima { -webkit-mask-image: linear-gradient(transparent, #000 28px); mask-image: linear-gradient(transparent, #000 28px); }
+.lugar__lista.is-mais-abaixo { -webkit-mask-image: linear-gradient(#000 calc(100% - 28px), transparent); mask-image: linear-gradient(#000 calc(100% - 28px), transparent); }
+.lugar__lista.is-mais-acima.is-mais-abaixo {
+  -webkit-mask-image: linear-gradient(transparent, #000 28px, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(transparent, #000 28px, #000 calc(100% - 28px), transparent);
+}
+.lugar__op {
+  display: flex; align-items: baseline; gap: 12px; width: 100%; min-height: 48px; padding: 10px 14px;
+  border: 1.5px solid var(--line-2); background: var(--white); color: var(--ink); font: 600 15px/1.25 var(--f-text);
+  text-align: left; text-decoration: none; -webkit-tap-highlight-color: transparent;   /* mesma base do .lote__op */
+}
+.lugar__op:hover { border-color: var(--ink); color: var(--ink); }
+.lugar__op:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+.lugar__lista .lugar__op:focus-visible { outline-offset: -3px; }   /* a lista rola: anel por dentro */
+.lugar__num { flex: none; min-width: 3.4em; font: 500 13px/1.25 var(--f-mono); color: var(--green-deep); }
+.lugar__txt { min-width: 0; overflow-wrap: anywhere; }
+.lugar__op small { font-size: 13px; font-weight: 500; color: var(--muted); }
+.lugar__op[aria-current="true"] { background: var(--green-soft); border-color: var(--green); }
+.lugar__op[aria-busy="true"] { opacity: .5; pointer-events: none; }
+.pg-lugar .lugar { display: grid; gap: 12px; max-width: 640px; }
+.pg-lugar .lugar__cab { display: grid; gap: 6px; }
+.pg-lugar .lugar__lista { max-height: none; overflow: visible; }
+.pg-lugar .lugar .aviso { margin: 0; }
+.lugar__bts { margin-top: 4px; }
+
+/* ---------- Arrastar pela alça (só no computador, com mouse; no toque vale o Mudar lugar) ---------- */
+.alca, .so-pc { display: none; }
+@media (hover: hover) and (pointer: fine) and (min-width: 1000px) {
+  .js .so-pc { display: inline; }
+  .js .pg-lista:not(.is-selecionando) .item, .js .pg-clientes .cli { position: relative; padding-left: 40px; }
+  .js .alca {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 32px; display: grid; place-items: center;
+    color: var(--muted); cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none;
+  }
+  .js .alca .i { width: 18px; height: 18px; }
+  .js .alca:hover { color: var(--ink); background: var(--paper-2); }
+  /* Busca/filtro escondendo itens do grupo, ou lista gravando: sem alça (o vizinho de cima precisa ser o da lista inteira) */
+  .js .grupo.is-filtrado .alca, .js [aria-busy="true"] > li > .alca { visibility: hidden; }
+  .js .is-selecionando .alca { display: none; }
+}
+.is-arrastando { z-index: 5; pointer-events: none; box-shadow: 0 14px 32px rgba(0, 0, 0, .22); border-color: var(--ink) !important; }
+.is-arrastando .alca { color: var(--ink); background: var(--paper-2); }
+.arrastando, .arrastando * { cursor: grabbing !important; -webkit-user-select: none; user-select: none; }
+/* Produto arrastado para fora da categoria: "não pode" (soltar não envia nada; o aviso explica) */
+.arrastando.arrastando-fora, .arrastando.arrastando-fora * { cursor: not-allowed !important; }
+.arrastando-fora .is-arrastando { opacity: .55; }
+.lugar-marca { position: absolute; z-index: 6; height: 3px; background: var(--green); pointer-events: none; box-shadow: 0 0 0 1px var(--white); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

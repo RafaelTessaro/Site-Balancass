@@ -116,9 +116,10 @@ function mudarCampoEmLote(array $produtos, array $ids, string $campo, $valor): a
 }
 
 /**
- * Move os produtos $ids para a categoria/subcategoria. Quem muda de categoria vai para o fim da
- * categoria nova (na ordem em que estavam; categoria ainda vazia: no lugar dela na ordem de
- * $categorias); quem só muda de subcategoria fica no mesmo lugar.
+ * Move os produtos $ids para a categoria/subcategoria. Quem muda de categoria entra em bloco, na ordem
+ * em que estava, logo depois dos outros da mesma subcategoria na categoria nova (posicaoNaSubcategoria,
+ * lib/ordem.php; categoria ainda vazia: no lugar dela na ordem de $categorias); quem só muda de
+ * subcategoria fica no mesmo lugar.
  * Devolve [produtos, códigos que mudaram, códigos que mudaram de categoria].
  * (Serve também para "mover os N produtos para…" ao apagar uma subcategoria.)
  */
@@ -139,7 +140,7 @@ function moverProdutosPara(array $produtos, array $ids, string $categoria, strin
         $saem = [];
         foreach ($vao as $i) $saem[] = $produtos[$i];
         foreach (array_reverse($vao) as $i) array_splice($produtos, $i, 1);
-        array_splice($produtos, posicaoNaCategoria($produtos, $categoria, $categorias), 0, $saem);
+        array_splice($produtos, posicaoNaSubcategoria($produtos, $categoria, $sub, $categorias), 0, $saem);
     }
     return [array_values($produtos), $mudou, $trocouCat];
 }
@@ -296,7 +297,7 @@ function fraseHomeLote(array $marcados, array $produtos): string
     $t = '';
     if ($fora > 0) {
         $t .= ' ' . ($dentro === 0 ? 'Nenhum deles entrou' : ($dentro === 1 ? '1 aparece' : $dentro . ' aparecem') . ' na página inicial e ' . $fora . ($fora === 1 ? ' ficou' : ' ficaram') . ' de fora')
-            . ($dentro === 0 ? ' na página inicial' : '') . ': ela mostra até ' . HOME_MAX_DESTAQUES . ' destaques, revezando as categorias. Para trocar quem aparece, tire a estrela de outros ou suba estes com as setas.';
+            . ($dentro === 0 ? ' na página inicial' : '') . ': ela mostra até ' . HOME_MAX_DESTAQUES . ' destaques, revezando as categorias. Para trocar quem aparece, tire a estrela de outros ou ponha estes mais para cima na categoria (Mudar lugar).';
     } elseif ($dentro > 0) {
         $t .= ' ' . ($dentro === 2 ? 'Os dois aparecem' : 'Todos aparecem') . ' na página inicial.';
     }
@@ -334,6 +335,22 @@ function capaNoLote(array $prods, array $todos): string
     $capa = capaEfetiva($todos);
     foreach ($prods as $p) if ((string) $p['id'] === $capa) return nomeCompleto($p);
     return '';
+}
+
+/** Onde entrou quem mudou de categoria no Mover (posicaoNaSubcategoria): logo depois dos outros do mesmo tipo
+ *  (havia, antes, algum produto não marcado nessa categoria e subcategoria) ou, sem outros, onde fica esse tipo
+ *  na lista. $quem: 'um', 'varios' ou 'misto' (só parte dos marcados mudou de categoria). */
+function fraseOndeEntrou(array $antes, array $marcados, array $categoria, string $sub, string $quem): string
+{
+    $quer = array_fill_keys($marcados, true);
+    foreach ($antes as $p) {
+        if (!isset($quer[(string) ($p['id'] ?? '')]) && ($p['categoria'] ?? '') === $categoria['id'] && ($p['subcategoria'] ?? '') === $sub) {
+            return ' ' . ['um' => 'Entrou', 'varios' => 'Entraram', 'misto' => 'Quem mudou de categoria entrou'][$quem] . ' logo depois dos outros “' . $sub . '”.';
+        }
+    }
+    return ' ' . ['um' => 'Ele é o primeiro “' . $sub . '” e entrou onde fica esse tipo na lista.',
+        'varios' => 'Eles são os primeiros “' . $sub . '” e entraram onde fica esse tipo na lista.',
+        'misto' => 'Quem mudou de categoria entrou onde fica o tipo “' . $sub . '” na lista.'][$quem];
 }
 
 /** "Balanças › Balanças computadoras" */
@@ -417,7 +434,7 @@ function acaoLote(): void
             $campo === 'visivel' && $valor  => $alvo . ($varios ? ' voltaram' : ' voltou') . ' para o site.',
             $campo === 'visivel'            => $alvo . ($varios ? ' foram escondidos' : ' foi escondido') . ' do site (' . ($varios ? 'continuam' : 'continua') . ' no painel, com o selo “Fora do site”).',
             $campo === 'mover'              => $alvo . ($varios ? ' foram' : ' foi') . ' para ' . $destino . '.'
-                . ($trocouCat ? ' ' . (count($trocouCat) === $k ? ($varios ? 'Entraram' : 'Entrou') : 'Quem mudou de categoria entrou') . ' no fim da categoria: use as setas para mudar a ordem.' : ''),
+                . ($trocouCat ? fraseOndeEntrou($cat['produtos'], $ids, $categoriaDestino, $sub, count($trocouCat) < $k ? 'misto' : ($varios ? 'varios' : 'um')) : ''),
             default                         => $alvo . ($varios ? ' foram excluídos.' : ' foi excluído.'),
         } . $jaEstavam;
         $msg = ucfirst($msg);

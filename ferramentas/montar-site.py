@@ -935,7 +935,7 @@ def conferir(site):
             erro(f"{rel}: arquivo da pasta privada (começa com <?php exit; ?>) no pacote")
     for obrig in ("index.php", "config.php", ".htaccess", ".user.ini", "lib/.htaccess", "assets/painel.css", "assets/painel.js",
                   "lib/pacotes.php", "lib/visoes-pacotes.php", "pacotes/.htaccess", "lib/lote.php",
-                  "lib/categorias.php", "lib/visoes-categorias.php",
+                  "lib/categorias.php", "lib/visoes-categorias.php", "lib/ordem.php",
                   "contar.php", "lib/estatisticas.php", "lib/visoes-procurados.php"):
         if not (pnl / obrig).is_file():
             erro(f"painel/{obrig} faltando no pacote")

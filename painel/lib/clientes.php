@@ -105,8 +105,9 @@ function gravarClientes(array $clientes): void
 }
 
 /**
- * Altera a lista com segurança: trava → lê → $fn(lista) devolve a lista nova → cópia de
- * segurança do estado anterior → grava (temporário + rename) → acerta a lixeira de logos.
+ * Altera a lista com segurança: trava → lê → $fn(lista) devolve a lista nova (ou ['clientes' => lista,
+ * 'feito' => frase]) → cópia de segurança do estado anterior → grava (temporário + rename) → acerta a
+ * lixeira de logos. SemMudanca lançada pelo $fn sai antes da cópia e da gravação (nada a fazer).
  * $acao = ['tipo' => 'excluir'…, 'antes' => 'Antes de: …', 'feito' => 'Excluiu …', 'alvo' => logo, 'alvoNome' => nome]
  * Devolve ['clientes' => lista nova, 'copia' => nome da cópia].
  */
@@ -114,7 +115,13 @@ function alterarClientes(array $acao, callable $fn): array
 {
     return comTrava('clientes', static function () use ($acao, $fn): array {
         $antes = lerClientes();
-        $novos = array_values($fn($antes['clientes']));
+        $r = $fn($antes['clientes']);
+        // Quem só sabe o que fez depois de olhar a lista (ex.: Mudar lugar) devolve também a frase final
+        if (is_array($r) && !array_is_list($r) && is_array($r['clientes'] ?? null)) {
+            if (is_string($r['feito'] ?? null) && $r['feito'] !== '') $acao['feito'] = $r['feito'];
+            $r = $r['clientes'];
+        }
+        $novos = array_values($r);
         if (count($novos) > MAX_CLIENTES) throw new ErroUsuario('A lista chegou a ' . MAX_CLIENTES . ' clientes, o máximo do painel. Exclua algum antes de cadastrar outro.');
         // Confere antes de mexer em qualquer coisa (a gravação confere de novo)
         if (interpretarClientes(montarClientes($novos)) !== $novos) throw new RuntimeException('conferência da lista de clientes falhou');
@@ -133,12 +140,15 @@ function alterarClientes(array $acao, callable $fn): array
 /**
  * Posição do cliente na lista. O formulário manda a posição (n, começa em 1) e o logo:
  * vale a posição se o logo bater; senão procura pelo logo (a lista pode ter mudado em
- * outro aparelho). Devolve null se não achar.
+ * outro aparelho). Sem logo, só a posição exata; com $nome, o nome também tem de bater
+ * (numa tela velha, outro cliente sem logo pode estar nessa posição). Null se não achar.
  */
-function acharCliente(array $lista, int $i, ?string $logo): ?int
+function acharCliente(array $lista, int $i, ?string $logo, ?string $nome = null): ?int
 {
     if ($logo === null || ($logo !== '' && !preg_match(RE_ARQUIVO_LOGO, $logo))) return null;
-    if (isset($lista[$i]) && (string) ($lista[$i]['logo'] ?? '') === $logo) return $i;
+    if (isset($lista[$i]) && (string) ($lista[$i]['logo'] ?? '') === $logo) {
+        return $logo === '' && $nome !== null && (string) ($lista[$i]['nome'] ?? '') !== $nome ? null : $i;
+    }
     if ($logo === '') return null;
     foreach ($lista as $j => $c) if ((string) ($c['logo'] ?? '') === $logo) return $j;
     return null;
