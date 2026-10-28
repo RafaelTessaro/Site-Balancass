@@ -485,8 +485,10 @@ function fraseLugarSalvo(array $p, array $produtos, array $categorias, bool $nov
         if (($x['id'] ?? '') !== $id && ($x['categoria'] ?? '') === $p['categoria'] && ($x['subcategoria'] ?? '') === $p['subcategoria']) { $outros = true; break; }
     }
     $onde = $pos . 'º de ' . $total . ' em ' . $nomeCat;
-    if ($novo) return $outros ? 'foi cadastrado e entrou logo depois dos outros “' . $p['subcategoria'] . '” (' . $onde . ').' : 'foi cadastrado (' . $onde . ').';
-    return 'foi salvo e, como mudou de categoria, ' . ($outros ? 'entrou logo depois dos outros “' . $p['subcategoria'] . '” (' . $onde . ').' : 'ficou em ' . $onde . '.');
+    // "dos outros produtos do tipo “X”": não depende do gênero nem do número do nome da subcategoria
+    $depoisDosOutros = 'entrou logo depois dos outros produtos do tipo “' . $p['subcategoria'] . '” (' . $onde . ').';
+    if ($novo) return $outros ? 'foi cadastrado e ' . $depoisDosOutros : 'foi cadastrado (' . $onde . ').';
+    return 'foi salvo e, como mudou de categoria, ' . ($outros ? $depoisDosOutros : 'ficou em ' . $onde . '.');
 }
 
 function acaoRapido(): void
@@ -564,7 +566,9 @@ function acaoMover(): void
 /**
  * "Mudar lugar" de um produto (lib/ordem.php). GET: a página com a lista de lugares (sem JavaScript ou
  * sem <dialog>). POST: para = "inicio" ou o código do vizinho de cima (da mesma categoria); desfazer=1
- * no Desfazer do aviso (é uma mudança de lugar comum, sem outro Desfazer). Lugar igual: nada é gravado.
+ * no Desfazer do aviso (é uma mudança de lugar comum, sem outro Desfazer), com categoria = a de quando
+ * a mudança foi feita (se o produto mudou de categoria depois, não desfaz; sem o campo, abas antigas,
+ * só o vizinho é conferido). Lugar igual: nada é gravado.
  */
 function acaoLugar(bool $post): void
 {
@@ -577,6 +581,7 @@ function acaoLugar(bool $post): void
     }
     $filtro = filtroDoPost();
     $desfazer = ($_POST['desfazer'] ?? '') === '1';
+    $catDesfazer = $desfazer && is_string($_POST['categoria'] ?? null) ? $_POST['categoria'] : null;
     $info = [];
     try {
         $p = produtoDaUrl($cat, 'post');
@@ -586,13 +591,15 @@ function acaoLugar(bool $post): void
         if ($para === null) throw new ErroUsuario(ERRO_LUGAR_INVALIDO);
         if (!categoriaPorId($cat['categorias'], (string) ($p['categoria'] ?? ''))) throw new ErroUsuario(ERRO_SEM_CATEGORIA);
         $r = alterarCatalogo(['tipo' => 'ordem', 'antes' => 'Antes de: mudar o lugar de “' . $nome . '”', 'feito' => 'Mudou o lugar de “' . $nome . '”', 'alvo' => $id, 'alvoNome' => $nome],
-            static function (array $atual) use ($id, $para, $desfazer, &$info): array {
+            static function (array $atual) use ($id, $para, $desfazer, $catDesfazer, &$info): array {
                 $i = indicePorId($atual['produtos'], $id);
                 if ($i === null) throw new ErroUsuario('Esse produto não está mais no catálogo (talvez tenha sido excluído em outro aparelho).');
                 $p = $atual['produtos'][$i];
                 $c = categoriaPorId($atual['categorias'], (string) ($p['categoria'] ?? ''));
                 if (!$c) throw new ErroUsuario(ERRO_SEM_CATEGORIA);
                 $info = ['nome' => nomeCompleto($p), 'cat' => (string) $c['id'], 'nomeCat' => (string) $c['nome'], 'homeAntes' => destaquesDaHome($atual['produtos'])];
+                // Desfazer: o produto ainda está na categoria de quando a mudança foi feita? (Editar ou Mover em outro aparelho)
+                if ($catDesfazer !== null && $catDesfazer !== (string) $c['id']) throw new ErroUsuario(ERRO_DESFAZER_CATEGORIA);
                 if ($desfazer && $para !== 'inicio') {
                     $v = indicePorId($atual['produtos'], $para);
                     if ($v === null || ($atual['produtos'][$v]['categoria'] ?? '') !== $c['id']) throw new ErroUsuario(ERRO_DESFAZER_LUGAR);
@@ -629,7 +636,7 @@ function acaoLugar(bool $post): void
     $msg = $desfazer
         ? 'Desfeito: “' . $info['nome'] . '” voltou para o ' . $info['pos'] . 'º' . $em . '.' . fraseMudancaHome($info['homeAntes'], $home, $novos)
         : '“' . $info['nome'] . '” foi para o ' . $info['pos'] . 'º' . $em . ' (era o ' . $info['de'] . 'º).' . fraseOrdemSite($novos, $id, $info['nomeCat']) . fraseMudancaHome($info['homeAntes'], $home, $novos);
-    $campos = ['id' => $id, 'para' => $info['paraVolta'], 'desfazer' => '1'];
+    $campos = ['id' => $id, 'para' => $info['paraVolta'], 'categoria' => $info['cat'], 'desfazer' => '1'];
     if (pedidoJson()) {
         responderJson(['ok' => true, 'mudou' => true, 'msg' => $msg, 'id' => $id, 'cat' => $info['cat'], 'de' => $info['de'], 'pos' => $info['pos'], 'total' => $info['total'],
             'ordem' => idsDaCategoria($novos, $info['cat']), 'home' => $home] + ($desfazer ? [] : ['desfazer' => ['acao' => link_('lugar'), 'campos' => $campos]]));

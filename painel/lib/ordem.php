@@ -17,6 +17,7 @@ final class SemMudanca extends RuntimeException {}   // lançada dentro de alter
 const ERRO_LISTA_MUDOU = 'A lista mudou enquanto você escolhia (talvez em outro aparelho). Confira e escolha o lugar de novo.';
 const ERRO_LUGAR_INVALIDO = 'Lugar inválido. Recarregue a página e escolha de novo.';
 const ERRO_DESFAZER_LUGAR = 'Não deu para desfazer: o vizinho de antes não está mais na lista. Use Mudar lugar para escolher o lugar.';
+const ERRO_DESFAZER_CATEGORIA = 'Não deu para desfazer: o produto mudou de categoria depois disso (talvez em outro aparelho). Use Mudar lugar para escolher o lugar.';
 const ERRO_SEM_CATEGORIA = 'Esse produto está sem categoria válida: escolha a categoria em Editar antes de mudar o lugar.';
 // Como o site usa a ordem dos produtos (compartilhado/js/balancas.js: estoque → destaque → ordem da lista)
 const TEXTO_ORDEM_SITE = 'No site, Pronta entrega vem primeiro, depois os destaques; esta ordem decide entre os que estão na mesma situação. Esgotado fica por último.';

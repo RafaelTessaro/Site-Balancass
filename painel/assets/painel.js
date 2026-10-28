@@ -432,12 +432,33 @@
       return li;
     }
     function nomeCat(li) { var g = li.closest(".grupo"); return g ? g.getAttribute("data-cat-nome") || "" : ""; }
-    // (32 px de folga: o lugar escolhido no teclado não fica embaixo da borda esmaecida)
+    // Quem rola: a lista (altura própria, bordas esmaecidas) ou, em tela baixa, a janela inteira (.is-rola-janela)
+    function rolaJanela() { return jan.classList.contains("is-rola-janela"); }
+    // Leva o lugar b para o centro (centro) ou só para dentro da parte à vista. Na lista, 32 px de folga: o
+    // lugar não fica embaixo da borda esmaecida; na janela, a parte à vista termina no Cancelar (preso embaixo).
     function rolarLista(b, centro) {
-      var topo = b.offsetTop, alto = b.offsetHeight, vis = lista.clientHeight;
-      if (centro) lista.scrollTop = topo - (vis - alto) / 2;
-      else if (topo < lista.scrollTop + 32) lista.scrollTop = topo - 32;
-      else if (topo + alto > lista.scrollTop + vis - 32) lista.scrollTop = topo + alto - vis + 32;
+      var cx = rolaJanela() ? jan : lista, folga = cx === jan ? 8 : 32;
+      var vis = cx.clientHeight - (cx === jan ? $(".dialogo__bts", jan).offsetHeight : 0);
+      var topo = b.getBoundingClientRect().top - cx.getBoundingClientRect().top - cx.clientTop + cx.scrollTop, alto = b.offsetHeight;
+      if (centro) cx.scrollTop = topo - (vis - alto) / 2;
+      else if (topo < cx.scrollTop + folga) cx.scrollTop = topo - folga;
+      else if (topo + alto > cx.scrollTop + vis - folga) cx.scrollTop = topo + alto - vis + folga;
+    }
+    // Tela baixa (celular deitado, zoom 200%): se a lista, com altura própria, não consegue mostrar o lugar de
+    // hoje e os dois vizinhos fora das bordas esmaecidas (ou se nem o resto da janela cabe), a lista perde a
+    // altura própria e a janela inteira rola, com o Cancelar preso embaixo (CSS .is-rola-janela).
+    // Devolve true se mudou de jeito (na virada do celular, por exemplo); senão a rolagem fica onde estava
+    // (a barra do navegador que some ou aparece também dispara "resize": a janela não pode pular sozinha).
+    function ajustarAltura() {
+      var antes = rolaJanela(), yJan = jan.scrollTop, yLista = lista.scrollTop;
+      var bs = $$(".lugar__op", lista), at = $("[aria-current]", lista), i = bs.indexOf(at);
+      jan.classList.remove("is-rola-janela");
+      var cima = bs[i - 1] || at, baixo = bs[i + 1] || at;
+      var precisa = baixo.getBoundingClientRect().bottom - cima.getBoundingClientRect().top + 2 * 32;
+      var baixa = jan.scrollHeight > jan.clientHeight + 1 || (lista.scrollHeight > lista.clientHeight + 1 && lista.clientHeight < precisa);
+      jan.classList.toggle("is-rola-janela", baixa);
+      if (baixa === antes) { jan.scrollTop = yJan; lista.scrollTop = yLista; }
+      return baixa !== antes;
     }
     // Pista de que a lista continua (CSS: a borda esmaece do lado em que há mais lugares)
     function pistas() {
@@ -445,7 +466,12 @@
       lista.classList.toggle("is-mais-abaixo", lista.scrollTop < lista.scrollHeight - lista.clientHeight - 1);
     }
     lista.addEventListener("scroll", pistas, { passive: true });
-    window.addEventListener("resize", function () { if (jan.open) pistas(); });
+    window.addEventListener("resize", function () {
+      if (!jan.open) return;
+      var f = document.activeElement;
+      if (ajustarAltura() && f && lista.contains(f)) rolarLista(f, true);
+      pistas();
+    });
 
     function abrir(link) {
       var li = link.closest(SEL), ol = li && li.parentNode;
@@ -464,6 +490,8 @@
       opcoes(its, i, cat).forEach(function (o) { lista.appendChild(botao(o)); });
       aberto = { link: link, li: li, escolheu: false };
       jan.showModal();
+      ajustarAltura();
+      jan.scrollTop = 0;
       var at = $("[aria-current]", lista);
       at.tabIndex = 0;
       at.focus({ preventScroll: true });
@@ -508,7 +536,13 @@
       if (ab.escolheu) mudar(ab.li, camposDo(ab.li), b.getAttribute("data-para"), null, e.detail === 0);
     });
     $("[data-lugar-fechar]", jan).addEventListener("click", function (e) { proteger(e); jan.close(); });
-    jan.addEventListener("click", function (e) { if (e.target === jan) { proteger(e); jan.close(); } });   // toque fora da janela
+    // Toque fora da janela (no fundo escuro). Na barra de rolagem da própria janela, não.
+    jan.addEventListener("click", function (e) {
+      if (e.target !== jan) return;
+      var r = jan.getBoundingClientRect();
+      if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) return;
+      proteger(e); jan.close();
+    });
     jan.addEventListener("close", function () {
       var ab = aberto;
       aberto = null;
@@ -591,11 +625,12 @@
       });
       return fm;
     }
-    // Desfazer pelo teclado: Ctrl+Z (⌘Z) enquanto o aviso com Desfazer está aberto (fora dos campos de texto)
+    // Desfazer pelo teclado: Ctrl+Z (⌘Z) enquanto o aviso com Desfazer está aberto. Nunca com uma janela
+    // aberta (esta, "Excluir?", "Entre de novo"…: o dono não veria a lista de trás mudar) nem num campo de texto
     document.addEventListener("keydown", function (e) {
-      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || String(e.key).toLowerCase() !== "z" || jan.open) return;
-      var fm = $("[data-toast]:not([hidden]) form[data-lugar-desfazer]");
-      if (!fm || (e.target.closest && e.target.closest("input, textarea, select, [contenteditable]"))) return;
+      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || String(e.key).toLowerCase() !== "z" || $("dialog[open]")) return;
+      var fm = $("[data-toast]:not([hidden]) form[data-lugar-desfazer]"), foco = document.activeElement;
+      if (!fm || [e.target, foco].some(function (x) { return x && x.closest && x.closest("input, textarea, select, [contenteditable]:not([contenteditable=false])"); })) return;
       e.preventDefault();
       if (fm.requestSubmit) fm.requestSubmit(); else fm.dispatchEvent(new Event("submit", { cancelable: true }));
     });

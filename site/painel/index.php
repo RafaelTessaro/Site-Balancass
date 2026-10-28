@@ -13,6 +13,7 @@ require __DIR__ . '/lib/usuarios.php';
 require __DIR__ . '/lib/catalogo.php';
 require __DIR__ . '/lib/imagens.php';
 require __DIR__ . '/lib/clientes.php';
+require __DIR__ . '/lib/ordem.php';       // "Mudar lugar" (antes do lote.php: lote.php usa posicaoNaSubcategoria())
 require __DIR__ . '/lib/ajustes.php';
 require __DIR__ . '/lib/pacotes.php';
 require __DIR__ . '/lib/estatisticas.php';   // Mais procurados (contagem anônima do site; contar.php usa o mesmo)
@@ -48,8 +49,8 @@ iniciarSessao();
 migrarContaAntiga();   // config.php antigo (um usuário só) → usuarios.php, sem derrubar a sessão aberta
 verificarSessao();
 
-const ACOES = ['lista', 'novo', 'editar', 'salvar', 'rapido', 'mover', 'excluir', 'desfazer', 'lote', 'lote-desfazer', 'copias', 'restaurar', 'conta', 'senha', 'sair', 'entrar', 'instalar', 'sessao',
-    'clientes', 'cliente-novo', 'cliente-editar', 'cliente-salvar', 'cliente-mover', 'cliente-excluir', 'cliente-desfazer',
+const ACOES = ['lista', 'novo', 'editar', 'salvar', 'rapido', 'mover', 'lugar', 'excluir', 'desfazer', 'lote', 'lote-desfazer', 'copias', 'restaurar', 'conta', 'senha', 'sair', 'entrar', 'instalar', 'sessao',
+    'clientes', 'cliente-novo', 'cliente-editar', 'cliente-salvar', 'cliente-mover', 'cliente-lugar', 'cliente-excluir', 'cliente-desfazer',
     'usuarios', 'usuario-novo', 'usuario-editar', 'usuario-salvar', 'usuario-senha', 'usuario-ativo', 'usuario-excluir', 'senha-temporaria',
     'atividades', 'criar-senha', 'recuperar', 'empresa', 'empresa-salvar', 'pacote', 'pacote-aplicar', 'pacote-dispensar',
     'procurados', 'categorias', 'categoria-salvar', 'categoria-mover', 'categoria-excluir', 'subcategoria-salvar', 'subcategoria-mover', 'subcategoria-excluir'];
@@ -158,6 +159,14 @@ if (usuarioLogado() === null) {
         } elseif ($acao === 'cliente-salvar') {
             $_SESSION['voltar'] = linkFormCliente($_GET);
             avisar('Sua sessão terminou e o cliente não foi salvo. Entre de novo: o painel volta para o formulário (escolha o logo de novo).', 'info');
+        } elseif ($acao === 'cliente-lugar') {
+            [$iL, $logoL] = refCliente($_POST);
+            $_SESSION['voltar'] = $iL >= 0 && $logoL !== null && ($logoL === '' || preg_match(RE_ARQUIVO_LOGO, $logoL)) ? link_('cliente-lugar', ['n' => $iL + 1, 'logo' => $logoL]) : link_('clientes');
+            avisar('Sua sessão terminou e o cliente não mudou de lugar. Entre de novo e escolha o lugar outra vez.', 'info');
+        } elseif ($acao === 'lugar') {
+            $idL = is_string($_POST['id'] ?? null) && preg_match(RE_ID, $_POST['id']) ? $_POST['id'] : '';
+            $_SESSION['voltar'] = $idL !== '' ? link_('lugar', ['id' => $idL] + array_filter(filtroDoPost(), static fn($x) => $x !== '')) : 'index.php';
+            avisar('Sua sessão terminou e o produto não mudou de lugar. Entre de novo e escolha o lugar outra vez.', 'info');
         } elseif ($acao === 'empresa-salvar') {
             $_SESSION['voltar'] = link_('empresa');
             avisar('Sua sessão terminou e os dados da empresa não foram salvos. Entre de novo e salve outra vez.', 'info');
@@ -223,6 +232,7 @@ try {
         'cliente-editar'   => acaoClienteEditar(),
         'cliente-salvar'   => acaoClienteSalvar(),
         'cliente-mover'    => acaoClienteMover(),
+        'cliente-lugar'    => acaoClienteLugar($post),
         'cliente-excluir'  => acaoClienteExcluir($post),
         'cliente-desfazer' => acaoClienteDesfazer(),
         'lista'     => acaoLista(),
@@ -231,6 +241,7 @@ try {
         'salvar'    => acaoSalvar(),
         'rapido'    => acaoRapido(),
         'mover'     => acaoMover(),
+        'lugar'     => acaoLugar($post),   // "Mudar lugar": GET mostra a lista de lugares (sem JavaScript), POST grava
         'excluir'   => acaoExcluir($post),
         'desfazer'  => acaoDesfazer(),
         // Edição em lote (vários produtos de uma vez): lib/lote.php
@@ -291,7 +302,8 @@ exit;
 function destinoSeguro($url): ?string
 {
     if (!is_string($url) || strlen($url) > 300) return null;
-    if (!preg_match('/^index\.php\?a=(novo|editar|copias|conta|clientes|cliente-novo|cliente-editar|usuarios|usuario-novo|usuario-editar|atividades|empresa|pacote|procurados|categorias)(&[A-Za-z0-9_=%.\-]*)*$/', $url)) return null;
+    // "+" é o espaço da busca (http_build_query): ?a=lugar&id=…&q=prix+3
+    if (!preg_match('/^index\.php\?a=(novo|editar|lugar|copias|conta|clientes|cliente-novo|cliente-editar|cliente-lugar|usuarios|usuario-novo|usuario-editar|atividades|empresa|pacote|procurados|categorias)(&[A-Za-z0-9_=%.+\-]*)*$/', $url)) return null;
     return $url;
 }
 
@@ -310,6 +322,7 @@ function voltarDepoisDoErro(string $acao): string
 {
     // Ação em lote: a mesma lista, no modo "Selecionar", com os mesmos marcados (lib/lote.php)
     if ($acao === 'lote') return linkLista(filtroDoPost(), ['sel' => '1']);
+    if ($acao === 'lugar') return linkLista(filtroDoPost());   // Mudar lugar: a mesma lista (busca e filtro)
     if (str_starts_with($acao, 'cliente')) return link_('clientes');
     if (str_starts_with($acao, 'usuario') || $acao === 'usuarios' || $acao === 'senha-temporaria') return link_('usuarios');
     if ($acao === 'criar-senha') return link_('criar-senha');
@@ -384,6 +397,8 @@ function acaoSalvar(): void
         $original = (string) $atual['id'];
     }
     [$p, $erros] = produtoDoFormulario($_POST, $cat['categorias'], $cat['produtos'], $atual);
+    // Produto novo: "Junto da mesma subcategoria" (padrão) ou "Em 1º na categoria" (lib/ordem.php)
+    $lugar = ($_POST['lugar'] ?? '') === 'inicio' ? 'inicio' : 'tipo';
 
     $arq = $_FILES['foto'] ?? null;
     $temFoto = is_array($arq) && isset($arq['error']) && !is_array($arq['error']) && (int) $arq['error'] !== UPLOAD_ERR_NO_FILE;
@@ -412,22 +427,26 @@ function acaoSalvar(): void
         ? ['tipo' => 'editar', 'antes' => 'Antes de: editar “' . nomeCompleto($atual) . '”',
            'feito' => 'Editou “' . $nome . '”' . ($mudouCodigo ? ' (código: ' . $original . ' → ' . $p['id'] . ')' : ''), 'alvo' => $p['id'], 'alvoNome' => $nome]
         : ['tipo' => 'cadastrar', 'antes' => 'Antes de: cadastrar “' . $nome . '”', 'feito' => 'Cadastrou “' . $nome . '”', 'alvo' => $p['id'], 'alvoNome' => $nome];
+    $trocouCat = false;
     try {
-        $novoCat = alterarCatalogo($acaoCat, static function (array $c) use ($p, $original): array {
+        $novoCat = alterarCatalogo($acaoCat, static function (array $c) use ($p, $original, $lugar, &$trocouCat): array {
             $prods = $c['produtos'];
             if ($original !== null) {
                 $i = indicePorId($prods, $original);
                 if ($i === null) throw new ErroUsuario('Esse produto foi excluído (talvez em outro aparelho) enquanto você editava.');
                 if ($p['id'] !== $original && indicePorId($prods, $p['id']) !== null) throw new ErroUsuario('Já existe outro produto com o código “' . $p['id'] . '”.');
                 if (($prods[$i]['categoria'] ?? '') !== $p['categoria']) {
+                    // Trocou de categoria: logo depois dos outros da mesma subcategoria na categoria nova
                     array_splice($prods, $i, 1);
-                    array_splice($prods, posicaoNaCategoria($prods, $p['categoria'], $c['categorias']), 0, [$p]);
+                    array_splice($prods, posicaoNaSubcategoria($prods, $p['categoria'], $p['subcategoria'], $c['categorias']), 0, [$p]);
+                    $trocouCat = true;
                 } else {
                     $prods[$i] = $p;
                 }
             } else {
                 if (indicePorId($prods, $p['id']) !== null) throw new ErroUsuario('Já existe um produto com o código “' . $p['id'] . '”.');
-                array_splice($prods, posicaoNaCategoria($prods, $p['categoria'], $c['categorias']), 0, [$p]);
+                $onde = $lugar === 'inicio' ? inicioDaCategoria($prods, $p['categoria'], $c['categorias']) : posicaoNaSubcategoria($prods, $p['categoria'], $p['subcategoria'], $c['categorias']);
+                array_splice($prods, $onde, 0, [$p]);
             }
             return ['produtos' => $prods];
         });
@@ -442,7 +461,7 @@ function acaoSalvar(): void
     }
     $oculto = ($p['visivel'] ?? true) === false ? ' Ele está oculto: não aparece no site.' : '';
     $extra = ['rascunho' => $atual ? 'editar:' . $original : 'novo'] + ($oculto ? [] : linkSite($p['id']));
-    avisar('“' . $nome . '” ' . ($atual ? 'foi salvo.' : 'foi cadastrado.') . $oculto . ($oculto ? '' : fraseHome($p, $novoCat['produtos']))
+    avisar('“' . $nome . '” ' . fraseLugarSalvo($p, $novoCat['produtos'], $novoCat['categorias'], $atual === null, $lugar, $trocouCat) . $oculto . ($oculto ? '' : fraseHome($p, $novoCat['produtos']))
         . (!empty($novoCat['capaFoto']) ? ' A foto nova já vale na capa do site: confira se os pontos das etiquetas continuam no lugar certo em Empresa → Capa do site.' : ''), 'ok', $extra);
     // A capa do site aponta para o código antigo
     $capa = produtoCapa();
@@ -451,6 +470,25 @@ function acaoSalvar(): void
             . ($mudouCodigo ? 'Para corrigir, volte o código para “' . $capa . '”.' : 'Para corrigir, deixe o produto visível no site.'), 'erro');
     }
     redirecionar('index.php#p-' . $p['id']);
+}
+
+/** Começo do aviso de "salvar": onde o produto ficou (lib/ordem.php). $lugar: "tipo" ou "inicio" (só no cadastro). */
+function fraseLugarSalvo(array $p, array $produtos, array $categorias, bool $novo, string $lugar, bool $trocouCat): string
+{
+    if (!$novo && !$trocouCat) return 'foi salvo.';
+    $id = (string) $p['id'];
+    $nomeCat = (string) (categoriaPorId($categorias, (string) $p['categoria'])['nome'] ?? '');
+    [$pos, $total] = posNaCategoria($produtos, $id);
+    if ($novo && $lugar === 'inicio') return 'foi cadastrado em 1º lugar em ' . $nomeCat . '.';
+    $outros = false;   // outros do mesmo tipo (mesma categoria e subcategoria)
+    foreach ($produtos as $x) {
+        if (($x['id'] ?? '') !== $id && ($x['categoria'] ?? '') === $p['categoria'] && ($x['subcategoria'] ?? '') === $p['subcategoria']) { $outros = true; break; }
+    }
+    $onde = $pos . 'º de ' . $total . ' em ' . $nomeCat;
+    // "dos outros produtos do tipo “X”": não depende do gênero nem do número do nome da subcategoria
+    $depoisDosOutros = 'entrou logo depois dos outros produtos do tipo “' . $p['subcategoria'] . '” (' . $onde . ').';
+    if ($novo) return $outros ? 'foi cadastrado e ' . $depoisDosOutros : 'foi cadastrado (' . $onde . ').';
+    return 'foi salvo e, como mudou de categoria, ' . ($outros ? $depoisDosOutros : 'ficou em ' . $onde . '.');
 }
 
 function acaoRapido(): void
@@ -523,6 +561,88 @@ function acaoMover(): void
     if (pedidoJson()) responderJson(['ok' => true, 'msg' => $txt, 'id' => $p['id'], 'dir' => $dir, 'com' => $vizinho, 'home' => destaquesDaHome($novoCat['produtos'])]);
     avisar($txt);
     redirecionar('index.php#p-' . $p['id']);
+}
+
+/**
+ * "Mudar lugar" de um produto (lib/ordem.php). GET: a página com a lista de lugares (sem JavaScript ou
+ * sem <dialog>). POST: para = "inicio" ou o código do vizinho de cima (da mesma categoria); desfazer=1
+ * no Desfazer do aviso (é uma mudança de lugar comum, sem outro Desfazer), com categoria = a de quando
+ * a mudança foi feita (se o produto mudou de categoria depois, não desfaz; sem o campo, abas antigas,
+ * só o vizinho é conferido). Lugar igual: nada é gravado.
+ */
+function acaoLugar(bool $post): void
+{
+    $cat = catalogoOuTela();
+    if (!$post) {
+        $p = produtoDaUrl($cat);
+        if (!categoriaPorId($cat['categorias'], (string) ($p['categoria'] ?? ''))) throw new ErroUsuario(ERRO_SEM_CATEGORIA);
+        telaLugarProduto($cat, $p, filtroDaUrl($cat['categorias']));
+        return;
+    }
+    $filtro = filtroDoPost();
+    $desfazer = ($_POST['desfazer'] ?? '') === '1';
+    $catDesfazer = $desfazer && is_string($_POST['categoria'] ?? null) ? $_POST['categoria'] : null;
+    $info = [];
+    try {
+        $p = produtoDaUrl($cat, 'post');
+        $id = (string) $p['id'];
+        $nome = nomeCompleto($p);
+        $para = paraProduto($_POST['para'] ?? null);
+        if ($para === null) throw new ErroUsuario(ERRO_LUGAR_INVALIDO);
+        if (!categoriaPorId($cat['categorias'], (string) ($p['categoria'] ?? ''))) throw new ErroUsuario(ERRO_SEM_CATEGORIA);
+        $r = alterarCatalogo(['tipo' => 'ordem', 'antes' => 'Antes de: mudar o lugar de “' . $nome . '”', 'feito' => 'Mudou o lugar de “' . $nome . '”', 'alvo' => $id, 'alvoNome' => $nome],
+            static function (array $atual) use ($id, $para, $desfazer, $catDesfazer, &$info): array {
+                $i = indicePorId($atual['produtos'], $id);
+                if ($i === null) throw new ErroUsuario('Esse produto não está mais no catálogo (talvez tenha sido excluído em outro aparelho).');
+                $p = $atual['produtos'][$i];
+                $c = categoriaPorId($atual['categorias'], (string) ($p['categoria'] ?? ''));
+                if (!$c) throw new ErroUsuario(ERRO_SEM_CATEGORIA);
+                $info = ['nome' => nomeCompleto($p), 'cat' => (string) $c['id'], 'nomeCat' => (string) $c['nome'], 'homeAntes' => destaquesDaHome($atual['produtos'])];
+                // Desfazer: o produto ainda está na categoria de quando a mudança foi feita? (Editar ou Mover em outro aparelho)
+                if ($catDesfazer !== null && $catDesfazer !== (string) $c['id']) throw new ErroUsuario(ERRO_DESFAZER_CATEGORIA);
+                if ($desfazer && $para !== 'inicio') {
+                    $v = indicePorId($atual['produtos'], $para);
+                    if ($v === null || ($atual['produtos'][$v]['categoria'] ?? '') !== $c['id']) throw new ErroUsuario(ERRO_DESFAZER_LUGAR);
+                }
+                [$novos, $de, $pos, $total, $paraVolta] = moverProdutoPara($atual['produtos'], $id, $para === 'inicio' ? null : $para);
+                if ($pos === $de) throw new SemMudanca();
+                $info += ['de' => $de, 'pos' => $pos, 'total' => $total, 'paraVolta' => $paraVolta];
+                $onde = 'lugar em ' . $info['nomeCat'];
+                return ['produtos' => $novos, 'feito' => $desfazer
+                    ? 'Desfez: “' . $info['nome'] . '” voltou para o ' . $pos . 'º ' . $onde
+                    : 'Levou “' . $info['nome'] . '” do ' . $de . 'º para o ' . $pos . 'º ' . $onde];
+            });
+    } catch (SemMudanca $e) {
+        $produtos = lerCatalogo()['produtos'];
+        [$pos, $total] = posNaCategoria($produtos, $id);
+        $msg = '“' . $info['nome'] . '” continua no ' . $pos . 'º lugar em ' . $info['nomeCat'] . '.';
+        if (pedidoJson()) responderJson(['ok' => true, 'mudou' => false, 'msg' => $msg, 'id' => $id, 'cat' => $info['cat'], 'pos' => $pos, 'total' => $total,
+            'ordem' => idsDaCategoria($produtos, $info['cat']), 'home' => destaquesDaHome($produtos)]);
+        avisar($msg, 'info');
+        redirecionar(linkLista($filtro) . '#p-' . $id);
+    } catch (ErroUsuario $e) {
+        if (pedidoJson()) responderJson(['ok' => false, 'msg' => $e->getMessage(), 'recarregar' => true], 409);
+        // Sem JavaScript: a página Mudar o lugar de novo, com a lista de agora e o erro (o produto sumiu: volta para a lista)
+        $atual = lerCatalogo();
+        $i = isset($id) ? indicePorId($atual['produtos'], $id) : null;
+        if ($i === null || !categoriaPorId($atual['categorias'], (string) ($atual['produtos'][$i]['categoria'] ?? ''))) throw $e;
+        http_response_code(409);
+        telaLugarProduto($atual, $atual['produtos'][$i], $filtro, $e->getMessage());
+        return;
+    }
+    $novos = $r['produtos'];
+    $home = destaquesDaHome($novos);
+    $em = ' lugar em ' . $info['nomeCat'];
+    $msg = $desfazer
+        ? 'Desfeito: “' . $info['nome'] . '” voltou para o ' . $info['pos'] . 'º' . $em . '.' . fraseMudancaHome($info['homeAntes'], $home, $novos)
+        : '“' . $info['nome'] . '” foi para o ' . $info['pos'] . 'º' . $em . ' (era o ' . $info['de'] . 'º).' . fraseOrdemSite($novos, $id, $info['nomeCat']) . fraseMudancaHome($info['homeAntes'], $home, $novos);
+    $campos = ['id' => $id, 'para' => $info['paraVolta'], 'categoria' => $info['cat'], 'desfazer' => '1'];
+    if (pedidoJson()) {
+        responderJson(['ok' => true, 'mudou' => true, 'msg' => $msg, 'id' => $id, 'cat' => $info['cat'], 'de' => $info['de'], 'pos' => $info['pos'], 'total' => $info['total'],
+            'ordem' => idsDaCategoria($novos, $info['cat']), 'home' => $home] + ($desfazer ? [] : ['desfazer' => ['acao' => link_('lugar'), 'campos' => $campos]]));
+    }
+    avisar($msg, 'ok', $desfazer ? [] : ['form' => ['acao' => link_('lugar'), 'campos' => $campos + $filtro, 'botao' => 'Desfazer']]);
+    redirecionar(linkLista($filtro) . '#p-' . $id);
 }
 
 function acaoExcluir(bool $post): void
@@ -736,6 +856,8 @@ function acaoClienteSalvar(): void
         [$pos, $atual] = clienteDaUrl($lista);
         $ref = ['n' => $pos + 1, 'logo' => (string) ($atual['logo'] ?? '')];
     }
+    // Cliente novo: o lugar escolhido no cadastro ("depois de X"); sem escolha (ou inválido), no começo (1º)
+    $lugar = $atual === null ? (refLugarCliente($_POST['lugar'] ?? null) ?? ['inicio' => true]) : null;
     [$nome, $erroNome] = nomeClienteValido($_POST['nome'] ?? '');
     $erros = [];
     if ($erroNome !== null) $erros['nome'] = $erroNome;
@@ -761,17 +883,26 @@ function acaoClienteSalvar(): void
         ? ['tipo' => 'editar', 'antes' => 'Antes de: editar o cliente “' . $atual['nome'] . '”',
            'feito' => 'Editou o cliente “' . $nome . '”' . ($logo ? ' (logo novo)' : ''), 'alvo' => $novo['logo'], 'alvoNome' => $nome]
         : ['tipo' => 'cadastrar', 'antes' => 'Antes de: cadastrar o cliente “' . $nome . '”', 'feito' => 'Cadastrou o cliente “' . $nome . '”', 'alvo' => $novo['logo'], 'alvoNome' => $nome];
-    $posFinal = 0;
+    $posFinal = 0; $sumiu = false; $depoisDe = '';
     try {
-        alterarClientes($acao, static function (array $l) use ($novo, $ref, &$posFinal): array {
+        alterarClientes($acao, static function (array $l) use ($novo, $ref, $lugar, &$posFinal, &$sumiu, &$depoisDe): array {
             if ($ref !== null) {
                 $j = acharCliente($l, $ref['n'] - 1, $ref['logo']);
                 if ($j === null) throw new ErroUsuario('Esse cliente foi excluído (talvez em outro aparelho) enquanto você editava.');
                 $l[$j] = $novo;
                 $posFinal = $j + 1;
             } else {
-                $l[] = $novo;
-                $posFinal = count($l);
+                // Vizinho escolhido que sumiu entre abrir e enviar: no começo, com aviso (sem erro, para não perder o logo enviado)
+                $k = isset($lugar['inicio']) ? null : acharCliente($l, $lugar['i'], $lugar['logo']);
+                if ($k === null) {
+                    $sumiu = !isset($lugar['inicio']);
+                    array_unshift($l, $novo);
+                    $posFinal = 1;
+                } else {
+                    array_splice($l, $k + 1, 0, [$novo]);
+                    $posFinal = $k + 2;
+                    $depoisDe = (string) ($l[$k]['nome'] ?? '');
+                }
             }
             return $l;
         });
@@ -784,7 +915,12 @@ function acaoClienteSalvar(): void
         if ($logo) descartarLogo($logo);
         throw $t;
     }
-    $msg = '“' . $nome . '” ' . ($atual ? 'foi salvo.' : 'foi cadastrado. Ele entrou no fim da lista: use as setas para mudar a posição no site.');
+    $msg = '“' . $nome . '” ' . match (true) {
+        $atual !== null => 'foi salvo.',
+        $sumiu          => 'foi cadastrado e entrou em 1º lugar no site: o cliente que você escolheu como vizinho não está mais na lista. Use Mudar lugar se quiser outro lugar.',
+        $posFinal === 1 => 'foi cadastrado e aparece em 1º lugar no site.',
+        default         => 'foi cadastrado e aparece em ' . $posFinal . 'º lugar no site, depois de “' . $depoisDe . '”.',
+    };
     if (!$dados['existe']) $msg .= ' A lista de clientes foi criada agora, só com este cliente: cadastre também os outros clientes que devem continuar aparecendo no site.';
     avisar($msg, 'ok', linkSiteClientes());
     redirecionar(link_('clientes') . '#c-' . $posFinal);
@@ -811,6 +947,84 @@ function acaoClienteMover(): void
     if (pedidoJson()) responderJson(['ok' => true, 'msg' => $txt, 'dir' => $dir, 'pos' => $novaPos]);
     avisar($txt);
     redirecionar(link_('clientes') . '#c-' . $novaPos);
+}
+
+/**
+ * "Mudar lugar" de um cliente (lib/ordem.php). GET: a página com a lista de lugares (sem JavaScript).
+ * POST: n + logo (+ nome, que confere o cliente sem logo) do cliente; para = "inicio" ou "n:logo" do
+ * vizinho de cima (n = posição dele na lista com o cliente); desfazer=1 no Desfazer do aviso.
+ * Lugar igual: nada é gravado.
+ */
+function acaoClienteLugar(bool $post): void
+{
+    if (!$post) {
+        $lista = lerClientes()['clientes'];
+        [$i] = clienteDaUrl($lista);
+        telaLugarCliente($lista, $i);
+        return;
+    }
+    $desfazer = ($_POST['desfazer'] ?? '') === '1';
+    [$n, $logo] = refCliente($_POST);
+    $nomeRef = is_string($_POST['nome'] ?? null) ? $_POST['nome'] : null;
+    $info = [];
+    try {
+        [, $c] = clienteDaUrl(lerClientes()['clientes'], 'post');
+        $nome = (string) $c['nome'];
+        $para = refLugarCliente($_POST['para'] ?? null);
+        if ($para === null) throw new ErroUsuario(ERRO_LUGAR_INVALIDO);
+        alterarClientes(['tipo' => 'ordem', 'antes' => 'Antes de: mudar o lugar do cliente “' . $nome . '”', 'feito' => 'Mudou o lugar do cliente “' . $nome . '”', 'alvo' => (string) ($c['logo'] ?? ''), 'alvoNome' => $nome],
+            static function (array $l) use ($n, $logo, $nomeRef, $para, $desfazer, &$info): array {
+                $j = acharCliente($l, $n, $logo, $nomeRef);
+                // Outro cliente sem logo nessa posição (tela velha): a lista mudou, nada é gravado
+                if ($j === null) throw new ErroUsuario($logo === '' && acharCliente($l, $n, '') !== null ? ERRO_LISTA_MUDOU : 'Esse cliente não está mais na lista (talvez tenha sido excluído em outro aparelho).');
+                $info = ['nome' => (string) ($l[$j]['nome'] ?? ''), 'total' => count($l)];
+                $k = null;
+                if (!isset($para['inicio'])) {
+                    $k = acharCliente($l, $para['i'], $para['logo']);
+                    if ($k === null) throw new ErroUsuario($desfazer ? ERRO_DESFAZER_LUGAR : ERRO_LISTA_MUDOU);
+                    if ($k === $j) throw new ErroUsuario(ERRO_LUGAR_INVALIDO);
+                }
+                [$novos, $pos] = moverClientePara($l, $j, $k);
+                $info['pos'] = $pos;
+                if ($pos === $j + 1) throw new SemMudanca();
+                $info += ['de' => $j + 1, 'logo' => (string) ($l[$j]['logo'] ?? ''), 'paraVolta' => paraDesfazerCliente($l, $j, $pos - 1)];
+                return ['clientes' => $novos, 'feito' => $desfazer
+                    ? 'Desfez: o cliente “' . $info['nome'] . '” voltou para o ' . $pos . 'º lugar'
+                    : 'Levou o cliente “' . $info['nome'] . '” do ' . ($j + 1) . 'º para o ' . $pos . 'º lugar'];
+            });
+    } catch (SemMudanca $e) {
+        $lista = lerClientes()['clientes'];
+        $msg = '“' . $info['nome'] . '” continua no ' . $info['pos'] . 'º lugar no site.';
+        if (pedidoJson()) responderJson(['ok' => true, 'mudou' => false, 'msg' => $msg, 'pos' => $info['pos'], 'total' => count($lista), 'ordem' => ordemClientes($lista)]);
+        avisar($msg, 'info');
+        redirecionar(link_('clientes') . '#c-' . $info['pos']);
+    } catch (ErroUsuario $e) {
+        if (pedidoJson()) responderJson(['ok' => false, 'msg' => $e->getMessage(), 'recarregar' => true], 409);
+        // Sem JavaScript: a página Mudar o lugar de novo, com a lista de agora e o erro (o cliente sumiu: volta para Clientes)
+        $lista = lerClientes()['clientes'];
+        $j = acharCliente($lista, $n, $logo, $nomeRef);
+        if ($j === null) throw $e;
+        http_response_code(409);
+        telaLugarCliente($lista, $j, $e->getMessage());
+        return;
+    }
+    $lista = lerClientes()['clientes'];
+    $msg = $desfazer
+        ? 'Desfeito: “' . $info['nome'] . '” voltou para o ' . $info['pos'] . 'º lugar no site.'
+        : '“' . $info['nome'] . '” foi para o ' . $info['pos'] . 'º lugar no site (era o ' . $info['de'] . 'º).';
+    $campos = ['n' => (string) $info['pos'], 'logo' => $info['logo'], 'nome' => $info['nome'], 'para' => $info['paraVolta'], 'desfazer' => '1'];
+    if (pedidoJson()) {
+        responderJson(['ok' => true, 'mudou' => true, 'msg' => $msg, 'de' => $info['de'], 'pos' => $info['pos'], 'total' => $info['total'], 'ordem' => ordemClientes($lista)]
+            + ($desfazer ? [] : ['desfazer' => ['acao' => link_('cliente-lugar'), 'campos' => $campos]]));
+    }
+    avisar($msg, 'ok', $desfazer ? [] : ['form' => ['acao' => link_('cliente-lugar'), 'campos' => $campos, 'botao' => 'Desfazer']]);
+    redirecionar(link_('clientes') . '#c-' . $info['pos']);
+}
+
+/** A lista em pares [nome, logo], para a tela conferir e se reordenar (aceita nomes e logos repetidos). */
+function ordemClientes(array $lista): array
+{
+    return array_map(static fn($c) => [(string) ($c['nome'] ?? ''), (string) ($c['logo'] ?? '')], array_values($lista));
 }
 
 function acaoClienteExcluir(bool $post): void

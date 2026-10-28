@@ -217,7 +217,7 @@ function linhaSub(array $c, string $s, int $k, int $total, array $ctx): void
                   <?php endforeach; ?>
                 </select>
               </div>
-              <p class="ajuda">Quem muda de categoria entra no fim dela.</p>
+              <p class="ajuda">Quem muda de categoria entra logo depois dos outros da subcategoria escolhida.</p>
               <?php if ($linksApagar !== ''): ?><p class="ajuda ajuda--alerta"><?= icone('alert') ?><span><b>Atenção:</b> <?= e($linksApagar) ?></span></p><?php endif; ?>
               <div class="ctg__bts"><button type="submit" class="btn btn--perigo btn--p"><?= icone('mover') ?>Mover e apagar</button></div>
             </form>

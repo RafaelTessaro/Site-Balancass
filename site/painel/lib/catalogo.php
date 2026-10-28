@@ -318,7 +318,7 @@ function capaEfetiva(array $produtos): string
 /**
  * Destaques que aparecem na página inicial, na ordem: até 8, revezando as categorias
  * (o 1º destaque de cada categoria, depois o 2º de cada…). Dentro da categoria vale a
- * ordem do site: Pronta entrega primeiro, Esgotado por último, depois a ordem das setas.
+ * ordem do site: Pronta entrega primeiro, Esgotado por último, depois a ordem da lista.
  * O produto da capa fica de fora (ele já está no topo da página).
  */
 function destaquesDaHome(array $produtos): array
@@ -353,7 +353,7 @@ function fraseHome(array $p, array $produtos): string
     $pos = array_search($id, $home, true);
     if ($pos !== false) return ' Aparece na página inicial (destaque ' . ($pos + 1) . ' de ' . count($home) . ').';
     return ' Está em destaque no catálogo, mas não entrou na página inicial: cabem ' . HOME_MAX_DESTAQUES
-        . ' destaques e já há ' . HOME_MAX_DESTAQUES . ' na frente dele. Para ele entrar, tire a estrela de outro ou suba este com as setas.';
+        . ' destaques e já há ' . HOME_MAX_DESTAQUES . ' na frente dele. Para ele entrar, tire a estrela de outro ou ponha este mais para cima na categoria (Mudar lugar).';
 }
 
 /* ------------------------------------------------------------------
@@ -792,7 +792,8 @@ function frasePassado(string $motivo): string
     $s = preg_replace('/^Antes de:\s*/u', '', trim($motivo)) ?? $motivo;
     static $verbos = [
         'cadastrar ' => 'Cadastrou ', 'editar ' => 'Editou ', 'excluir ' => 'Excluiu ',
-        'mudar a ordem de ' => 'Mudou a ordem de ', 'mudar o estoque de ' => 'Mudou o estoque de ',
+        'mudar a ordem de ' => 'Mudou a ordem de ', 'mudar o lugar do cliente ' => 'Mudou o lugar do cliente ', 'mudar o lugar de ' => 'Mudou o lugar de ',
+        'mudar o estoque de ' => 'Mudou o estoque de ',
         'pôr ' => 'Pôs ', 'tirar ' => 'Tirou ', 'mostrar ' => 'Mostrou ', 'esconder ' => 'Escondeu ',
         'restaurar ' => 'Restaurou ', 'trazer de volta ' => 'Trouxe de volta ', 'aplicar ' => 'Aplicou ',
     ];

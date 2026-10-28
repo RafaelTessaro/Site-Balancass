@@ -936,11 +936,12 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
 
 /* ---------- Mudar lugar: a janela (com JavaScript) e a página (sem JavaScript) ---------- */
 .dialogo--lugar { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); }
-/* Uma coluna: só a lista encolhe, para o Cancelar caber sempre na tela (uma rolagem só, a da lista) */
+/* Uma coluna: só a lista encolhe, para o Cancelar caber sempre na tela (uma rolagem só, a da lista).
+   Tela baixa (celular deitado, zoom 200%): o painel.js põe .is-rola-janela (regras logo depois das bordas esmaecidas) */
 .dialogo--lugar[open] { display: flex; flex-direction: column; }
 .dialogo--lugar .dialogo__in { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
 .dialogo--lugar .dialogo__in > * { flex: none; }
-.dialogo--lugar .lugar__lista { flex: 0 1 auto; min-height: 112px; }
+.dialogo--lugar .lugar__lista { flex: 0 1 auto; min-height: 0; }
 :is(.dialogo--lugar, .lugar) .lugar__nome { font: 800 22px/1.05 var(--f-display); text-transform: uppercase; color: var(--ink); overflow-wrap: anywhere; }
 :is(.dialogo--lugar, .lugar) .lugar__hoje { font: 500 12px/1.4 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
 :is(.dialogo--lugar, .lugar) .lugar__rot { font-size: 15.5px; font-weight: 600; color: var(--ink); }
@@ -952,6 +953,15 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
 .lugar__lista.is-mais-acima.is-mais-abaixo {
   -webkit-mask-image: linear-gradient(transparent, #000 28px, #000 calc(100% - 28px), transparent);
   mask-image: linear-gradient(transparent, #000 28px, #000 calc(100% - 28px), transparent);
+}
+/* Tela baixa: a lista não teria lugar para mostrar o de hoje e os vizinhos fora das bordas esmaecidas. Ela perde
+   a altura própria (sem bordas esmaecidas), a janela inteira rola e o Cancelar fica preso embaixo, sempre à vista. */
+.dialogo--lugar.is-rola-janela { overflow-y: auto; overscroll-behavior: contain; }
+.dialogo--lugar.is-rola-janela .dialogo__in { flex: none; min-height: auto; padding-bottom: 0; }
+.dialogo--lugar.is-rola-janela .lugar__lista { flex: none; max-height: none; overflow: visible; -webkit-mask-image: none; mask-image: none; }
+.dialogo--lugar.is-rola-janela .dialogo__bts {
+  position: sticky; bottom: 0; z-index: 1; margin: 0 -20px; padding: 10px 20px 14px;
+  background: var(--paper); box-shadow: 0 -1px 0 var(--line-2), 0 -10px 14px -10px rgba(0, 0, 0, .28);
 }
 .lugar__op {
   display: flex; align-items: baseline; gap: 12px; width: 100%; min-height: 48px; padding: 10px 14px;

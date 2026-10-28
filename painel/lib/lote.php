@@ -338,18 +338,19 @@ function capaNoLote(array $prods, array $todos): string
 }
 
 /** Onde entrou quem mudou de categoria no Mover (posicaoNaSubcategoria): logo depois dos outros do mesmo tipo
- *  (havia, antes, algum produto não marcado nessa categoria e subcategoria) ou, sem outros, onde fica esse tipo
- *  na lista. $quem: 'um', 'varios' ou 'misto' (só parte dos marcados mudou de categoria). */
+ *  (havia, antes, algum produto nessa categoria e subcategoria, inclusive um marcado que já estava lá) ou, sem outros, onde fica esse tipo
+ *  na lista. $quem: 'um', 'varios' ou 'misto' (só parte dos marcados mudou de categoria). O nome da
+ *  subcategoria vem sempre depois de "produtos do tipo"/"o tipo" (não depende do gênero nem do número dele). */
 function fraseOndeEntrou(array $antes, array $marcados, array $categoria, string $sub, string $quem): string
 {
     $quer = array_fill_keys($marcados, true);
     foreach ($antes as $p) {
         if (!isset($quer[(string) ($p['id'] ?? '')]) && ($p['categoria'] ?? '') === $categoria['id'] && ($p['subcategoria'] ?? '') === $sub) {
-            return ' ' . ['um' => 'Entrou', 'varios' => 'Entraram', 'misto' => 'Quem mudou de categoria entrou'][$quem] . ' logo depois dos outros “' . $sub . '”.';
+            return ' ' . ['um' => 'Entrou', 'varios' => 'Entraram', 'misto' => 'Quem mudou de categoria entrou'][$quem] . ' logo depois dos outros produtos do tipo “' . $sub . '”.';
         }
     }
-    return ' ' . ['um' => 'Ele é o primeiro “' . $sub . '” e entrou onde fica esse tipo na lista.',
-        'varios' => 'Eles são os primeiros “' . $sub . '” e entraram onde fica esse tipo na lista.',
+    return ' ' . ['um' => 'Ele é o primeiro produto do tipo “' . $sub . '” e entrou onde fica esse tipo na lista.',
+        'varios' => 'Eles são os primeiros produtos do tipo “' . $sub . '” e entraram onde fica esse tipo na lista.',
         'misto' => 'Quem mudou de categoria entrou onde fica o tipo “' . $sub . '” na lista.'][$quem];
 }
 
@@ -434,7 +435,7 @@ function acaoLote(): void
             $campo === 'visivel' && $valor  => $alvo . ($varios ? ' voltaram' : ' voltou') . ' para o site.',
             $campo === 'visivel'            => $alvo . ($varios ? ' foram escondidos' : ' foi escondido') . ' do site (' . ($varios ? 'continuam' : 'continua') . ' no painel, com o selo “Fora do site”).',
             $campo === 'mover'              => $alvo . ($varios ? ' foram' : ' foi') . ' para ' . $destino . '.'
-                . ($trocouCat ? fraseOndeEntrou($cat['produtos'], $ids, $categoriaDestino, $sub, count($trocouCat) < $k ? 'misto' : ($varios ? 'varios' : 'um')) : ''),
+                . ($trocouCat ? fraseOndeEntrou($cat['produtos'], $idsMudam, $categoriaDestino, $sub, count($trocouCat) < $k ? 'misto' : ($varios ? 'varios' : 'um')) : ''),
             default                         => $alvo . ($varios ? ' foram excluídos.' : ' foi excluído.'),
         } . $jaEstavam;
         $msg = ucfirst($msg);
