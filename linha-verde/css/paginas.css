@@ -665,10 +665,13 @@
    9. CONTATO (fundo escuro) + FORMULÁRIO (WhatsApp)
    ===================================================================== */
 .contact { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(36px, 6vw, 112px); align-items: start; }
-.contact__info { display: grid; gap: 28px; justify-items: start; }
+.contact__info { display: grid; gap: 28px; justify-items: start; container-type: inline-size; }
 .contact__big { display: grid; gap: 14px; text-decoration: none; }
 .contact__k { color: var(--grey); }
-.contact__v { font: 900 clamp(56px, 7vw, 116px)/.85 var(--f-display); color: var(--green); transition: color .3s; letter-spacing: -.005em; }
+/* O telefone cabe numa linha só na coluna (16cqi ≈ 14 caracteres da fonte de display; antes, no computador
+   grande e no celular estreito, quebrava em "(19) 3023-" / "9050" com as linhas encostadas). Um número
+   mais comprido gravado pelo painel ainda pode quebrar: a altura de linha deixa as linhas separadas. */
+.contact__v { font: 900 clamp(56px, 7vw, 116px)/.95 var(--f-display); font-size: min(clamp(56px, 7vw, 116px), 16cqi); color: var(--green); transition: color .3s; letter-spacing: -.005em; }
 .contact__big:hover .contact__v { color: var(--volt); }
 .contact__hint { display: inline-flex; align-items: center; gap: 8px; color: var(--grey); }
 .contact__hint .i { width: 14px; height: 14px; }
