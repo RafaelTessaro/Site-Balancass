@@ -122,7 +122,7 @@ function telaPacote(array $pac, array $estados, array $reg, array $antigos = [],
     $total = count($pac['operacoes']);
     $desc = ($pac['resumo'] !== '' ? '<span>' . e($pac['resumo']) . '</span>' : '')
         . ($pac['criado'] !== '' ? '<span>preparada em ' . e(date('d/m/Y', (int) strtotime($pac['criado']))) . '</span>' : '')
-        . ($ok ? '<span><b>' . $total . '</b> ' . ($total === 1 ? 'mudança' : 'mudanças') . '</span>' : '');
+        . ($ok ? '<span><b>' . $total . '</b>&nbsp;' . ($total === 1 ? 'mudança' : 'mudanças') . '</span>' : '');
 
     pagina('Atualização do catálogo', static function () use ($pac, $estados, $reg, $nomes, $ok, $grupos, $marcadas, $podem, $feitas, $total, $desc, $antigos, $sit): void { ?>
   <p class="migalha"><a href="index.php"><?= icone('up', 'i i--esq') ?>Produtos</a></p>

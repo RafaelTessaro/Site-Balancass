@@ -172,10 +172,11 @@ function telaUsuarios(array $lista): void
     $exigir = exigirDoisFatores();
     pagina('Usuários', static function () use ($lista, $admins, $ativos, $desativados, $com2fa, $exigir): void {
         migalhaConta();
+        // &nbsp;: na tela estreita, o número não fica no fim de uma linha, longe do que ele conta
         cabecalhoPagina('Conta · administração', 'Usuários',
-            '<span><b>' . $ativos . '</b> ' . ($ativos === 1 ? 'pessoa' : 'pessoas') . ' com acesso</span><span><b>' . $admins . '</b> ' . ($admins === 1 ? 'administrador' : 'administradores') . '</span>'
-            . ($desativados ? '<span><b>' . $desativados . '</b> ' . ($desativados === 1 ? 'desativada' : 'desativadas') . '</span>' : '')
-            . '<span><b>' . $com2fa . '</b> com verificação em 2 etapas</span>',
+            '<span><b>' . $ativos . '</b>&nbsp;' . ($ativos === 1 ? 'pessoa' : 'pessoas') . ' com acesso</span><span><b>' . $admins . '</b>&nbsp;' . ($admins === 1 ? 'administrador' : 'administradores') . '</span>'
+            . ($desativados ? '<span><b>' . $desativados . '</b>&nbsp;' . ($desativados === 1 ? 'desativada' : 'desativadas') . '</span>' : '')
+            . '<span><b>' . $com2fa . '</b>&nbsp;com&nbsp;verificação em 2&nbsp;etapas</span>',
             count($lista) < MAX_USUARIOS ? '<a class="btn btn--verde" href="' . e(link_('usuario-novo')) . '">' . icone('plus') . 'Novo usuário</a>' : '');
         ?>
   <div class="papeis-info">

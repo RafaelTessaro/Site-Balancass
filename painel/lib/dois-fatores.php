@@ -321,7 +321,7 @@ function detalheCodigoErrado(string $tipo, array $res = []): string
 function falhaCodigo2fa(string $login, string $base, int $restam): array
 {
     usleep(random_int(250000, 600000));   // atrasa quem tenta adivinhar
-    if ($restam > 0) return [msgFalha($base, $restam, $login), false];
+    if ($restam > 0) return [msgFalha($base, $restam, $login, restamNoDia($login) <= $restam ? tempoBloqueio(JANELA_CODIGOS_DIA) : '15 minutos'), false];
     if ($s = bloqueioConta($login)) {
         $dia = $s > (int) cfg('bloqueio');   // o teto de 24 horas (30 códigos), não o de 15 minutos (10)
         registrar('bloqueado', 'entrada de ' . $login . ' bloqueada por ' . ($dia
@@ -642,6 +642,7 @@ function exigirDoisFatores(): bool
 /** Entrou com "Exigir de todos" ligado e ainda não configurou (a obrigação vale a partir do login). */
 function precisaConfigurar2fa(?array $eu): bool
 {
+    if (!empty($_SESSION['configurar_2fa']) && !exigirDoisFatores()) unset($_SESSION['configurar_2fa']);   // deixou de exigir: a marca da sessão não volta a valer depois
     return $eu !== null && !empty($_SESSION['configurar_2fa']) && exigirDoisFatores() && !doisFatoresLigado($eu);
 }
 
@@ -715,8 +716,8 @@ function acaoDoisFatoresLigar(): void
     unset($_SESSION['novo_2fa'], $_SESSION['configurar_2fa'], $_SESSION['configurar_voltar']);
     $_SESSION['reservas_2fa'] = ['codigos' => $codigos, 'novos' => false, 'quando' => $agora, 'depois' => $depois];
     registrar('dois-fatores-ligou');
-    avisar('Pronto! A verificação em duas etapas está ligada. A partir do próximo acesso, o painel pede o código do aplicativo depois da senha. '
-        . 'Para testar, saia e entre de novo quando o aplicativo mostrar um código novo: o que você acabou de usar não vale de novo.');
+    // Curto: fica acima dos códigos. Como testar vem depois deles (telaCodigosReserva), para ninguém sair antes de guardar
+    avisar('Pronto! A verificação em duas etapas está ligada. Agora guarde os códigos de reserva abaixo.');
     redirecionar(link_('dois-fatores-reservas'));
 }
 
@@ -891,6 +892,9 @@ function textoDesligar2fa(array $u): string
 {
     return 'Desligar a verificação em duas etapas de ' . rotuloUsuario($u) . '? Use quando a pessoa perdeu o celular. Ela passa a entrar só com a senha '
         . 'e os aparelhos lembrados dela são esquecidos. Depois, ela liga de novo em Conta → Verificação em duas etapas.'
+        . (bloqueioConta((string) $u['usuario'])
+            ? ' Atenção: a entrada dela está bloqueada por códigos errados, então alguém pode estar com a senha dela. Depois de desligar, use Redefinir senha (em Usuários → Editar) para trocar a senha.'
+            : ' Se alguém pode estar com a senha dela (celular roubado, códigos errados que não foram dela), use também Redefinir senha.')
         . (exigirDoisFatores() ? ' Como a verificação é exigida de todos, o painel pede para ela configurar no próximo acesso.' : '');
 }
 

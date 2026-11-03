@@ -132,8 +132,10 @@ if (usuarioLogado() === null) {
         if (!csrfValido()) { http_response_code(403); telaRecuperar('A página ficou aberta tempo demais e expirou. Confira os dados e envie de novo.', ['usuario' => $v['usuario']]); exit; }
         [$erro, $sobrou, $desligou2fa] = recuperarAcesso($v['codigo'], cortar($v['usuario'], 60), (string) ($_POST['senha'] ?? ''), (string) ($_POST['senha2'] ?? ''));
         if ($erro === null) {
+            $eu = usuarioAtual();   // a sessão já é a do administrador recuperado (o nome diz de quem foi desligada)
             avisar('Pronto! O acesso foi recuperado e você já entrou como Administrador. Os outros usuários continuam como estavam.'
-                . ($desligou2fa ? ' A verificação em duas etapas dele foi desligada e os aparelhos lembrados foram esquecidos: ligue de novo em Conta → Verificação em duas etapas.' : ''));
+                . ($desligou2fa ? ($eu ? ' A verificação em duas etapas de ' . $eu['nome'] . ' (' . $eu['usuario'] . ')' : ' A sua verificação em duas etapas')
+                    . ' foi desligada e os aparelhos lembrados foram esquecidos: ligue de novo em Conta → Verificação em duas etapas.' : ''));
             if ($sobrou) avisar('Não consegui apagar o arquivo ' . implode(' e ', $sobrou) . ' da pasta privada. Apague pelo Gerenciador de Arquivos do cPanel: enquanto ele existir, quem não está logado vê a tela “Recuperar acesso” em vez da tela de entrar.', 'erro');
             redirecionar('index.php');
         }
@@ -175,7 +177,7 @@ if (usuarioLogado() === null) {
             $msg = $pend ? 'A página ficou aberta tempo demais. Digite o código de novo.' : 'A página ficou aberta tempo demais e expirou. Digite a senha de novo.';
             if (pedidoJson()) responderJson(['ok' => false, 'msg' => $msg, 'csrf' => tokenCsrf()] + ($pend ? [] : ['senha' => true]), 403);
             http_response_code(403);
-            $pend ? telaVerificar($msg, $modo) : telaEntrar($msg);
+            $pend ? telaVerificar($msg, $modo, false) : telaEntrar($msg);   // só expirou: o código não está errado
             exit;
         }
         $r = verificarCodigoEntrada(is_string($_POST['codigo'] ?? null) ? $_POST['codigo'] : '', $modo, ($_POST['lembrar'] ?? '') === '1');

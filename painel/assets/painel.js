@@ -176,7 +176,7 @@
         if (blocoCodigo) blocoCodigo.hidden = e !== "codigo";
         if (txt) txt.textContent = e === "codigo" ? "Senha certa. Agora digite o código de 6 números do aplicativo autenticador." : textoMotivo;
         if (rotOk) rotOk.textContent = e === "codigo" ? "Confirmar e continuar" : rotOk.dataset.padrao;
-        if (codigo) codigo.value = "";
+        if (codigo) { codigo.value = ""; codigo.removeAttribute("aria-invalid"); codigo.setAttribute("aria-describedby", "rl-codigo-ajuda"); }
         if (focar) (e === "codigo" && codigo ? codigo : (usuario.value ? senha : usuario)).focus();
       };
       irPara("senha", false);
@@ -216,6 +216,7 @@
             if (d.ok) { entrou(d); return; }
             if (d.senha) { irPara("senha", false); mostrarErro(d.msg || "Digite a senha de novo."); senha.value = ""; senha.focus(); return; }
             mostrarErro(d.msg || "Não foi possível conferir o código. Tente de novo.");
+            codigo.setAttribute("aria-invalid", "true"); codigo.setAttribute("aria-describedby", "relogin-erro rl-codigo-ajuda");
             codigo.value = ""; codigo.focus();
           });
           return;
@@ -1796,6 +1797,9 @@
         var bl = blocos[k], inp = $("input", bl), ativo = k === para;
         bl.hidden = !ativo; inp.disabled = !ativo;
         if (!ativo) inp.value = "";
+        // O erro da página (#f-verificar-erro) era do outro campo: o campo novo começa sem ele
+        inp.removeAttribute("aria-invalid");
+        inp.setAttribute("aria-describedby", (inp.getAttribute("aria-describedby") || "").replace(/\bf-verificar-erro\s*/, "").trim());
       });
       modo.value = para;
       if (sub) sub.textContent = sub.getAttribute(para === "reserva" ? "data-sub-reserva" : "data-sub-app");

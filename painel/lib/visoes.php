@@ -153,7 +153,7 @@ function pagina(string $titulo, callable $conteudo, array $o = []): void
   <form class="dialogo__in form-acesso" data-relogin-form novalidate>
     <h2 id="relogin-tit">Entre de novo</h2>
     <p data-relogin-motivo>Sua sessão terminou. Digite a senha para continuar: nada do que está nesta tela se perde.</p>
-    <div class="aviso aviso--erro" role="alert" data-relogin-erro hidden><?= icone('alert') ?><p></p></div>
+    <div class="aviso aviso--erro" role="alert" id="relogin-erro" data-relogin-erro hidden><?= icone('alert') ?><p></p></div>
     <div data-relogin-senha>
       <div class="campo">
         <label for="rl-usuario">Usuário</label>

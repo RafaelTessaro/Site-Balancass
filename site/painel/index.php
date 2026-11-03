@@ -10,6 +10,8 @@ define('PAINEL', true);
 require __DIR__ . '/lib/nucleo.php';
 require __DIR__ . '/lib/auth.php';
 require __DIR__ . '/lib/usuarios.php';
+require __DIR__ . '/lib/qr.php';             // código QR (SVG) da verificação em duas etapas
+require __DIR__ . '/lib/dois-fatores.php';   // verificação em duas etapas (Google Authenticator)
 require __DIR__ . '/lib/catalogo.php';
 require __DIR__ . '/lib/imagens.php';
 require __DIR__ . '/lib/clientes.php';
@@ -21,6 +23,7 @@ require __DIR__ . '/lib/lote.php';
 require __DIR__ . '/lib/categorias.php';     // depois do lote.php: usa moverProdutosPara()
 require __DIR__ . '/lib/visoes.php';
 require __DIR__ . '/lib/visoes-usuarios.php';
+require __DIR__ . '/lib/visoes-dois-fatores.php';
 require __DIR__ . '/lib/visoes-empresa.php';
 require __DIR__ . '/lib/visoes-pacotes.php';
 require __DIR__ . '/lib/visoes-procurados.php';
@@ -53,17 +56,24 @@ const ACOES = ['lista', 'novo', 'editar', 'salvar', 'rapido', 'mover', 'lugar', 
     'clientes', 'cliente-novo', 'cliente-editar', 'cliente-salvar', 'cliente-mover', 'cliente-lugar', 'cliente-excluir', 'cliente-desfazer',
     'usuarios', 'usuario-novo', 'usuario-editar', 'usuario-salvar', 'usuario-senha', 'usuario-ativo', 'usuario-excluir', 'senha-temporaria',
     'atividades', 'criar-senha', 'recuperar', 'empresa', 'empresa-salvar', 'pacote', 'pacote-aplicar', 'pacote-dispensar',
-    'procurados', 'categorias', 'categoria-salvar', 'categoria-mover', 'categoria-excluir', 'subcategoria-salvar', 'subcategoria-mover', 'subcategoria-excluir'];
+    'procurados', 'categorias', 'categoria-salvar', 'categoria-mover', 'categoria-excluir', 'subcategoria-salvar', 'subcategoria-mover', 'subcategoria-excluir',
+    // Verificação em duas etapas (lib/dois-fatores.php)
+    'verificar', 'verificar-cancelar', 'dois-fatores', 'dois-fatores-ligar', 'dois-fatores-recomecar', 'dois-fatores-reservas',
+    'dois-fatores-novas-reservas', 'dois-fatores-desligar', 'aparelhos-esquecer', 'usuario-dois-fatores', 'dois-fatores-exigir'];
 const SO_POST = ['salvar', 'rapido', 'mover', 'desfazer', 'lote', 'lote-desfazer', 'senha', 'sair', 'cliente-salvar', 'cliente-mover', 'cliente-desfazer', 'usuario-salvar', 'empresa-salvar',
-    'pacote-aplicar', 'pacote-dispensar', 'categoria-salvar', 'categoria-mover', 'subcategoria-salvar', 'subcategoria-mover'];
+    'pacote-aplicar', 'pacote-dispensar', 'categoria-salvar', 'categoria-mover', 'subcategoria-salvar', 'subcategoria-mover',
+    'dois-fatores-ligar', 'dois-fatores-recomecar', 'dois-fatores-novas-reservas', 'dois-fatores-desligar', 'aparelhos-esquecer'];
 // Só administradores. O papel é lido do usuarios.php a cada pedido (mudou, vale na hora).
 // Vale para GET, POST e fetch (JSON): editor recebe 403.
 const SO_ADMIN = ['usuarios', 'usuario-novo', 'usuario-editar', 'usuario-salvar', 'usuario-senha', 'usuario-ativo', 'usuario-excluir', 'senha-temporaria',
     'atividades', 'copias', 'restaurar', 'empresa', 'empresa-salvar', 'pacote', 'pacote-aplicar', 'pacote-dispensar',
-    'categorias', 'categoria-salvar', 'categoria-mover', 'categoria-excluir', 'subcategoria-salvar', 'subcategoria-mover', 'subcategoria-excluir'];
+    'categorias', 'categoria-salvar', 'categoria-mover', 'categoria-excluir', 'subcategoria-salvar', 'subcategoria-mover', 'subcategoria-excluir',
+    'usuario-dois-fatores', 'dois-fatores-exigir'];
 // "Mais procurados" (procurados) fica de fora: todos os usuários veem (só leitura)
 // Enquanto a pessoa não cria a própria senha (entrou com a senha temporária), só estas
 const SEM_SENHA_PROPRIA = ['criar-senha', 'sair'];
+// "Exigir de todos" ligado e a pessoa ainda sem a verificação em duas etapas: só estas, até configurar
+const SEM_DOIS_FATORES = ['dois-fatores', 'dois-fatores-ligar', 'dois-fatores-recomecar', 'dois-fatores-reservas', 'sair'];
 $acao = is_string($_GET['a'] ?? null) && in_array($_GET['a'], ACOES, true) ? $_GET['a'] : 'lista';
 $post = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
 
@@ -120,9 +130,12 @@ if (usuarioLogado() === null) {
     if ($post && $acao === 'recuperar' && $recuperando) {
         $v = ['codigo' => (string) ($_POST['codigo'] ?? ''), 'usuario' => trim((string) ($_POST['usuario'] ?? ''))];
         if (!csrfValido()) { http_response_code(403); telaRecuperar('A página ficou aberta tempo demais e expirou. Confira os dados e envie de novo.', ['usuario' => $v['usuario']]); exit; }
-        [$erro, $sobrou] = recuperarAcesso($v['codigo'], cortar($v['usuario'], 60), (string) ($_POST['senha'] ?? ''), (string) ($_POST['senha2'] ?? ''));
+        [$erro, $sobrou, $desligou2fa] = recuperarAcesso($v['codigo'], cortar($v['usuario'], 60), (string) ($_POST['senha'] ?? ''), (string) ($_POST['senha2'] ?? ''));
         if ($erro === null) {
-            avisar('Pronto! O acesso foi recuperado e você já entrou como Administrador. Os outros usuários continuam como estavam.');
+            $eu = usuarioAtual();   // a sessão já é a do administrador recuperado (o nome diz de quem foi desligada)
+            avisar('Pronto! O acesso foi recuperado e você já entrou como Administrador. Os outros usuários continuam como estavam.'
+                . ($desligou2fa ? ($eu ? ' A verificação em duas etapas de ' . $eu['nome'] . ' (' . $eu['usuario'] . ')' : ' A sua verificação em duas etapas')
+                    . ' foi desligada e os aparelhos lembrados foram esquecidos: ligue de novo em Conta → Verificação em duas etapas.' : ''));
             if ($sobrou) avisar('Não consegui apagar o arquivo ' . implode(' e ', $sobrou) . ' da pasta privada. Apague pelo Gerenciador de Arquivos do cPanel: enquanto ele existir, quem não está logado vê a tela “Recuperar acesso” em vez da tela de entrar.', 'erro');
             redirecionar('index.php');
         }
@@ -138,16 +151,49 @@ if (usuarioLogado() === null) {
             http_response_code(403); telaEntrar($msg, $usuario); exit;
         }
         $voltar = destinoSeguro($_SESSION['voltar'] ?? null);   // a sessão é trocada ao entrar
-        $erro = entrar(cortar($usuario, 60), (string) ($_POST['senha'] ?? ''));
+        ['erro' => $erro, 'codigo' => $falta] = entrar(cortar($usuario, 60), (string) ($_POST['senha'] ?? ''));
+        if ($falta) {
+            // Senha certa, verificação em duas etapas ligada: 2ª tela (o código do aplicativo ou de reserva)
+            $_SESSION['entrada_2fa']['voltar'] = $voltar;
+            if (pedidoJson()) responderJson(['ok' => false, 'etapa' => 'codigo', 'msg' => 'Digite o código do aplicativo.', 'csrf' => tokenCsrf()]);
+            redirecionar(link_('verificar'));
+        }
         if ($erro === null) {
             if (pedidoJson()) responderJson(['ok' => true, 'csrf' => tokenCsrf()]);
             redirecionar($voltar ?? 'index.php');
         }
-        $bloqueado = bloqueioRestante(cortar($usuario, 60)) > 0;
+        $bloqueado = bloqueioRestante(cortar($usuario, 60)) > 0 || bloqueioConta(cortar($usuario, 60)) > 0;
         if (pedidoJson()) responderJson(['ok' => false, 'msg' => $erro, 'csrf' => tokenCsrf()], $bloqueado ? 429 : 401);
         http_response_code($bloqueado ? 429 : 401);
         telaEntrar($erro, $usuario);
         exit;
+    }
+    // 2ª etapa do login (verificação em duas etapas): o código do aplicativo ou de reserva
+    if ($post && $acao === 'verificar') {
+        $loginPend = is_string($_SESSION['entrada_2fa']['usuario'] ?? null) ? $_SESSION['entrada_2fa']['usuario'] : '';   // antes de vencer (para preencher a tela de entrar)
+        $pend = pendente2fa();
+        $modo = ($_POST['modo'] ?? '') === 'reserva' ? 'reserva' : 'app';
+        if (!csrfValido()) {
+            $msg = $pend ? 'A página ficou aberta tempo demais. Digite o código de novo.' : 'A página ficou aberta tempo demais e expirou. Digite a senha de novo.';
+            if (pedidoJson()) responderJson(['ok' => false, 'msg' => $msg, 'csrf' => tokenCsrf()] + ($pend ? [] : ['senha' => true]), 403);
+            http_response_code(403);
+            $pend ? telaVerificar($msg, $modo, false) : telaEntrar($msg);   // só expirou: o código não está errado
+            exit;
+        }
+        $r = verificarCodigoEntrada(is_string($_POST['codigo'] ?? null) ? $_POST['codigo'] : '', $modo, ($_POST['lembrar'] ?? '') === '1');
+        if ($r['erro'] === null) {
+            if (pedidoJson()) responderJson(['ok' => true, 'csrf' => tokenCsrf()] + ($r['aviso'] ? ['msg' => $r['aviso'][0]] : []));
+            if ($r['aviso']) avisar($r['aviso'][0], $r['aviso'][1]);
+            redirecionar(destinoSeguro($r['voltar']) ?? 'index.php');
+        }
+        if (pedidoJson()) responderJson(['ok' => false, 'msg' => $r['erro'], 'csrf' => tokenCsrf()] + ($r['senha'] ? ['senha' => true] : []), $r['status']);
+        http_response_code($r['status']);
+        $r['senha'] ? telaEntrar($r['erro'], $loginPend) : telaVerificar($r['erro'], $modo);
+        exit;
+    }
+    if ($post && $acao === 'verificar-cancelar') {
+        if (csrfValido()) unset($_SESSION['entrada_2fa']);
+        redirecionar(link_('entrar'));
     }
     if ($post) {
         if (pedidoJson()) responderJson(['ok' => false, 'login' => true, 'msg' => 'Sua sessão terminou. Entre de novo.', 'motivo' => motivoSaida(), 'csrf' => tokenCsrf()], 401);
@@ -173,6 +219,13 @@ if (usuarioLogado() === null) {
         } elseif (str_starts_with($acao, 'categoria') || str_starts_with($acao, 'subcategoria')) {
             $_SESSION['voltar'] = link_('categorias');
             avisar('Sua sessão terminou e nada mudou nas categorias. Entre de novo e repita a mudança.', 'info');
+        } elseif ($acao === 'dois-fatores-ligar') {
+            // O código QR da tela era desta sessão: depois de entrar, aparece um novo
+            $_SESSION['voltar'] = link_('dois-fatores');
+            avisar('Sua sessão terminou antes de confirmar o código. Entre de novo: o painel mostra um código QR novo (apague no aplicativo a conta que você acabou de criar e leia o novo).', 'info');
+        } elseif (str_starts_with($acao, 'dois-fatores') || $acao === 'aparelhos-esquecer') {
+            $_SESSION['voltar'] = link_('dois-fatores');
+            avisar('Sua sessão terminou e a última ação não foi feita. Entre de novo para continuar.', 'info');
         } elseif ($acao === 'lote') {
             avisar('Sua sessão terminou e nada mudou nos produtos marcados. Entre de novo, marque os produtos e repita a ação.', 'info');
         } elseif ($acao === 'pacote-aplicar') {
@@ -189,6 +242,16 @@ if (usuarioLogado() === null) {
         telaRecuperar();
         exit;
     }
+    // Senha certa, falta o código: qualquer página mostra a 2ª tela (até vencer)
+    if (pendente2fa() !== null) {
+        telaVerificar('', ($_GET['reserva'] ?? '') === '1' ? 'reserva' : 'app');
+        exit;
+    }
+    if (($_SESSION['motivo_2fa'] ?? '') === 'expirou') {
+        unset($_SESSION['motivo_2fa']);
+        avisar('Passaram mais de ' . minutosEspera2fa() . ' minutos. Por segurança, digite a senha de novo.', 'info');
+    }
+    if ($acao === 'verificar' || $acao === 'verificar-cancelar') redirecionar(link_('entrar'));
     if ($acao !== 'entrar' && $acao !== 'lista') {
         $_SESSION['voltar'] = 'index.php?' . http_build_query(array_map('strval', array_filter($_GET, 'is_string')));
         redirecionar(link_('entrar'));
@@ -200,7 +263,9 @@ if (usuarioLogado() === null) {
 /* ------------------------------------------------------------------
    Logado
    ------------------------------------------------------------------ */
-if ($acao === 'entrar' || $acao === 'instalar' || $acao === 'recuperar') redirecionar('index.php');
+// 2ª aba da 2ª etapa (a outra já entrou), ou a janela "Entre de novo" depois de entrar em outra aba
+if ($acao === 'verificar' && $post && pedidoJson()) responderJson(['ok' => true, 'csrf' => tokenCsrf()]);
+if (in_array($acao, ['entrar', 'instalar', 'recuperar', 'verificar', 'verificar-cancelar'], true)) redirecionar('index.php');
 garantirArquivoAjustes();
 if ($post && !csrfValido()) {
     registrar('csrf', 'pedido recusado (token ausente ou inválido) em ' . $acao);
@@ -211,10 +276,20 @@ if ($post && !csrfValido()) {
 }
 $eu = usuarioAtual();
 if ($eu === null) { sair(); redirecionar(link_('entrar')); }   // excluído no meio do caminho
+// Códigos de reserva (lib/dois-fatores.php): ficam na sessão só enquanto a página deles está aberta (recarregar
+// mostra de novo, por até 15 min); abrir qualquer outra página os apaga
+if ($acao !== 'dois-fatores-reservas') unset($_SESSION['reservas_2fa']);
 // Entrou com a senha temporária: antes de qualquer coisa, cria a própria senha
 if (precisaCriarSenha($eu) && !in_array($acao, SEM_SENHA_PROPRIA, true)) {
     if (pedidoJson()) responderJson(['ok' => false, 'msg' => 'Antes de continuar, crie a sua senha: recarregue a página.'], 403);
     redirecionar(link_('criar-senha'));
+}
+// "Exigir de todos" (lib/dois-fatores.php): quem entrou sem a verificação configura antes de usar o painel
+if (!precisaCriarSenha($eu) && precisaConfigurar2fa($eu) && !in_array($acao, SEM_DOIS_FATORES, true)) {
+    if (pedidoJson()) responderJson(['ok' => false, 'msg' => 'Antes de continuar, ligue a verificação em duas etapas: recarregue a página.'], 403);
+    $destino = $post ? null : destinoSeguro('index.php?' . http_build_query(array_map('strval', array_filter($_GET, 'is_string'))));
+    if ($destino !== null) $_SESSION['configurar_voltar'] = $destino;   // depois de configurar, volta para cá
+    redirecionar(link_('dois-fatores'));
 }
 if (in_array($acao, SO_ADMIN, true) && $eu['papel'] !== 'admin') {
     registrar('negado', nomeDaArea($acao));
@@ -279,6 +354,16 @@ try {
         'subcategoria-salvar'  => acaoSubcategoriaSalvar(),
         'subcategoria-mover'   => acaoSubcategoriaMover(),
         'subcategoria-excluir' => acaoSubcategoriaExcluir($post),
+        // Verificação em duas etapas: lib/dois-fatores.php e lib/visoes-dois-fatores.php
+        'dois-fatores'                => acaoDoisFatores(),
+        'dois-fatores-ligar'          => acaoDoisFatoresLigar(),
+        'dois-fatores-recomecar'      => acaoDoisFatoresRecomecar(),
+        'dois-fatores-reservas'       => acaoDoisFatoresReservas(),
+        'dois-fatores-novas-reservas' => acaoDoisFatoresNovasReservas(),
+        'dois-fatores-desligar'       => acaoDoisFatoresDesligar(),
+        'aparelhos-esquecer'          => acaoAparelhosEsquecer(),
+        'usuario-dois-fatores'        => acaoUsuarioDoisFatores($post),
+        'dois-fatores-exigir'         => acaoDoisFatoresExigir($post),
     };
 } catch (ErroCatalogo $e) {
     if (pedidoJson()) responderJson(['ok' => false, 'msg' => 'Não consegui ler o catálogo: ' . $e->getMessage()], 500);
@@ -303,13 +388,14 @@ function destinoSeguro($url): ?string
 {
     if (!is_string($url) || strlen($url) > 300) return null;
     // "+" é o espaço da busca (http_build_query): ?a=lugar&id=…&q=prix+3
-    if (!preg_match('/^index\.php\?a=(novo|editar|lugar|copias|conta|clientes|cliente-novo|cliente-editar|cliente-lugar|usuarios|usuario-novo|usuario-editar|atividades|empresa|pacote|procurados|categorias)(&[A-Za-z0-9_=%.+\-]*)*$/', $url)) return null;
+    if (!preg_match('/^index\.php\?a=(novo|editar|lugar|copias|conta|clientes|cliente-novo|cliente-editar|cliente-lugar|usuarios|usuario-novo|usuario-editar|atividades|empresa|pacote|procurados|categorias|dois-fatores)(&[A-Za-z0-9_=%.+\-]*)*$/', $url)) return null;
     return $url;
 }
 
 /** Nome da área de administrador, para o registro ("Tentou abrir… — Usuários"). */
 function nomeDaArea(string $acao): string
 {
+    if ($acao === 'dois-fatores-exigir') return 'Usuários (exigir a verificação em duas etapas)';
     if (str_starts_with($acao, 'usuario') || $acao === 'senha-temporaria') return 'Usuários';
     if (str_starts_with($acao, 'empresa')) return 'Empresa';
     if (str_starts_with($acao, 'pacote')) return 'Atualização do catálogo';
@@ -324,6 +410,9 @@ function voltarDepoisDoErro(string $acao): string
     if ($acao === 'lote') return linkLista(filtroDoPost(), ['sel' => '1']);
     if ($acao === 'lugar') return linkLista(filtroDoPost());   // Mudar lugar: a mesma lista (busca e filtro)
     if (str_starts_with($acao, 'cliente')) return link_('clientes');
+    if ($acao === 'dois-fatores-exigir') return link_('usuarios');
+    // "#": abre no alto, onde está o aviso (sem ele, o navegador manteria o #df-… do formulário e abriria lá embaixo)
+    if (str_starts_with($acao, 'dois-fatores') || $acao === 'aparelhos-esquecer') return link_('dois-fatores') . '#';
     if (str_starts_with($acao, 'usuario') || $acao === 'usuarios' || $acao === 'senha-temporaria') return link_('usuarios');
     if ($acao === 'criar-senha') return link_('criar-senha');
     if (in_array($acao, ['conta', 'senha', 'atividades'], true)) return link_('conta');

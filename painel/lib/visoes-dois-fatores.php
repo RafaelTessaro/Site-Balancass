@@ -15,7 +15,8 @@ const AJUDA_CODIGO_APP = '6 números. O código muda a cada 30 segundos: digite 
 /* ------------------------------------------------------------------
    2ª tela do login
    ------------------------------------------------------------------ */
-function telaVerificar(string $erro = '', string $modo = 'app'): void
+/** $invalido: o erro é do código digitado (o campo ganha aria-invalid); false quando só a página expirou. */
+function telaVerificar(string $erro = '', string $modo = 'app', bool $invalido = true): void
 {
     $p = pendente2fa();
     $u = $p ? usuarioPorLogin($p['usuario']) : null;
@@ -24,21 +25,27 @@ function telaVerificar(string $erro = '', string $modo = 'app'): void
     $subApp = 'Olá, ' . $primeiro . '! Abra o aplicativo autenticador no seu celular (Google Authenticator ou outro) e digite o código de 6 números que aparece em “Balanças.com”.';
     $subRes = 'Olá, ' . $primeiro . '! Digite um dos 10 códigos de reserva que você guardou quando ligou a verificação.';
     $min = minutosEspera2fa();
-    molduraAcesso('Verificação', static function () use ($erro, $reserva, $subApp, $subRes, $min): void { ?>
+    // Com erro, o campo ativo aponta para o aviso (aria-describedby): o leitor de tela lê o erro junto com o campo,
+    // que recebe o foco ao abrir (um role=alert que já vem na página nem sempre é lido)
+    $comErro = static fn(string $ajuda): string => $erro === '' ? ' aria-describedby="' . $ajuda . '"'
+        : ($invalido ? ' aria-invalid="true"' : '') . ' aria-describedby="f-verificar-erro ' . $ajuda . '"';
+    $attrApp = $reserva ? ' aria-describedby="f-codigo-ajuda"' : $comErro('f-codigo-ajuda');
+    $attrRes = $reserva ? $comErro('f-reserva-ajuda') : ' aria-describedby="f-reserva-ajuda"';
+    molduraAcesso('Verificação', static function () use ($erro, $reserva, $subApp, $subRes, $min, $attrApp, $attrRes): void { ?>
       <h1 class="acesso__tit">Verificação</h1>
       <p class="acesso__sub" data-sub-app="<?= e($subApp) ?>" data-sub-reserva="<?= e($subRes) ?>"><?= e($reserva ? $subRes : $subApp) ?></p>
-      <?php if ($erro !== ''): ?><div class="aviso aviso--erro" role="alert"><?= icone('alert') ?><p><?= e($erro) ?></p></div><?php endif; ?>
+      <?php if ($erro !== ''): ?><div class="aviso aviso--erro" role="alert" id="f-verificar-erro"><?= icone('alert') ?><p><?= e($erro) ?></p></div><?php endif; ?>
       <form method="post" action="<?= e(link_('verificar')) ?>" class="form-acesso" data-form-enviar data-verificar>
         <?= campoCsrf() ?>
         <input type="hidden" name="modo" value="<?= $reserva ? 'reserva' : 'app' ?>">
         <div class="campo" data-modo-campo="app"<?= $reserva ? ' hidden' : '' ?>>
           <label for="f-codigo">Código do aplicativo</label>
-          <input id="f-codigo" name="codigo" class="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required<?= $reserva ? ' disabled' : ' autofocus' ?> aria-describedby="f-codigo-ajuda" data-codigo-app>
+          <input id="f-codigo" name="codigo" class="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required<?= $reserva ? ' disabled' : ' autofocus' ?><?= $attrApp ?> data-codigo-app>
           <p class="ajuda" id="f-codigo-ajuda"><?= e(AJUDA_CODIGO_APP) ?></p>
         </div>
         <div class="campo" data-modo-campo="reserva"<?= $reserva ? '' : ' hidden' ?>>
           <label for="f-reserva">Código de reserva</label>
-          <input id="f-reserva" name="codigo" class="codigo" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="12" required<?= $reserva ? ' autofocus' : ' disabled' ?> aria-describedby="f-reserva-ajuda">
+          <input id="f-reserva" name="codigo" class="codigo" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="12" required<?= $reserva ? ' autofocus' : ' disabled' ?><?= $attrRes ?>>
           <p class="ajuda" id="f-reserva-ajuda">8 letras e números (ex.: K7QM-2XPA). Cada código vale uma vez só.</p>
         </div>
         <div class="campo">
@@ -251,6 +258,9 @@ function telaCodigosReserva(array $f): void
       <button type="button" class="btn btn--linha btn--p" data-copiar="codigos-reserva" hidden><?= icone('copiar') ?><span>Copiar os códigos</span></button>
     </p>
   </section>
+<?php   if (empty($f['novos'])): /* acabou de ligar: como testar vem depois dos códigos (sair antes de guardar os apaga) */ ?>
+  <p class="reservas__fim reservas__testar" id="res-testar">A partir do próximo acesso, o painel pede o código do aplicativo depois da senha. Para testar, <b>depois de guardar os códigos</b>, saia e entre de novo quando o aplicativo mostrar um código novo (o que você acabou de usar não vale de novo).</p>
+<?php   endif; ?>
   <p class="reservas__fim"><a class="btn btn--linha" href="<?= e($depois) ?>"><?= icone('check') ?>Pronto, já guardei</a></p>
   <p class="ajuda reservas__fim">Se fechar esta página sem guardar, gere códigos novos em Conta → Verificação em duas etapas.</p>
 <?php

@@ -35,8 +35,8 @@ function telaCategorias(array $cat, array $estado = []): void
     pagina('Categorias', static function () use ($categorias, $produtos, $orfaos, $nSubs, $ctx, $estado): void { ?>
   <p class="migalha"><a href="index.php"><?= icone('up', 'i i--esq') ?>Produtos</a></p>
   <?php cabecalhoPagina('Catálogo do site', 'Categorias',
-        '<span><b>' . count($categorias) . '</b> ' . (count($categorias) === 1 ? 'categoria' : 'categorias') . '</span><span><b>' . $nSubs . '</b> ' . ($nSubs === 1 ? 'subcategoria' : 'subcategorias') . '</span>'
-        . '<span><b>' . count($produtos) . '</b> produtos</span>',
+        '<span><b>' . count($categorias) . '</b>&nbsp;' . (count($categorias) === 1 ? 'categoria' : 'categorias') . '</span><span><b>' . $nSubs . '</b>&nbsp;' . ($nSubs === 1 ? 'subcategoria' : 'subcategorias') . '</span>'
+        . '<span><b>' . count($produtos) . '</b>&nbsp;produtos</span>',   // &nbsp;: o número não se separa do que conta
         '<a class="btn btn--linha btn--p" href="#nova" data-cat-ir-nova>' . icone('plus') . 'Nova categoria</a>'); ?>
   <?php if (!empty($estado['erro'])): ?>
   <div class="aviso aviso--erro" role="alert"><?= icone('alert') ?><p><b>Nada foi alterado.</b> <?= e($estado['erro']) ?> <a href="#<?= e(ancoraDoForm((string) ($estado['form'] ?? ''), $categorias)) ?>">Corrigir</a></p></div>

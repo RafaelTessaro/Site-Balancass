@@ -325,10 +325,19 @@ function msgBloqueio(int $segundos, string $login = ''): string
         . $tempo . '. Espere e tente de novo.';
 }
 
-function msgFalha(string $base, int $restam, string $login = ''): string
+function msgFalha(string $base, int $restam, string $login = '', string $tempo = '15 minutos'): string
 {
     if ($restam <= 0) return msgBloqueio((int) cfg('bloqueio'), $login);
-    return $base . ($restam <= 3 ? ' ' . ($restam === 1 ? 'Resta 1 tentativa' : 'Restam ' . $restam . ' tentativas') . ' antes do bloqueio de 15 minutos.' : '');
+    return $base . ($restam <= 3 ? ' ' . ($restam === 1 ? 'Resta 1 tentativa' : 'Restam ' . $restam . ' tentativas') . ' antes do bloqueio de ' . $tempo . '.' : '');
+}
+
+/** Quantos códigos errados ainda cabem no teto de 24 horas da conta (para o "Restam…" dizer o bloqueio certo). */
+function restamNoDia(string $login): int
+{
+    $t = lerJsonPrivado('tentativas.php', []);
+    $r = is_array($t) ? ($t[chaveCodigoContaDia($login)] ?? null) : null;
+    if (!is_array($r) || (int) ($r['desde'] ?? 0) + JANELA_CODIGOS_DIA < time()) return maxCodigosContaDia();
+    return max(0, maxCodigosContaDia() - (int) ($r['n'] ?? 0));
 }
 
 /* ------------------------------------------------------------------
