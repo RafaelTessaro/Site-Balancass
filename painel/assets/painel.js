@@ -1815,6 +1815,18 @@
       trocar(para);
     });
   })();
+  // Erro ao ligar, gerar códigos ou desligar: a página já abre no formulário (#df-…); o foco vai para o aviso,
+  // no meio da tela, e o leitor de tela lê a mensagem. Só depois do "load": ao abrir no #df-…, o navegador
+  // tira o foco do que tinha sido focado antes
+  var erroDf = $(".df-passos [data-erros], .df-conta [data-erros]");
+  if (erroDf) {
+    window.addEventListener("load", function () {
+      setTimeout(function () {
+        erroDf.focus({ preventScroll: true });
+        if (erroDf.scrollIntoView) erroDf.scrollIntoView({ block: "center" });
+      }, 0);
+    });
+  }
   // Códigos de reserva: Imprimir (sem JavaScript, o menu do navegador)
   $$("[data-imprimir]").forEach(function (b) {
     b.hidden = false;

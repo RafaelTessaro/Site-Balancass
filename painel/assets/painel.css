@@ -160,7 +160,7 @@ code { font: 500 .86em/1.4 var(--f-mono); background: var(--paper-2); padding: .
 .cab { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px 20px; margin-bottom: 20px; }
 .cab__txt { min-width: 0; }
 .sobre {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px;   /* espaço para o acento do título (CÓDIGOS, USUÁRIOS) não encostar */
   font: 500 11px/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--green-deep);
   overflow-wrap: anywhere;
 }
@@ -1963,6 +1963,11 @@ select:focus, .campo input:focus, .campo textarea:focus, .specs input:focus { ou
 .pg-2fa .df-passos { max-width: 760px; }
 .df-passos > li > p + p { margin-top: 6px; }
 .df-passos > li > .aviso { margin-top: 10px; }
+/* Com erro, o formulário abre a página nele (#df-ligar, #df-reservas, #df-desligar): logo abaixo da barra de cima */
+.df-passos > li, .df-conta > .caixa { scroll-margin-top: calc(var(--topo) + 16px); }
+.df-mesmo p + p { margin-top: 6px; }
+/* "Abrir no aplicativo autenticador" (link otpauth:) só serve no celular do aplicativo: no computador com mouse, some */
+@media (hover: hover) and (pointer: fine) { .df-mesmo { display: none; } }
 .df-passos .form-acesso { margin-top: 12px; max-width: 420px; }
 .df-passos .form-acesso .btn--verde { margin-top: 0; }
 .df-chave { margin-top: 4px; }

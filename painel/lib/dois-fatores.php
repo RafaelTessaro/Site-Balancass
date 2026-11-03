@@ -315,7 +315,7 @@ function detalheCodigoErrado(string $tipo, array $res = []): string
 
 /**
  * Código errado (2ª etapa, desligar), já contado por reservarTentativaCodigo() antes de conferir: na chave
- * internet + usuário de hoje (5) e na da conta (10, somando todas as internets). $restam: o que ela devolveu.
+ * internet + usuário de hoje (5) e nas da conta (10 em 15 min e 30 em 24 h, somando todas as internets). $restam: o que ela devolveu.
  * Devolve [mensagem com o "Restam…", bloqueou?]. Registra o bloqueio.
  */
 function falhaCodigo2fa(string $login, string $base, int $restam): array
@@ -323,8 +323,10 @@ function falhaCodigo2fa(string $login, string $base, int $restam): array
     usleep(random_int(250000, 600000));   // atrasa quem tenta adivinhar
     if ($restam > 0) return [msgFalha($base, $restam, $login), false];
     if ($s = bloqueioConta($login)) {
-        registrar('bloqueado', 'entrada de ' . $login . ' bloqueada por ' . intdiv((int) cfg('bloqueio'), 60) . ' minutos ('
-            . maxCodigosConta() . ' códigos errados)', $login);
+        $dia = $s > (int) cfg('bloqueio');   // o teto de 24 horas (30 códigos), não o de 15 minutos (10)
+        registrar('bloqueado', 'entrada de ' . $login . ' bloqueada por ' . ($dia
+            ? tempoBloqueio(JANELA_CODIGOS_DIA) . ' (' . maxCodigosContaDia() . ' códigos errados em um dia)'
+            : intdiv((int) cfg('bloqueio'), 60) . ' minutos (' . maxCodigosConta() . ' códigos errados)'), $login);
         return [msgBloqueioConta($s), true];
     }
     registrar('bloqueado', $login . ' bloqueado nesta internet por ' . intdiv((int) cfg('bloqueio'), 60) . ' minutos (tentativas erradas)', $login);
@@ -419,13 +421,34 @@ function verificarCodigoEntrada(string $codigo, string $modo, bool $lembrar): ar
     if ($st === 'ok') {
         $n = $app ? null : count($novo['dois_fatores']['reservas']);
         concluirEntrada($novo, $app ? 'com o código do aplicativo' : 'com um código de reserva', $n);
+        avisarCodigosErrados($login, $u['ultimo_acesso'], (int) ($p['erros'] ?? 0));
         if ($lembrar) lembrarAparelho($novo);
         return ['voltar' => $voltar, 'aviso' => $n === null ? null : avisoReserva($n)] + $r;
     }
     registrar('codigo-app-errado', detalheCodigoErrado($app ? 'app' : 'reserva', $res), $login);
+    $_SESSION['entrada_2fa']['erros'] = (int) ($p['erros'] ?? 0) + 1;   // os desta entrada não entram no aviso de quando ela acertar
     [$msg, $bloqueou] = falhaCodigo2fa($login, $app ? msgCodigoApp2fa($res, msgCodigoErrado2fa()) : MSG_2FA_RESERVA, $restam);
     if ($bloqueou) return $paraSenha($msg, 429);
     return ['erro' => $msg, 'status' => 401] + $r;
+}
+
+/**
+ * Ao entrar (código certo ou aparelho lembrado): os códigos errados da 2ª etapa com este usuário desde o último acesso
+ * ($desde; o registro tem segundos: conta também o mesmo segundo, em que os erros da pessoa antes de entrar não caem),
+ * tirando os desta mesma entrada ($meus). Só chega ao código quem acerta a senha, então eles mostram que
+ * alguém tem a senha. Lidos do registro (Atividades), que só o administrador vê; os de "desligar" ficam de fora
+ * (pedem uma sessão aberta: em geral, o próprio dono errando).
+ */
+function avisarCodigosErrados(string $login, ?int $desde, int $meus = 0): void
+{
+    $n = -$meus;
+    foreach (ultimasAtividades(5000, true) as $a) {
+        if ($a['quando'] >= (int) $desde && $a['evento'] === 'codigo-app-errado' && strcasecmp($a['usuario'], $login) === 0
+            && !str_contains($a['detalhe'], 'ao desligar')) $n++;
+    }
+    if ($n <= 0) return;
+    avisar('Atenção: desde o seu último acesso, ' . ($n === 1 ? 'houve 1 código errado' : 'houve ' . $n . ' códigos errados')
+        . ' da verificação em duas etapas com o seu usuário. Só chega ao código quem acerta a senha: se não foi você, troque a senha agora em Conta → Trocar senha.', 'erro');
 }
 
 /** [mensagem, tipo] depois de entrar com um código de reserva. */
@@ -660,6 +683,13 @@ function acaoDoisFatoresLigar(): void
         telaDoisFatores('A página ficou aberta tempo demais e o código QR mudou. Apague no aplicativo a conta “Balanças.com” que você acabou de criar e leia o QR novo.', 'ligar');
         return;
     }
+    // A senha atual (menos na tela obrigatória, que vem logo depois da senha): com uma sessão que ficou aberta, e sem a
+    // senha, ninguém liga a verificação de outra pessoa com o próprio celular (e a tranca para fora)
+    if (!precisaConfigurar2fa($eu)) {
+        $login = $eu['usuario'];
+        if ($s = bloqueioRestante($login)) sairSeBloqueado(msgBloqueio($s, $login), $login);
+        if (conferirSenhaAtual2fa($eu, 'ligar-senha', 'senha atual errada ao ligar a verificação') !== null) return;
+    }
     $segredo = $n['segredo'];
     $res = conferirCodigoApp(['segredo' => $segredo, 'passo' => 0], codigoDoPost());
     if ($res['motivo'] !== 'ok') {
@@ -719,7 +749,7 @@ function acaoDoisFatoresReservas(): void
     telaCodigosReserva($f);
 }
 
-/** Confere a senha atual (gerar códigos novos, desligar). null = certa; senão a mensagem (e, se bloqueou, já saiu). */
+/** Confere a senha atual (ligar, gerar códigos novos, desligar). null = certa; senão a mensagem (e, se bloqueou, já saiu). */
 function conferirSenhaAtual2fa(array $eu, string $onde, string $detalhe): ?string
 {
     $login = $eu['usuario'];

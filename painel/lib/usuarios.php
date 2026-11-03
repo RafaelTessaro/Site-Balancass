@@ -406,6 +406,7 @@ function acaoUsuarioSenha(bool $post): void
         return $l[$i];
     });
     esquecerAparelhos($depois['usuario']);   // os lembrados dela já não valem (senha_alterada mudou)
+    liberarCodigosConta($depois['usuario']); // entrada bloqueada por códigos errados: quem errou tinha a senha de antes
     registrar('usuario-senha', 'Redefiniu a senha de ' . rotuloUsuario($depois));
     mostrarSenhaUmaVez($depois, $senha, false);
 }
@@ -414,7 +415,8 @@ function textoRedefinirSenha(array $u): string
 {
     return 'Criar uma senha temporária nova para ' . rotuloUsuario($u) . '? A senha atual para de funcionar na hora e, se a pessoa estiver com o painel aberto, '
         . 'ela sai na próxima ação. No próximo acesso, o painel pede para ela criar a própria senha.'
-        . (doisFatoresLigado($u) ? ' A verificação em duas etapas dela continua ligada: para entrar, ela também vai precisar do código do celular.' : '');
+        . (doisFatoresLigado($u) ? ' A verificação em duas etapas dela continua ligada: para entrar, ela também vai precisar do código do celular.' : '')
+        . (bloqueioConta($u['usuario']) > 0 ? ' A entrada dela, bloqueada por códigos errados, fica liberada na hora.' : '');
 }
 
 /** Desativar (valor=0) ou reativar (valor=1). */

@@ -320,7 +320,7 @@ function acessoDoUsuario(array $u): void
     <h2 class="caixa__tit" id="acesso-tit">Acesso</h2>
     <p class="item__selos"><?= selosUsuario($u) ?></p>
     <div class="acesso-usu__linha">
-      <p><b>Redefinir senha</b> Cria uma senha temporária nova (a atual para de funcionar na hora). Use quando a pessoa esquecer a senha.</p>
+      <p><b>Redefinir senha</b> Cria uma senha temporária nova (a atual para de funcionar na hora). Use quando a pessoa esquecer a senha.<?php if (bloqueioConta($u['usuario']) > 0): ?> <b>A entrada desta pessoa está bloqueada</b> por muitos códigos errados da verificação em duas etapas: alguém tem a senha dela. Redefinir a senha também libera a entrada.<?php endif; ?></p>
       <form method="post" action="<?= e(link_('usuario-senha')) ?>" data-confirmar="<?= e(textoRedefinirSenha($u)) ?>" data-confirmar-ok="Redefinir" data-confirmar-tit="Redefinir a senha?">
         <?= $campos ?><button type="submit" class="btn btn--linha btn--p"><?= icone('chave') ?>Redefinir senha</button>
       </form>

@@ -66,7 +66,7 @@ function telaVerificar(string $erro = '', string $modo = 'app'): void
 /* ------------------------------------------------------------------
    Conta → Verificação em duas etapas
    ------------------------------------------------------------------ */
-/** $onde: em que caixa vai o erro (ligar | reservas | desligar). */
+/** $onde: em que caixa vai o erro (ligar | ligar-senha | reservas | desligar). */
 function telaDoisFatores(string $erro = '', string $onde = ''): void
 {
     $eu = usuarioAtual();
@@ -74,10 +74,10 @@ function telaDoisFatores(string $erro = '', string $onde = ''): void
         $segredo = segredoNovo2fa();
         if (precisaConfigurar2fa($eu)) {
             // "Exigir de todos": sem menu, como a criação da senha; a pessoa só sai daqui configurando (ou saindo)
-            molduraAcesso('Verificação em duas etapas', static function () use ($eu, $segredo, $erro): void { ?>
+            molduraAcesso('Verificação em duas etapas', static function () use ($eu, $segredo, $erro, $onde): void { ?>
       <h1 class="acesso__tit">Duas etapas</h1>
       <div class="aviso aviso--info" role="status"><?= icone('lock') ?><p>O administrador do painel pede que todos usem a verificação em duas etapas. Configure agora para continuar: leva 2 minutos.</p></div>
-      <?php blocoConfigurar2fa($eu, $segredo, $erro); ?>
+      <?php blocoConfigurar2fa($eu, $segredo, $erro, $onde === 'ligar-senha'); ?>
 <?php       }, ['rodape' => static function (): void { ?>
     <form method="post" action="<?= e(link_('sair')) ?>" class="acesso__rodape">
       <?= campoCsrf() ?>
@@ -86,10 +86,10 @@ function telaDoisFatores(string $erro = '', string $onde = ''): void
 <?php       }]);
             return;
         }
-        pagina('Verificação em duas etapas', static function () use ($eu, $segredo, $erro): void {
+        pagina('Verificação em duas etapas', static function () use ($eu, $segredo, $erro, $onde): void {
             migalhaConta();
             cabecalhoPagina('Conta · segurança', 'Verificação em duas etapas', e('Além da senha, o painel passa a pedir um código de 6 números que muda a cada 30 segundos e só aparece no seu celular. Quem descobrir a sua senha não entra sem o seu celular.'));
-            blocoConfigurar2fa($eu, $segredo, $erro);
+            blocoConfigurar2fa($eu, $segredo, $erro, $onde === 'ligar-senha');
         }, ['menu' => 'conta', 'classe' => 'pg-2fa']);
         return;
     }
@@ -168,12 +168,15 @@ function telaDoisFatores(string $erro = '', string $onde = ''): void
 }
 
 /**
- * Passo a passo para ligar: instalar o app, ler o QR (ou digitar a chave), confirmar com um código. Sem autofocus
- * (nem na tela obrigatória): a página abre no alto, com a explicação e o passo 1; com erro, abre no passo 3 (#df-ligar).
+ * Passo a passo para ligar: instalar o app, ler o QR (ou digitar a chave), confirmar com a senha atual e um código
+ * (na tela obrigatória, só o código: a pessoa acabou de digitar a senha). Sem autofocus (nem na tela obrigatória): a
+ * página abre no alto, com a explicação e o passo 1; com erro, abre no passo 3 (#df-ligar). $erroSenha: o erro é da senha.
  */
-function blocoConfigurar2fa(array $eu, string $segredo, string $erro): void
+function blocoConfigurar2fa(array $eu, string $segredo, string $erro, bool $erroSenha = false): void
 {
     $uri = uriOtpauth($eu['usuario'], $segredo);
+    $pedeSenha = !precisaConfigurar2fa($eu);
+    $erroCodigo = $erro !== '' && !$erroSenha;
     ?>
   <ol class="passos df-passos">
     <li>
@@ -198,13 +201,17 @@ function blocoConfigurar2fa(array $eu, string $segredo, string $erro): void
       </details>
     </li>
     <li id="df-ligar">
-      <p><b>Digite o código de 6 números que o aplicativo mostra para “Balanças.com”:</b></p>
+      <p><b><?= $pedeSenha ? 'Digite a sua senha atual e o código de 6 números que o aplicativo mostra para “Balanças.com”:' : 'Digite o código de 6 números que o aplicativo mostra para “Balanças.com”:' ?></b></p>
       <?php if ($erro !== ''): ?><div class="aviso aviso--erro" role="alert" tabindex="-1" id="df-ligar-erro" data-erros><?= icone('alert') ?><p><?= e($erro) ?></p></div><?php endif; ?>
       <form method="post" action="<?= e(link_('dois-fatores-ligar')) ?>#df-ligar" class="form-acesso" data-form-enviar>
         <?= campoCsrf() ?>
+        <?php if ($pedeSenha): ?>
+        <input type="text" name="usuario" value="<?= e($eu['usuario']) ?>" autocomplete="username" hidden>
+        <?php campoSenha('f-senha-l', 'senha', 'Senha atual', 'current-password', 'Para ninguém ligar no seu lugar, num computador que ficou aberto.'); ?>
+        <?php endif; ?>
         <div class="campo">
           <label for="f-codigo-novo">Código do aplicativo</label>
-          <input id="f-codigo-novo" name="codigo" class="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required<?= $erro !== '' ? ' aria-invalid="true" aria-describedby="df-ligar-erro f-codigo-novo-ajuda"' : ' aria-describedby="f-codigo-novo-ajuda"' ?> data-codigo-app>
+          <input id="f-codigo-novo" name="codigo" class="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required<?= $erroCodigo ? ' aria-invalid="true" aria-describedby="df-ligar-erro f-codigo-novo-ajuda"' : ' aria-describedby="f-codigo-novo-ajuda"' ?> data-codigo-app>
           <p class="ajuda" id="f-codigo-novo-ajuda"><?= e(AJUDA_CODIGO_APP) ?></p>
         </div>
         <p><button class="btn btn--verde" type="submit"><?= icone('check') ?>Confirmar e ligar</button></p>
@@ -325,11 +332,12 @@ function linhaDoisFatoresUsuario(array $u): void
 <?php
 }
 
-/** Selo da verificação na lista de usuários ('' quando não há o que mostrar). */
+/** Selo da verificação na lista de usuários ('' quando não há o que mostrar), + “Entrada bloqueada” (códigos errados). */
 function seloDoisFatores(array $u, bool $exigir): string
 {
-    if (doisFatoresDanificada($u)) return '<span class="selo selo--off">Verificação com problema</span>';
-    if (doisFatoresLigado($u)) return '<span class="selo selo--2fa">2 etapas</span>';
-    if ($exigir && $u['ativo']) return '<span class="selo selo--espera">Falta a verificação em 2 etapas</span>';
-    return '';
+    $bloq = bloqueioConta($u['usuario']) > 0 ? ' <span class="selo selo--off">Entrada bloqueada</span>' : '';
+    if (doisFatoresDanificada($u)) return '<span class="selo selo--off">Verificação com problema</span>' . $bloq;
+    if (doisFatoresLigado($u)) return '<span class="selo selo--2fa">2 etapas</span>' . $bloq;
+    if ($exigir && $u['ativo']) return '<span class="selo selo--espera">Falta a verificação em 2 etapas</span>' . $bloq;
+    return ltrim($bloq);
 }

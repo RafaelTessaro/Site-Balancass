@@ -162,7 +162,8 @@ function bloqueioDaInternet(): bool
 
 /**
  * Conta uma falha; devolve quantas tentativas ainda restam (0 = acabou de bloquear).
- * $extras: outras chaves => limite, contadas junto (ex.: a da conta, nos códigos da verificação em duas etapas).
+ * $extras: outras chaves => limite (ou [limite, janela em segundos]), contadas junto (ex.: as da conta, nos códigos
+ * da verificação em duas etapas).
  * $reservar: conta ANTES de conferir (reservarTentativaCodigo): com alguma chave já bloqueada, não conta nada e devolve -1.
  */
 function registrarFalha(string $login = '', array $extras = [], bool $reservar = false): int
@@ -174,18 +175,20 @@ function registrarFalha(string $login = '', array $extras = [], bool $reservar =
         $t = lerJsonPrivado('tentativas.php', []);
         if (!is_array($t)) $t = [];
         $agora = time();
-        foreach ($t as $k => $r) {   // limpa o que já venceu
-            if (!is_array($r) || (($r['ate'] ?? 0) < $agora && ($r['desde'] ?? 0) + $janela < $agora)) unset($t[$k]);
+        foreach ($t as $k => $r) {   // limpa o que já venceu (cada registro na sua janela: o de 24 h da conta guarda a dele)
+            if (!is_array($r) || (($r['ate'] ?? 0) < $agora && ($r['desde'] ?? 0) + (int) ($r['janela'] ?? $janela) < $agora)) unset($t[$k]);
         }
         $chaves = [chaveTentativa($login) => $max, chaveIp() => $teto] + $extras;
         if ($reservar) foreach (array_keys($chaves) as $k) if (bloqueioDe($t, $k) > 0) return -1;
         $restam = PHP_INT_MAX;
         foreach ($chaves as $k => $limite) {
-            $r = $t[$k] ?? ['n' => 0, 'desde' => $agora, 'ate' => 0];
+            [$limite, $jk] = is_array($limite) ? $limite : [$limite, $janela];   // [limite, janela própria] (a conta em 24 h)
+            $zero = ['n' => 0, 'desde' => $agora, 'ate' => 0] + ($jk !== $janela ? ['janela' => $jk] : []);
+            $r = $t[$k] ?? $zero;
             if ($r['ate'] > $agora) { $restam = 0; continue; }       // já bloqueado
-            if ($r['ate'] || $r['desde'] + $janela < $agora) $r = ['n' => 0, 'desde' => $agora, 'ate' => 0];
+            if ($r['ate'] || $r['desde'] + $jk < $agora) $r = $zero;
             $r['n']++;
-            if ($r['n'] >= $limite) $r['ate'] = $agora + $janela;
+            if ($r['n'] >= $limite) $r['ate'] = $agora + $jk;
             $t[$k] = $r;
             $restam = min($restam, max(0, $limite - $r['n']));
         }
@@ -195,11 +198,24 @@ function registrarFalha(string $login = '', array $extras = [], bool $reservar =
 }
 
 /* Códigos errados da verificação em duas etapas: além da chave internet + usuário (5) e do teto da internet,
-   uma chave só do usuário, somando todas as internets (10 em 15 min). Sem ela, quem tem a senha e muitos IPs
-   tentaria os 6 números sem limite. */
+   duas chaves só do usuário, somando todas as internets: 10 em 15 min e 30 em 24 horas. Sem a 1ª, quem tem a
+   senha e muitos IPs tentaria os 6 números sem limite; sem a 2ª, tentaria 9 a cada 15 min, para sempre. */
+const JANELA_CODIGOS_DIA = 24 * 60 * 60;
+
 function chaveCodigoConta(string $login): string
 {
     return substr(hash_hmac('sha256', "2fa\n" . strtolower(trim($login)), segredoLocal()), 0, 32);
+}
+
+function chaveCodigoContaDia(string $login): string
+{
+    return substr(hash_hmac('sha256', "2fa-dia\n" . strtolower(trim($login)), segredoLocal()), 0, 32);
+}
+
+/** As chaves da conta para registrarFalha(): chave => limite (15 min) ou [limite, janela] (24 h). */
+function limitesCodigoConta(string $login): array
+{
+    return [chaveCodigoConta($login) => maxCodigosConta(), chaveCodigoContaDia($login) => [maxCodigosContaDia(), JANELA_CODIGOS_DIA]];
 }
 
 /** Segundos que faltam do bloqueio da conta por códigos errados (0 = liberada). */
@@ -207,19 +223,53 @@ function bloqueioConta(string $login): int
 {
     if (trim($login) === '') return 0;
     $t = lerJsonPrivado('tentativas.php', []);
-    return is_array($t) ? bloqueioDe($t, chaveCodigoConta($login)) : 0;
+    return is_array($t) ? max(bloqueioDe($t, chaveCodigoConta($login)), bloqueioDe($t, chaveCodigoContaDia($login))) : 0;
 }
 
-function msgBloqueioConta(int $segundos): string
+/** A senha mudou (trocada, criada, redefinida pelo administrador, recuperação): quem errou os códigos não tem mais a
+ *  senha. Libera a entrada da conta (as chaves internet + usuário, de cada internet, vencem sozinhas). */
+function liberarCodigosConta(string $login): void
+{
+    $ks = array_keys(limitesCodigoConta($login));
+    comTrava('tentativas', static function () use ($ks): void {
+        $t = lerJsonPrivado('tentativas.php', []);
+        if (!is_array($t) || !array_intersect_key($t, array_flip($ks))) return;
+        foreach ($ks as $k) unset($t[$k]);
+        gravarJsonPrivado('tentativas.php', $t);
+    });
+}
+
+/** "15 minutos", "1 minuto", "24 horas". */
+function tempoBloqueio(int $segundos): string
 {
     $min = max(1, (int) ceil($segundos / 60));
-    return 'Muitos códigos errados para este usuário. Por segurança, a entrada dele ficou bloqueada por ' . $min . ($min === 1 ? ' minuto' : ' minutos')
-        . ', em qualquer internet. Espere e tente de novo. Se não foi você quem errou, troque a sua senha assim que entrar.';
+    if ($min < 60) return $min . ($min === 1 ? ' minuto' : ' minutos');
+    $h = (int) ceil($min / 60);
+    return $h . ($h === 1 ? ' hora' : ' horas');
+}
+
+/** Conta bloqueada por códigos errados. Quem já está no painel (ao desligar a verificação) troca a senha na hora. */
+function msgBloqueioConta(int $segundos): string
+{
+    $tempo = tempoBloqueio($segundos);
+    if (usuarioLogado() !== null) {
+        return 'Muitos códigos errados para este usuário. Por segurança, os códigos dele ficaram bloqueados por ' . $tempo . ', em qualquer internet. '
+            . 'Se não foi você quem errou, alguém tem a sua senha: troque agora em Conta → Trocar senha (isso também libera a entrada).';
+    }
+    return 'Muitos códigos errados para este usuário. Por segurança, a entrada dele ficou bloqueada por ' . $tempo . ', em qualquer internet '
+        . '(num aparelho lembrado, a senha continua bastando). Se foi você, espere e tente de novo. Se não foi, alguém tem a sua senha: '
+        . 'peça a um administrador para redefinir a sua senha (Usuários → Redefinir senha), o que também libera a entrada. '
+        . 'É o único administrador? Use a recuperação de acesso (Esqueci a senha).';
 }
 
 function maxCodigosConta(): int
 {
     return max(1, (int) (cfg('codigos_max_conta') ?? 10));
+}
+
+function maxCodigosContaDia(): int
+{
+    return max(maxCodigosConta(), (int) (cfg('codigos_max_conta_dia') ?? 30));
 }
 
 /**
@@ -230,20 +280,21 @@ function maxCodigosConta(): int
  */
 function reservarTentativaCodigo(string $login): int
 {
-    return registrarFalha($login, [chaveCodigoConta($login) => maxCodigosConta()], true);
+    return registrarFalha($login, limitesCodigoConta($login), true);
 }
 
-/** O código estava certo: zera os erros desse usuário nesta internet e devolve a tentativa à internet e à conta. */
+/** O código estava certo: zera os erros desse usuário nesta internet e devolve a tentativa à internet e à conta (15 min e 24 h). */
 function devolverTentativaCodigo(string $login): void
 {
     $k0 = chaveTentativa($login);
-    $limites = [chaveIp() => tetoTentativasIp(), chaveCodigoConta($login) => maxCodigosConta()];
+    $limites = [chaveIp() => tetoTentativasIp()] + limitesCodigoConta($login);
     comTrava('tentativas', static function () use ($k0, $limites): void {
         $t = lerJsonPrivado('tentativas.php', []);
         if (!is_array($t)) return;
         unset($t[$k0]);
         foreach ($limites as $k => $limite) {
             if (!is_array($t[$k] ?? null)) continue;
+            if (is_array($limite)) $limite = $limite[0];
             $t[$k]['n'] = max(0, (int) ($t[$k]['n'] ?? 0) - 1);
             if ($t[$k]['n'] < $limite) $t[$k]['ate'] = 0;   // o bloqueio que esta tentativa armou (era a última) não vale
         }
@@ -411,7 +462,11 @@ function instalar(string $codigo, string $nome, string $usuario, string $senha, 
  */
 function entrar(string $usuario, string $senha): array
 {
-    if ($s = bloqueioConta($usuario)) return ['erro' => msgBloqueioConta($s), 'codigo' => false];
+    // Conta bloqueada por códigos errados (de qualquer internet): só num aparelho lembrado a senha ainda basta. Nele
+    // nenhum código é adivinhado e a senha continua no limite internet + usuário; assim, quem tem a senha e erra
+    // códigos de propósito não tranca o dono para fora.
+    $lembradoDe = static fn(): bool => ($x = usuarioPorLogin($usuario)) !== null && aparelhoValido($x);
+    if (($s = bloqueioConta($usuario)) && !$lembradoDe()) return ['erro' => msgBloqueioConta($s), 'codigo' => false];
     if ($s = bloqueioRestante($usuario)) return ['erro' => msgBloqueio($s, $usuario), 'codigo' => false];
     $lista = lerUsuarios();
     if (!$lista) return ['erro' => 'O painel ainda não foi configurado.', 'codigo' => false];
@@ -425,6 +480,7 @@ function entrar(string $usuario, string $senha): array
             return ['erro' => 'Este acesso está desativado. Fale com um administrador do painel.', 'codigo' => false];
         }
         $novoHash = password_needs_rehash($u['hash'], PASSWORD_DEFAULT) ? password_hash($senha, PASSWORD_DEFAULT) : null;
+        $antes = $u['ultimo_acesso'];
         $com2fa = doisFatoresLigado($u);
         $lembrado = $com2fa && aparelhoValido($u);
         if (!$com2fa || $lembrado) limparFalhas($usuario);
@@ -447,6 +503,7 @@ function entrar(string $usuario, string $senha): array
         }
         if ($lembrado) {
             concluirEntrada($u, 'num aparelho lembrado');
+            avisarCodigosErrados($u['usuario'], $antes);
             return ['erro' => null, 'codigo' => false];
         }
         abrirPendente2fa($u);   // não zera os erros: quem tem a senha não ganha tentativas novas a cada volta
@@ -474,6 +531,7 @@ function trocarSenha(string $atual, string $nova, string $repetida): ?string
     $hash = gravarSenhaPropria($eu, password_hash($nova, PASSWORD_DEFAULT));
     abrirSessaoDe($eu['usuario'], $hash);   // novo ID de sessão; outros aparelhos saem
     esquecerAparelhos($eu['usuario']);      // os lembrados já não valiam (senha_alterada); aqui só arruma o arquivo
+    liberarCodigosConta($eu['usuario']);    // quem errou os códigos com a senha antiga não tem a nova
     registrar('trocou-senha');
     return null;
 }
@@ -490,6 +548,7 @@ function criarSenhaPropria(string $nova, string $repetida): ?string
     abrirSessaoDe($eu['usuario'], $hash);
     if ($obrigado) $_SESSION['configurar_2fa'] = true;
     esquecerAparelhos($eu['usuario']);
+    liberarCodigosConta($eu['usuario']);
     registrar('criou-senha');
     return null;
 }
@@ -573,6 +632,7 @@ function recuperarAcesso(string $codigo, string $usuario, string $senha, string 
     limparFalhas();
     abrirSessaoDe($r['login'], $hash);   // a sessão da recuperação não é obrigada a configurar a verificação (o dono sempre entra)
     esquecerAparelhos($r['login']);
+    liberarCodigosConta($r['login']);   // no próximo login, a entrada dele não continua bloqueada pelos códigos de antes
     registrar('recuperou-acesso', ($r['novo'] ? 'administrador novo: ' : 'senha nova para o administrador ') . $r['login']);
     if ($r['tinha2fa']) registrar('dois-fatores-desligou', 'pela recuperação de acesso (recuperar.txt)', $r['login']);
     return [null, $sobrou, $r['tinha2fa']];

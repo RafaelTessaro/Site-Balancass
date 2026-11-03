@@ -32,7 +32,8 @@ return [
     // Verificação em duas etapas (Conta → Verificação em duas etapas)
     'dois_fatores_espera' => 5 * 60,       // depois da senha certa, 5 min para digitar o código do aplicativo
     'aparelho_dias'      => 30,            // "Lembrar este aparelho" vale 30 dias
-    'codigos_max_conta'  => 10,            // 10 códigos errados de um usuário (somando todas as internets) bloqueiam a entrada dele por 15 min
+    'codigos_max_conta'  => 10,            // 10 códigos errados de um usuário (somando todas as internets) bloqueiam a entrada dele por 15 min…
+    'codigos_max_conta_dia' => 30,         // …e 30 em 24 horas, por 24 horas (trocar a senha libera)
     'codigo_validade'    => 24 * 60 * 60,  // código de primeiro acesso vale 24 h
     'senha_minimo'       => 10,            // tamanho mínimo da senha
     // Cópias de segurança: as 30 mais recentes ficam sempre; além delas, tudo dos últimos 14 dias
