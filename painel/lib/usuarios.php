@@ -6,7 +6,8 @@
    usuarios.php (só o "hash" das senhas, nunca a senha). O config.php
    antigo, de um usuário só, é convertido sozinho na primeira visita,
    sem derrubar quem já estava com o painel aberto.
-   Telas em lib/visoes-usuarios.php.
+   Telas em lib/visoes-usuarios.php. A verificação em duas etapas de cada
+   um (campo dois_fatores): lib/dois-fatores.php.
    ===================================================================== */
 declare(strict_types=1);
 if (!defined('PAINEL')) { http_response_code(404); exit; }
@@ -24,7 +25,8 @@ const PALAVRAS_SENHA = ['areia', 'balde', 'banco', 'barco', 'bolo', 'bota', 'cab
     'porta', 'prato', 'quadro', 'queijo', 'rampa', 'rede', 'roda', 'sapo', 'sino', 'sola', 'tecla', 'telha', 'tigre',
     'trigo', 'urso', 'vaso', 'vela', 'vento', 'verde', 'zebra'];
 // Eventos do registro sobre usuários (a frase completa vai no detalhe)
-const EVENTOS_USUARIOS = ['usuario-criou', 'usuario-editou', 'usuario-senha', 'usuario-desativou', 'usuario-reativou', 'usuario-excluiu'];
+const EVENTOS_USUARIOS = ['usuario-criou', 'usuario-editou', 'usuario-senha', 'usuario-desativou', 'usuario-reativou', 'usuario-excluiu',
+    'usuario-dois-fatores', 'dois-fatores-exigir'];
 
 /* ------------------------------------------------------------------
    Leitura e gravação de usuarios.php
@@ -50,6 +52,8 @@ function normalizarUsuario(array $u): ?array
         'alterado'       => $ts($u['alterado'] ?? null) ?? $criado,
         'senha_alterada' => $ts($u['senha_alterada'] ?? null) ?? $criado,
         'ultimo_acesso'  => $ts($u['ultimo_acesso'] ?? null),
+        // Sem este campo aqui, qualquer gravação da lista apagaria a verificação em duas etapas de todos
+        'dois_fatores'   => normalizarDoisFatores($u['dois_fatores'] ?? null),
     ];
 }
 
@@ -161,7 +165,7 @@ function novoUsuario(string $login, string $nome, string $papel, string $hash, b
         'usuario' => $login, 'nome' => $nome, 'papel' => $papel, 'hash' => $hash,
         'ativo' => true, 'trocar_senha' => $trocarSenha,
         'criado' => $agora, 'criado_por' => usuarioLogado() ?? '-', 'alterado' => $agora,
-        'senha_alterada' => $agora, 'ultimo_acesso' => null,
+        'senha_alterada' => $agora, 'ultimo_acesso' => null, 'dois_fatores' => null,
     ];
 }
 
@@ -196,7 +200,7 @@ function migrarContaAntiga(): void
             'usuario' => $c['usuario'], 'nome' => $c['usuario'], 'papel' => 'admin', 'hash' => $c['hash'],
             'ativo' => true, 'trocar_senha' => false, 'criado' => $criado, 'criado_por' => '-', 'alterado' => $agora,
             'senha_alterada' => is_int($c['alterado'] ?? null) && $c['alterado'] > 0 ? $c['alterado'] : $criado,
-            'ultimo_acesso' => $entrou > 0 ? $entrou : null,
+            'ultimo_acesso' => $entrou > 0 ? $entrou : null, 'dois_fatores' => null,
         ]]);
         gravarJsonPrivado('config.php', ['migrado' => $agora, 'para' => 'usuarios.php']);
         registrar('migrou-usuarios', $c['usuario'] . ' virou Administrador');
@@ -401,6 +405,7 @@ function acaoUsuarioSenha(bool $post): void
         $l[$i]['senha_alterada'] = $l[$i]['alterado'] = time();
         return $l[$i];
     });
+    esquecerAparelhos($depois['usuario']);   // os lembrados dela já não valem (senha_alterada mudou)
     registrar('usuario-senha', 'Redefiniu a senha de ' . rotuloUsuario($depois));
     mostrarSenhaUmaVez($depois, $senha, false);
 }
@@ -408,7 +413,8 @@ function acaoUsuarioSenha(bool $post): void
 function textoRedefinirSenha(array $u): string
 {
     return 'Criar uma senha temporária nova para ' . rotuloUsuario($u) . '? A senha atual para de funcionar na hora e, se a pessoa estiver com o painel aberto, '
-        . 'ela sai na próxima ação. No próximo acesso, o painel pede para ela criar a própria senha.';
+        . 'ela sai na próxima ação. No próximo acesso, o painel pede para ela criar a própria senha.'
+        . (doisFatoresLigado($u) ? ' A verificação em duas etapas dela continua ligada: para entrar, ela também vai precisar do código do celular.' : '');
 }
 
 /** Desativar (valor=0) ou reativar (valor=1). */
@@ -441,6 +447,7 @@ function acaoUsuarioAtivo(bool $post): void
         registrar('usuario-reativou', 'Reativou o acesso de ' . rotuloUsuario($depois));
         avisar($depois['nome'] . ' pode entrar de novo' . ($depois['trocar_senha'] ? ', com a senha temporária que você passou.' : ', com a mesma senha de antes.'));
     } else {
+        esquecerAparelhos($depois['usuario']);   // reativar depois não traz de volta os aparelhos lembrados
         registrar('usuario-desativou', 'Desativou o acesso de ' . rotuloUsuario($depois));
         avisar('O acesso de ' . $depois['nome'] . ' foi desativado. Se a pessoa estava com o painel aberto, saiu na hora. Para ela voltar, use Reativar.');
     }
@@ -476,6 +483,7 @@ function acaoUsuarioExcluir(bool $post): void
         array_splice($l, $i, 1);
         return $x;
     });
+    esquecerAparelhos($removido['usuario']);
     registrar('usuario-excluiu', 'Excluiu o usuário ' . rotuloUsuario($removido));
     avisar('O usuário ' . rotuloUsuario($removido) . ' foi excluído. O que a pessoa fez no site continua, e as atividades dela continuam registradas.');
     redirecionar(link_('usuarios'));
@@ -492,8 +500,9 @@ function textoExcluirUsuario(array $u): string
    ------------------------------------------------------------------ */
 // Linhas técnicas que não interessam a ninguém (fotos indo e voltando da lixeira)
 const EVENTOS_TECNICOS = ['foto-lixeira', 'foto-restaurada'];
-const EVENTOS_ALERTA = ['senha-errada', 'codigo-errado', 'bloqueado', 'csrf', 'acesso-desativado', 'negado'];
-const EVENTOS_ACESSO = ['entrou', 'saiu', 'trocou-senha', 'criou-senha', 'instalou', 'codigo-gerado', 'recuperou-acesso'];
+const EVENTOS_ALERTA = ['senha-errada', 'codigo-errado', 'bloqueado', 'csrf', 'acesso-desativado', 'negado', 'codigo-app-errado'];
+const EVENTOS_ACESSO = ['entrou', 'saiu', 'trocou-senha', 'criou-senha', 'instalou', 'codigo-gerado', 'recuperou-acesso',
+    'entrou-reserva', 'dois-fatores-ligou', 'dois-fatores-desligou', 'dois-fatores-reservas', 'aparelhos-esquecidos'];
 const TIPOS_ATIVIDADE = ['' => 'Tudo', 'alteracoes' => 'Alterações', 'acessos' => 'Acessos', 'alertas' => 'Alertas'];
 
 /** alteracoes | acessos | alertas */
@@ -514,6 +523,10 @@ function fraseAtividade(array $a): string
         'bloqueado' => 'Bloqueio por tentativas', 'csrf' => 'Pedido recusado', 'acesso-desativado' => 'Tentou entrar com o acesso desativado',
         'negado' => 'Tentou abrir uma área só de administradores', 'migrou-usuarios' => 'O painel passou a ter usuários e papéis',
         'recuperou-acesso' => 'Recuperou o acesso pelo arquivo recuperar.txt',
+        // Verificação em duas etapas (lib/dois-fatores.php)
+        'entrou-reserva' => 'Entrou com um código de reserva', 'dois-fatores-ligou' => 'Ligou a verificação em duas etapas',
+        'dois-fatores-desligou' => 'Desligou a verificação em duas etapas', 'dois-fatores-reservas' => 'Gerou códigos de reserva novos',
+        'aparelhos-esquecidos' => 'Esqueceu os aparelhos lembrados', 'codigo-app-errado' => 'Código da verificação em duas etapas errado',
     ];
     $ev = $a['evento'];
     if ($ev === 'catalogo' || $ev === 'clientes') return frasePassado($a['detalhe']);
@@ -521,6 +534,12 @@ function fraseAtividade(array $a): string
     // Atualização do catálogo deixada para depois / aviso de volta (aplicar fica no evento "catalogo")
     if ($ev === 'pacote') return $a['detalhe'] !== '' ? $a['detalhe'] : 'Atualização do catálogo';
     if ($ev === 'migrou-usuarios' && $a['detalhe'] !== '') return $nomes[$ev] . ' (' . $a['detalhe'] . ')';
+    // "Entrou no painel com o código do aplicativo", "Desligou a verificação em duas etapas pela recuperação de acesso (recuperar.txt)"
+    // (sem parênteses: as repetições juntas ganham "(4 vezes)"); "Entrou com um código de reserva (restam 9)"…
+    if (in_array($ev, ['entrou', 'dois-fatores-desligou'], true) && $a['detalhe'] !== '') return $nomes[$ev] . ' ' . $a['detalhe'];
+    if (in_array($ev, ['entrou-reserva', 'aparelhos-esquecidos'], true) && $a['detalhe'] !== '') {
+        return $nomes[$ev] . ' (' . $a['detalhe'] . ')';
+    }
     return $nomes[$ev] ?? $ev;
 }
 

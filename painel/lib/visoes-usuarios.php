@@ -17,9 +17,11 @@ function migalhaConta(string $rotulo = 'Conta', string $href = ''): void
 <?php
 }
 
-function selosUsuario(array $u): string
+/** $exigir: "Exigir de todos" ligado (null = lê do seguranca.php). */
+function selosUsuario(array $u, ?bool $exigir = null): string
 {
     $h = '<span class="selo selo--' . ($u['papel'] === 'admin' ? 'admin' : 'editor') . '">' . e(PAPEIS[$u['papel']]) . '</span>';
+    if ($d = seloDoisFatores($u, $exigir ?? exigirDoisFatores())) $h .= ' ' . $d;   // verificação em duas etapas (lib/visoes-dois-fatores.php)
     if ($s = situacaoUsuario($u)) $h .= ' <span class="selo ' . e($s[1]) . '">' . e($s[0]) . '</span>';
     return $h;
 }
@@ -116,6 +118,7 @@ function telaConta(string $erro = ''): void
         <button class="btn btn--verde" type="submit"><?= icone('lock') ?>Trocar senha</button>
       </form>
     </section>
+    <?php caixaDoisFatoresConta($eu); ?>
     <section class="caixa">
       <h3 class="caixa__tit">Minhas últimas atividades</h3>
       <?php if (!$minhas): ?><p class="ajuda">Nada registrado ainda.</p><?php else: ?>
@@ -165,26 +168,30 @@ function telaUsuarios(array $lista): void
     $admins = adminsAtivos($lista);
     $ativos = count(array_filter($lista, static fn($u) => $u['ativo']));   // desativado não tem acesso
     $desativados = count($lista) - $ativos;
-    pagina('Usuários', static function () use ($lista, $admins, $ativos, $desativados): void {
+    $com2fa = count(array_filter($lista, static fn($u) => $u['ativo'] && doisFatoresOk($u)));
+    $exigir = exigirDoisFatores();
+    pagina('Usuários', static function () use ($lista, $admins, $ativos, $desativados, $com2fa, $exigir): void {
         migalhaConta();
         cabecalhoPagina('Conta · administração', 'Usuários',
             '<span><b>' . $ativos . '</b> ' . ($ativos === 1 ? 'pessoa' : 'pessoas') . ' com acesso</span><span><b>' . $admins . '</b> ' . ($admins === 1 ? 'administrador' : 'administradores') . '</span>'
-            . ($desativados ? '<span><b>' . $desativados . '</b> ' . ($desativados === 1 ? 'desativada' : 'desativadas') . '</span>' : ''),
+            . ($desativados ? '<span><b>' . $desativados . '</b> ' . ($desativados === 1 ? 'desativada' : 'desativadas') . '</span>' : '')
+            . '<span><b>' . $com2fa . '</b> com verificação em 2 etapas</span>',
             count($lista) < MAX_USUARIOS ? '<a class="btn btn--verde" href="' . e(link_('usuario-novo')) . '">' . icone('plus') . 'Novo usuário</a>' : '');
         ?>
   <div class="papeis-info">
     <p><span class="selo selo--admin">Administrador</span> Faz tudo: produtos, clientes, categorias, dados da empresa e capa do site, cópias de segurança, usuários e as atividades de todos.</p>
     <p><span class="selo selo--editor">Editor</span> Cadastra e edita produtos (foto, estoque, destaque, ordem, excluir, um ou vários de uma vez) e os logos de clientes, e vê os Mais procurados. Não mexe em categorias, usuários, dados da empresa (nem na capa do site) nem cópias de segurança.</p>
   </div>
+  <?php quadroDoisFatoresUsuarios($lista); ?>
   <ol class="usuarios" role="list">
-    <?php foreach ($lista as $u) itemUsuario($u); ?>
+    <?php foreach ($lista as $u) itemUsuario($u, $exigir); ?>
   </ol>
   <p class="usuarios__rodape"><?= count($lista) >= MAX_USUARIOS ? 'O painel chegou ao máximo de ' . MAX_USUARIOS . ' usuários: exclua quem não usa mais para criar outro.' : 'Até ' . MAX_USUARIOS . ' usuários. Mudança de papel vale na hora, sem a pessoa precisar entrar de novo.' ?></p>
 <?php
     }, ['menu' => 'usuarios', 'classe' => 'pg-usuarios']);
 }
 
-function itemUsuario(array $u): void
+function itemUsuario(array $u, ?bool $exigir = null): void
 {
     $voce = ehVoce($u);
     $login = $u['usuario'];
@@ -196,7 +203,7 @@ function itemUsuario(array $u): void
       <div class="usu__txt">
         <h3 class="usu__nome"><a href="<?= e(link_('usuario-editar', ['u' => $login])) ?>"><?= e($u['nome']) ?></a><?php if ($voce): ?> <span class="usu__voce">(você)</span><?php endif; ?></h3>
         <p class="usu__login">usuário <b><?= e($login) ?></b></p>
-        <p class="item__selos"><?= selosUsuario($u) ?></p>
+        <p class="item__selos"><?= selosUsuario($u, $exigir) ?></p>
         <p class="usu__acesso"><?= e($acesso) ?></p>
       </div>
       <div class="usu__acoes">
@@ -318,6 +325,7 @@ function acessoDoUsuario(array $u): void
         <?= $campos ?><button type="submit" class="btn btn--linha btn--p"><?= icone('chave') ?>Redefinir senha</button>
       </form>
     </div>
+    <?php linhaDoisFatoresUsuario($u); ?>
     <div class="acesso-usu__linha">
       <?php if ($u['ativo']): ?>
       <p><b>Desativar</b> A pessoa sai na hora e não consegue mais entrar, até alguém reativar. Nada do que ela fez é desfeito.</p>
@@ -344,7 +352,8 @@ function telaSenhaTemporaria(array $f): void
 {
     $papel = PAPEIS[$f['papel']] ?? 'Editor';
     $msg = "Seu acesso ao painel do site Balanças.com:\nEndereço: " . urlDoPainel() . "\nUsuário: " . $f['usuario'] . "\nSenha temporária: " . $f['senha']
-        . "\nNo primeiro acesso, o painel pede para você criar a sua senha.";
+        . "\nNo primeiro acesso, o painel pede para você criar a sua senha."
+        . (exigirDoisFatores() ? "\nNo primeiro acesso, o painel também pede para ligar a verificação em duas etapas: instale antes o Google Authenticator no celular." : '');
     pagina('Senha temporária', static function () use ($f, $papel, $msg): void {
         migalhaConta('Usuários', link_('usuarios') . '#u-' . $f['usuario']);
         cabecalhoPagina($f['novo'] ? 'Usuário criado' : 'Senha redefinida', 'Senha temporária',
@@ -480,6 +489,6 @@ function telaRecuperar(string $erro = '', array $v = []): void
         <?php campoSenha('f-senha2', 'senha2', 'Repita a senha nova', 'new-password'); ?>
         <button class="btn btn--verde btn--largo" type="submit"><?= icone('lock') ?>Recuperar e entrar</button>
       </form>
-      <p class="ajuda">Os outros usuários, as cópias de segurança e o resto continuam como estão.<?php if (arquivosRecuperacao()): ?> No fim, o painel apaga o <code>recuperar.txt</code> sozinho. Não era para recuperar? Apague o <code>recuperar.txt</code> e a tela de entrar volta.<?php endif; ?></p>
+      <p class="ajuda">Os outros usuários, as cópias de segurança e o resto continuam como estão. A verificação em duas etapas desse administrador é desligada e os aparelhos lembrados dele são esquecidos (ligue de novo depois, em Conta).<?php if (arquivosRecuperacao()): ?> No fim, o painel apaga o <code>recuperar.txt</code> sozinho. Não era para recuperar? Apague o <code>recuperar.txt</code> e a tela de entrar volta.<?php endif; ?></p>
 <?php });
 }

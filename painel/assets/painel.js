@@ -147,7 +147,8 @@
     $$("input[name=csrf]").forEach(function (i) { i.value = tk; });
   }
   var loginAberto = null;
-  // motivo: por que a sessão terminou (senha redefinida, acesso desativado…), vindo do servidor
+  // motivo: por que a sessão terminou (senha redefinida, acesso desativado…), vindo do servidor.
+  // Com a verificação em duas etapas ligada, a mesma janela pede depois o código (do aplicativo ou de reserva).
   function pedirLogin(csrf, motivo) {
     if (!relogin || typeof relogin.showModal !== "function") {
       window.location.href = "index.php?a=entrar";
@@ -157,40 +158,77 @@
     loginAberto = new Promise(function (resolve) {
       var form = $("[data-relogin-form]", relogin), erro = $("[data-relogin-erro]", relogin);
       var senha = $("#rl-senha", relogin), usuario = $("#rl-usuario", relogin), ok = $("[data-relogin-ok]", relogin);
-      var token = csrf || "";
-      var txt = $("[data-relogin-motivo]", relogin);
+      var blocoSenha = $("[data-relogin-senha]", relogin), blocoCodigo = $("[data-relogin-codigo]", relogin);
+      var codigo = $("#rl-codigo", relogin), lembrar = $("input[name=lembrar]", relogin);
+      var rotOk = $("span", ok);
+      if (rotOk && !rotOk.dataset.padrao) rotOk.dataset.padrao = rotOk.textContent;
+      var token = csrf || "", etapa = "senha";
+      var txt = $("[data-relogin-motivo]", relogin), textoMotivo = "";
       if (txt) {
         if (!txt.dataset.padrao) txt.dataset.padrao = txt.textContent;
-        txt.textContent = typeof motivo === "string" && motivo ? motivo + " Nada do que está nesta tela se perde." : txt.dataset.padrao;
+        textoMotivo = typeof motivo === "string" && motivo ? motivo + " Nada do que está nesta tela se perde." : txt.dataset.padrao;
       }
+      var mostrarErro = function (m) { erro.hidden = false; $("p", erro).textContent = m; };
+      // "senha" (usuário e senha) ou "codigo" (depois da senha certa, com a verificação ligada)
+      var irPara = function (e, focar) {
+        etapa = e;
+        if (blocoSenha) blocoSenha.hidden = e !== "senha";
+        if (blocoCodigo) blocoCodigo.hidden = e !== "codigo";
+        if (txt) txt.textContent = e === "codigo" ? "Senha certa. Agora digite o código de 6 números do aplicativo autenticador." : textoMotivo;
+        if (rotOk) rotOk.textContent = e === "codigo" ? "Confirmar e continuar" : rotOk.dataset.padrao;
+        if (codigo) codigo.value = "";
+        if (focar) (e === "codigo" && codigo ? codigo : (usuario.value ? senha : usuario)).focus();
+      };
+      irPara("senha", false);
       erro.hidden = true; senha.value = "";
+      if (lembrar) lembrar.checked = false;
       var fim = function (r) {
         form.removeEventListener("submit", enviarLogin);
         relogin.removeEventListener("cancel", cancelar);
         $("[data-relogin-cancelar]", relogin).removeEventListener("click", cancelar);
         if (relogin.open) relogin.close();
+        irPara("senha", false);   // a próxima vez começa pela senha
         loginAberto = null;
         resolve(r);
       };
       var cancelar = function (e) { if (e) e.preventDefault(); fim(false); };
+      var postar = function (acao, fd) {
+        ok.setAttribute("aria-busy", "true");
+        return fetch("index.php?a=" + acao, { method: "POST", body: fd, headers: { "X-Requested-With": "fetch", "Accept": "application/json" }, credentials: "same-origin", cache: "no-store" })
+          .then(function (r) { return r.json(); })
+          .then(function (d) { ok.removeAttribute("aria-busy"); if (d && d.csrf) token = d.csrf; return d || {}; },
+                function () { ok.removeAttribute("aria-busy"); mostrarErro("Sem conexão com a internet. Tente de novo."); return null; });
+      };
+      var entrou = function (d) {
+        atualizarCsrf(d.csrf);
+        toast("Pronto, você entrou de novo." + (d.msg ? " " + d.msg : ""), false, d.msg ? { tempo: 9000 } : null);
+        fim(true);
+      };
       var enviarLogin = function (e) {
         e.preventDefault();
-        if (!usuario.value.trim() || !senha.value) { erro.hidden = false; $("p", erro).textContent = "Digite o usuário e a senha."; return; }
         var fd = new FormData();
-        fd.append("csrf", token); fd.append("usuario", usuario.value.trim()); fd.append("senha", senha.value);
-        ok.setAttribute("aria-busy", "true");
-        fetch("index.php?a=entrar", { method: "POST", body: fd, headers: { "X-Requested-With": "fetch", "Accept": "application/json" }, credentials: "same-origin", cache: "no-store" })
-          .then(function (r) { return r.json(); })
-          .then(function (d) {
-            ok.removeAttribute("aria-busy");
-            if (d && d.ok) { atualizarCsrf(d.csrf); toast("Pronto, você entrou de novo."); fim(true); return; }
-            if (d && d.csrf) token = d.csrf;
-            erro.hidden = false; $("p", erro).textContent = (d && d.msg) || "Não foi possível entrar. Tente de novo.";
-            senha.value = ""; senha.focus();
-          }, function () {
-            ok.removeAttribute("aria-busy");
-            erro.hidden = false; $("p", erro).textContent = "Sem conexão com a internet. Tente de novo.";
+        if (etapa === "codigo") {
+          if (!codigo.value.trim()) { mostrarErro("Digite o código do aplicativo."); codigo.focus(); return; }
+          fd.append("csrf", token); fd.append("codigo", codigo.value.trim());
+          if (lembrar && lembrar.checked) fd.append("lembrar", "1");
+          postar("verificar", fd).then(function (d) {
+            if (!d) return;
+            if (d.ok) { entrou(d); return; }
+            if (d.senha) { irPara("senha", false); mostrarErro(d.msg || "Digite a senha de novo."); senha.value = ""; senha.focus(); return; }
+            mostrarErro(d.msg || "Não foi possível conferir o código. Tente de novo.");
+            codigo.value = ""; codigo.focus();
           });
+          return;
+        }
+        if (!usuario.value.trim() || !senha.value) { mostrarErro("Digite o usuário e a senha."); return; }
+        fd.append("csrf", token); fd.append("usuario", usuario.value.trim()); fd.append("senha", senha.value);
+        postar("entrar", fd).then(function (d) {
+          if (!d) return;
+          if (d.ok) { entrou(d); return; }
+          if (d.etapa === "codigo") { erro.hidden = true; senha.value = ""; irPara("codigo", true); return; }
+          mostrarErro(d.msg || "Não foi possível entrar. Tente de novo.");
+          senha.value = ""; senha.focus();
+        });
       };
       form.addEventListener("submit", enviarLogin);
       relogin.addEventListener("cancel", cancelar);
@@ -1651,16 +1689,23 @@
       return true;
     } catch (e) { return false; }
   }
+  var TOAST_COPIAR = {
+    "senha-temp": "Senha copiada. Agora cole na conversa com a pessoa.",
+    "chave-2fa": "Chave copiada. Agora cole no aplicativo autenticador.",
+    "codigos-reserva": "Códigos copiados. Cole num lugar seguro (não mande por mensagem para ninguém)."
+  };
   $$("[data-copiar]").forEach(function (b) {
-    var alvo = document.getElementById(b.getAttribute("data-copiar"));
+    var id = b.getAttribute("data-copiar"), alvo = document.getElementById(id);
     if (!alvo) return;
     b.hidden = false;
     var rot = $("span", b), original = rot ? rot.textContent : "";
     b.addEventListener("click", function () {
-      var txt = alvo.textContent;
+      // Lista (códigos de reserva): um por linha. Chave da verificação: sem os espaços dos grupos.
+      var txt = /^(OL|UL)$/.test(alvo.tagName) ? $$("li", alvo).map(function (li) { return li.textContent.trim(); }).join("\n") : alvo.textContent;
+      if (id === "chave-2fa") txt = txt.replace(/\s+/g, "");
       var feito = function () {
         if (rot) { rot.textContent = "Copiado!"; setTimeout(function () { rot.textContent = original; }, 2500); }
-        toast(b.getAttribute("data-copiar") === "senha-temp" ? "Senha copiada. Agora cole na conversa com a pessoa." : "Mensagem copiada. Agora cole na conversa com a pessoa.");
+        toast(TOAST_COPIAR[id] || "Mensagem copiada. Agora cole na conversa com a pessoa.");
       };
       var manual = function () {
         var ok = false;
@@ -1713,14 +1758,68 @@
     });
   });
 
-  // Código de primeiro acesso: maiúsculas e hífens automáticos
+  // Código de primeiro acesso: maiúsculas e hífens automáticos (não no código do aplicativo, que é só de números)
   var cod = $("#f-codigo");
-  if (cod) {
+  if (cod && !cod.hasAttribute("data-codigo-app")) {
     cod.addEventListener("input", function () {
       var v = cod.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
       cod.value = v.replace(/(.{4})(?=.)/g, "$1-");
     });
   }
+
+  /* ------------------------------------------------------------------
+     Verificação em duas etapas
+     ------------------------------------------------------------------ */
+  // Código do aplicativo: só números (e espaço); nada é enviado sozinho
+  $$("input[data-codigo-app]").forEach(function (inp) {
+    inp.addEventListener("input", function () {
+      var v = inp.value.replace(/[^\d ]/g, "");
+      if (v !== inp.value) inp.value = v;
+    });
+  });
+  // Código de reserva: maiúsculas e o hífen no meio (K7QM-2XPA)
+  var codRes = $("#f-reserva");
+  if (codRes) {
+    codRes.addEventListener("input", function () {
+      var v = codRes.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
+      codRes.value = v.length > 4 ? v.slice(0, 4) + "-" + v.slice(4) : v;
+    });
+  }
+  // 2ª tela do login: "Usar um código de reserva" / "Usar o código do aplicativo" troca no lugar (sem JavaScript, o link recarrega)
+  (function () {
+    var f = $("form[data-verificar]");
+    if (!f) return;
+    var modo = $("input[name=modo]", f), sub = $(".acesso__sub");
+    var blocos = { app: $("[data-modo-campo=app]", f), reserva: $("[data-modo-campo=reserva]", f) };
+    function trocar(para) {
+      Object.keys(blocos).forEach(function (k) {
+        var bl = blocos[k], inp = $("input", bl), ativo = k === para;
+        bl.hidden = !ativo; inp.disabled = !ativo;
+        if (!ativo) inp.value = "";
+      });
+      modo.value = para;
+      if (sub) sub.textContent = sub.getAttribute(para === "reserva" ? "data-sub-reserva" : "data-sub-app");
+      $$("a[data-trocar-modo]:not([data-trocar-modo=reserva])").forEach(function (a) {
+        a.textContent = a.getAttribute(para === "reserva" ? "data-txt-reserva" : "data-txt-app");
+        a.href = para === "reserva" ? "index.php?a=verificar" : "index.php?a=verificar&reserva=1";
+      });
+      $("input", blocos[para]).focus();
+    }
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest ? e.target.closest("a[data-trocar-modo]") : null;
+      if (!a) return;
+      e.preventDefault();
+      var para = a.getAttribute("data-trocar-modo") || (modo.value === "reserva" ? "app" : "reserva");
+      var det = a.closest("details");
+      if (det) det.open = false;
+      trocar(para);
+    });
+  })();
+  // Códigos de reserva: Imprimir (sem JavaScript, o menu do navegador)
+  $$("[data-imprimir]").forEach(function (b) {
+    b.hidden = false;
+    b.addEventListener("click", function () { window.print(); });
+  });
 
   // Avisos: todos têm botão de fechar; os simples de sucesso somem sozinhos. Os de erro e os que
   // têm ação (Ver no site, Desfazer) ficam até o dono fechar.

@@ -23,7 +23,7 @@ Feito por quem tem a senha do **cPanel** da HostGator, logo depois de o site ir 
 
 O código vale 24 horas. Se vencer, abra o painel de novo e leia o código novo no mesmo arquivo.
 
-**No dia a dia:** abra o painel, digite usuário e senha. Por segurança ele sai sozinho depois de **2 horas sem uso**. Se isso acontecer com um produto aberto, ao tocar em **Salvar** o painel pede a senha numa janela e salva em seguida, sem perder o que você digitou nem a foto.
+**No dia a dia:** abra o painel, digite usuário e senha. Se você ligou a **verificação em duas etapas** (item 7), depois da senha o painel pede o **código de 6 números** do aplicativo no celular (Google Authenticator). Por segurança ele sai sozinho depois de **2 horas sem uso**. Se isso acontecer com um produto aberto, ao tocar em **Salvar** o painel pede a senha numa janela e salva em seguida, sem perder o que você digitou nem a foto.
 
 ---
 
@@ -109,7 +109,11 @@ Antes de **cada** alteração o painel guarda uma **cópia de segurança** do ca
 - **Trocar a senha:** **Conta** → Trocar senha (os outros aparelhos conectados saem).
 - **Esqueci a senha:** peça a um administrador para redefinir a sua senha (**Conta → Usuários → Redefinir senha**); você recebe uma senha temporária e cria a sua no primeiro acesso.
 - **É o único administrador?** cPanel → Gerenciador de Arquivos → `painel-balancas-privado` (ao lado da `public_html`; não é a pasta `painel` do site) → **+ Arquivo** → crie um arquivo vazio chamado **`recuperar.txt`** → abra o painel: aparece **Recuperar acesso**. Leia o código em `primeiro-acesso.php` (mesma pasta, como no item 1), digite o código, o seu usuário de administrador e a senha nova. O painel apaga o `recuperar.txt` sozinho. Usuários, produtos, fotos e cópias continuam como estavam. Não apague mais o `config.php`: ele não guarda mais a senha. O passo a passo também aparece no painel, em **Esqueci a senha** e em **Conta**.
-- **Bloqueado?** Depois de 5 senhas erradas seguidas, aquele usuário fica bloqueado por 15 minutos (quem usa outro usuário, mesmo no Wi-Fi da loja, continua entrando). É só esperar.
+- **Verificação em duas etapas (mais segurança):** **Conta → Verificação em duas etapas → Ligar a verificação**. Instale no celular o **Google Authenticator** (grátis), toque em **+ → Ler código QR**, aponte para o quadrado da tela e digite o código de 6 números que aparece. Pronto: a partir daí, depois da senha, o painel pede o código do celular — quem descobrir a sua senha não entra sem o seu celular. Na tela do código, **Lembrar este aparelho por 30 dias** faz o painel pedir só a senha naquele aparelho (não marque em computador de outra pessoa).
+- **Códigos de reserva:** ao ligar, aparecem **10 códigos** uma vez só: **imprima** ou anote e guarde com os seus documentos. Cada um vale uma vez, para entrar sem o celular (**Usar um código de reserva**). Acabando? **Gerar códigos novos** (pede a senha).
+- **Perdi o celular:** entre com um código de reserva e, em **Conta → Verificação em duas etapas**, desligue e ligue de novo com o celular novo. Sem os códigos: peça a um administrador (**Usuários → Editar → Desligar a verificação**). Único administrador: o **`recuperar.txt`** (acima) também desliga a verificação.
+- **Código não confere?** Confira se a **hora do celular está automática** (Ajustes → Data e hora).
+- **Bloqueado?** Depois de 5 senhas **ou códigos** errados seguidos, aquele usuário fica bloqueado por 15 minutos (quem usa outro usuário, mesmo no Wi-Fi da loja, continua entrando). 10 códigos errados de um mesmo usuário, de qualquer internet, também bloqueiam a entrada dele por 15 minutos. É só esperar.
 
 Detalhes técnicos e problemas comuns: `painel/LEIA-ME.md`.
 
@@ -156,6 +160,7 @@ Cada pessoa que mexe no site tem o **seu usuário e a sua senha** (não comparti
 - **Saiu da empresa?** **Desativar** (dá para reativar depois) ou **Excluir**. A pessoa sai do painel na hora; o que ela fez no site continua.
 - **Mudar o papel:** **Editar** → papel → **Salvar**. Vale na hora.
 - O painel nunca fica sem administrador: ninguém tira o próprio papel de administrador nem se desativa.
+- **Verificação em duas etapas:** o selo **2 etapas** mostra quem usa. Alguém perdeu o celular e os códigos de reserva? **Editar → Desligar a verificação** (a pessoa entra só com a senha e liga de novo). **Exigir de todos** (no quadro **Verificação em duas etapas** da tela Usuários; primeiro ligue a sua): quem ainda não tem configura no próximo acesso, antes de usar o painel. **Deixar de exigir** volta a ser opcional.
 
 ## 10. Dados da empresa
 

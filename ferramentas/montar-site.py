@@ -104,7 +104,7 @@ PAINEL_FORA = ["privado", "painel-balancas-privado", "erros.php", "sessoes", "co
 # painel/lib/usuarios.php (código); em outro lugar, são da pasta privada (senhas, usuários)
 PRIVADOS = {"config.php": "painel", "usuarios.php": "painel/lib"}
 SINAIS_PRIVADOS = ["primeiro-acesso.php", "tentativas.php", "registro.php", "registro-anterior.php", "chave.php", "erros.php",
-                   "recuperar.txt", "recuperar"]
+                   "recuperar.txt", "recuperar", "aparelhos.php", "seguranca.php"]
 # Pastas de imagens que o painel grava; cada uma leva um .htaccess que bloqueia scripts (hospedagem/compartilhado/img/<pasta>/)
 PASTAS_DO_PAINEL = ("produtos", "produtos-recorte", "clientes")
 # Logo de cliente: só o nome do arquivo (mesma regra do painel, lib/clientes.php)
@@ -936,7 +936,8 @@ def conferir(site):
     for obrig in ("index.php", "config.php", ".htaccess", ".user.ini", "lib/.htaccess", "assets/painel.css", "assets/painel.js",
                   "lib/pacotes.php", "lib/visoes-pacotes.php", "pacotes/.htaccess", "lib/lote.php",
                   "lib/categorias.php", "lib/visoes-categorias.php", "lib/ordem.php",
-                  "contar.php", "lib/estatisticas.php", "lib/visoes-procurados.php"):
+                  "contar.php", "lib/estatisticas.php", "lib/visoes-procurados.php",
+                  "lib/qr.php", "lib/dois-fatores.php", "lib/visoes-dois-fatores.php"):
         if not (pnl / obrig).is_file():
             erro(f"painel/{obrig} faltando no pacote")
     # "Mais procurados": o contar.php é público mesmo com a "Privacidade de diretórios" do cPanel no painel/

@@ -29,6 +29,10 @@ return [
     'tentativas_max'     => 5,             // erros de senha seguidos de um usuário, na mesma internet (IP)…
     'bloqueio'           => 15 * 60,       // …bloqueiam esse usuário nessa internet por 15 min (os outros continuam entrando)
     'tentativas_max_ip'  => 20,            // somando todos os usuários, 20 erros bloqueiam a internet inteira (robôs)
+    // Verificação em duas etapas (Conta → Verificação em duas etapas)
+    'dois_fatores_espera' => 5 * 60,       // depois da senha certa, 5 min para digitar o código do aplicativo
+    'aparelho_dias'      => 30,            // "Lembrar este aparelho" vale 30 dias
+    'codigos_max_conta'  => 10,            // 10 códigos errados de um usuário (somando todas as internets) bloqueiam a entrada dele por 15 min
     'codigo_validade'    => 24 * 60 * 60,  // código de primeiro acesso vale 24 h
     'senha_minimo'       => 10,            // tamanho mínimo da senha
     // Cópias de segurança: as 30 mais recentes ficam sempre; além delas, tudo dos últimos 14 dias

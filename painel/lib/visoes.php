@@ -154,17 +154,30 @@ function pagina(string $titulo, callable $conteudo, array $o = []): void
     <h2 id="relogin-tit">Entre de novo</h2>
     <p data-relogin-motivo>Sua sessão terminou. Digite a senha para continuar: nada do que está nesta tela se perde.</p>
     <div class="aviso aviso--erro" role="alert" data-relogin-erro hidden><?= icone('alert') ?><p></p></div>
-    <div class="campo">
-      <label for="rl-usuario">Usuário</label>
-      <input id="rl-usuario" name="usuario" autocomplete="username" autocapitalize="off" spellcheck="false" required maxlength="40" value="<?= e($usuario) ?>">
+    <div data-relogin-senha>
+      <div class="campo">
+        <label for="rl-usuario">Usuário</label>
+        <input id="rl-usuario" name="usuario" autocomplete="username" autocapitalize="off" spellcheck="false" required maxlength="40" value="<?= e($usuario) ?>">
+      </div>
+      <div class="campo">
+        <label for="rl-senha">Senha</label>
+        <div class="senha"><input id="rl-senha" name="senha" type="password" autocomplete="current-password" required maxlength="200"></div>
+      </div>
     </div>
-    <div class="campo">
-      <label for="rl-senha">Senha</label>
-      <div class="senha"><input id="rl-senha" name="senha" type="password" autocomplete="current-password" required maxlength="200"></div>
+    <div data-relogin-codigo hidden>
+      <div class="campo">
+        <label for="rl-codigo">Código do aplicativo</label>
+        <input id="rl-codigo" name="codigo" class="codigo" autocomplete="one-time-code" maxlength="12" autocapitalize="characters" spellcheck="false" aria-describedby="rl-codigo-ajuda">
+        <p class="ajuda" id="rl-codigo-ajuda">Sem o celular? Digite um código de reserva no mesmo campo.</p>
+      </div>
+      <div class="campo">
+        <label class="caixinha"><input type="checkbox" name="lembrar" value="1" aria-describedby="rl-lembrar-ajuda"><span>Lembrar este aparelho por 30 dias</span></label>
+        <p class="ajuda" id="rl-lembrar-ajuda">Neste aparelho, o painel deixa de pedir o código por 30 dias. Não marque em computador de outra pessoa.</p>
+      </div>
     </div>
     <div class="dialogo__bts">
       <button type="button" class="btn btn--linha" data-relogin-cancelar>Cancelar</button>
-      <button type="submit" class="btn btn--verde" data-relogin-ok><?= icone('lock') ?>Entrar e continuar</button>
+      <button type="submit" class="btn btn--verde" data-relogin-ok><?= icone('lock') ?><span>Entrar e continuar</span></button>
     </div>
   </form>
 </dialog>
@@ -286,7 +299,7 @@ function passosEsqueciSenha(): void
           <li>Clique em <b>+ Arquivo</b> e crie nessa pasta um arquivo vazio chamado <code>recuperar.txt</code>.</li>
           <li>Abra o painel de novo: aparece a tela <b>Recuperar acesso</b>. O código fica no arquivo <code>primeiro-acesso.php</code>, na mesma pasta.</li>
         </ol>
-        <p class="ajuda">Os outros usuários, as cópias de segurança e o resto continuam como estão. No fim, o painel apaga o <code>recuperar.txt</code> sozinho.</p>
+        <p class="ajuda">Os outros usuários, as cópias de segurança e o resto continuam como estão. No fim, o painel apaga o <code>recuperar.txt</code> sozinho. Perdeu também o celular da verificação em duas etapas? A recuperação desliga a verificação desse administrador (depois, ligue de novo em Conta).</p>
 <?php
 }
 
