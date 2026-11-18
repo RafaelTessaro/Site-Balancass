@@ -26,6 +26,7 @@ const EST_PAGINAS = [
     'inicio'      => 'Página inicial',
     'produtos'    => 'Produtos',
     'assistencia' => 'Assistência técnica',
+    'calibracao'  => 'Calibração (certificado)',
     'sistema'     => 'Sistema (BC System)',
     'empresa'     => 'Empresa',
     'contato'     => 'Contato',

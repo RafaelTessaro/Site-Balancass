@@ -1,0 +1,138 @@
+/* =====================================================================
+   Balanças.com — "Linha Verde"
+   css/calibracao.css — só calibracao.html (certificado de calibração)
+   Índice:
+     1. Hero: certificado ilustrado + balança + peso-padrão (.cal-vis, .cert)
+     2. O certificado (.cal-spec): a ficha em duas colunas no computador
+     3. Calibração × IPEM (.vs): a comparação em tabela
+   Usa os tokens e os blocos de base.css e paginas.css (.phero, .check,
+   .spec-table, .steps, .ipem__cta, .faq, .ask). O único ângulo continua
+   sendo o --slash (skewX); o certificado gira -6° como a ficha do contato.
+   ===================================================================== */
+
+/* =====================================================================
+   1. HERO
+   ===================================================================== */
+.cal-novo { display: inline-flex; margin-bottom: 12px; }
+
+.cal-vis__fig {
+  width: min(100%, 520px);
+  display: block; aspect-ratio: 1 / 1.08;
+  max-height: min(70vh, 600px);
+}
+/* O certificado: papel off-white, inclinado como a ficha do contato (.pcard) */
+.cert {
+  position: absolute; z-index: 1; top: 0; left: 50%;
+  width: min(74%, 380px); margin-left: calc(min(74%, 380px) / -2 + 22px);
+  padding: 18px 20px 16px;
+  background: var(--paper); color: var(--ink);
+  transform: rotate(-6deg); transform-origin: 50% 40%;
+  box-shadow: 0 34px 60px -26px rgba(0,0,0,.75), 0 0 0 1px rgba(10,10,10,.06);
+  display: grid; gap: 11px;
+  font-family: var(--f-text);
+}
+.cert::before {   /* faixa verde do topo: a marca no papel */
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--green);
+}
+.cert__top {
+  display: flex; justify-content: space-between; gap: 10px; padding-bottom: 8px; border-bottom: 1px dashed #B5B5AE;
+  font: 400 8px/1.3 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+}
+.cert__head { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 2px 10px; align-items: center; }
+.cert__logo { grid-row: span 2; width: 30px; height: 30px; color: var(--ink); }
+.cert__t { font: 900 clamp(19px, 1.7vw, 24px)/.9 var(--f-display); text-transform: uppercase; letter-spacing: .005em; }
+.cert__n { font: 500 9px/1.2 var(--f-mono); letter-spacing: .05em; color: var(--green-deep); }
+.cert__id { display: grid; gap: 3px; margin: 0; }
+.cert__id div { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 8px; font-size: 9.5px; line-height: 1.35; }
+.cert__id dt { font: 400 8px/1.6 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.cert__id dd { font-weight: 600; }
+.cert__tb { width: 100%; border-collapse: collapse; font: 400 9px/1.2 var(--f-mono); font-variant-numeric: tabular-nums; }
+.cert__tb th { padding: 5px 4px 4px; text-align: right; font-weight: 500; font-size: 7.5px; letter-spacing: .05em; text-transform: uppercase; background: var(--ink); color: var(--paper); }
+.cert__tb th:first-child, .cert__tb td:first-child { text-align: left; }
+.cert__tb td { padding: 5px 4px 4px; text-align: right; border-bottom: 1px solid #D6D6CF; }
+.cert__tb tbody tr:nth-child(even) td { background: #EAEAE4; }
+.cert__foot { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: end; padding-top: 4px; }
+/* Selo "Assinado digitalmente" (o certificado sai em PDF com assinatura digital) */
+.cert__dig {
+  display: grid; justify-items: center; gap: 1px; width: 68px; padding: 6px 4px 5px;
+  border: 1.5px solid var(--green-deep); color: var(--green-deep);
+  font: 400 6.5px/1.15 var(--f-mono); letter-spacing: .02em; text-transform: uppercase; text-align: center;
+}
+.cert__dig b { font-weight: 500; }
+.cert__dig-i { width: 18px; height: 18px; margin-bottom: 2px; }
+.cert__ok { display: grid; gap: 2px; list-style: none; margin: 0; padding: 0; font: 400 7.5px/1.35 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; }
+.cert__ok li { display: flex; align-items: center; gap: 6px; }
+.cert__ok li::before { content: ""; width: 7px; height: 7px; flex: none; background: var(--green); transform: skewX(var(--slash)); }
+.cert__sig { display: grid; justify-items: center; gap: 3px; font: 400 7px/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.cert__sig i {
+  display: block; width: 74px; height: 20px; border-bottom: 1px solid var(--ink);
+  background: no-repeat center bottom 2px / 64px 16px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 16'%3E%3Cpath d='M2 12c5-9 8-10 9-6s-2 7 1 6 5-9 8-8-1 8 2 8 6-7 9-7-1 6 2 6 7-5 10-5 4 3 8 3 6-2 10-3' fill='none' stroke='%23173A8A' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+/* Balança e peso-padrão na frente do certificado */
+.phero__fig > img.cal-vis__bal {
+  position: absolute; z-index: 2; left: -9%; bottom: 0; width: 54%; height: auto; max-height: none;
+  filter: drop-shadow(0 26px 22px rgba(0,0,0,.5));
+}
+.cal-vis__peso {
+  position: absolute; z-index: 3; right: 3%; bottom: 0; width: 18%; aspect-ratio: 120 / 172; height: auto;
+  filter: drop-shadow(0 18px 14px rgba(0,0,0,.45));
+}
+.cal-vis .phero__call--1 { top: 3%; left: 0; z-index: 4; }
+.cal-vis .phero__call--2 { right: 0; bottom: 27%; z-index: 4; }
+
+@media (max-width: 860px) {
+  .cal-vis { padding-bottom: 30px; }
+  .cal-vis__fig { width: min(88%, 420px); max-height: none; margin-inline: auto; }
+  .phero__fig > img.cal-vis__bal { width: 50%; left: -6%; }
+  .cal-vis__peso { width: 16%; right: 2%; }
+  .cal-vis .phero__call--1 { top: 12px; left: var(--gut); }
+  .cal-vis .phero__call--2 { right: var(--gut); bottom: 12px; }
+}
+@media (max-width: 480px) {
+  .cert { padding: 14px 14px 12px; gap: 8px; width: 82%; margin-left: calc(-41% + 14px); }
+  .cert__id div { grid-template-columns: 64px minmax(0, 1fr); font-size: 8.5px; }
+  .cert__tb { font-size: 8px; }
+  .cert__tb th { font-size: 6.5px; }
+  .cert__foot { gap: 8px; }
+  .cert__dig { width: 58px; font-size: 5.6px; }
+  .cert__sig i { width: 58px; background-size: 52px 14px; }
+}
+
+/* =====================================================================
+   2. O CERTIFICADO — ficha em duas colunas no computador
+   ===================================================================== */
+@media (min-width: 900px) {
+  .cal-spec { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(28px, 4vw, 72px); }
+  .cal-spec div { grid-template-columns: minmax(150px, .8fr) minmax(0, 1.2fr); }
+}
+.cal-spec dt { color: var(--green); }
+.cal-rbc { max-width: 62em; }
+
+/* =====================================================================
+   3. CALIBRAÇÃO × IPEM (.vs) — sobre o verde
+   ===================================================================== */
+.vs { display: grid; border-top: 3px solid var(--ink); }
+.vs__row {
+  display: grid; grid-template-columns: minmax(120px, .5fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0 clamp(16px, 2.4vw, 40px); align-items: baseline;
+  padding: 16px 0 15px; border-bottom: 1px solid rgba(10,10,10,.28);
+}
+.vs__row--h { align-items: end; padding-top: 18px; }
+.vs__k { font-size: 11px; color: #052612; }
+.vs__c { font-size: clamp(15.5px, 1.2vw, 18px); line-height: 1.45; color: #052612; }
+.vs__row--h .vs__c { font: 900 clamp(26px, 2.4vw, 40px)/1 var(--f-display); text-transform: uppercase; color: var(--ink); }
+.vs__row--h .vs__c--a { display: inline-flex; align-items: center; justify-self: start; padding: 6px 14px 5px; margin-left: -6px; position: relative; isolation: isolate; color: var(--paper); }
+.vs__row--h .vs__c--a::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--ink); transform: skewX(var(--slash)); }
+.vs__aka { display: block; margin-top: 6px; font: 400 11px/1.3 var(--f-mono); letter-spacing: .03em; text-transform: none; color: #052612; }
+.vs__row:not(.vs__row--h) .vs__c--a { font-weight: 600; color: var(--ink); }
+.cal-ipem__cta { margin-top: clamp(36px, 4vw, 56px); }
+.cal-ipem .h2 { max-width: 10em; }
+
+@media (max-width: 760px) {
+  .vs__row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 16px; }
+  .vs__k { grid-column: 1 / -1; }
+  .vs__row--h .vs__k { display: none; }
+  .vs__row--h .vs__c { font-size: clamp(20px, 6vw, 28px); }
+  .vs__row--h .vs__c--a { padding: 6px 10px 5px; }
+}

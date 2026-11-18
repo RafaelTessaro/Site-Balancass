@@ -8,7 +8,7 @@ para a  public_html  da HostGator (cPanel):
 
     site/
     ├── index.html               ← linha-verde/index-3.html (variação 3 · Painel, a escolhida)
-    ├── assistencia.html  produtos.html  sistema.html  empresa.html  contato.html
+    ├── assistencia.html  calibracao.html  produtos.html  sistema.html  empresa.html  contato.html
     ├── 404.html                 ← página de erro (caminhos absolutos)
     ├── css/  js/  img/          ← só o que as 6 páginas usam
     ├── compartilhado/           ← dados (empresa.js, ajustes.js, clientes.js, produtos.js), balancas.js, fotos e logos
@@ -90,6 +90,7 @@ DOMINIO = "https://balancass.com"
 PAGINAS = [
     ("index.html", "index-3.html"),        # Variação 3 · Painel (escolhida pelo dono)
     ("assistencia.html", "assistencia.html"),
+    ("calibracao.html", "calibracao.html"),   # certificado de calibração (não RBC)
     ("produtos.html", "produtos.html"),
     ("sistema.html", "sistema.html"),
     ("empresa.html", "empresa.html"),

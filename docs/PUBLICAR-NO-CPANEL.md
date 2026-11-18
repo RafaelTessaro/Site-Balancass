@@ -7,7 +7,7 @@ As páginas são estáticas (HTML, CSS, JavaScript e imagens): sem banco de dado
 ```
 site/                      ← o CONTEÚDO desta pasta vai para public_html/
 ├── index.html             (página inicial)
-├── assistencia.html  produtos.html  sistema.html  empresa.html  contato.html  404.html
+├── assistencia.html  calibracao.html  produtos.html  sistema.html  empresa.html  contato.html  404.html
 ├── css/  js/  img/
 ├── compartilhado/         (catálogo, lista de clientes, dados da empresa, fotos e logos)
 ├── painel/                (painel: produtos, logos de clientes, dados da empresa e usuários; PHP)

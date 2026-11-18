@@ -16,6 +16,8 @@ os arquivos CSS/JS e os componentes descritos aqui, para que as 6 páginas pare�
 linha-verde/
   index.html          página inicial PROVISÓRIA (data-variacao="1") — será substituída
   assistencia.html    conserto/manutenção, processo, tipos, IPEM, FAQ do IPEM e da aferição (#faq)
+  calibracao.html     certificado de calibração: para quem (#para-quem), o certificado (#certificado), como funciona,
+                      calibração × IPEM (#ipem), FAQ (#faq); CSS próprio em css/calibracao.css
   produtos.html       catálogo completo (#p=ID, ?cat=&sub=&q=) + kits por segmento (#kits)
   sistema.html        BC System (#recursos #fiscal #implantacao), informática (#informatica), BC Fichas (#fichas)
   empresa.html        quem somos, como trabalhamos, equipe (#equipe), clientes/depoimentos (#clientes)
@@ -108,7 +110,7 @@ e troque só o `<main>`. Ajuste:
     addEventListener("pagereveal", function (e) { w.LV_REVELOU = true; if (e.viewTransition) d.classList.add("via-vt"); });
   })(document.documentElement, window);
 </script>
-<noscript><style>.burger{display:none}@media(max-width:1080px){.nav{display:block;position:absolute;top:100%;left:0;right:0;margin:0;background:#0A0A0A;border-bottom:1px solid #1E1E1D}.nav__list{overflow-x:auto;padding-inline:var(--gut)}.nav__list li{flex:none}main{padding-top:44px}}</style></noscript>
+<noscript><style>.burger{display:none}@media(max-width:1180px){.nav{display:block;position:absolute;top:100%;left:0;right:0;margin:0;background:#0A0A0A;border-bottom:1px solid #1E1E1D}.nav__list{overflow-x:auto;padding-inline:var(--gut)}.nav__list li{flex:none}main{padding-top:44px}}</style></noscript>
 <script type="application/ld+json">
 {
  "@context": "https://schema.org",
@@ -669,7 +671,8 @@ primeiro quadro, use `.is-loading .minha-classe { opacity: 0 }` dentro de
 - Pode: "A medida certa para o seu negócio" · desde 2010 · fundador Fábio Godoy, 30+ anos · **Oficina autorizada pelo IPEM-SP** ·
   5,0 no Google com 56 avaliações · Rio Claro e região · Rua 13, 650 – entre as Avenidas 9 e 11 – Boa Morte ·
   seg–sex 8h–11h e 13h–18h, sáb 8h–12h · "Trabalhamos com as marcas…" · depoimentos reais de `EMPRESA.depoimentos`.
-- Não pode: "calibração"/"verificação feita por nós" (diga manutenção, conserto, regularização, "pronta para a verificação do IPEM");
+- Calibração (desde nov/2026): é o serviço com **certificado de calibração** (`calibracao.html`, laboratório não acreditado, certificado não RBC). Diga "atende a maioria das auditorias ISO 9001", nunca "vale para todas"; nada de "RBC"/"acreditado" como selo, "rastreável à RBC", "validade", "QR code" (o certificado tem número e código e sai em PDF assinado digitalmente). A calibração não ajusta nem conserta e **não substitui a verificação do IPEM-SP**.
+- Não pode: "verificação feita por nós" nem "aferição" como serviço nosso (diga manutenção, conserto, regularização, "pronta para a verificação do IPEM");
   "líder", "menor preço", "todo o estado", "assistência/revenda autorizada Toledo/Balmak…"; número de autorização do IPEM;
   número de clientes; Instagram; vender SAT (em SP o CF-e SAT está proibido desde 01/01/2026 → "Ainda no SAT? Regularize já");
   "100% pronto" para a Reforma Tributária (diga "acompanhamos de perto"); preços inventados; "Consolação"; "Av. 12, 1313".

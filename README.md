@@ -11,7 +11,7 @@ A pasta **`site/`** é o pacote pronto para a HostGator: o conteúdo dela vai in
 | Endereço | O que é |
 |---|---|
 | `balancass.com/` | Início (variação 3 · Painel) |
-| `/assistencia.html` · `/produtos.html` · `/sistema.html` · `/empresa.html` · `/contato.html` | Abas do site |
+| `/assistencia.html` · `/calibracao.html` · `/produtos.html` · `/sistema.html` · `/empresa.html` · `/contato.html` | Abas do site (`calibracao.html`: o **certificado de calibração**, serviço novo de novembro de 2026, destino dos anúncios) |
 | `/produtos.html#p=toledo-prix-7e` | Link direto de um produto (abre os detalhes) |
 | `/painel/` | **Painel com login** para adicionar, editar, esconder e excluir produtos (um ou **vários de uma vez**), mudar o estoque e trocar fotos, para cuidar das **categorias e subcategorias** do catálogo, dos **logos de clientes** (área **Clientes**: incluir, trocar, reordenar, excluir) e dos **dados da empresa** que o site mostra (área **Empresa**: contato, endereço, horário, feriados, aviso no site, Google e redes, equipe, depoimentos, marcas e o **produto da capa**), e para ver os **produtos mais procurados** e de onde vêm os contatos pelo WhatsApp. Cada pessoa com o seu usuário, como **Administrador** ou **Editor**, com **verificação em duas etapas** (Google Authenticator) opcional ou exigida pelo administrador. Entrada pelo link discreto **“Área restrita”** no rodapé (fora do Google) |
 | qualquer endereço inexistente | Página 404 no estilo do site |
@@ -19,6 +19,7 @@ A pasta **`site/`** é o pacote pronto para a HostGator: o conteúdo dela vai in
 **Publicar:** [`docs/PUBLICAR-NO-CPANEL.md`](docs/PUBLICAR-NO-CPANEL.md) (PHP 8.3, envio do `site.zip`, primeiro acesso ao painel, testes).
 **Produtos (um ou vários de uma vez), categorias, capa do site, Mais procurados, logos de clientes, usuários e dados da empresa no dia a dia:** [`docs/COMO-ADICIONAR-PRODUTOS.md`](docs/COMO-ADICIONAR-PRODUTOS.md) (pelo painel; edição manual como plano B).
 **Atualizar o site que já está no ar:** `atualizacao.zip` (guia de publicação, item 6).
+**Divulgar o certificado de calibração:** `artes-calibracao.zip` (todas as artes para redes sociais, Google e LinkedIn, com os textos dos anúncios em `divulgacao/calibracao/TEXTOS-DOS-ANUNCIOS.md`).
 
 **Gerar o pacote de novo** (depois de mudar `linha-verde/`, `compartilhado/`, `painel/` ou `hospedagem/`):
 
@@ -30,7 +31,7 @@ python3 ferramentas/montar-site.py --atualizacao --incluir-clientes  # idem, lev
 python3 ferramentas/montar-site.py --atualizacao --incluir-ajustes   # idem, levando ajustes.js (raramente: o painel cria o vazio sozinho)
 ```
 
-O script usa `linha-verde/index-3.html` como `index.html`, leva só o CSS/JS que as 6 páginas usam, tira o seletor de variações da fase de escolha, troca `../compartilhado/` por `compartilhado/`, acerta canonical e `og:url`, põe `?v=…` nos CSS/JS, monta `.htaccess` (de `hospedagem/.htaccess`), `robots.txt`, `sitemap.xml`, `404.html` e `favicon.ico`, copia o painel sem dados privados e **confere tudo** (referências quebradas, restos de `../`, formato do catálogo, da lista de clientes, do `empresa.js` e do `ajustes.js`, a ordem `empresa.js` → `ajustes.js` → `clientes.js` → `produtos.js` → `balancas.js` em todas as páginas, nenhum arquivo da pasta privada no pacote). Se algo estiver errado, ele para e a `site/` anterior fica como estava.
+O script usa `linha-verde/index-3.html` como `index.html`, leva só o CSS/JS que as 7 páginas usam, tira o seletor de variações da fase de escolha, troca `../compartilhado/` por `compartilhado/`, acerta canonical e `og:url`, põe `?v=…` nos CSS/JS, monta `.htaccess` (de `hospedagem/.htaccess`), `robots.txt`, `sitemap.xml`, `404.html` e `favicon.ico`, copia o painel sem dados privados e **confere tudo** (referências quebradas, restos de `../`, formato do catálogo, da lista de clientes, do `empresa.js` e do `ajustes.js`, a ordem `empresa.js` → `ajustes.js` → `clientes.js` → `produtos.js` → `balancas.js` em todas as páginas, nenhum arquivo da pasta privada no pacote). Se algo estiver errado, ele para e a `site/` anterior fica como estava.
 
 **Mudanças no catálogo preparadas no projeto** (produtos novos, modelos que saíram de linha trocados pelos atuais, fotos novas, produtos que saem do site) viram uma **atualização do catálogo** em `painel/pacotes/<AAAA-MM-nome>/` (`pacote.json` + `fotos/` + `recortes/`). Ela vai no `atualizacao.zip` e um administrador revê e aplica no painel (cartão “Atualização do catálogo pronta”, com uma cópia de segurança antes). No projeto, a mesma atualização é aplicada ao `compartilhado/` pela linha de comando, com as mesmas regras do painel:
 
@@ -67,6 +68,7 @@ ferramentas/
   aplicar-pacote.php       aplica uma atualização do catálogo ao compartilhado/ do projeto (mesmas funções do painel)
   converter-produtos.mjs   conversão única do catálogo antigo para o formato do painel
 docs/                      guias e avaliações
+divulgacao/calibracao/     artes da campanha do certificado de calibração (redes sociais, Google, LinkedIn), textos dos anúncios e o gerador (fonte/)
 design-1-tara-zero/  design-2-balcao/  design-3-linha-verde/   propostas da 1ª rodada
 index.html                 página que apresenta as 3 propostas da 1ª rodada
 ```
@@ -79,6 +81,7 @@ index.html                 página que apresenta as 3 propostas da 1ª rodada
 - [Fontes das especificações dos produtos](docs/FONTES-DOS-PRODUTOS.md)
 - [Catálogo: o que estava velho e o que mudou em outubro de 2026](docs/ATUALIZAR-BALANCAS.md)
 - [Avaliação das propostas de design](docs/AVALIACAO-DOS-DESIGNS.md)
+- [Campanha do certificado de calibração: artes e textos dos anúncios](divulgacao/calibracao/TEXTOS-DOS-ANUNCIOS.md)
 
 ## Tecnologia
 

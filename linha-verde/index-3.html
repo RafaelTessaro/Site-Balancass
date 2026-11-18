@@ -69,7 +69,7 @@
     addEventListener("pagereveal", function (e) { w.LV_REVELOU = true; if (e.viewTransition) d.classList.add("via-vt"); });
   })(document.documentElement, window);
 </script>
-<noscript><style>.burger{display:none}@media(max-width:1080px){.nav{display:block;position:absolute;top:100%;left:0;right:0;margin:0;background:#0A0A0A;border-bottom:1px solid #1E1E1D}.nav__list{overflow-x:auto;padding-inline:var(--gut)}.nav__list li{flex:none}main{padding-top:44px}}</style></noscript>
+<noscript><style>.burger{display:none}@media(max-width:1180px){.nav{display:block;position:absolute;top:100%;left:0;right:0;margin:0;background:#0A0A0A;border-bottom:1px solid #1E1E1D}.nav__list{overflow-x:auto;padding-inline:var(--gut)}.nav__list li{flex:none}main{padding-top:44px}}</style></noscript>
 <script type="application/ld+json">
 {
  "@context": "https://schema.org",
@@ -107,6 +107,13 @@
    "itemOffered": {
     "@type": "Service",
     "name": "Assistência técnica e manutenção de balanças"
+   }
+  },
+  {
+   "@type": "Offer",
+   "itemOffered": {
+    "@type": "Service",
+    "name": "Calibração de balanças com certificado (não RBC)"
    }
   },
   {
@@ -221,6 +228,10 @@
     <symbol id="i-link" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/></symbol>
     <symbol id="i-pause" viewBox="0 0 24 24"><path fill="currentColor" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></symbol>
     <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M7 4.5v15l12-7.5z"/></symbol>
+    <linearGradient id="pz-m" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#4f5358"/><stop offset=".16" stop-color="#b9bdc2"/><stop offset=".3" stop-color="#f6f7f8"/><stop offset=".46" stop-color="#a7abb0"/><stop offset=".72" stop-color="#e3e5e8"/><stop offset=".9" stop-color="#8b8f94"/><stop offset="1" stop-color="#55595e"/></linearGradient>
+    <linearGradient id="pz-t" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f3f4f5"/><stop offset=".55" stop-color="#c3c7cb"/><stop offset="1" stop-color="#8e9297"/></linearGradient>
+    <radialGradient id="pz-s" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+    <symbol id="i-peso" viewBox="0 0 120 172"><ellipse cx="60" cy="160" rx="62" ry="12" fill="url(#pz-s)"/><path d="M10 66V150A50 11 0 0 0 110 150V66Z" fill="url(#pz-m)"/><ellipse cx="60" cy="66" rx="50" ry="11" fill="url(#pz-t)"/><ellipse cx="60" cy="66" rx="50" ry="11" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width=".8"/><path d="M42 44V66A18 4.2 0 0 0 78 66V44Z" fill="url(#pz-m)"/><ellipse cx="60" cy="66.2" rx="18" ry="4.2" fill="#000" fill-opacity=".18"/><path d="M33 44C33 15 87 15 87 44A27 6.5 0 0 1 33 44Z" fill="url(#pz-m)"/><ellipse cx="60" cy="44" rx="27" ry="6.5" fill="url(#pz-t)" fill-opacity=".55"/><path d="M44 30C47 22 56 20 62 21" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="3" stroke-linecap="round"/><text x="60" y="118" text-anchor="middle" font-family="Martian Mono, monospace" font-size="15" font-weight="500" fill="#2a2d31" fill-opacity=".55">20 kg</text><text x="60" y="134" text-anchor="middle" font-family="Martian Mono, monospace" font-size="7.5" fill="#2a2d31" fill-opacity=".45" letter-spacing="1">M1</text></symbol>
   </defs>
 </svg>
 
@@ -236,6 +247,7 @@
       <ul class="nav__list">
         <li><a class="nav__a" href="index.html" data-home aria-current="page"><span class="st" data-t="Início">Início</span></a></li>
         <li><a class="nav__a" href="assistencia.html"><span class="st" data-t="Assistência">Assistência</span></a></li>
+        <li><a class="nav__a" href="calibracao.html"><span class="st" data-t="Calibração">Calibração</span></a></li>
         <li><a class="nav__a" href="produtos.html"><span class="st" data-t="Produtos">Produtos</span></a></li>
         <li><a class="nav__a" href="sistema.html"><span class="st" data-t="BC System">BC System</span></a></li>
         <li><a class="nav__a" href="empresa.html"><span class="st" data-t="Empresa">Empresa</span></a></li>
@@ -257,10 +269,11 @@
     <ol class="menu__list">
       <li><a href="index.html" data-home aria-current="page"><span class="mono">01</span>Início</a></li>
       <li><a href="assistencia.html"><span class="mono">02</span>Assistência</a></li>
-      <li><a href="produtos.html"><span class="mono">03</span>Produtos</a></li>
-      <li><a href="sistema.html"><span class="mono">04</span>BC System</a></li>
-      <li><a href="empresa.html"><span class="mono">05</span>Empresa</a></li>
-      <li><a href="contato.html"><span class="mono">06</span>Contato</a></li>
+      <li><a href="calibracao.html"><span class="mono">03</span>Calibração</a></li>
+      <li><a href="produtos.html"><span class="mono">04</span>Produtos</a></li>
+      <li><a href="sistema.html"><span class="mono">05</span>BC System</a></li>
+      <li><a href="empresa.html"><span class="mono">06</span>Empresa</a></li>
+      <li><a href="contato.html"><span class="mono">07</span>Contato</a></li>
     </ol>
   </nav>
   <div class="menu__foot">
@@ -281,7 +294,7 @@
   <span class="crop crop--tl" aria-hidden="true"></span>
   <div class="wrap pn-hero__in">
     <div class="pn-hero__copy">
-      <p class="pn-hero__eyebrow mono" data-intro><span class="tag tag--volt">Rio Claro-SP</span><span>Balanças · PDV · NFC-e</span></p>
+      <p class="pn-hero__eyebrow mono" data-intro><a class="pn-novo" href="calibracao.html"><span class="tag tag--volt">Novo</span><span class="pn-novo__t">Certificado de calibração</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a><span>Balanças · PDV · NFC-e</span></p>
       <h1 class="pn-hero__t" id="pn-hero-t">
         <span class="pn-hero__l"><span class="pn-hero__w" data-intro>A medida certa</span></span>
         <span class="pn-hero__l"><span class="pn-hero__w" data-intro>para o seu</span></span>
@@ -480,6 +493,33 @@
   </div>
 </section>
 
+<!-- ============================== NOVIDADE: CERTIFICADO DE CALIBRAÇÃO ==============================
+     Faixa verde entre o painel e o catálogo: o serviço novo (calibracao.html). O certificado à direita é
+     só ilustração (aria-hidden); o peso-padrão é o símbolo #i-peso do sprite. -->
+<section class="pn-cal on-green" aria-labelledby="pn-cal-t" data-float-off>
+  <div class="wrap pn-cal__in">
+    <div class="pn-cal__copy">
+      <p class="pn-cal__k mono"><span class="tag tag--ink">Novo</span><span>Serviço de calibração</span></p>
+      <h2 class="pn-cal__t" id="pn-cal-t" data-reveal="split">Agora com certificado de calibração.</h2>
+      <p class="pn-cal__p" data-reveal>Erro, incerteza e rastreabilidade da sua balança num certificado em PDF, assinado digitalmente. Atende a maioria das auditorias <span class="nobr">ISO 9001</span> e o controle de qualidade.</p>
+      <div class="btns pn-cal__btns" data-reveal>
+        <a class="btn btn--ink btn--lg" data-magnet href="calibracao.html"><span class="st" data-t="Conhecer o serviço">Conhecer o serviço</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="link-u pn-cal__wa" data-wa="Olá! Vim pelo site e quero um orçamento do certificado de calibração para a minha balança." href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Vim%20pelo%20site%20e%20quero%20um%20or%C3%A7amento%20do%20certificado%20de%20calibra%C3%A7%C3%A3o%20para%20a%20minha%20balan%C3%A7a." target="_blank" rel="noopener">Pedir orçamento no WhatsApp</a>
+      </div>
+    </div>
+    <div class="pn-cal__vis" aria-hidden="true">
+      <div class="pn-cal__doc">
+        <span class="pn-cal__doc-top"><span>Balanças.com</span><span>Pág. 1/2</span></span>
+        <span class="pn-cal__doc-t">Certificado de calibração</span>
+        <span class="pn-cal__doc-n">Nº 0147/2026</span>
+        <span class="pn-cal__doc-tb"><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="pn-cal__doc-foot"><span class="pn-cal__doc-ok">Repetibilidade<br>Excentricidade<br>Incerteza (k=2)</span><span class="pn-cal__doc-seal">Assinado<br>digitalmente</span></span>
+      </div>
+      <svg class="pn-cal__peso"><use href="#i-peso"/></svg>
+    </div>
+  </div>
+</section>
+
 <!-- ============================== 02 DIRETO DO CATÁLOGO ==============================
      Atalhos por categoria (com a contagem real) logo abaixo do título e quatro fichas
      limpas (foto, marca, nome, resumo, selo, Detalhes + WhatsApp) com produtos que NÃO
@@ -556,7 +596,7 @@
       </div>
       <nav class="ftr__col" aria-label="Rodapé">
         <p class="ftr__h mono">Navegação</p>
-        <ul role="list"><li><a href="index.html" data-home aria-current="page">Início</a></li><li><a href="assistencia.html">Assistência técnica</a></li><li><a href="produtos.html">Produtos</a></li><li><a href="sistema.html">BC System</a></li><li><a href="sistema.html#fichas">BC Fichas</a></li><li><a href="empresa.html">Empresa</a></li><li><a href="contato.html">Contato</a></li><li><a href="contato.html#faq">Perguntas frequentes</a></li></ul>
+        <ul role="list"><li><a href="index.html" data-home aria-current="page">Início</a></li><li><a href="assistencia.html">Assistência técnica</a></li><li><a href="calibracao.html">Calibração</a></li><li><a href="produtos.html">Produtos</a></li><li><a href="sistema.html">BC System</a></li><li><a href="sistema.html#fichas">BC Fichas</a></li><li><a href="empresa.html">Empresa</a></li><li><a href="contato.html">Contato</a></li><li><a href="contato.html#faq">Perguntas frequentes</a></li></ul>
       </nav>
       <div class="ftr__col">
         <p class="ftr__h mono">Contato</p>

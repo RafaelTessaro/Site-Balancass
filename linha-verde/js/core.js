@@ -816,7 +816,7 @@
         else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
       }
     });
-    window.addEventListener("resize", function () { if (menuOpen && window.innerWidth > 1080) closeMenu(true); });
+    window.addEventListener("resize", function () { if (menuOpen && window.innerWidth > 1180) closeMenu(true); });
   }
 
   /* ------------------------------------------------------------------
@@ -1329,7 +1329,7 @@
      Um link pode dizer o próprio lugar: data-contar-o="…" (e data-contar-id).
      ------------------------------------------------------------------ */
   var CONTAR_PAGINA = (function () {
-    var m = /(?:^|\s)pg-(inicio|produtos|assistencia|sistema|empresa|contato)(?=\s|$|-)/.exec((document.body && document.body.className) || "");
+    var m = /(?:^|\s)pg-(inicio|produtos|assistencia|calibracao|sistema|empresa|contato)(?=\s|$|-)/.exec((document.body && document.body.className) || "");
     return m ? m[1] : "";
   })();
   var contarURL = "", contados = 0, abertos = Object.create(null);   // mapa sem protótipo (código "constructor")
