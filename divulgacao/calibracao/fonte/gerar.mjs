@@ -8,8 +8,11 @@
 //   - nenhum texto marcado (data-dentro: essencial; data-deco: identificador) sai da arte;
 //   - nenhum texto encosta em outro texto nem no visual (data-obj: balança, peso, certificado);
 //   - todo texto essencial (data-dentro) tem pelo menos o tamanho mínimo da arte (min, em px);
+//   - nenhum texto fica sobre a faixa diagonal (.band), com uma folga, salvo o que tem fundo próprio
+//     (rodapé, botões, etiquetas): mede cada linha de texto contra o paralelogramo da faixa;
 //   - o arquivo não passa do limite (maxKB), quando há um.
-// Não substitui olhar as artes: a sobreposição com a faixa verde inclinada, por exemplo, não é medida.
+// Não substitui olhar as artes: os textos de dentro do certificado ilustrativo, por exemplo, não têm
+// tamanho mínimo (por isso ele leva a legenda externa "Modelo ilustrativo de certificado").
 import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -22,6 +25,7 @@ const AQUI = dirname(fileURLToPath(import.meta.url));
 const SAIDA = join(AQUI, '..');
 const so = process.argv.slice(2);
 const falhas = [];
+const registro = [];   // vai para ultima-geracao.txt (geração completa)
 
 function pagina(a) {
   return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${a.nome}</title>
@@ -57,6 +61,37 @@ function conferir(min) {
       }
     }
   }
+  // Faixa diagonal: o paralelogramo de cada .band (skewX em torno do centro: x' = x + c·(y − centro))
+  const faixas = [...document.querySelectorAll('.band')].map((b) => {
+    const c = new DOMMatrix(getComputedStyle(b).transform).c;
+    return { L: art.left + b.offsetLeft, R: art.left + b.offsetLeft + b.offsetWidth, cy: art.top + b.offsetTop + b.offsetHeight / 2, c };
+  });
+  const folgaFaixa = Math.max(4, art.width * 0.008);
+  const naFaixa = (q, f) => {   // existe y entre o topo e a base da linha com a linha dentro da faixa?
+    const tl = q.left - folgaFaixa, tr = q.right + folgaFaixa, tt = q.top, tb = q.bottom;
+    if (Math.abs(f.c) < 1e-6) return tr > f.L && tl < f.R;
+    // borda esquerda: L + c·(y − cy) < tr ; borda direita: R + c·(y − cy) > tl
+    const y1 = f.cy + (tr - f.L) / f.c, y2 = f.cy + (tl - f.R) / f.c;
+    return f.c < 0 ? Math.max(tt, y1) < Math.min(tb, y2) : Math.max(tt, y2) < Math.min(tb, y1);
+  };
+  const temFundo = (el) => {   // o texto está sobre um fundo próprio (rodapé, botão, etiqueta)?
+    for (let e = el; e && e.id !== 'art'; e = e.parentElement) {
+      const cs = getComputedStyle(e), antes = getComputedStyle(e, '::before');
+      if (cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent') return true;
+      if (antes.content !== 'none' && antes.backgroundColor !== 'rgba(0, 0, 0, 0)' && antes.position === 'absolute') return true;
+    }
+    return false;
+  };
+  if (faixas.length) for (const el of textos) {
+    const andar = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    for (let n = andar.nextNode(); n; n = andar.nextNode()) {
+      if (!n.textContent.trim() || temFundo(n.parentElement)) continue;
+      const rg = document.createRange(); rg.selectNodeContents(n);
+      if ([...rg.getClientRects()].some((q) => faixas.some((f) => naFaixa(q, f)))) {
+        erros.push(`texto sobre a faixa verde: "${n.textContent.trim().slice(0, 40)}"`); break;
+      }
+    }
+  }
   for (const f of ['900 20px "Big Shoulders"', '400 20px "Archivo"', '400 20px "Martian Mono"'])
     if (!document.fonts.check(f)) erros.push('fonte não carregou: ' + f);
   return erros;
@@ -83,14 +118,26 @@ for (const a of ARTES) {
   await el.screenshot(a.jpg ? { path: destino, type: 'jpeg', quality: a.jpg } : { path: destino });
   const kb = Math.round(statSync(destino).size / 1024);
   if (a.maxKB && kb > a.maxKB) erros.push(`arquivo com ${kb} KB (limite ${a.maxKB} KB)`);
-  console.log(`${erros.length ? '✗' : '✓'} ${a.pasta}/${a.nome}${a.jpg ? '.jpg' : '.png'}  ${a.w}×${a.h}  ${kb} KB`);
+  const linha = `${erros.length ? '✗' : '✓'} ${a.pasta}/${a.nome}${a.jpg ? '.jpg' : '.png'}  ${a.w}×${a.h}  ${kb} KB`;
+  console.log(linha); registro.push(linha, ...erros.map((e) => '    - ' + e));
   for (const e of erros) { console.log('    - ' + e); falhas.push(a.nome + ': ' + e); }
   await p.close();
 }
+const versaoChromium = b.version();
 await b.close();
-if (!so.length) galeria();
+if (!so.length) {
+  galeria();
+  // Registro da última geração completa: versões usadas e o resultado de cada arte
+  const versaoPw = require('playwright/package.json').version;
+  writeFileSync(join(AQUI, 'ultima-geracao.txt'), [
+    `Geração completa em ${new Date().toISOString()}`,
+    `Node ${process.version} · Playwright ${versaoPw} · Chromium ${versaoChromium}`,
+    `${registro.filter((l) => /^[✓✗]/.test(l)).length} artes · ${falhas.length} problema(s)`,
+    '', ...registro, '',
+  ].join('\n'));
+}
 if (falhas.length) { console.error(`\n${falhas.length} problema(s): corrija antes de usar as artes.`); process.exit(1); }
-console.log('\nTodas as conferências passaram. Olhe as artes mesmo assim (a faixa verde não é medida).');
+console.log('\nTodas as conferências passaram. Olhe as artes mesmo assim: composição, recortes e cores não são medidos.');
 
 // Galeria (ver-todas.html): todas as artes, separadas pelo uso
 function galeria() {
@@ -109,6 +156,6 @@ function galeria() {
 h2{font:500 13px/1 "Martian Mono",monospace;letter-spacing:.05em;text-transform:uppercase;color:#C6FF3D;margin:40px 0 10px;padding-top:16px;border-top:1px solid #2B2B2A}.n{margin:0 0 16px;font-size:15px}
 .g{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}figure{margin:0;max-width:340px}figure img{display:block;max-width:100%;height:auto;max-height:420px;width:auto;background:#222}
 figcaption{display:grid;gap:2px;margin-top:8px;font:400 11px/1.4 "Martian Mono",monospace;color:#8A8A85}figcaption b{color:#F4F4F0;font-weight:500;word-break:break-all}a{color:inherit}</style></head>
-<body><h1>Calibração <span>de balanças</span></h1><p>Revisão 2 das artes. Clique numa arte para abrir no tamanho real. Os textos de cada anúncio, as regras de texto e os dados a confirmar estão em <a href="TEXTOS-DOS-ANUNCIOS.md">TEXTOS-DOS-ANUNCIOS.md</a>. O certificado que aparece nas artes é um exemplo ilustrativo, sem valor de certificado.</p>${secoes}</body></html>`);
+<body><h1>Calibração <span>de balanças</span></h1><p>Revisão 3 das artes. Clique numa arte para abrir no tamanho real. Os textos de cada anúncio, as regras de texto e os dados a confirmar estão em <a href="TEXTOS-DOS-ANUNCIOS.md">TEXTOS-DOS-ANUNCIOS.md</a>. O certificado que aparece nas artes é um exemplo ilustrativo, sem valor de certificado.</p>${secoes}</body></html>`);
   console.log('ver-todas.html atualizado');
 }

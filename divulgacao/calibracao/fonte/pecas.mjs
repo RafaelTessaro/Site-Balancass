@@ -13,6 +13,7 @@ const uid = (p) => `${p}${++seq}`;
 /** Logo: o símbolo oficial (arquivo SVG) e o nome como no site (Big Shoulders). Sem o "Automação comercial",
  *  que fica ilegível nas artes reduzidas. tom: 'escuro' (fundo preto) ou 'claro' (fundo claro/verde). */
 export const logo = (tom = 'escuro', extra = '') =>
+  tom === 'placa' ? `<div class="lg lg--placa ${extra}" data-deco><img class="lg__i" src="${IMG}balancas-icone-claro.svg" alt=""><span class="lg__t"><b>Balanças<i>.</i>com</b></span></div>` :
   `<div class="lg ${extra}" data-deco><img class="lg__i" src="${IMG}${tom === 'escuro' ? 'balancas-icone-claro.svg' : 'balancas-icone.svg'}" alt=""><span class="lg__t"><b>Balanças<i>.</i>com</b></span></div>`;
 export const simbolo = (tom = 'escuro', cls = 'lg__i') =>
   `<img class="${cls}" src="${IMG}${tom === 'escuro' ? 'balancas-icone-claro.svg' : 'balancas-icone.svg'}" alt="">`;
@@ -31,8 +32,10 @@ export function peso(cls = 'peso', style = '', rotulo = '20 kg') {
 <ellipse cx="60" cy="160" rx="62" ry="12" fill="url(#${s})"/><path d="M10 66V150A50 11 0 0 0 110 150V66Z" fill="url(#${m})"/><ellipse cx="60" cy="66" rx="50" ry="11" fill="url(#${t})"/><ellipse cx="60" cy="66" rx="50" ry="11" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width=".8"/><path d="M42 44V66A18 4.2 0 0 0 78 66V44Z" fill="url(#${m})"/><ellipse cx="60" cy="66.2" rx="18" ry="4.2" fill="#000" fill-opacity=".18"/><path d="M33 44C33 15 87 15 87 44A27 6.5 0 0 1 33 44Z" fill="url(#${m})"/><ellipse cx="60" cy="44" rx="27" ry="6.5" fill="url(#${t})" fill-opacity=".55"/><path d="M44 30C47 22 56 20 62 21" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="3" stroke-linecap="round"/><text x="60" y="120" text-anchor="middle" font-family="Martian Mono, monospace" font-size="15" font-weight="500" fill="#2a2d31" fill-opacity=".55">${rotulo}</text></svg>`;
 }
 
-/** O visual principal: a balança de bancada (Max 15 kg) com um peso-padrão de 10 kg no prato.
- *  style: posição e largura do conjunto (a altura sai da proporção da foto, 900×569). */
+/** O visual principal: a balança de bancada (Max 15 kg) e, AO LADO dela, um peso-padrão de 10 kg.
+ *  O peso não fica no prato: a foto é da balança com o visor zerado, e um peso em cima sugeriria
+ *  uma medição incoerente. É uma composição ilustrativa; troque por foto real do serviço quando houver.
+ *  style: posição e largura do conjunto (proporção fixa, cerca de 2 por 1). */
 export const balPeso = (style = '') =>
   `<div class="bp" style="${style}" data-obj><img class="bp__b" src="${IMG}balmak-one.webp" alt="">${peso('bp__p', '', '10 kg').replace(' data-obj', '')}</div>`;
 
@@ -48,7 +51,7 @@ export function cert(style = '') {
   <div class="cert__head">${simbolo('claro', 'cert__logo')}<p class="cert__t">Certificado de calibração</p><p class="cert__n">Modelo ilustrativo</p></div>
   <dl class="cert__id"><div><dt>Instrumento</dt><dd>${bar(70)}</dd></div><div><dt>Capacidade</dt><dd>${bar(46)}</dd></div><div><dt>Método</dt><dd>EURAMET cg-18</dd></div></dl>
   <table class="cert__tb"><thead><tr><th>Carga</th><th>Indicação</th><th>Erro</th><th>U (k=2)</th></tr></thead><tbody>${linhas}</tbody></table>
-  <div class="cert__foot"><ul class="cert__ok"><li>Repetibilidade</li><li>Excentricidade</li><li>Rastreabilidade</li></ul><span class="cert__pdf">PDF assinado digitalmente</span></div>
+  <div class="cert__foot"><ul class="cert__ok"><li>Repetibilidade</li><li>Excentricidade</li><li>Rastreabilidade</li></ul><span class="cert__pdf">Certificado em PDF</span></div>
   <span class="cert__wm">Exemplo</span>
 </div>`;
 }
@@ -59,4 +62,6 @@ export const rodape = (style = '', { site = true } = {}) =>
 
 /** Condição de não acreditação (essencial quando a peça fala de auditoria). */
 export const RESSALVA = 'Serviço de calibração não acreditado pela Cgcre. Consulte a adequação aos requisitos da sua empresa.';
+/** Legenda externa dos certificados ilustrativos (legível na prévia do celular). */
+export const legendaCert = (style = '') => `<p class="cert-leg" style="${style}" data-dentro>Modelo ilustrativo de certificado</p>`;
 export const RESSALVA_CURTA = 'Serviço não acreditado pela Cgcre.';

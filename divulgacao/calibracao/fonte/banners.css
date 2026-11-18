@@ -42,6 +42,14 @@ body { width: max-content; }
 .lg__t b i { font-style: normal; color: var(--green); }
 .is-green .lg__t b i { color: var(--paper); }
 
+/* Logo sobre uma placa preta (para o fundo verde: o "bq" verde não some) */
+.lg--placa { padding: .32em .55em .32em .4em; background: var(--ink); color: var(--paper); }
+
+/* Legenda externa do certificado ilustrativo */
+.cert-leg { position: absolute; z-index: 3; padding: .28em .55em .3em; background: var(--ink); font: 700 38px/1.2 var(--f-text); color: var(--paper); }   /* placa própria: legível também sobre a faixa */
+.cert-leg::before { content: ""; display: inline-block; width: .9em; height: .62em; margin-right: .4em; background: var(--volt); transform: skewX(var(--slash)); }
+.is-paper .cert-leg, .is-green .cert-leg { background: var(--paper); color: var(--ink); }
+
 /* Etiqueta pequena (identificador) */
 .tag { display: inline-flex; align-items: center; padding: .42em .95em .36em; font: 500 var(--tg, 26px)/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; position: relative; isolation: isolate; color: var(--ink); white-space: nowrap; }
 .tag::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--volt); transform: skewX(var(--slash)); }
@@ -91,9 +99,10 @@ body { width: max-content; }
 /* ---------------------------------------------------------------------
    Balança com o peso-padrão no prato (visual principal)
    --------------------------------------------------------------------- */
-.bp { position: absolute; z-index: 2; aspect-ratio: 900 / 569; }
-.bp__b { display: block; width: 100%; height: auto; filter: drop-shadow(0 16px 14px rgba(0,0,0,.35)); }
-.bp__p { position: absolute; left: 37.1%; top: -2%; width: 17%; height: auto; aspect-ratio: 120 / 172; }
+/* A balança à esquerda e o peso ao lado, à direita, apoiados na mesma linha (não no prato) */
+.bp { position: absolute; z-index: 2; aspect-ratio: 100 / 49.3; }
+.bp__b { position: absolute; left: 0; bottom: 0; display: block; width: 78%; height: auto; filter: drop-shadow(0 16px 14px rgba(0,0,0,.35)); }
+.bp__p { position: absolute; right: 0; bottom: 1%; width: 19%; height: auto; aspect-ratio: 120 / 172; filter: drop-shadow(0 12px 10px rgba(0,0,0,.3)); }
 .is-paper .bp__b, .is-green .bp__b { filter: drop-shadow(0 16px 14px rgba(0,0,0,.22)); }
 .peso { position: absolute; z-index: 2; height: auto; aspect-ratio: 120 / 172; filter: drop-shadow(0 12px 10px rgba(0,0,0,.3)); }
 
