@@ -11,7 +11,7 @@ A pasta **`site/`** é o pacote pronto para a HostGator: o conteúdo dela vai in
 | Endereço | O que é |
 |---|---|
 | `balancass.com/` | Início (variação 3 · Painel) |
-| `/assistencia.html` · `/calibracao.html` · `/produtos.html` · `/sistema.html` · `/empresa.html` · `/contato.html` | Abas do site (`calibracao.html`: o **certificado de calibração**, serviço novo de novembro de 2026, destino dos anúncios) |
+| `/assistencia.html` · `/calibracao.html` · `/produtos.html` · `/sistema.html` · `/empresa.html` · `/contato.html` | Abas do site (`calibracao.html`: **calibração de balanças com certificado**, serviço novo de novembro de 2026, não acreditado pela Cgcre; destino dos anúncios) |
 | `/produtos.html#p=toledo-prix-7e` | Link direto de um produto (abre os detalhes) |
 | `/painel/` | **Painel com login** para adicionar, editar, esconder e excluir produtos (um ou **vários de uma vez**), mudar o estoque e trocar fotos, para cuidar das **categorias e subcategorias** do catálogo, dos **logos de clientes** (área **Clientes**: incluir, trocar, reordenar, excluir) e dos **dados da empresa** que o site mostra (área **Empresa**: contato, endereço, horário, feriados, aviso no site, Google e redes, equipe, depoimentos, marcas e o **produto da capa**), e para ver os **produtos mais procurados** e de onde vêm os contatos pelo WhatsApp. Cada pessoa com o seu usuário, como **Administrador** ou **Editor**, com **verificação em duas etapas** (Google Authenticator) opcional ou exigida pelo administrador. Entrada pelo link discreto **“Área restrita”** no rodapé (fora do Google) |
 | qualquer endereço inexistente | Página 404 no estilo do site |
@@ -19,7 +19,7 @@ A pasta **`site/`** é o pacote pronto para a HostGator: o conteúdo dela vai in
 **Publicar:** [`docs/PUBLICAR-NO-CPANEL.md`](docs/PUBLICAR-NO-CPANEL.md) (PHP 8.3, envio do `site.zip`, primeiro acesso ao painel, testes).
 **Produtos (um ou vários de uma vez), categorias, capa do site, Mais procurados, logos de clientes, usuários e dados da empresa no dia a dia:** [`docs/COMO-ADICIONAR-PRODUTOS.md`](docs/COMO-ADICIONAR-PRODUTOS.md) (pelo painel; edição manual como plano B).
 **Atualizar o site que já está no ar:** `atualizacao.zip` (guia de publicação, item 6).
-**Divulgar o certificado de calibração:** `artes-calibracao.zip` (todas as artes para redes sociais, Google e LinkedIn, com os textos dos anúncios em `divulgacao/calibracao/TEXTOS-DOS-ANUNCIOS.md`).
+**Divulgar a calibração de balanças:** `artes-calibracao.zip` (as artes da revisão 2 para redes sociais, WhatsApp, Google e LinkedIn, com o gerador, as imagens e as fontes; textos dos anúncios, regras de texto e dados a confirmar em `divulgacao/calibracao/TEXTOS-DOS-ANUNCIOS.md`).
 
 **Gerar o pacote de novo** (depois de mudar `linha-verde/`, `compartilhado/`, `painel/` ou `hospedagem/`):
 
@@ -68,7 +68,7 @@ ferramentas/
   aplicar-pacote.php       aplica uma atualização do catálogo ao compartilhado/ do projeto (mesmas funções do painel)
   converter-produtos.mjs   conversão única do catálogo antigo para o formato do painel
 docs/                      guias e avaliações
-divulgacao/calibracao/     artes da campanha do certificado de calibração (redes sociais, Google, LinkedIn), textos dos anúncios e o gerador (fonte/)
+divulgacao/calibracao/     artes da campanha de calibração (redes sociais, WhatsApp, Google, LinkedIn), textos dos anúncios e o gerador (fonte/, com imagens e fontes)
 design-1-tara-zero/  design-2-balcao/  design-3-linha-verde/   propostas da 1ª rodada
 index.html                 página que apresenta as 3 propostas da 1ª rodada
 ```
@@ -81,7 +81,7 @@ index.html                 página que apresenta as 3 propostas da 1ª rodada
 - [Fontes das especificações dos produtos](docs/FONTES-DOS-PRODUTOS.md)
 - [Catálogo: o que estava velho e o que mudou em outubro de 2026](docs/ATUALIZAR-BALANCAS.md)
 - [Avaliação das propostas de design](docs/AVALIACAO-DOS-DESIGNS.md)
-- [Campanha do certificado de calibração: artes e textos dos anúncios](divulgacao/calibracao/TEXTOS-DOS-ANUNCIOS.md)
+- [Campanha de calibração de balanças: artes, textos dos anúncios e dados a confirmar](divulgacao/calibracao/TEXTOS-DOS-ANUNCIOS.md)
 
 ## Tecnologia
 

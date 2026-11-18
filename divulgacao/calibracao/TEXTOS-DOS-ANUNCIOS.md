@@ -1,244 +1,264 @@
-# Campanha: Certificado de calibração
+# Campanha: Calibração de balanças — textos, peças e plano (revisão 2)
 
-Material para divulgar o serviço novo nas redes sociais, no tráfego pago (Meta Ads, Google Ads e LinkedIn) e no WhatsApp.
-As artes estão nas pastas ao lado. Para ver todas de uma vez, abra o `ver-todas.html` no navegador.
+Material para divulgar o serviço nas redes sociais, no tráfego pago (Meta Ads, Google Ads e LinkedIn) e no WhatsApp.
+Esta é a **revisão 2**. Ela segue o *Guia de revisão das artes de calibração da Balanças.com* (18/11/2026): saíram as promessas de aceitação em auditorias, o certificado aparece só como exemplo identificado, os textos de leitura ficaram maiores e a explicação de calibração, manutenção e verificação ficou mais precisa.
 
-Destino de todos os anúncios: **https://balancass.com/calibracao.html**, a página nova do site, ou direto o WhatsApp.
-
----
-
-## 1. Antes de ligar os anúncios
-
-1. **Publique a atualização do site** (`atualizacao.zip`, guia de publicação item 6). Sem a página `calibracao.html` no ar, o anúncio leva a um erro 404.
-2. Abra no celular `balancass.com/calibracao.html` e toque em **Pedir orçamento** para testar o WhatsApp.
-3. **Responda rápido no WhatsApp.** No tráfego pago, quem pergunta e espera horas some. Deixe uma resposta pronta (modelo no item 6).
-4. Tenha à mão, para quem pedir: um certificado de exemplo (de teste, sem dados de cliente), os certificados dos pesos-padrão e o POP de calibração. Empresas com ISO 9001 costumam pedir isso antes de contratar.
-5. **Medir os resultados:** no painel do site, em **Mais procurados**, a página aparece como **“Calibração (certificado)”**, com as visitas e os cliques no WhatsApp. O site não tem Pixel da Meta nem tag do Google (é uma escolha de privacidade do projeto). Por isso, o remarketing é feito com quem interagiu com o perfil ou com os anúncios, e não com quem visitou o site.
+As artes estão nas pastas ao lado. Para ver todas de uma vez, abra `ver-todas.html` no navegador.
+Destino dos anúncios: **https://balancass.com/calibracao.html** ou o WhatsApp **(19) 3023-9050**. Escreva sempre **balancass.com**, com dois "s".
 
 ---
 
-## 2. Regras de texto (valem para todas as peças, inclusive respostas e legendas)
+## 1. Antes de publicar
 
-| Use | Evite | Por quê |
+1. **Publique a atualização do site** (`atualizacao.zip`, guia de publicação, item 6). Sem ela, a página `calibracao.html` não existe no servidor.
+2. **Abra a página no celular e no computador**: `balancass.com/calibracao.html`. Toque em **Solicitar orçamento** e confira se abre o WhatsApp (19) 3023-9050 com a mensagem pronta. O servidor responde *406* a acessos automáticos (ferramentas de revisão e robôs), então essa conferência precisa ser feita por uma pessoa.
+3. **Teste a prévia do link**: mande o endereço para você mesmo no WhatsApp e confira a imagem e o título.
+4. **Confirme os dados do item 3** antes de ligar os anúncios.
+5. Deixe pronta a resposta do WhatsApp (item 7) e, se possível, um **modelo de certificado com dados fictícios** (o sistema de certificados gera a prévia com a marca "PRÉVIA — SEM VALOR"). A página oferece esse modelo a quem pedir.
+
+---
+
+## 2. Regras de texto (valem para artes, legendas, anúncios e respostas)
+
+| Use | Não use | Por quê |
 |---|---|---|
-| “certificado de calibração”, “calibração” | “aferição” como nome do serviço | Aferição é o nome antigo da **verificação do IPEM-SP**. É outra coisa, e é obrigatória |
-| “atende **a maioria** das auditorias ISO 9001” | “vale para todas as empresas”, “aceito em qualquer auditoria” | Laboratório acreditado e alguns setores regulados (como certas normas da Anvisa) exigem RBC |
-| “certificado não RBC”, “laboratório não acreditado” (para explicar) | “RBC”, “acreditado”, “Inmetro” como selo de qualidade | Só laboratório acreditado pode usar esses nomes como selo (NIE-CGCRE-009) |
-| “padrões rastreáveis”, “pesos-padrão calibrados por laboratório acreditado” | “rastreável à RBC” | A Cgcre entende essa expressão como uso indevido da acreditação |
-| “código do certificado”, “PDF assinado digitalmente” | “QR code” | O certificado não tem QR code |
-| “não substitui a verificação do IPEM-SP” | “validade”, “balança aprovada” | O certificado não traz validade nem aprova a balança; quem aprova é o IPEM |
-| “calibramos sem abrir a balança” | “calibra e ajusta” | Ajuste e conserto são manutenção (oficina autorizada), com ordem de serviço |
+| “calibração de balanças com certificado”, “emissão de certificado” | “agora com certificado”, “a gente emite”, “a gente certifica” | O serviço é a calibração; o certificado é o registro dela. “Certifica” sugere certificação da empresa |
+| “Serviço de calibração não acreditado pela Cgcre. Consulte a adequação aos requisitos da sua empresa.” | “atende a maioria (ou diversas) das auditorias ISO 9001”, “vale para a maioria das empresas” | Não há como prometer aceitação: ela depende do cliente, do contrato, do setor e da auditoria |
+| ISO 9001 como **contexto do cliente** (“auditoria em preparação?”) | etiqueta “ISO 9001” como se fosse selo da empresa | Pode parecer certificação da Balanças.com |
+| “compara as indicações da balança com padrões de referência e registra os resultados e a incerteza” | “mostra quanto a balança erra e com que segurança” | “Segurança” não explica a incerteza de medição |
+| “informações de rastreabilidade metrológica”, “padrões calibrados por laboratório acreditado” | “a rastreabilidade que o auditor pede”, “rastreável à RBC”, “RBC”/“acreditado” como selo | A exigência varia; a acreditação dos padrões não passa para o serviço |
+| “Realizamos calibração e manutenção. A verificação metrológica é feita pelo IPEM-SP.” | “a gente cuida das duas”, “para a qualidade × para a lei” | Não pode parecer que a Balanças.com faz a verificação oficial |
+| “a calibração não substitui a verificação metrológica do IPEM-SP, **quando aplicável**” | “toda balança precisa da verificação” | A verificação vale para os casos previstos (por exemplo, venda por peso) |
+| “atendimento no local, mediante avaliação das condições de calibração”, “agendamos conforme a disponibilidade” | “sem tirar a balança do lugar”, “no dia que não atrapalha o seu trabalho” | Promessas absolutas que dependem do equipamento e do local |
+| “resultados documentados” | “pronto para mostrar”, “aprovado”, “validade” | Sugere adequação garantida ou aprovação |
+| “exemplo ilustrativo — sem valor de certificado” em toda imagem de certificado | número, resultados ou assinatura que pareçam reais | Não pode parecer um documento emitido |
+| “Envie os dados da balança e solicite um orçamento.” | “falta só o seu orçamento” | Diz o que a pessoa deve fazer |
+
+Tom: técnico, acessível e direto (“envie”, “solicite”, “consulte”, “atendimento”). No WhatsApp e nos posts do perfil, o tom pode ser mais próximo, sem transformar incerteza, rastreabilidade ou acreditação em slogan.
 
 ---
 
-## 3. As peças e a linguagem de cada uma
+## 3. Dados que precisam de confirmação interna
 
-A linguagem muda com **quem vê** e **em que momento** a pessoa está:
+| Afirmação usada | Onde aparece | Situação |
+|---|---|---|
+| Serviço **não acreditado** pela Cgcre (fora da RBC), informado no certificado | Site, artes, textos | Confirmado no sistema de certificados (declaração de laboratório não acreditado) |
+| Ensaios de erro de indicação, repetibilidade e excentricidade; incerteza com fator k | Site, LinkedIn, carrossel 3 | Confirmado no sistema (etapas da calibração) |
+| Incerteza pelo guia **EURAMET cg-18** | Site, LinkedIn | Confirmado no sistema (método do cálculo). Confira se o POP vigente cita o mesmo guia |
+| Padrões calibrados por **laboratório acreditado**, com os certificados enviados junto | Site | Confirmado no sistema (exige a acreditação do laboratório de cada padrão e anexa os certificados no e-mail) |
+| **PDF assinado digitalmente** | Site, textos | Informado pelo dono e previsto no sistema (versão 1.0.7). **Confirme com um certificado real** se a assinatura com o certificado da empresa já está configurada; se não estiver, use só “certificado em PDF” |
+| Condições do ensaio (temperatura, umidade e pressão) | Site | Confirmado no sistema (pressão obrigatória pelo POP) |
+| Lembrete da próxima calibração; data no certificado só se o cliente pedir | Site | Confirmado no sistema |
+| **Atendimento no local** em Rio Claro e região | Site, artes, textos | A confirmar: cidades atendidas e condições (acesso, espaço para os pesos, ambiente) |
+| **Balanças e capacidades** atendidas; rodoviárias e ferroviárias fora do serviço | Site (perguntas) | A confirmar: faixa de capacidade e classes cobertas pelos padrões da empresa. Rodoviárias fora: confirmado no sistema |
+| Modelo de certificado com dados fictícios para quem pedir | Site | A confirmar: gerar uma prévia no sistema |
+| Prazo de entrega do certificado | — | Não usado em nenhuma peça (não há prazo confirmado) |
+| Nota 5,0 no Google (56 avaliações) | Site, título do Google | Vem dos dados do site; confira antes de usar em anúncio |
 
-| Peça | Arquivo | Para quem | Momento | Tom |
-|---|---|---|---|---|
-| **A · Lançamento** | `feed-4x5-A-lancamento.png`, `quadrado-1x1-A-lancamento.png`, `stories-9x16-A-lancamento.png` | Quem já segue ou já é cliente | Fica sabendo da novidade | Próximo, de comemoração: “Agora com…” |
-| **B · Auditoria** | `feed-4x5-B-auditoria.png`, `quadrado-1x1-B-auditoria.png`, `stories-9x16-B-auditoria.png` | Público frio do tráfego pago (indústria, qualidade) | Tem a dor, não conhece a loja | Direto, começa pela dor: “Auditoria chegando?” |
-| **C · O que vem** | `feed-4x5-C-o-que-vem.png` | Quem já viu A ou B (remarketing) | Comparando opções | Informativo, mostra a entrega |
-| **Carrossel (5)** | `carrossel/carrossel-1…5` | Seguidores, orgânico | Quer entender | Explicativo, conversa: “Arraste”, “a gente” |
-| **Capa do Facebook** | `capa-facebook-1640x624.png` | Quem visita a página | — | Vitrine: só a novidade |
-| **LinkedIn** | `linkedin/linkedin-1200x627.png`, `linkedin-1200x1200.png` | Gestores da qualidade, compras, indústria | Trabalho | Empresa para empresa, técnico na medida |
-| **Google Display** | `google-display/*.jpg` | Quem navega em sites e apps | Distraído | Só o essencial: o que é, onde, o pedido |
-| **Google responsivo** | `google-display/responsivo/*` | Idem | Idem | Imagens **sem texto** (o Google põe os títulos) |
-| **Compartilhamento do site** | `site/og-calibracao.jpg` (já instalada no site) | Quem recebe o link no WhatsApp | — | Prévia do link |
-
-Stories e Reels: as artes já deixam livres os 250 px de cima e os 340 px de baixo (perfil, barra de resposta e botão do anúncio). A seta de “Peça seu orçamento” aponta para o botão.
+As artes mostram uma **balança de bancada de 15 kg com um peso de 10 kg** no prato e, sozinho, um peso de 20 kg. Se a empresa não calibra esse tipo de balança ou não tem esses padrões, troque a imagem.
 
 ---
 
-## 4. Textos dos anúncios — Meta Ads (Instagram e Facebook)
+## 4. As peças (27 originais → revisão 2)
 
-**Objetivo sugerido:** *Engajamento → Mensagens (WhatsApp)*. Quando a meta for levar à página, use *Tráfego* com o link de cada anúncio (item 8).
+| Peça original | Versão revisada | O que mudou |
+|---|---|---|
+| `feed-4x5-A-lancamento` | `instagram-facebook/feed-4x5-A-principal.png` | “Calibração de balanças com certificado”, apoio e ação maiores, um visual (balança com peso), sem certificado nem chamada técnica |
+| `feed-4x5-B-auditoria` | `instagram-facebook/feed-4x5-B-auditoria.png` | “Auditoria em preparação?”, sem promessa ISO e sem etiqueta ISO; ressalva de não acreditação legível; ação “Fale com a Balanças.com” |
+| `feed-4x5-C-o-que-vem` | `instagram-facebook/feed-4x5-C-o-que-voce-recebe.png` | “O que você recebe na calibração”: três itens; certificado identificado como exemplo |
+| `quadrado-1x1-A-lancamento` | `instagram-facebook/quadrado-1x1-A-principal.png` | Um visual só; apoio e contato maiores |
+| `quadrado-1x1-B-auditoria` | `instagram-facebook/quadrado-1x1-B-sua-empresa.png` | “Sua empresa precisa calibrar as balanças?” com os dados a enviar (no lugar de “Calibre antes”) |
+| `stories-9x16-A-lancamento` | `instagram-facebook/9x16/stories-9x16-anuncio-principal.png` | Versão para **anúncio**: a seta aponta para o botão da plataforma |
+| ↳ (nova) | `instagram-facebook/9x16/stories-9x16-organico-link.png` | Versão para **story do perfil**: área livre para a figurinha de link |
+| ↳ (nova) | `instagram-facebook/9x16/status-whatsapp-9x16.png` | Versão para o **status do WhatsApp**: telefone escrito e “responda este status” |
+| `stories-9x16-B-auditoria` | `instagram-facebook/9x16/stories-9x16-anuncio-auditoria.png` | Título curto, ressalva legível, sem certificado na borda |
+| `carrossel-1-capa` | `instagram-facebook/carrossel/carrossel-1-capa.png` | “Calibração de balanças com certificado” + “Conheça o serviço…” |
+| `carrossel-2-o-que-e` | `…/carrossel-2-o-que-e.png` | Comparação com padrões de referência e incerteza; um peso só |
+| `carrossel-3-o-que-vem` | `…/carrossel-3-o-que-informa.png` | Sem a frase de conformidade com a 17025; certificado como exemplo |
+| `carrossel-4-nao-e-afericao` | `…/carrossel-4-finalidades.png` | Três blocos empilhados (calibração, manutenção, verificação) e a frase do guia |
+| `carrossel-5-orcamento` | `…/carrossel-5-orcamento.png` | Uma solicitação simples de dados; telefone uma vez só; ressalva maior |
+| `capa-facebook-1640x624` | `instagram-facebook/capa-facebook-1640x624.png` | Mensagem institucional, sem “agora” |
+| `linkedin-1200x627` | `linkedin/linkedin-1200x627.png` | Título curto, uma linha de benefício, uma ação e a não acreditação |
+| `linkedin-1200x1200` | `linkedin/linkedin-1200x1200.png` | “Calibração de balanças para o controle de qualidade” no lugar de “A gente certifica” |
+| `og-calibracao.jpg` | `site/og-calibracao.jpg` (já instalada no site) | “Calibração de balanças” + “Balanças.com · Rio Claro e região”; menos elementos |
+| `display-300x250` … `display-320x50` (7) | `google-display/display-*.jpg` | “Com certificado · Rio Claro e região”; peso tirado do 728×90 e do 320×100; 320×50 redesenhado |
+| `responsivo-paisagem` e `responsivo-quadrado` | `google-display/responsivo/*` | Sem certificado e sem texto. **Substitua por fotos reais do atendimento** assim que houver |
+| `logo-quadrado`, `logo-paisagem` | `google-display/responsivo/logo-*.png` | Símbolo oficial (`compartilhado/img/logo`); o paisagem sem “Automação comercial” |
 
-### A · Lançamento (público: seguidores e clientes)
+Ficaram 29 arquivos: as 27 peças revisadas e mais duas versões verticais (story orgânico e status do WhatsApp).
+
+**Imagens estáticas não são links.** O que parece botão na arte é só a orientação: o link é o botão do anúncio, a figurinha de link do story ou a resposta no WhatsApp. Os PNG verticais não são vídeos de Reels.
+
+---
+
+## 5. Textos dos anúncios — Meta Ads (Instagram e Facebook)
+
+Botão: **Enviar mensagem** (abre o WhatsApp) ou **Saiba mais** (leva à página).
+
+### A · Principal (`feed-4x5-A-principal`, `quadrado-1x1-A-principal`, `stories-9x16-anuncio-principal`)
 - **Texto principal:**
-  > Novidade na Balanças.com: agora emitimos **certificado de calibração** para a sua balança.
+  > A Balanças.com oferece calibração de balanças com emissão de certificado para apoiar o controle de qualidade da sua empresa.
   >
-  > ✔ Erro, incerteza e rastreabilidade em cada ponto de carga
-  > ✔ Calibração no seu estabelecimento, sem tirar a balança do lugar
-  > ✔ Certificado em PDF, assinado digitalmente
+  > Informe a marca, o modelo, a capacidade, a quantidade de equipamentos e a cidade do atendimento. Se houver requisitos do cliente, do contrato ou da auditoria, envie também, para avaliarmos a adequação do serviço.
   >
-  > Atende a maioria das auditorias ISO 9001 e o controle de qualidade. Peça seu orçamento pelo WhatsApp.
-- **Título:** Certificado de calibração para a sua balança
+  > Serviço de calibração não acreditado pela Cgcre. A calibração não substitui a verificação metrológica do IPEM-SP, quando aplicável.
+- **Título:** Calibração de balanças com certificado
 - **Descrição:** Rio Claro e região
-- **Botão:** Enviar mensagem *(ou “Saiba mais”, se for para o site)*
 
-### B · Auditoria (público frio: indústria e qualidade)
+### B · Auditoria (`feed-4x5-B-auditoria`, `stories-9x16-anuncio-auditoria`)
 - **Texto principal:**
-  > Auditoria ISO 9001 chegando? O certificado de calibração das balanças é um dos registros que o auditor costuma pedir.
+  > Auditoria em preparação? Confira os requisitos de calibração das suas balanças.
   >
-  > A Balanças.com calibra no seu estabelecimento e entrega o certificado com erro, incerteza e a rastreabilidade dos pesos-padrão, em PDF assinado digitalmente.
+  > Envie os dados dos equipamentos e os requisitos da sua empresa. Avaliamos o atendimento e preparamos o orçamento.
   >
-  > Mande o modelo e a capacidade da balança e receba o orçamento.
-- **Título:** Calibre a balança antes da auditoria
-- **Descrição:** Certificado em PDF · Rio Claro e região
-- **Botão:** Enviar mensagem
+  > Serviço de calibração não acreditado pela Cgcre. Consulte a adequação aos requisitos da sua empresa.
+- **Título:** Calibração de balanças
+- **Descrição:** Consulte a adequação aos seus requisitos
 
-### C · O que vem (remarketing)
+### Sua empresa (`quadrado-1x1-B-sua-empresa`)
 - **Texto principal:**
-  > O que vem no nosso certificado de calibração: erro de indicação, repetibilidade, excentricidade, incerteza de medição e a rastreabilidade dos pesos-padrão.
+  > Sua empresa precisa calibrar as balanças? Envie os dados dos equipamentos e os requisitos da sua empresa. Avaliamos o atendimento e preparamos o orçamento.
   >
-  > Tudo num PDF assinado digitalmente, pronto para mostrar na auditoria. Falta só o seu orçamento.
-- **Título:** Mede. Calcula. Certifica.
-- **Descrição:** Certificado não RBC · atende a maioria das auditorias ISO 9001
-- **Botão:** Enviar mensagem
+  > Serviço de calibração não acreditado pela Cgcre.
+- **Título:** Fale com a Balanças.com
+- **Descrição:** Rio Claro e região
 
-### Stories (A e B)
-Texto principal curto (aparece pouco): **“Certificado de calibração para a sua balança. Peça seu orçamento.”** Botão: *Enviar mensagem*.
-No story **orgânico**, ponha a figurinha de **link** em cima da seta, apontando para o WhatsApp (item 8), com o texto “Orçamento”.
+### C · O que você recebe (`feed-4x5-C-o-que-voce-recebe`)
+- **Texto principal:**
+  > O que você recebe na calibração: resultados documentados, informações de incerteza e rastreabilidade e o certificado em PDF. A entrega segue o escopo do serviço contratado.
+  >
+  > Envie os dados da balança e solicite um orçamento.
+  >
+  > Serviço de calibração não acreditado pela Cgcre.
+- **Título:** O que você recebe na calibração
+- **Descrição:** Certificado em PDF
+
+### Formatos verticais
+- **Anúncio (Stories/Reels):** use `stories-9x16-anuncio-*`. O texto principal pode ser o de A ou B. A seta aponta para o botão da plataforma: confira nas prévias do Gerenciador se o botão não cobre o texto.
+- **Story do perfil:** use `stories-9x16-organico-link`. Ponha a **figurinha de link** logo abaixo de “Toque no link para falar com a gente”, com o endereço do WhatsApp (item 9).
+- **Status do WhatsApp:** use `status-whatsapp-9x16`. Quem vê pode responder o status; o telefone está escrito na arte.
 
 ---
 
-## 5. Legendas — posts orgânicos
+## 6. Posts do perfil
 
-### Carrossel (5 imagens, na ordem 1 → 5)
-> Sua balança tem certificado de calibração? 🤔
+### Carrossel (5 imagens, na ordem)
+> A Balanças.com oferece calibração de balanças com emissão de certificado para apoiar o controle de qualidade da sua empresa. Arraste para entender o serviço.
 >
-> Agora a Balanças.com emite! Arraste para entender o que é, o que vem no certificado e por que ele **não substitui** a verificação do IPEM-SP.
+> Informe a marca, o modelo, a capacidade, a quantidade de equipamentos e a cidade do atendimento. Se houver requisitos específicos do cliente, contrato ou auditoria, envie essas informações para avaliarmos a adequação do serviço.
 >
-> Ficou alguma dúvida? Comente aqui ou chame no WhatsApp (19) 3023-9050.
+> Solicite um orçamento pelo WhatsApp (19) 3023-9050.
 >
-> #calibração #certificadodecalibração #balança #iso9001 #controledequalidade #rioclaro #rioclarosp #indústria #balancascom
+> Serviço de calibração não acreditado pela Cgcre. A calibração não substitui a verificação metrológica do IPEM-SP, quando aplicável.
+>
+> #calibração #balanças #controledequalidade #rioclaro
 
-### Post do lançamento (feed A, orgânico)
-> Novidade fresquinha por aqui: agora a gente emite **certificado de calibração** para balanças! 🎉
+### Post do feed (A, orgânico)
+> Novo serviço na Balanças.com: calibração de balanças com emissão de certificado.
 >
-> É o documento que a qualidade, o auditor e muitos clientes pedem: mostra quanto a balança erra e com que segurança, com os pesos-padrão rastreáveis. Fazemos no seu estabelecimento e o certificado chega em PDF, assinado digitalmente.
+> Comparamos as indicações da balança com padrões de referência e registramos os resultados e a incerteza de medição no certificado, em PDF.
 >
-> Orçamento pelo WhatsApp (19) 3023-9050 ou no link da bio.
+> Envie os dados da balança pelo WhatsApp (19) 3023-9050 e solicite um orçamento.
+>
+> Serviço de calibração não acreditado pela Cgcre.
 
 ### Capa do Facebook
-Ao trocar a capa, o Facebook publica um post. Legenda: **“Capa nova para uma novidade: agora fazemos calibração de balanças com certificado. Saiba mais em balancass.com/calibracao.html”**
+Ao trocar a capa, o Facebook publica um post. Legenda: **“Assistência técnica, calibração de balanças e automação comercial em Rio Claro e região. Conheça a calibração: balancass.com/calibracao.html”**. Confira no celular e no computador se a foto do perfil e o corte não cobrem o texto.
 
 ---
 
-## 6. WhatsApp
+## 7. WhatsApp
 
-### Lista de transmissão para clientes (tom pessoal, curto)
-> Oi! Tudo bem? Aqui é da Balanças.com.
+### Lista de transmissão (só para clientes que aceitaram receber mensagens, LGPD)
+> Olá! Aqui é da Balanças.com.
 >
-> Passando para contar uma novidade: agora emitimos **certificado de calibração** para balanças, com erro, incerteza e rastreabilidade, em PDF assinado digitalmente. Atende a maioria das auditorias ISO 9001.
+> Agora oferecemos calibração de balanças com emissão de certificado, para o controle de qualidade da sua empresa.
 >
-> Se a sua empresa precisa, é só responder com o modelo e a capacidade da balança que a gente manda o orçamento. 😊
+> Se tiver interesse, responda com a marca, o modelo e a capacidade da balança, a quantidade de equipamentos e a cidade. Se houver alguma exigência do seu cliente, do contrato ou da auditoria, envie também.
+>
+> Serviço de calibração não acreditado pela Cgcre.
 
-Mande só para quem já é cliente e aceitou receber mensagens (LGPD). No **status**, use o `stories-9x16-A-lancamento.png`.
+### Resposta para quem chegar pelo anúncio
+> Olá! Para preparar o orçamento da calibração, envie uma foto da identificação da balança ou informe marca, modelo e capacidade. Precisamos também da quantidade de equipamentos e da cidade do atendimento. Sua empresa possui alguma exigência específica, como calibração acreditada? Com essas informações, avaliamos o atendimento.
 
-### Resposta pronta para quem chegar pelo anúncio
-> Olá! Que bom que você chamou. 😊 Para o orçamento da calibração, me conte:
-> 1. Marca, modelo e capacidade da balança (uma foto da etiqueta ajuda);
-> 2. Quantas balanças são;
-> 3. Onde elas ficam (cidade e bairro);
-> 4. Se o auditor ou o cliente pediu alguma exigência no certificado.
-
-Se a pessoa disser que precisa de **RBC**, explique com honestidade que o nosso certificado é não RBC e confira a exigência com ela antes de fechar.
+Se a resposta for “sim, precisa de calibração acreditada (RBC)”, diga com clareza que o serviço da Balanças.com não é acreditado e que essa exigência pede um laboratório acreditado.
 
 ---
 
-## 7. LinkedIn (empresa para empresa)
+## 8. LinkedIn
 
 - **Texto do post ou anúncio:**
-  > Para quem cuida da qualidade: o certificado de calibração das balanças é um dos registros que a auditoria ISO 9001 costuma conferir (requisito 7.1.5).
+  > A Balanças.com oferece calibração de balanças com emissão de certificado, para o controle de qualidade de empresas de Rio Claro e região.
   >
-  > A Balanças.com, de Rio Claro-SP, agora emite certificados de calibração de balanças:
-  > • ensaios no local de uso: erro de indicação, repetibilidade e excentricidade;
-  > • incerteza de medição calculada pelo guia EURAMET cg-18;
-  > • rastreabilidade pelos certificados dos pesos-padrão, calibrados por laboratório acreditado;
-  > • certificado em PDF, assinado digitalmente.
+  > O certificado traz os resultados dos ensaios (erro de indicação, repetibilidade e excentricidade), a incerteza de medição, calculada pelo guia EURAMET cg-18, e as informações de rastreabilidade dos padrões utilizados.
   >
-  > Somos laboratório não acreditado (certificado não RBC), o que atende a maioria das auditorias ISO 9001. Se o seu setor exige RBC, fale com a gente antes.
+  > Serviço de calibração não acreditado pela Cgcre. Se o seu cliente, contrato ou setor exige calibração acreditada, ela deve ser feita por um laboratório acreditado. Envie os requisitos da sua empresa e avaliamos a adequação.
   >
-  > Orçamento: balancass.com/calibracao.html
-- **Título do anúncio:** Certificado de calibração para a sua auditoria
+  > Solicite um orçamento: balancass.com/calibracao.html
+- **Título do anúncio:** Calibração de balanças para o controle de qualidade
 - **Botão:** Solicitar orçamento *(ou “Saiba mais”)*
-- **Público:** localização Rio Claro e região; cargos *Analista da Qualidade, Coordenador da Qualidade, Gerente da Qualidade, Gerente Industrial, Supervisor de Produção, Comprador*; setores *Indústria, Alimentos e bebidas, Química, Cerâmica, Logística*.
+- **Público sugerido (conferir no Gerenciador):** localização Rio Claro e região; cargos ligados à qualidade, à produção e a compras; setores industriais e de logística.
 
 ---
 
-## 8. Links com rastreio (UTM)
+## 9. Links
 
-Os parâmetros não mudam nada no site; servem para o Meta, o Google e o LinkedIn separarem os resultados de cada peça.
-
-| Peça | Link |
+| Uso | Link |
 |---|---|
-| Instagram · A | `https://balancass.com/calibracao.html?utm_source=instagram&utm_medium=pago&utm_campaign=calibracao&utm_content=lancamento` |
-| Instagram · B | `https://balancass.com/calibracao.html?utm_source=instagram&utm_medium=pago&utm_campaign=calibracao&utm_content=auditoria` |
-| Facebook · A | `https://balancass.com/calibracao.html?utm_source=facebook&utm_medium=pago&utm_campaign=calibracao&utm_content=lancamento` |
-| LinkedIn | `https://balancass.com/calibracao.html?utm_source=linkedin&utm_medium=pago&utm_campaign=calibracao` |
-| Google Display | `https://balancass.com/calibracao.html?utm_source=google&utm_medium=display&utm_campaign=calibracao` |
-| Google Pesquisa | `https://balancass.com/calibracao.html?utm_source=google&utm_medium=cpc&utm_campaign=calibracao` |
-| WhatsApp direto (anúncio de mensagem, story, bio) | `https://wa.me/551930239050?text=Ol%C3%A1%21%20Vi%20o%20an%C3%BAncio%20do%20certificado%20de%20calibra%C3%A7%C3%A3o%20e%20quero%20um%20or%C3%A7amento.` |
+| Página (anúncios com “Saiba mais”) | `https://balancass.com/calibracao.html?utm_source=<rede>&utm_medium=<pago-ou-organico>&utm_campaign=calibracao&utm_content=<peça>` |
+| WhatsApp direto (anúncio de mensagem, figurinha de link, bio) | `https://wa.me/551930239050?text=Ol%C3%A1%21%20Vi%20o%20an%C3%BAncio%20da%20calibra%C3%A7%C3%A3o%20de%20balan%C3%A7as%20e%20quero%20um%20or%C3%A7amento.` |
+
+**O que cada medição mostra, de verdade:**
+- **UTM** só identifica a origem quando um sistema lê esses parâmetros. **O site não lê** (não tem Google Analytics nem Pixel, por decisão de privacidade). As plataformas de anúncio contam os próprios cliques; a UTM ajuda a separar as peças nos relatórios delas e em uma ferramenta que venha a ser autorizada no futuro.
+- **Painel do site → Mais procurados:** o código conta, sem cookies, as visitas por página e os cliques no WhatsApp e em “Ligar”, por página e pelo lugar do botão. A página nova aparece como **“Calibração (certificado)”**. Confira depois da publicação se os números aparecem.
+- Nenhuma das duas mede **conversas qualificadas, propostas ou contratos**: anote no WhatsApp, por exemplo com uma etiqueta “Calibração – anúncio”, quantas conversas viraram proposta e quantas viraram serviço.
+- Sem Pixel, não há remarketing de quem visitou o site; o remarketing possível é de quem interagiu com o perfil ou com os anúncios.
 
 ---
 
-## 9. Google Ads
+## 10. Google Ads
 
-### Pesquisa (o melhor retorno: a pessoa já está procurando)
-- **Palavras-chave** (correspondência de frase): “calibração de balança”, “calibração de balanças”, “certificado de calibração de balança”, “empresa de calibração de balança”, “calibração de balança rio claro”, “calibração de balança iso 9001”, “calibrar balança”.
-- **Palavras negativas:** rbc, acreditado, acreditada, inmetro, curso, apostila, vaga, emprego, como calibrar, modelo de certificado, rodoviária, caminhão, aferição.
-  *Quem procura “aferição” quer a verificação do IPEM: use um grupo de anúncios à parte, levando para `assistencia.html`.*
-- **Títulos** (até 30 caracteres):
-  Calibração de Balanças · Certificado de Calibração · Rio Claro e Região · Calibração no Seu Local · PDF Assinado Digitalmente · Para Auditoria ISO 9001 · Peça Seu Orçamento · Erro, Incerteza e Padrões · Desde 2010 em Rio Claro · Nota 5,0 no Google · Orçamento pelo WhatsApp · Sem Tirar a Balança do Lugar · Calibre Antes da Auditoria · Certificado em PDF
+### Pesquisa
+- **Palavras-chave para testar** (correspondência de frase): “calibração de balança”, “calibração de balanças”, “certificado de calibração de balança”, “empresa de calibração de balança”, “calibração de balança rio claro”.
+- **Palavras negativas:** comece com as óbvias (curso, apostila, vaga, emprego, como calibrar, modelo de certificado, rodoviária, caminhão). Para **rbc, acreditado e aferição**, olhe primeiro o **relatório de termos de pesquisa**: quem procura “calibração RBC” precisa de serviço acreditado (exclua se aparecer); “aferição” às vezes é usada sem precisão. Um grupo dedicado a “aferição” deve levar à página de assistência e explicar a diferença; **nunca** anuncie a verificação oficial como se fosse feita pela Balanças.com.
+- **Títulos** (até 30 caracteres): Calibração de Balanças · Certificado de Calibração · Rio Claro e Região · Solicite um Orçamento · Balanças.com · Calibração com Certificado · Certificado em PDF · Atendimento em Rio Claro · Envie os Dados da Balança · Orçamento pelo WhatsApp · Desde 2010 em Rio Claro
 - **Descrições** (até 90 caracteres):
-  1. Certificado com erro, incerteza e rastreabilidade dos pesos-padrão. Peça seu orçamento.
-  2. Calibramos onde a balança trabalha, sem abrir nem romper lacre. Rio Claro e região.
-  3. Atende a maioria das auditorias ISO 9001. Certificado não RBC, em PDF assinado.
-  4. Mande o modelo e a capacidade pelo WhatsApp e receba o orçamento da calibração.
-- **Extensões:** ligação (19) 3023-9050; local (Rua 13, 650); sitelinks “O que vem no certificado” (`calibracao.html#certificado`), “Como funciona” (`#como-funciona`), “Dúvidas” (`#faq`), “Assistência técnica” (`assistencia.html`).
+  1. Calibração de balanças com certificado. Consulte o atendimento em Rio Claro e região.
+  2. Envie modelo, capacidade e cidade. Solicite um orçamento para a sua empresa.
+  3. Serviço não acreditado pela Cgcre. Consulte a adequação aos requisitos da sua empresa.
+  4. Resultados documentados, incerteza de medição e rastreabilidade, em certificado PDF.
+- Confira as combinações na pré-visualização da plataforma antes de publicar. “Atendimento em Rio Claro” só vale se o atendimento no local for confirmado (item 3).
 
-Confira a nota do Google antes de usar o título “Nota 5,0 no Google”: ele só vale enquanto a nota for essa.
+### Display (tamanhos fixos)
+`display-300x250`, `336x280`, `728x90`, `300x600`, `160x600`, `320x100` e `320x50`, todos em JPG abaixo de 150 KB. Texto: “Calibração de balanças · Com certificado · Rio Claro e região · Solicite orçamento”.
 
-### Display (banners)
-| Arquivo | Tamanho | Onde aparece |
-|---|---|---|
-| `display-300x250.jpg` | 300×250 | O mais usado: sites e apps |
-| `display-336x280.jpg` | 336×280 | Meio de texto em sites |
-| `display-728x90.jpg` | 728×90 | Topo de sites no computador |
-| `display-300x600.jpg` | 300×600 | Lateral de sites |
-| `display-160x600.jpg` | 160×600 | Lateral estreita |
-| `display-320x100.jpg` | 320×100 | Celular |
-| `display-320x50.jpg` | 320×50 | Rodapé de apps no celular |
-
-Todos abaixo de 150 KB, o limite do Google.
-
-### Display responsivo (o Google monta o anúncio)
-- **Imagens:** `responsivo/responsivo-paisagem-1200x628.jpg` e `responsivo-quadrado-1200x1200.jpg`, que não têm texto por cima, como o Google pede.
+### Display responsivo
+- **Imagens:** `responsivo-paisagem-1200x628.jpg` e `responsivo-quadrado-1200x1200.jpg`. O Google **recomenda** evitar texto e logos sobrepostos e composições artificiais nessas imagens (é boa prática, não regra de reprovação automática). As duas não têm texto, mas são composições: troque por fotos reais do atendimento assim que houver.
 - **Logos:** `logo-quadrado-1200x1200.png` e `logo-paisagem-1200x300.png`.
-- **Título curto:** Certificado de Calibração · **Título longo:** Certificado de calibração para a sua balança, em Rio Claro e região
-- **Descrições:** as mesmas da pesquisa.
-- **Nome da empresa:** Balanças.com
+- **Título curto:** Calibração de Balanças · **Título longo:** Calibração de balanças com certificado, em Rio Claro e região
+- **Descrições:** as da pesquisa.
 
 ---
 
-## 10. Plano sugerido para as duas primeiras semanas
+## 11. Plano de teste (hipóteses, não promessas)
 
-| Dia | Orgânico | Pago |
-|---|---|---|
-| 1 | Post A no feed + story A + capa nova do Facebook + lista de transmissão no WhatsApp | Liga o **teste A × B** (Meta, mensagens, mesma verba para cada um) |
-| 2 | Post no LinkedIn | LinkedIn (se houver verba) |
-| 3 | Carrossel | — |
-| 5 | Story B | Google Pesquisa |
-| 8 | Post C | Desliga o pior entre A e B (maior custo por conversa) e liga o C para quem interagiu |
-| 10 | Story com a pergunta “Sua empresa tem ISO 9001?” (enquete) | Google Display (se a Pesquisa der retorno) |
-| 14 | Repost do carrossel nos stories | Revisão: custo por conversa e orçamentos fechados |
-
-**Público do Meta (pago):** Rio Claro + 40 km (Limeira, Piracicaba, Araras, Santa Gertrudes, Cordeirópolis, Ipeúna, Itirapina). Idade de 25 a 60 anos; interesses em *ISO 9001, gestão da qualidade, indústria, controle de qualidade, pequenas e médias empresas*. O polo cerâmico de Santa Gertrudes e Cordeirópolis vale um conjunto de anúncios só para ele.
-
-**Verba:** comece pequeno e igual para A e B (por exemplo, R$ 15 por dia para cada um durante 7 dias) e só aumente o que trouxer conversa no WhatsApp a um custo que vale a pena.
+- **A × B são conceitos diferentes** (mensagem, cor, visual e público mudam juntos). Dá para comparar qual conceito traz mais conversas, mas não qual elemento causou a diferença. Para testar um elemento (só o título, por exemplo), mude só ele.
+- **Não desligue uma versão cedo** só porque ela tem poucos resultados nos primeiros dias. Decida pelo conjunto: custo por conversa, conversas qualificadas, propostas enviadas e serviços fechados.
+- **Canal:** comece pelo canal que combina com a demanda e com a capacidade de atendimento (por exemplo, Pesquisa do Google para quem já procura o serviço, ou Meta com público local) e evite dividir uma verba pequena em muitas campanhas.
+- **Verba:** qualquer valor é um ponto de partida, não uma previsão de resultado.
+- **Públicos e área:** cidades, raio e interesses precisam ser conferidos no Gerenciador (nem todo interesse existe, nem toda cidade cabe no raio escolhido) e na operação (onde o atendimento no local é viável).
 
 ---
 
-## 11. Refazer ou mudar uma arte
+## 12. Refazer ou mudar uma arte
 
-As artes são geradas a partir de HTML, com as fontes e as cores do site:
+Requisitos: Node 18 ou mais novo e o Playwright com o Chromium (`npm i playwright` e `npx playwright install chromium`). Tudo o que as artes usam está em `fonte/`: as fontes do site (`fonte/fontes`, licença OFL), o símbolo oficial e a foto da balança (`fonte/img`).
 
 ```bash
 node divulgacao/calibracao/fonte/gerar.mjs                          # todas
 node divulgacao/calibracao/fonte/gerar.mjs feed-4x5-B-auditoria     # só uma
 ```
 
-Os textos e as posições ficam em `fonte/artes.mjs`, as peças (logo, certificado, peso-padrão, rodapé) em `fonte/pecas.mjs` e o estilo em `fonte/banners.css`. Cada arte também vira um HTML em `fonte/html/`, que abre no navegador. O telefone e o site estão escritos nas artes: se mudarem, troque em `fonte/pecas.mjs` e gere de novo.
+O gerador **para com erro** quando um texto sai da arte, encosta em outro texto ou no visual, fica abaixo do tamanho mínimo da peça (36 px nas artes de 1080 px), quando uma fonte ou imagem não carrega ou quando um banner passa de 150 KB. Ele **não** mede a sobreposição com a faixa verde inclinada nem garante que a arte está bonita: olhe as artes reduzidas (a 360 px de largura) antes de publicar.
+
+Textos e posições: `fonte/artes.mjs`. Peças (logo, balança com peso, certificado de exemplo, rodapé, ressalva): `fonte/pecas.mjs`. Estilo: `fonte/banners.css`. Cada arte também vira um HTML em `fonte/html/`, que abre no navegador.

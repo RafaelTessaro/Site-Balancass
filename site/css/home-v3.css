@@ -635,6 +635,10 @@
   box-shadow: 0 30px 50px -24px rgba(0,0,0,.75);
 }
 .pn-cal__doc::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--green); }
+/* O certificado da faixa é um exemplo: faixa de identificação no topo */
+.pn-cal__doc-ex { margin: -16px -16px 0; padding: 7px 10px 6px; background: var(--ink); color: var(--paper); border-bottom: 4px solid var(--green);
+  font: 700 9.5px/1.2 var(--f-text); letter-spacing: .05em; text-transform: uppercase; text-align: center; }
+.pn-cal__aviso { display: block; margin-top: 10px; font-size: .88em; }
 .pn-cal__doc-top, .pn-cal__doc-n, .pn-cal__doc-ok, .pn-cal__doc-seal { font-family: var(--f-mono); letter-spacing: .04em; text-transform: uppercase; }   /* só ilustração: fora da regra de 12 px do celular */
 .pn-cal__doc-top { display: flex; justify-content: space-between; padding-bottom: 7px; border-bottom: 1px dashed #B5B5AE; font-size: 7.5px; color: var(--muted); }
 .pn-cal__doc-t { font: 900 clamp(20px, 1.8vw, 26px)/.9 var(--f-display); text-transform: uppercase; }
