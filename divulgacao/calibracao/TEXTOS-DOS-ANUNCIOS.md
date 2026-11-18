@@ -97,7 +97,7 @@ As artes mostram uma **balança de bancada de 15 kg e, ao lado, um peso de 10 kg
 | `responsivo-paisagem` e `responsivo-quadrado` | `google-display/responsivo/*` | Peso ao lado da balança, sem texto. Continua sendo composição: trocar por foto real |
 | `logo-quadrado`, `logo-paisagem` | `google-display/responsivo/logo-*.png` | Mantidos |
 
-São 29 arquivos: as 27 peças originais revisadas e as duas versões verticais acrescentadas na revisão 2.
+São 29 arquivos: as 27 peças originais revisadas e as duas versões verticais acrescentadas na revisão 2. Mais a **lâmina de apresentação** para prospecção (`whatsapp/lamina-calibracao.png` e `.pdf`, item 7b).
 
 **Imagens estáticas não são links.** O que parece botão na arte é só a orientação: o link é o botão do anúncio, a figurinha de link do story ou a resposta no WhatsApp. Os PNG verticais não são vídeos de Reels.
 
@@ -197,6 +197,38 @@ A arte pede só a foto e a cidade; a resposta pronta coleta o resto. Se a respos
 
 ---
 
+## 7b. Prospecção no WhatsApp: a lâmina de apresentação
+
+**Arquivos:** `whatsapp/lamina-calibracao.png` (1080×2160, a imagem que aparece na conversa) e `whatsapp/lamina-calibracao.pdf` (o mesmo conteúdo, com texto de verdade, nítido para ampliar, imprimir ou repassar à equipe da qualidade).
+
+**O que a lâmina diz, de cima para baixo:** o serviço (“Calibração de balanças com certificado”, Rio Claro e região); o que a empresa recebe (resultados dos ensaios, incerteza de medição, rastreabilidade, certificado em PDF), com o modelo ilustrativo identificado; como solicitar (foto da identificação e cidade → orçamento → calibração e certificado em PDF); as duas condições (não acreditação pela Cgcre; a calibração não substitui a verificação do IPEM-SP); e o contato.
+
+**Como mandar:**
+1. **Só para empresas com quem já existe relação ou que deram o contato** (cliente, indicação, cartão, cadastro). Mensagem fria em massa pelo WhatsApp pode levar a denúncias e ao bloqueio do número, e a LGPD pede uma base para usar o contato. Mande uma de cada vez, para a pessoa certa (qualidade, produção ou compras).
+2. **Primeiro a mensagem, depois a lâmina.** Uma apresentação curta, a pergunta, e a imagem logo em seguida. O PDF só se a pessoa pedir ou quiser repassar.
+3. **Não insista:** sem resposta, uma única lembrança alguns dias depois. Se a pessoa pedir para não receber, anote e não mande mais.
+
+**Mensagem 1 · empresa que já é cliente (assistência, balanças, sistema)**
+> Olá, [nome]! Aqui é o [seu nome], da Balanças.com.
+>
+> Passando para contar que agora fazemos calibração de balanças com emissão de certificado, para o controle de qualidade da empresa. Mando abaixo um resumo do serviço.
+>
+> Se for útil para vocês, é só me mandar uma foto da identificação da balança e a cidade do atendimento que eu preparo o orçamento.
+
+**Mensagem 2 · indicação ou contato novo (empresa que pediu ou aceitou receber)**
+> Olá, [nome]! Aqui é o [seu nome], da Balanças.com, de Rio Claro. [Fulano] me passou o seu contato.
+>
+> Fazemos calibração de balanças com emissão de certificado. Segue um resumo do serviço.
+>
+> Se a empresa tiver alguma exigência de auditoria, cliente ou contrato, me conte: avaliamos juntos se o nosso certificado atende antes de qualquer orçamento.
+
+**Mensagem 3 · lembrança (uma vez, se não houver resposta)**
+> Olá, [nome]! Só retomando a mensagem sobre a calibração de balanças. Se fizer sentido para a empresa agora ou mais para a frente, fico à disposição. Obrigado!
+
+**Quando a pessoa responder:** use a resposta pronta do item 7. Se a exigência for calibração acreditada (RBC), diga com clareza que o serviço da Balanças.com não é acreditado.
+
+---
+
 ## 8. LinkedIn
 
 Para o **feed**, prefira a arte quadrada (`linkedin-1200x1200`); a horizontal serve para o anúncio com link.
@@ -291,13 +323,15 @@ npx playwright install chromium
 node gerar.mjs              # todas (ou: node gerar.mjs feed-4x5-B-auditoria)
 ```
 
+A lâmina (`whatsapp/lamina-calibracao`) também sai em PDF, gerado junto com a imagem.
+
 Tudo o que as artes usam está em `fonte/`: as fontes do site (`fonte/fontes`, licença OFL), o símbolo oficial e a foto da balança (`fonte/img`). A última geração completa fica registrada em `fonte/ultima-geracao.txt`, com as versões de Node, Playwright e Chromium e o resultado de cada arte.
 
 O gerador **para com erro** quando:
-- um texto sai da arte;
+- um texto sai da arte ou é cortado pelo bloco em que está (as seções da lâmina, por exemplo);
 - um texto encosta em outro texto ou no visual;
 - um texto cai sobre a faixa verde (com folga; não vale para o que tem fundo próprio, como rodapé, botões e etiquetas);
-- um texto essencial fica abaixo do tamanho mínimo da peça (36 px nas artes de 1080 px);
+- um texto essencial fica abaixo do tamanho mínimo da peça (36 px nas artes de 1080 px; 34 px na lâmina);
 - uma fonte ou imagem não carrega;
 - um banner passa de 150 KB.
 

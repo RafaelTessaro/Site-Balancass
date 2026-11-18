@@ -5,7 +5,8 @@
 //
 // Conferências (qualquer falha faz o comando terminar com erro, depois de gerar o resto):
 //   - as três fontes e todas as imagens carregaram;
-//   - nenhum texto marcado (data-dentro: essencial; data-deco: identificador) sai da arte;
+//   - nenhum texto marcado (data-dentro: essencial; data-deco: identificador) sai da arte nem é cortado
+//     pelo bloco em que está (seção com overflow escondido);
 //   - nenhum texto encosta em outro texto nem no visual (data-obj: balança, peso, certificado);
 //   - todo texto essencial (data-dentro) tem pelo menos o tamanho mínimo da arte (min, em px);
 //   - nenhum texto fica sobre a faixa diagonal (.band), com uma folga, salvo o que tem fundo próprio
@@ -30,7 +31,7 @@ const registro = [];   // vai para ultima-geracao.txt (geração completa)
 function pagina(a) {
   return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${a.nome}</title>
 <link rel="stylesheet" href="../fontes/fontes.css"><link rel="stylesheet" href="../banners.css">
-<style>${a.css || ''}</style></head>
+<style>${a.pdf ? `@page { size: ${a.w}px ${a.h}px; margin: 0 } html, body { background: none }` : ''}${a.css || ''}</style></head>
 <body><div class="art ${a.classe || ''}" id="art" style="--w:${a.w}px;--h:${a.h}px">${a.html}</div></body></html>`;
 }
 
@@ -44,6 +45,13 @@ function conferir(min) {
   const erros = [];
   for (const el of textos) {
     const q = r(el);
+    // Cortado por uma seção (um bloco com overflow escondido, como as seções da lâmina)?
+    for (let e = el.parentElement; e && e.id !== 'art'; e = e.parentElement) {
+      if (getComputedStyle(e).overflow === 'visible') continue;
+      const s = r(e);
+      if (q.left < s.left - 0.5 || q.top < s.top - 0.5 || q.right > s.right + 0.5 || q.bottom > s.bottom + 0.5) erros.push(`texto cortado pelo bloco: ${nome(el)}`);
+      break;
+    }
     if (q.left < art.left - 0.5 || q.top < art.top - 0.5 || q.right > art.right + 0.5 || q.bottom > art.bottom + 0.5) erros.push(`sai da arte: ${nome(el)}`);
     for (const o of objs) if (cruza(q, r(o))) erros.push(`texto encosta no visual: ${nome(el)} × ${nome(o)}`);
   }
@@ -64,18 +72,23 @@ function conferir(min) {
   // Faixa diagonal: o paralelogramo de cada .band (skewX em torno do centro: x' = x + c·(y − centro))
   const faixas = [...document.querySelectorAll('.band')].map((b) => {
     const c = new DOMMatrix(getComputedStyle(b).transform).c;
-    return { L: art.left + b.offsetLeft, R: art.left + b.offsetLeft + b.offsetWidth, cy: art.top + b.offsetTop + b.offsetHeight / 2, c };
+    // A faixa pode estar dentro de uma seção (a lâmina): conta a partir da seção e corta no limite dela
+    const pai = b.offsetParent || document.getElementById('art'), pr = pai.getBoundingClientRect();
+    const corta = getComputedStyle(pai).overflow !== 'visible';
+    return { pai, L: pr.left + b.offsetLeft, R: pr.left + b.offsetLeft + b.offsetWidth, cy: pr.top + b.offsetTop + b.offsetHeight / 2, c,
+      y0: corta ? pr.top : -Infinity, y1: corta ? pr.bottom : Infinity };
   });
   const folgaFaixa = Math.max(4, art.width * 0.008);
   const naFaixa = (q, f) => {   // existe y entre o topo e a base da linha com a linha dentro da faixa?
-    const tl = q.left - folgaFaixa, tr = q.right + folgaFaixa, tt = q.top, tb = q.bottom;
+    const tl = q.left - folgaFaixa, tr = q.right + folgaFaixa, tt = Math.max(q.top, f.y0), tb = Math.min(q.bottom, f.y1);
+    if (tt >= tb) return false;
     if (Math.abs(f.c) < 1e-6) return tr > f.L && tl < f.R;
     // borda esquerda: L + c·(y − cy) < tr ; borda direita: R + c·(y − cy) > tl
     const y1 = f.cy + (tr - f.L) / f.c, y2 = f.cy + (tl - f.R) / f.c;
     return f.c < 0 ? Math.max(tt, y1) < Math.min(tb, y2) : Math.max(tt, y2) < Math.min(tb, y1);
   };
-  const temFundo = (el) => {   // o texto está sobre um fundo próprio (rodapé, botão, etiqueta)?
-    for (let e = el; e && e.id !== 'art'; e = e.parentElement) {
+  const temFundo = (el, limite) => {   // o texto está sobre um fundo próprio (rodapé, botão, etiqueta), na frente da faixa?
+    for (let e = el; e && e !== limite && e.id !== 'art'; e = e.parentElement) {   // o fundo da própria seção da faixa não conta
       const cs = getComputedStyle(e), antes = getComputedStyle(e, '::before');
       if (cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent') return true;
       if (antes.content !== 'none' && antes.backgroundColor !== 'rgba(0, 0, 0, 0)' && antes.position === 'absolute') return true;
@@ -85,9 +98,9 @@ function conferir(min) {
   if (faixas.length) for (const el of textos) {
     const andar = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
     for (let n = andar.nextNode(); n; n = andar.nextNode()) {
-      if (!n.textContent.trim() || temFundo(n.parentElement)) continue;
+      if (!n.textContent.trim()) continue;
       const rg = document.createRange(); rg.selectNodeContents(n);
-      if ([...rg.getClientRects()].some((q) => faixas.some((f) => naFaixa(q, f)))) {
+      if ([...rg.getClientRects()].some((q) => faixas.some((f) => naFaixa(q, f) && !temFundo(n.parentElement, f.pai)))) {
         erros.push(`texto sobre a faixa verde: "${n.textContent.trim().slice(0, 40)}"`); break;
       }
     }
@@ -116,6 +129,8 @@ for (const a of ARTES) {
   mkdirSync(dirname(destino), { recursive: true });
   const el = await p.$('#art');
   await el.screenshot(a.jpg ? { path: destino, type: 'jpeg', quality: a.jpg } : { path: destino });
+  // Versão em PDF (texto de verdade, nítido em qualquer zoom), quando a arte pede
+  if (a.pdf) await p.pdf({ path: destino.replace(/\.(png|jpg)$/, '.pdf'), width: a.w + 'px', height: a.h + 'px', printBackground: true, preferCSSPageSize: true, pageRanges: '1' });
   const kb = Math.round(statSync(destino).size / 1024);
   if (a.maxKB && kb > a.maxKB) erros.push(`arquivo com ${kb} KB (limite ${a.maxKB} KB)`);
   const linha = `${erros.length ? '✗' : '✓'} ${a.pasta}/${a.nome}${a.jpg ? '.jpg' : '.png'}  ${a.w}×${a.h}  ${kb} KB`;

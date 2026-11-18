@@ -446,6 +446,81 @@ arte({ nome: 'logo-paisagem-1200x300', pasta: 'google-display/responsivo', w: 12
   css: `.art{display:grid;place-items:center} .lg{--lg:120px}`,
   html: `${logo()}` });
 
+/* =====================================================================
+   LÂMINA DE APRESENTAÇÃO (1080×2160, também em PDF) — para mandar às empresas no WhatsApp
+   Arte única, vertical (proporção da tela do celular): o serviço, o que a empresa recebe,
+   como solicitar, as condições (não acreditação; calibração × manutenção × verificação) e o contato.
+   ===================================================================== */
+arte({
+  nome: 'lamina-calibracao', pasta: 'whatsapp', w: 1080, h: 2160, min: 34, pdf: true, classe: 'lamina',
+  css: `
+  .lamina { display:flex; flex-direction:column; }
+  .s { position:relative; flex-shrink:0; overflow:hidden; isolation:isolate; padding: 44px 64px; }
+  .s h2 { font: 900 60px/.9 var(--f-display); text-transform: uppercase; }
+  /* 1 · abertura */
+  .s1 { background: var(--ink); padding-top: 54px; padding-bottom: 46px; }
+  .s1 .k { display:flex; align-items:center; gap:18px; margin-top: 26px; font: 400 24px/1 var(--f-mono); letter-spacing:.05em; text-transform:uppercase; color: var(--grey); }
+  .s1 .lg { --lg:44px; }
+  .s1 .hd { margin-top: 24px; --hs:98px; }
+  .s1 .sub { margin-top: 22px; width: 590px; --ps:38px; }
+  .s1 .bp { right: 34px; bottom: 44px; width: 380px; }
+  /* 2 · o que você recebe */
+  .s2 { background: var(--paper); color: var(--ink); display:grid; grid-template-columns: 1fr 330px; gap: 0 20px; align-items: start; }
+  .s2 .ck { margin-top: 28px; --ks:36px; gap:.45em; }
+  .s2 .cbox { position: relative; height: 280px; margin-top: 0; }
+  .s2 .cbox .cert { left: 6px; top: 14px; }
+  .s2 .cert-leg { position: static; grid-column: 1 / -1; justify-self: end; margin-top: 4px; font-size: 34px; }
+  .s2 .cert-leg::before { width: .8em; }
+  /* 3 · como solicitar */
+  .s3 { background: var(--paper-2); color: var(--ink); }
+  .passos { margin-top: 24px; display:grid; gap:14px; list-style:none; }
+  .passos li { display:grid; grid-template-columns: 78px 1fr; align-items: baseline; font: 400 34px/1.3 var(--f-text); color:#1E1E1C; }
+  .passos li i { font: 900 50px/1 var(--f-display); font-style: normal; color: var(--green-deep); }
+  .passos li b { color: var(--ink); }
+  /* 4 · condições */
+  .s4 { background: var(--green); color: var(--ink); display:grid; gap: 16px; padding-top: 36px; padding-bottom: 36px; }
+  .s4 .fine { --fn:34px; color: var(--ink); }
+  .s4 .fine b { color: var(--ink); }
+  /* 5 · contato (ocupa o resto da altura) */
+  .s5 { flex: 1; background: var(--ink); display:flex; align-items:center; justify-content: space-between; gap: 24px; padding-top: 30px; padding-bottom: 30px; }
+  .s5 .pede { font: 700 34px/1.2 var(--f-text); color: var(--body-dark); }
+  .s5 .tel { display:flex; align-items:center; gap:.35em; margin-top: 12px; font: 700 64px/1 var(--f-text); color: var(--paper); }
+  .s5 .tel svg { width:.9em; height:.9em; color: var(--green); }
+  .s5 .site { text-align:right; font: 400 34px/1.3 var(--f-text); color: var(--body-dark); }
+  .s5 .site b { color: var(--paper); font-weight:700; }
+  `,
+  html: `
+  <section class="s s1">${faixa('81%', '16%')}${logo()}
+    <p class="k" data-deco><span class="tag">Novo serviço</span><span>Rio Claro e região</span></p>
+    <h1 class="h hd" data-dentro>${T_PRINCIPAL}</h1>
+    <p class="p sub" data-dentro>Resultados de medição registrados em certificado, para o controle de qualidade da sua empresa.</p>
+    ${balPeso('')}
+  </section>
+  <section class="s s2">
+    <div><h2 data-dentro>O que você recebe</h2>
+    ${lista(['Resultados dos ensaios', 'Incerteza de medição', 'Rastreabilidade', 'Certificado em PDF'])}</div>
+    <div class="cbox">${cert('--c:13px;')}</div>
+    ${legendaCert()}
+  </section>
+  <section class="s s3">
+    <h2 data-dentro>Como solicitar</h2>
+    <ol class="passos" data-dentro>
+      <li><i>01</i><span><b>Envie uma foto da identificação da balança</b> e a cidade do atendimento.</span></li>
+      <li><i>02</i><span>Avaliamos o atendimento e enviamos o orçamento.</span></li>
+      <li><i>03</i><span>Calibramos e enviamos o certificado em PDF.</span></li>
+    </ol>
+  </section>
+  <section class="s s4">
+    <p class="fine" data-dentro><b>Serviço de calibração não acreditado pela Cgcre.</b> Consulte a adequação aos requisitos da sua empresa.</p>
+    <p class="fine" data-dentro><b>A calibração não substitui a verificação metrológica do IPEM-SP.</b> Realizamos calibração e manutenção de balanças; a verificação é feita pelo IPEM-SP.</p>
+  </section>
+  <section class="s s5">
+    <div><p class="pede" data-dentro>Solicite um orçamento pelo WhatsApp</p>
+    <p class="tel" data-dentro>${ICON_WA}(19) 3023-9050</p></div>
+    <p class="site" data-dentro><b>balancass.com</b><br>Rio Claro-SP</p>
+  </section>`,
+});
+
 /* Grupos da galeria (ver-todas.html): título, nota e quais artes entram */
 const em = (p) => (a) => a.pasta === p;
 export const GRUPOS = [
@@ -458,5 +533,6 @@ export const GRUPOS = [
   ['LinkedIn', 'Para o feed, prefira a quadrada; a horizontal serve para anúncio com link.', em('linkedin')],
   ['Google Display · tamanhos fixos', 'JPG abaixo de 150 KB.', em('google-display')],
   ['Google Display responsivo · imagens sem texto e logos', 'Composições ilustrativas: troque as duas imagens por fotos reais do atendimento assim que houver.', em('google-display/responsivo')],
+  ['WhatsApp · lâmina de apresentação (imagem e PDF)', 'Para mandar às empresas na prospecção: a imagem aparece na conversa; o PDF (mesmo nome, .pdf) serve para ampliar, imprimir ou repassar.', em('whatsapp')],
   ['Site · prévia do link (og:image)', 'Vai no pacote do site (atualizacao.zip). Confira a prévia na página publicada.', em('site')],
 ];
