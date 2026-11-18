@@ -105,6 +105,8 @@ body { width: max-content; }
 .bp__p { position: absolute; right: 0; bottom: 1%; width: 19%; height: auto; aspect-ratio: 120 / 172; filter: drop-shadow(0 12px 10px rgba(0,0,0,.3)); }
 .is-paper .bp__b, .is-green .bp__b { filter: drop-shadow(0 16px 14px rgba(0,0,0,.22)); }
 .peso { position: absolute; z-index: 2; height: auto; aspect-ratio: 120 / 172; filter: drop-shadow(0 12px 10px rgba(0,0,0,.3)); }
+/* Foto do peso (recortada): mantém a proporção da foto dentro da mesma caixa do desenho */
+.peso--foto { object-fit: contain; object-position: center bottom; }
 
 /* ---------------------------------------------------------------------
    Certificado de EXEMPLO (tudo em em: o tamanho vem de --c)

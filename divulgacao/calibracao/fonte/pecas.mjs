@@ -5,6 +5,8 @@
 //   img/balancas-icone.svg        símbolo oficial para fundo claro (anel cinza, "bq" verde)
 //   img/balmak-one.webp           balança de bancada (Max 15 kg) — recorte do catálogo do site
 
+import { existsSync } from 'node:fs';
+
 export const IMG = '../img/';
 
 let seq = 0;
@@ -22,8 +24,12 @@ export const ICON_WA = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="
 export const ICON_ARROW = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" d="M4 12h15M13 6l6 6-6 6"/></svg>`;
 export const ICON_DOWN = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" d="M12 4v15M6 13l6 6 6-6"/></svg>`;
 
-/** Peso-padrão (o mesmo desenho do site, #i-peso). rotulo: o valor gravado ("10 kg"). */
+/** Peso-padrão. Se existir a foto recortada (img/peso-10kg.png, img/peso-20kg.png: veja recortar-peso.py),
+ *  usa a foto; senão, o desenho (o mesmo do site, #i-peso). rotulo: o valor gravado ("10 kg"). */
 export function peso(cls = 'peso', style = '', rotulo = '20 kg') {
+  const kg = parseInt(rotulo, 10);
+  if (existsSync(new URL(`./img/peso-${kg}kg.png`, import.meta.url)))
+    return `<img class="${cls} peso--foto" style="${style}" src="${IMG}peso-${kg}kg.png" alt="" data-obj>`;
   const m = uid('pm'), t = uid('pt'), s = uid('ps');
   return `<svg class="${cls}" style="${style}" viewBox="0 0 120 172" aria-hidden="true" data-obj><defs>
 <linearGradient id="${m}" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#4f5358"/><stop offset=".16" stop-color="#b9bdc2"/><stop offset=".3" stop-color="#f6f7f8"/><stop offset=".46" stop-color="#a7abb0"/><stop offset=".72" stop-color="#e3e5e8"/><stop offset=".9" stop-color="#8b8f94"/><stop offset="1" stop-color="#55595e"/></linearGradient>
