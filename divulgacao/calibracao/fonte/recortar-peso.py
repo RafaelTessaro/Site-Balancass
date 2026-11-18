@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Recorta a foto de um peso-padrão sobre fundo branco e grava um PNG com fundo transparente.
+"""Recorta a foto de um peso-padrão (fundo branco ou já transparente) e grava um PNG com fundo transparente.
 
 Uso:  python3 divulgacao/calibracao/fonte/recortar-peso.py <foto> <kg>
       (ex.: recortar-peso.py ~/Downloads/peso20.jpg 20  →  fonte/img/peso-20kg.png)
@@ -19,7 +19,12 @@ MARGEM = 0.02     # margem em volta do peso, em fração do maior lado
 
 
 def recortar(origem: Path, destino: Path) -> tuple[int, int]:
-    rgb = Image.open(origem).convert("RGB")
+    foto = Image.open(origem)
+    if foto.mode in ("RGBA", "LA", "PA") or "transparency" in foto.info:
+        rgba = foto.convert("RGBA")
+        if rgba.getchannel("A").getextrema()[0] < 8:   # a foto já tem o fundo transparente: só corta
+            return cortar(rgba, rgba.getchannel("A"), destino)
+    rgb = foto.convert("RGB")
     w, h = rgb.size
     # "Brancura": o menor dos três canais (o fundo branco fica perto de 255 nos três)
     menor = ImageChops.darker(ImageChops.darker(rgb.getchannel("R"), rgb.getchannel("G")), rgb.getchannel("B"))
@@ -38,13 +43,19 @@ def recortar(origem: Path, destino: Path) -> tuple[int, int]:
     alfa = ImageChops.invert(fundo)
     # Borda: tira 1 px (o halo branco) e suaviza
     alfa = alfa.filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.8))
-    caixa = alfa.point(lambda v: 255 if v > 8 else 0).getbbox()
-    if not caixa:
-        raise SystemExit("Não achei o peso na foto (o fundo é branco?)")
-    m = int(max(w, h) * MARGEM)
-    caixa = (max(0, caixa[0] - m), max(0, caixa[1] - m), min(w, caixa[2] + m), min(h, caixa[3] + m))
     rgba = rgb.copy()
     rgba.putalpha(alfa)
+    return cortar(rgba, alfa, destino)
+
+
+def cortar(rgba: Image.Image, alfa: Image.Image, destino: Path) -> tuple[int, int]:
+    """Corta no contorno do peso (com uma margem pequena) e grava o PNG."""
+    w, h = rgba.size
+    caixa = alfa.point(lambda v: 255 if v > 8 else 0).getbbox()
+    if not caixa:
+        raise SystemExit("Não achei o peso na foto (o fundo é branco ou transparente?)")
+    m = int(max(w, h) * MARGEM)
+    caixa = (max(0, caixa[0] - m), max(0, caixa[1] - m), min(w, caixa[2] + m), min(h, caixa[3] + m))
     rgba = rgba.crop(caixa)
     destino.parent.mkdir(parents=True, exist_ok=True)
     rgba.save(destino, optimize=True)

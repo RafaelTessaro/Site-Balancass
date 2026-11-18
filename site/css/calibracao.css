@@ -86,16 +86,16 @@
   position: absolute; z-index: 2; left: -8%; bottom: 2%; width: 58%; height: auto; max-height: none;
   filter: drop-shadow(0 18px 16px rgba(0,0,0,.4));
 }
-.cal-vis__peso {
-  position: absolute; z-index: 3; right: 4%; bottom: 0; width: 17%; aspect-ratio: 120 / 172; height: auto;
-  filter: drop-shadow(0 14px 10px rgba(0,0,0,.35));
+.phero__fig > img.cal-vis__peso {
+  position: absolute; z-index: 3; right: 4%; bottom: 0; width: 17%; aspect-ratio: 120 / 172; height: auto; max-height: none;
+  filter: drop-shadow(0 14px 10px rgba(0,0,0,.35)); object-fit: contain; object-position: center bottom;
 }
 
 @media (max-width: 860px) {
   .cal-vis { padding-bottom: 30px; }
   .cal-vis__fig { width: min(88%, 420px); max-height: none; margin-inline: auto; }
   .phero__fig > img.cal-vis__bal { width: 54%; left: -6%; }
-  .cal-vis__peso { width: 15%; right: 2%; }
+  .phero__fig > img.cal-vis__peso { width: 15%; right: 2%; }
 }
 @media (max-width: 480px) {
   .cert { padding: 0 14px 12px; gap: 8px; width: 82%; margin-left: calc(-41% + 14px); }

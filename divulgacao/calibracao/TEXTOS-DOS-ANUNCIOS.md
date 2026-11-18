@@ -2,7 +2,7 @@
 
 Material para divulgar o serviço nas redes sociais, no tráfego pago (Meta Ads, Google Ads e LinkedIn) e no WhatsApp.
 A **revisão 3** segue o *Guia de revisão das artes* e a *Reavaliação das artes V2* (18/11/2026). A direção visual, os textos de leitura e a separação por canal foram mantidos. Mudanças desta rodada:
-- o peso não fica mais no prato da balança (a foto tem o visor zerado): agora fica **ao lado**, numa composição ilustrativa;
+- o peso não fica mais no prato da balança (a foto tem o visor zerado): agora fica **ao lado**, numa composição ilustrativa; o desenho do peso deu lugar às **fotos dos pesos de 10 e 20 kg** enviadas pelo dono (também no site);
 - nenhum texto sobre a faixa verde, e o gerador passou a conferir isso;
 - o certificado ilustrativo ganhou a legenda externa "Modelo ilustrativo de certificado";
 - o logo do slide verde entrou sobre uma placa preta;
@@ -67,7 +67,7 @@ Tom: técnico, acessível e direto (“envie”, “solicite”, “consulte”,
 | Prazo de entrega do certificado | — | — | Não usado em nenhuma peça (não há prazo confirmado) |
 | Nota 5,0 no Google (56 avaliações) | Site, título do Google | Dados do site (`compartilhado/dados/empresa.js`) | Conferir antes de usar em anúncio |
 
-As artes mostram uma **balança de bancada de 15 kg e, ao lado, um peso de 10 kg**, e um peso de 20 kg sozinho. É uma composição ilustrativa (foto de catálogo + desenho), não uma foto do serviço. Se a empresa não calibra esse tipo de balança ou não tem esses padrões, troque a imagem. Assim que houver **fotos reais e autorizadas** da calibração, elas devem substituir a composição, a começar pelas imagens responsivas do Google.
+As artes mostram uma **balança de bancada de 15 kg e, ao lado, um peso de 10 kg**, e um peso de 20 kg sozinho. Os pesos são as **fotos enviadas pelo dono** (18/11/2026; `fonte/img/peso-10kg.png` e `peso-20kg.png`), e a balança é a foto do catálogo do site: juntas, formam uma composição ilustrativa, não uma foto do serviço. **Confirme que as fotos dos pesos podem ser usadas em anúncio** (fotos próprias ou do fornecedor, com autorização). Se a empresa não calibra esse tipo de balança ou não tem esses padrões, troque a imagem. Assim que houver **fotos reais e autorizadas** da calibração, elas devem substituir a composição, a começar pelas imagens responsivas do Google.
 
 ---
 

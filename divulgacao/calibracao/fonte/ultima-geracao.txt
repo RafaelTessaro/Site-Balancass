@@ -1,24 +1,24 @@
-Geração completa em 2026-11-18T20:17:15.555Z
+Geração completa em 2026-11-18T20:37:21.689Z
 Node v22.23.5 · Playwright 1.63.0 · Chromium 157.0.8103.78
 29 artes · 0 problema(s)
 
-✓ instagram-facebook/feed-4x5-A-principal.png  1080×1350  276 KB
-✓ instagram-facebook/feed-4x5-B-auditoria.png  1080×1350  252 KB
+✓ instagram-facebook/feed-4x5-A-principal.png  1080×1350  283 KB
+✓ instagram-facebook/feed-4x5-B-auditoria.png  1080×1350  296 KB
 ✓ instagram-facebook/feed-4x5-C-o-que-voce-recebe.png  1080×1350  253 KB
-✓ instagram-facebook/quadrado-1x1-A-principal.png  1080×1080  234 KB
-✓ instagram-facebook/quadrado-1x1-B-sua-empresa.png  1080×1080  185 KB
-✓ instagram-facebook/9x16/stories-9x16-anuncio-principal.png  1080×1920  326 KB
-✓ instagram-facebook/9x16/stories-9x16-anuncio-auditoria.png  1080×1920  274 KB
-✓ instagram-facebook/9x16/stories-9x16-organico-link.png  1080×1920  290 KB
-✓ instagram-facebook/9x16/status-whatsapp-9x16.png  1080×1920  313 KB
-✓ instagram-facebook/carrossel/carrossel-1-capa.png  1080×1350  254 KB
-✓ instagram-facebook/carrossel/carrossel-2-o-que-e.png  1080×1350  209 KB
+✓ instagram-facebook/quadrado-1x1-A-principal.png  1080×1080  239 KB
+✓ instagram-facebook/quadrado-1x1-B-sua-empresa.png  1080×1080  213 KB
+✓ instagram-facebook/9x16/stories-9x16-anuncio-principal.png  1080×1920  340 KB
+✓ instagram-facebook/9x16/stories-9x16-anuncio-auditoria.png  1080×1920  325 KB
+✓ instagram-facebook/9x16/stories-9x16-organico-link.png  1080×1920  299 KB
+✓ instagram-facebook/9x16/status-whatsapp-9x16.png  1080×1920  323 KB
+✓ instagram-facebook/carrossel/carrossel-1-capa.png  1080×1350  263 KB
+✓ instagram-facebook/carrossel/carrossel-2-o-que-e.png  1080×1350  254 KB
 ✓ instagram-facebook/carrossel/carrossel-3-o-que-informa.png  1080×1350  227 KB
 ✓ instagram-facebook/carrossel/carrossel-4-finalidades.png  1080×1350  174 KB
 ✓ instagram-facebook/carrossel/carrossel-5-orcamento.png  1080×1350  178 KB
-✓ instagram-facebook/capa-facebook-1640x624.png  1640×624  149 KB
-✓ linkedin/linkedin-1200x627.png  1200×627  163 KB
-✓ linkedin/linkedin-1200x1200.png  1200×1200  245 KB
+✓ instagram-facebook/capa-facebook-1640x624.png  1640×624  151 KB
+✓ linkedin/linkedin-1200x627.png  1200×627  166 KB
+✓ linkedin/linkedin-1200x1200.png  1200×1200  248 KB
 ✓ site/og-calibracao.jpg  1200×630  64 KB
 ✓ google-display/display-300x250.jpg  300×250  17 KB
 ✓ google-display/display-336x280.jpg  336×280  19 KB
@@ -27,7 +27,7 @@ Node v22.23.5 · Playwright 1.63.0 · Chromium 157.0.8103.78
 ✓ google-display/display-160x600.jpg  160×600  16 KB
 ✓ google-display/display-320x100.jpg  320×100  8 KB
 ✓ google-display/display-320x50.jpg  320×50  6 KB
-✓ google-display/responsivo/responsivo-paisagem-1200x628.jpg  1200×628  41 KB
-✓ google-display/responsivo/responsivo-quadrado-1200x1200.jpg  1200×1200  59 KB
+✓ google-display/responsivo/responsivo-paisagem-1200x628.jpg  1200×628  43 KB
+✓ google-display/responsivo/responsivo-quadrado-1200x1200.jpg  1200×1200  62 KB
 ✓ google-display/responsivo/logo-quadrado-1200x1200.png  1200×1200  65 KB
 ✓ google-display/responsivo/logo-paisagem-1200x300.png  1200×300  34 KB

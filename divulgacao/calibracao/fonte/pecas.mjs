@@ -4,6 +4,7 @@
 //   img/balancas-icone-claro.svg  símbolo oficial para fundo escuro (anel branco, "bq" verde)
 //   img/balancas-icone.svg        símbolo oficial para fundo claro (anel cinza, "bq" verde)
 //   img/balmak-one.webp           balança de bancada (Max 15 kg) — recorte do catálogo do site
+//   img/peso-10kg.png, peso-20kg.png  fotos dos pesos enviadas pelo dono (recortar-peso.py); sem elas, o desenho
 
 import { existsSync } from 'node:fs';
 
