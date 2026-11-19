@@ -455,12 +455,14 @@ arte({ nome: 'logo-paisagem-1200x300', pasta: 'google-display/responsivo', w: 12
    ===================================================================== */
 const IC_MANUT = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`;
 const IC_CALIB = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M6 2.5h8.5L19 7v14.5H6zM14.5 2.5V7H19"/><path fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="square" d="m9 14 2.2 2.2L16 11.5"/></svg>`;
-const T_DOIS = `<span>Manutenção e</span><span>calibração</span><span class="g">de balanças</span>`;
+// Título pedido pelo dono (19/11/2026): "laudo de calibração"; o documento entregue se chama "Certificado de calibração",
+// e o bloco da calibração diz isso, para o cliente reconhecer o PDF quando chegar.
+const T_DOIS = `<span>Manutenção e laudo</span><span>de calibração</span><span class="g">de balanças</span>`;
 const SERVICOS = `
     <div class="sv"><span class="sv__ic">${IC_MANUT}</span><div class="sv__h"><h2 data-dentro>Manutenção</h2></div>
       <p data-dentro>Diagnóstico, manutenção preventiva e corretiva. Oficina autorizada pelo <span style="white-space:nowrap">IPEM-SP</span>.</p></div>
-    <div class="sv"><span class="sv__ic">${IC_CALIB}</span><div class="sv__h"><h2 data-dentro>Calibração</h2><span class="tag" data-deco>Novo</span></div>
-      <p data-dentro>Certificado em PDF com resultados das medições, incerteza e informações de rastreabilidade.</p></div>`;
+    <div class="sv"><span class="sv__ic">${IC_CALIB}</span><div class="sv__h"><h2 data-dentro>Laudo de calibração</h2><span class="tag" data-deco>Novo</span></div>
+      <p data-dentro>Certificado de calibração em PDF: resultados das medições, incerteza e rastreabilidade.</p></div>`;
 const CONTATO = (titulo = 'Solicite um orçamento', pedido = true) => `
     <h2 data-dentro>${titulo}</h2>
     ${pedido ? '<p class="ped" data-dentro>Envie uma foto da balança e informe sua cidade.</p>' : ''}
@@ -475,8 +477,8 @@ const PROSP_CSS = `
   .ab .top { display:flex; align-items:center; gap: 34px; }
   .ab .lg { --lg:42px; }
   .ab .reg { width: fit-content; font: 700 36px/1.2 var(--f-text); color: var(--body-dark); }
-  .ab .hd { width: fit-content; margin-top: 26px; --hs:92px; }
-  .ab .bp { right: 30px; bottom: 40px; width: 320px; }
+  .ab .hd { width: fit-content; margin-top: 26px; --hs:86px; }
+  .ab .bp { right: 20px; bottom: 40px; width: 268px; }
   /* os dois serviços */
   .svs { background: var(--paper); color: var(--ink); display:grid; gap: 22px; padding-top: 34px; padding-bottom: 34px; }
   .sv { display:grid; grid-template-columns: 70px 1fr; column-gap: 22px; row-gap: 8px; align-items: center; }
@@ -516,7 +518,7 @@ arte({
 
 // 2 · LÂMINA EXPLICATIVA — depois do interesse (também em PDF)
 arte({
-  nome: 'lamina-manutencao-calibracao', pasta: 'whatsapp', w: 1080, h: 2246, min: 36, pdf: true, classe: 'prosp',
+  nome: 'lamina-manutencao-calibracao', pasta: 'whatsapp', w: 1080, h: 2278, min: 36, pdf: true, classe: 'prosp',
   css: PROSP_CSS + `
   .rc { background: var(--paper-2); color: var(--ink); display:grid; grid-template-columns: 1fr 340px; gap: 0 24px; align-items: start; }
   .rc h2 { grid-column: 1 / -1; }
@@ -541,7 +543,7 @@ arte({
   <section class="s svs">${SERVICOS}</section>
   <section class="s rc">
     <h2 data-dentro>Na calibração, você recebe</h2>
-    ${lista(['Resultados das medições', 'Incerteza de medição', 'Informações de rastreabilidade metrológica', 'Certificado em PDF'])}
+    ${lista(['Resultados das medições', 'Incerteza de medição', 'Informações de rastreabilidade metrológica', 'Certificado de calibração em PDF'])}
     <div class="cx"><div class="cbox">${cert('--c:13px;')}</div><p class="leg" data-dentro>Modelo ilustrativo<br>de certificado</p></div>
   </section>
   <section class="s cs">
@@ -549,7 +551,7 @@ arte({
     <ol class="passos" data-dentro>
       <li><i>01</i><span>Envie uma foto da balança e informe sua cidade.</span></li>
       <li><i>02</i><span>Avaliamos sua necessidade e enviamos a proposta.</span></li>
-      <li><i>03</i><span>Após a aprovação, agendamos o serviço. Na calibração, entregamos o certificado em PDF.</span></li>
+      <li><i>03</i><span>Após a aprovação, agendamos o serviço. Na calibração, entregamos o laudo (certificado de calibração) em PDF.</span></li>
     </ol>
   </section>
   <section class="s or">${CONTATO('Solicite um orçamento pelo WhatsApp', false)}</section>
