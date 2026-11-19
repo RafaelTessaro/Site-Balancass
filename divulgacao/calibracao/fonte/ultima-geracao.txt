@@ -1,6 +1,6 @@
-Geração completa em 2026-11-18T20:54:49.315Z
+Geração completa em 2026-11-19T13:47:26.109Z
 Node v22.23.5 · Playwright 1.63.0 · Chromium 157.0.8103.78
-30 artes · 0 problema(s)
+31 artes · 0 problema(s)
 
 ✓ instagram-facebook/feed-4x5-A-principal.png  1080×1350  283 KB
 ✓ instagram-facebook/feed-4x5-B-auditoria.png  1080×1350  296 KB
@@ -31,4 +31,5 @@ Node v22.23.5 · Playwright 1.63.0 · Chromium 157.0.8103.78
 ✓ google-display/responsivo/responsivo-quadrado-1200x1200.jpg  1200×1200  62 KB
 ✓ google-display/responsivo/logo-quadrado-1200x1200.png  1200×1200  65 KB
 ✓ google-display/responsivo/logo-paisagem-1200x300.png  1200×300  34 KB
-✓ whatsapp/lamina-calibracao.png  1080×2160  496 KB
+✓ whatsapp/apresentacao-manutencao-calibracao.png  1080×1350  301 KB
+✓ whatsapp/lamina-manutencao-calibracao.png  1080×2246  512 KB

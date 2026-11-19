@@ -97,7 +97,7 @@ As artes mostram uma **balança de bancada de 15 kg e, ao lado, um peso de 10 kg
 | `responsivo-paisagem` e `responsivo-quadrado` | `google-display/responsivo/*` | Peso ao lado da balança, sem texto. Continua sendo composição: trocar por foto real |
 | `logo-quadrado`, `logo-paisagem` | `google-display/responsivo/logo-*.png` | Mantidos |
 
-São 29 arquivos: as 27 peças originais revisadas e as duas versões verticais acrescentadas na revisão 2. Mais a **lâmina de apresentação** para prospecção (`whatsapp/lamina-calibracao.png` e `.pdf`, item 7b).
+São 29 arquivos: as 27 peças originais revisadas e as duas versões verticais acrescentadas na revisão 2. Mais as duas peças de **prospecção no WhatsApp**, que divulgam manutenção e calibração: a apresentação curta e a lâmina explicativa (`whatsapp/`, item 7b).
 
 **Imagens estáticas não são links.** O que parece botão na arte é só a orientação: o link é o botão do anúncio, a figurinha de link do story ou a resposta no WhatsApp. Os PNG verticais não são vídeos de Reels.
 
@@ -197,35 +197,54 @@ A arte pede só a foto e a cidade; a resposta pronta coleta o resto. Se a respos
 
 ---
 
-## 7b. Prospecção no WhatsApp: a lâmina de apresentação
+## 7b. Prospecção no WhatsApp: manutenção e calibração
 
-**Arquivos:** `whatsapp/lamina-calibracao.png` (1080×2160, a imagem que aparece na conversa) e `whatsapp/lamina-calibracao.pdf` (o mesmo conteúdo, com texto de verdade, nítido para ampliar, imprimir ou repassar à equipe da qualidade).
+Segue o *Guia do banner de manutenção e calibração* (19/11/2026). As duas peças divulgam **os dois serviços**: o título é “Manutenção e calibração de balanças”, cada serviço tem um bloco próprio, o certificado aparece só com a calibração (a manutenção não inclui certificado) e o selo “Novo” fica só na calibração.
 
-**O que a lâmina diz, de cima para baixo:** o serviço (“Calibração de balanças com certificado”, Rio Claro e região); o que a empresa recebe (resultados dos ensaios, incerteza de medição, rastreabilidade, certificado em PDF), com o modelo ilustrativo identificado; como solicitar (foto da identificação e cidade → orçamento → calibração e certificado em PDF); as duas condições (não acreditação pela Cgcre; a calibração não substitui a verificação do IPEM-SP); e o contato.
+| Peça | Arquivo | Quando usar |
+|---|---|---|
+| **Apresentação curta** | `whatsapp/apresentacao-manutencao-calibracao.png` (1080×1350) | Na **primeira mensagem**. Título, os dois serviços, região, “Solicite um orçamento”, WhatsApp, site e as condições |
+| **Lâmina explicativa** | `whatsapp/lamina-manutencao-calibracao.png` (1080×2246) e `.pdf` | **Depois que a empresa mostrar interesse**, ou para quem quiser repassar à equipe da qualidade. Acrescenta “Na calibração, você recebe” (com o modelo ilustrativo de certificado) e “Como solicitar” |
 
-**Como mandar:**
-1. **Só para empresas com quem já existe relação ou que deram o contato** (cliente, indicação, cartão, cadastro). Mensagem fria em massa pelo WhatsApp pode levar a denúncias e ao bloqueio do número, e a LGPD pede uma base para usar o contato. Mande uma de cada vez, para a pessoa certa (qualidade, produção ou compras).
-2. **Primeiro a mensagem, depois a lâmina.** Uma apresentação curta, a pergunta, e a imagem logo em seguida. O PDF só se a pessoa pedir ou quiser repassar.
-3. **Não insista:** sem resposta, uma única lembrança alguns dias depois. Se a pessoa pedir para não receber, anote e não mande mais.
+**O que as peças dizem sobre cada serviço** (só o que o site e o sistema confirmam):
+- **Manutenção:** diagnóstico, manutenção preventiva e corretiva; oficina autorizada pelo IPEM-SP.
+- **Calibração:** certificado em PDF com resultados das medições, incerteza e informações de rastreabilidade.
+- **Condições:** serviço de calibração não acreditado pela Cgcre; consulte a adequação aos requisitos da sua empresa; a calibração não substitui a verificação metrológica do IPEM-SP.
 
-**Mensagem 1 · empresa que já é cliente (assistência, balanças, sistema)**
+Nada de atendimento 24 horas, todas as marcas, prazos, capacidades ou atendimento no local: nada disso está confirmado para as peças.
+
+**Certificado ou laudo?** Nas peças, **“certificado de calibração”**, que é o nome do documento. Se o cliente disser “laudo” na conversa, tudo bem. Se a manutenção tiver um documento próprio (a ordem de serviço, por exemplo), apresente-o à parte: nem todo atendimento inclui certificado.
+
+**A imagem:** a balança e o peso, separados, são ilustração (foto de catálogo e foto do peso), não prova de serviço realizado. Assim que houver uma **foto real e autorizada** de um atendimento (bancada organizada, equipamento compatível com o público), ela deve entrar no lugar.
+
+### Como mandar
+1. **Só para empresas com quem já existe relação ou que deram o contato** (cliente, indicação, cartão, cadastro). Mensagem fria em massa pelo WhatsApp pode levar a denúncias e ao bloqueio do número, e a LGPD pede uma base para usar o contato. Mande uma de cada vez, para a pessoa certa.
+2. **Primeiro a mensagem, depois a apresentação curta.** A lâmina e o PDF só depois do interesse.
+3. **A imagem não é um link.** Pelo WhatsApp da empresa, a pessoa responde à própria conversa. Por e-mail, ponha o número e o link clicável do WhatsApp na mensagem: `https://wa.me/551930239050`.
+4. **Confira a imagem que chegou:** mande primeiro para o seu próprio número e veja se as letras ficaram nítidas (o WhatsApp comprime as fotos). Se ficarem borradas, mande como **documento** (o PNG ou o PDF).
+5. **Não insista:** sem resposta, no máximo uma lembrança alguns dias depois. Se a pessoa pedir para não receber, anote e não mande mais.
+
+### Mensagem principal (acompanha a apresentação curta)
+> Olá! Somos a Balanças.com, de Rio Claro. Realizamos manutenção preventiva e corretiva de balanças e também calibração com emissão de certificado em PDF. Para solicitar um orçamento, envie uma foto da balança e informe a cidade do atendimento. Se sua empresa exige calibração acreditada, avise no primeiro contato: nosso serviço de calibração não é acreditado pela Cgcre. WhatsApp: (19) 3023-9050.
+
+### Para quem já é cliente
 > Olá, [nome]! Aqui é o [seu nome], da Balanças.com.
 >
-> Passando para contar que agora fazemos calibração de balanças com emissão de certificado, para o controle de qualidade da empresa. Mando abaixo um resumo do serviço.
+> Além da manutenção das balanças, agora fazemos também calibração com emissão de certificado em PDF. Mando abaixo um resumo dos serviços.
 >
-> Se for útil para vocês, é só me mandar uma foto da identificação da balança e a cidade do atendimento que eu preparo o orçamento.
+> Se for útil para vocês, é só me mandar uma foto da balança e a cidade do atendimento que eu preparo o orçamento.
 
-**Mensagem 2 · indicação ou contato novo (empresa que pediu ou aceitou receber)**
+### Para uma indicação
 > Olá, [nome]! Aqui é o [seu nome], da Balanças.com, de Rio Claro. [Fulano] me passou o seu contato.
 >
-> Fazemos calibração de balanças com emissão de certificado. Segue um resumo do serviço.
+> Fazemos manutenção preventiva e corretiva de balanças e calibração com emissão de certificado. Segue um resumo dos serviços.
 >
-> Se a empresa tiver alguma exigência de auditoria, cliente ou contrato, me conte: avaliamos juntos se o nosso certificado atende antes de qualquer orçamento.
+> Se a empresa tiver alguma exigência de auditoria, cliente ou contrato para a calibração, me conte: avaliamos juntos se o nosso certificado atende antes de qualquer orçamento.
 
-**Mensagem 3 · lembrança (uma vez, se não houver resposta)**
-> Olá, [nome]! Só retomando a mensagem sobre a calibração de balanças. Se fizer sentido para a empresa agora ou mais para a frente, fico à disposição. Obrigado!
+### Lembrança (uma vez, se não houver resposta)
+> Olá, [nome]! Só retomando a mensagem sobre a manutenção e a calibração de balanças. Se fizer sentido para a empresa agora ou mais para a frente, fico à disposição. Obrigado!
 
-**Quando a pessoa responder:** use a resposta pronta do item 7. Se a exigência for calibração acreditada (RBC), diga com clareza que o serviço da Balanças.com não é acreditado.
+**Quando a pessoa responder:** use a resposta pronta do item 7 (marca, modelo, capacidade, quantidade, cidade e exigências). Se a exigência for calibração acreditada (RBC), diga com clareza que o serviço da Balanças.com não é acreditado.
 
 ---
 
@@ -323,7 +342,7 @@ npx playwright install chromium
 node gerar.mjs              # todas (ou: node gerar.mjs feed-4x5-B-auditoria)
 ```
 
-A lâmina (`whatsapp/lamina-calibracao`) também sai em PDF, gerado junto com a imagem.
+A lâmina explicativa (`whatsapp/lamina-manutencao-calibracao`) também sai em PDF, gerado junto com a imagem.
 
 Tudo o que as artes usam está em `fonte/`: as fontes do site (`fonte/fontes`, licença OFL), o símbolo oficial e a foto da balança (`fonte/img`). A última geração completa fica registrada em `fonte/ultima-geracao.txt`, com as versões de Node, Playwright e Chromium e o resultado de cada arte.
 

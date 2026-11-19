@@ -447,78 +447,113 @@ arte({ nome: 'logo-paisagem-1200x300', pasta: 'google-display/responsivo', w: 12
   html: `${logo()}` });
 
 /* =====================================================================
-   LÂMINA DE APRESENTAÇÃO (1080×2160, também em PDF) — para mandar às empresas no WhatsApp
-   Arte única, vertical (proporção da tela do celular): o serviço, o que a empresa recebe,
-   como solicitar, as condições (não acreditação; calibração × manutenção × verificação) e o contato.
+   PROSPECÇÃO NO WHATSAPP — manutenção e calibração (guia de 19/11/2026)
+   Duas peças: a APRESENTAÇÃO CURTA (1080×1350), para a primeira abordagem, e a LÂMINA
+   EXPLICATIVA (mais longa, também em PDF), para depois do interesse. Os dois serviços aparecem
+   no título e em blocos próprios; o certificado fica só com a calibração; o selo "Novo" fica só
+   no bloco da calibração. Seções que crescem com o conteúdo (o gerador confere cortes).
    ===================================================================== */
+const IC_MANUT = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`;
+const IC_CALIB = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M6 2.5h8.5L19 7v14.5H6zM14.5 2.5V7H19"/><path fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="square" d="m9 14 2.2 2.2L16 11.5"/></svg>`;
+const T_DOIS = `<span>Manutenção e</span><span>calibração</span><span class="g">de balanças</span>`;
+const SERVICOS = `
+    <div class="sv"><span class="sv__ic">${IC_MANUT}</span><div class="sv__h"><h2 data-dentro>Manutenção</h2></div>
+      <p data-dentro>Diagnóstico, manutenção preventiva e corretiva. Oficina autorizada pelo <span style="white-space:nowrap">IPEM-SP</span>.</p></div>
+    <div class="sv"><span class="sv__ic">${IC_CALIB}</span><div class="sv__h"><h2 data-dentro>Calibração</h2><span class="tag" data-deco>Novo</span></div>
+      <p data-dentro>Certificado em PDF com resultados das medições, incerteza e informações de rastreabilidade.</p></div>`;
+const CONTATO = (titulo = 'Solicite um orçamento', pedido = true) => `
+    <h2 data-dentro>${titulo}</h2>
+    ${pedido ? '<p class="ped" data-dentro>Envie uma foto da balança e informe sua cidade.</p>' : ''}
+    <div class="ctt"><p class="tel" data-dentro>${ICON_WA}(19) 3023-9050</p><p class="site" data-dentro>balancass.com</p></div>`;
+const CONDICOES = `<p class="cond" data-dentro><b>Serviço de calibração não acreditado pela Cgcre.</b> Consulte a adequação aos requisitos da sua empresa. A calibração não substitui a verificação metrológica do <span style="white-space:nowrap">IPEM-SP</span>.</p>`;
+const PROSP_CSS = `
+  .prosp { display:flex; flex-direction:column; }
+  .s { position:relative; flex-shrink:0; overflow:hidden; isolation:isolate; padding: 42px 64px; }
+  .s h2 { font: 900 54px/.92 var(--f-display); text-transform: uppercase; }
+  /* abertura */
+  .ab { background: var(--ink); padding-top: 44px; padding-bottom: 36px; }
+  .ab .top { display:flex; align-items:center; gap: 34px; }
+  .ab .lg { --lg:42px; }
+  .ab .reg { width: fit-content; font: 700 36px/1.2 var(--f-text); color: var(--body-dark); }
+  .ab .hd { width: fit-content; margin-top: 26px; --hs:92px; }
+  .ab .bp { right: 30px; bottom: 40px; width: 320px; }
+  /* os dois serviços */
+  .svs { background: var(--paper); color: var(--ink); display:grid; gap: 22px; padding-top: 34px; padding-bottom: 34px; }
+  .sv { display:grid; grid-template-columns: 70px 1fr; column-gap: 22px; row-gap: 8px; align-items: center; }
+  .sv__ic { position:relative; isolation:isolate; width: 66px; height: 54px; display:grid; place-items:center; color: var(--ink); }
+  .sv__ic::before { content:""; position:absolute; inset:0; z-index:-1; background: var(--green); transform: skewX(var(--slash)); }
+  .sv__ic svg { width: 34px; height: 34px; }
+  .sv__h { display:flex; align-items:center; gap: 18px; }
+  .sv p { grid-column: 1 / -1; }
+  .sv__h .tag { --tg: 22px; }
+  .sv p { font: 400 42px/1.28 var(--f-text); color: #1E1E1C; }
+  /* orçamento e contato (verde) */
+  .or { background: var(--green); color: var(--ink); padding-top: 30px; padding-bottom: 32px; }
+  .or .ped { margin-top: 10px; font: 400 42px/1.3 var(--f-text); color: #052612; }
+  .or .ctt { margin-top: 18px; display:flex; align-items: baseline; justify-content: space-between; gap: 24px; }
+  .or .tel { display:flex; align-items:center; gap:.3em; font: 700 64px/1 var(--f-text); color: var(--ink); }
+  .or .tel svg { width:.85em; height:.85em; }
+  .or .site { font: 700 40px/1 var(--f-text); color: var(--ink); }
+  /* condições (preto) */
+  .cd { flex: 1; background: var(--ink); display:flex; align-items:center; padding-top: 28px; padding-bottom: 28px; }
+  .cd .cond { font: 400 36px/1.3 var(--f-text); color: var(--body-dark); }
+  .cd .cond b { color: var(--paper); font-weight: 700; }
+`;
+
+// 1 · APRESENTAÇÃO CURTA — primeira abordagem
 arte({
-  nome: 'lamina-calibracao', pasta: 'whatsapp', w: 1080, h: 2160, min: 34, pdf: true, classe: 'lamina',
-  css: `
-  .lamina { display:flex; flex-direction:column; }
-  .s { position:relative; flex-shrink:0; overflow:hidden; isolation:isolate; padding: 44px 64px; }
-  .s h2 { font: 900 60px/.9 var(--f-display); text-transform: uppercase; }
-  /* 1 · abertura */
-  .s1 { background: var(--ink); padding-top: 54px; padding-bottom: 46px; }
-  .s1 .k { display:flex; align-items:center; gap:18px; margin-top: 26px; font: 400 24px/1 var(--f-mono); letter-spacing:.05em; text-transform:uppercase; color: var(--grey); }
-  .s1 .lg { --lg:44px; }
-  .s1 .hd { margin-top: 24px; --hs:98px; }
-  .s1 .sub { margin-top: 22px; width: 590px; --ps:38px; }
-  .s1 .bp { right: 34px; bottom: 44px; width: 380px; }
-  /* 2 · o que você recebe */
-  .s2 { background: var(--paper); color: var(--ink); display:grid; grid-template-columns: 1fr 330px; gap: 0 20px; align-items: start; }
-  .s2 .ck { margin-top: 28px; --ks:36px; gap:.45em; }
-  .s2 .cbox { position: relative; height: 280px; margin-top: 0; }
-  .s2 .cbox .cert { left: 6px; top: 14px; }
-  .s2 .cert-leg { position: static; grid-column: 1 / -1; justify-self: end; margin-top: 4px; font-size: 34px; }
-  .s2 .cert-leg::before { width: .8em; }
-  /* 3 · como solicitar */
-  .s3 { background: var(--paper-2); color: var(--ink); }
-  .passos { margin-top: 24px; display:grid; gap:14px; list-style:none; }
-  .passos li { display:grid; grid-template-columns: 78px 1fr; align-items: baseline; font: 400 34px/1.3 var(--f-text); color:#1E1E1C; }
-  .passos li i { font: 900 50px/1 var(--f-display); font-style: normal; color: var(--green-deep); }
-  .passos li b { color: var(--ink); }
-  /* 4 · condições */
-  .s4 { background: var(--green); color: var(--ink); display:grid; gap: 16px; padding-top: 36px; padding-bottom: 36px; }
-  .s4 .fine { --fn:34px; color: var(--ink); }
-  .s4 .fine b { color: var(--ink); }
-  /* 5 · contato (ocupa o resto da altura) */
-  .s5 { flex: 1; background: var(--ink); display:flex; align-items:center; justify-content: space-between; gap: 24px; padding-top: 30px; padding-bottom: 30px; }
-  .s5 .pede { font: 700 34px/1.2 var(--f-text); color: var(--body-dark); }
-  .s5 .tel { display:flex; align-items:center; gap:.35em; margin-top: 12px; font: 700 64px/1 var(--f-text); color: var(--paper); }
-  .s5 .tel svg { width:.9em; height:.9em; color: var(--green); }
-  .s5 .site { text-align:right; font: 400 34px/1.3 var(--f-text); color: var(--body-dark); }
-  .s5 .site b { color: var(--paper); font-weight:700; }
-  `,
+  nome: 'apresentacao-manutencao-calibracao', pasta: 'whatsapp', w: 1080, h: 1350, min: 36, classe: 'prosp',
+  css: PROSP_CSS,
   html: `
-  <section class="s s1">${faixa('81%', '16%')}${logo()}
-    <p class="k" data-deco><span class="tag">Novo serviço</span><span>Rio Claro e região</span></p>
-    <h1 class="h hd" data-dentro>${T_PRINCIPAL}</h1>
-    <p class="p sub" data-dentro>Resultados de medição registrados em certificado, para o controle de qualidade da sua empresa.</p>
+  <section class="s ab">${faixa('80%', '16%')}<div class="top">${logo()}<p class="reg" data-dentro>Rio Claro e região</p></div>
+    <h1 class="h hd" data-dentro>${T_DOIS}</h1>
     ${balPeso('')}
   </section>
-  <section class="s s2">
-    <div><h2 data-dentro>O que você recebe</h2>
-    ${lista(['Resultados dos ensaios', 'Incerteza de medição', 'Rastreabilidade', 'Certificado em PDF'])}</div>
-    <div class="cbox">${cert('--c:13px;')}</div>
-    ${legendaCert()}
+  <section class="s svs">${SERVICOS}</section>
+  <section class="s or">${CONTATO()}</section>
+  <section class="s cd">${CONDICOES}</section>`,
+});
+
+// 2 · LÂMINA EXPLICATIVA — depois do interesse (também em PDF)
+arte({
+  nome: 'lamina-manutencao-calibracao', pasta: 'whatsapp', w: 1080, h: 2246, min: 36, pdf: true, classe: 'prosp',
+  css: PROSP_CSS + `
+  .rc { background: var(--paper-2); color: var(--ink); display:grid; grid-template-columns: 1fr 340px; gap: 0 24px; align-items: start; }
+  .rc h2 { grid-column: 1 / -1; }
+  .rc .ck { margin-top: 30px; --ks:36px; gap:.5em; color: var(--ink); }
+  .rc .ck li { align-items: flex-start; }
+  .rc .ck li::before { margin-top: .16em; }
+  .rc .cx { margin-top: 20px; display:grid; justify-items: center; gap: 10px; }
+  .rc .cbox { position: relative; width: 330px; height: 294px; }
+  .rc .cbox .cert { left: 10px; top: 10px; box-shadow: 0 10px 18px -12px rgba(0,0,0,.35), 0 0 0 1px rgba(10,10,10,.08); }
+  .rc .cbox .cert__ex { background: var(--paper-3); color: var(--ink); }   /* tarja do exemplo mais leve */
+  .rc .leg { font: 600 36px/1.2 var(--f-text); color: #3A3A36; text-align: center; }
+  .cs { background: var(--paper); color: var(--ink); }
+  .passos { margin-top: 26px; display:grid; gap:16px; list-style:none; }
+  .passos li { display:grid; grid-template-columns: 78px 1fr; align-items: baseline; font: 400 38px/1.3 var(--f-text); color:#1E1E1C; }
+  .passos li i { font: 900 52px/1 var(--f-display); font-style: normal; color: var(--green-deep); }
+  `,
+  html: `
+  <section class="s ab">${faixa('80%', '16%')}<div class="top">${logo()}<p class="reg" data-dentro>Rio Claro e região</p></div>
+    <h1 class="h hd" data-dentro>${T_DOIS}</h1>
+    ${balPeso('')}
   </section>
-  <section class="s s3">
+  <section class="s svs">${SERVICOS}</section>
+  <section class="s rc">
+    <h2 data-dentro>Na calibração, você recebe</h2>
+    ${lista(['Resultados das medições', 'Incerteza de medição', 'Informações de rastreabilidade metrológica', 'Certificado em PDF'])}
+    <div class="cx"><div class="cbox">${cert('--c:13px;')}</div><p class="leg" data-dentro>Modelo ilustrativo<br>de certificado</p></div>
+  </section>
+  <section class="s cs">
     <h2 data-dentro>Como solicitar</h2>
     <ol class="passos" data-dentro>
-      <li><i>01</i><span><b>Envie uma foto da identificação da balança</b> e a cidade do atendimento.</span></li>
-      <li><i>02</i><span>Avaliamos o atendimento e enviamos o orçamento.</span></li>
-      <li><i>03</i><span>Calibramos e enviamos o certificado em PDF.</span></li>
+      <li><i>01</i><span>Envie uma foto da balança e informe sua cidade.</span></li>
+      <li><i>02</i><span>Avaliamos sua necessidade e enviamos a proposta.</span></li>
+      <li><i>03</i><span>Após a aprovação, agendamos o serviço. Na calibração, entregamos o certificado em PDF.</span></li>
     </ol>
   </section>
-  <section class="s s4">
-    <p class="fine" data-dentro><b>Serviço de calibração não acreditado pela Cgcre.</b> Consulte a adequação aos requisitos da sua empresa.</p>
-    <p class="fine" data-dentro><b>A calibração não substitui a verificação metrológica do IPEM-SP.</b> Realizamos calibração e manutenção de balanças; a verificação é feita pelo IPEM-SP.</p>
-  </section>
-  <section class="s s5">
-    <div><p class="pede" data-dentro>Solicite um orçamento pelo WhatsApp</p>
-    <p class="tel" data-dentro>${ICON_WA}(19) 3023-9050</p></div>
-    <p class="site" data-dentro><b>balancass.com</b><br>Rio Claro-SP</p>
-  </section>`,
+  <section class="s or">${CONTATO('Solicite um orçamento pelo WhatsApp', false)}</section>
+  <section class="s cd">${CONDICOES}</section>`,
 });
 
 /* Grupos da galeria (ver-todas.html): título, nota e quais artes entram */
@@ -533,6 +568,6 @@ export const GRUPOS = [
   ['LinkedIn', 'Para o feed, prefira a quadrada; a horizontal serve para anúncio com link.', em('linkedin')],
   ['Google Display · tamanhos fixos', 'JPG abaixo de 150 KB.', em('google-display')],
   ['Google Display responsivo · imagens sem texto e logos', 'Composições ilustrativas: troque as duas imagens por fotos reais do atendimento assim que houver.', em('google-display/responsivo')],
-  ['WhatsApp · lâmina de apresentação (imagem e PDF)', 'Para mandar às empresas na prospecção: a imagem aparece na conversa; o PDF (mesmo nome, .pdf) serve para ampliar, imprimir ou repassar.', em('whatsapp')],
+  ['WhatsApp · prospecção: apresentação curta e lâmina explicativa', 'A apresentação curta vai na primeira mensagem; a lâmina (também em PDF, mesmo nome) vai depois que a empresa mostra interesse.', em('whatsapp')],
   ['Site · prévia do link (og:image)', 'Vai no pacote do site (atualizacao.zip). Confira a prévia na página publicada.', em('site')],
 ];
