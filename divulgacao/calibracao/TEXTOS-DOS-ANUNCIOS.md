@@ -28,7 +28,7 @@ Destino dos anúncios: **https://balancass.com/calibracao.html** ou o WhatsApp *
 
 | Use | Não use | Por quê |
 |---|---|---|
-| “calibração de balanças com certificado”, “emissão de certificado” | “agora com certificado”, “a gente emite”, “a gente certifica” | O serviço é a calibração; o certificado é o registro dela. “Certifica” sugere certificação da empresa |
+| “laudo de calibração”, “laudo de calibração de balanças” (desde 19/11/2026, pedido do dono); onde houver espaço, junto com “certificado de calibração”, que é o nome do documento | “agora com certificado”, “a gente emite”, “a gente certifica” | O serviço é a calibração; o laudo é o registro dela, e o PDF entregue se chama “Certificado de calibração”. “Certifica” sugere certificação da empresa |
 | “Serviço de calibração não acreditado pela Cgcre. Consulte a adequação aos requisitos da sua empresa.” | “atende a maioria (ou diversas) das auditorias ISO 9001”, “vale para a maioria das empresas” | Não há como prometer aceitação: ela depende do cliente, do contrato, do setor e da auditoria |
 | ISO 9001 como **contexto do cliente** (“auditoria em preparação?”) | etiqueta “ISO 9001” como se fosse selo da empresa | Pode parecer certificação da Balanças.com |
 | “compara as indicações da balança com padrões de referência e registra os resultados e a incerteza” | “mostra quanto a balança erra e com que segurança” | “Segurança” não explica a incerteza de medição |
@@ -76,7 +76,7 @@ As artes mostram uma **balança de bancada de 15 kg e, ao lado, um peso de 10 kg
 | Peça original (revisão 1) | Arquivo atual | Revisão 3 |
 |---|---|---|
 | `feed-4x5-A-lancamento` | `instagram-facebook/feed-4x5-A-principal.png` | Peso ao lado da balança; apoio novo |
-| `feed-4x5-B-auditoria` | `instagram-facebook/feed-4x5-B-auditoria.png` | “Calibração de balanças com emissão de certificado” antes da ressalva; ressalva fora da faixa; “Solicite um orçamento” |
+| `feed-4x5-B-auditoria` | `instagram-facebook/feed-4x5-B-auditoria.png` | “Laudo de calibração de balanças, em certificado PDF” antes da ressalva; ressalva fora da faixa; “Solicite um orçamento” |
 | `feed-4x5-C-o-que-vem` | `instagram-facebook/feed-4x5-C-o-que-voce-recebe.png` | Legenda externa “Modelo ilustrativo de certificado”; ilustração só com “Certificado em PDF” |
 | `quadrado-1x1-A-lancamento` | `instagram-facebook/quadrado-1x1-A-principal.png` | Peso ao lado; “Rio Claro e região” |
 | `quadrado-1x1-B-auditoria` | `instagram-facebook/quadrado-1x1-B-sua-empresa.png` | Pedido: foto e cidade; “Solicite um orçamento” |
@@ -109,22 +109,22 @@ Botão: **Enviar mensagem** (abre o WhatsApp) ou **Saiba mais** (leva à página
 
 ### A · Principal (`feed-4x5-A-principal`, `quadrado-1x1-A-principal`, `stories-9x16-anuncio-principal`)
 - **Texto principal:**
-  > A Balanças.com oferece calibração de balanças com emissão de certificado, para o controle de qualidade da sua empresa.
+  > A Balanças.com oferece laudo de calibração de balanças (certificado de calibração em PDF), para o controle de qualidade da sua empresa.
   >
   > Para o orçamento, envie uma foto da identificação da balança e informe a cidade do atendimento. Se houver exigências do cliente, do contrato ou da auditoria, conte na conversa.
   >
   > Serviço de calibração não acreditado pela Cgcre. A calibração não substitui a verificação metrológica do IPEM-SP, quando aplicável.
-- **Título:** Calibração de balanças com certificado
+- **Título:** Laudo de calibração de balanças
 - **Descrição:** Rio Claro e região
 
 ### B · Auditoria (`feed-4x5-B-auditoria`, `stories-9x16-anuncio-auditoria`)
 - **Texto principal:**
   > Auditoria em preparação? Confira os requisitos de calibração das suas balanças.
   >
-  > A Balanças.com faz calibração de balanças com emissão de certificado. Envie uma foto da identificação da balança, a cidade e as exigências da auditoria: avaliamos o atendimento e preparamos o orçamento.
+  > A Balanças.com faz laudo de calibração de balanças, em certificado PDF. Envie uma foto da identificação da balança, a cidade e as exigências da auditoria: avaliamos o atendimento e preparamos o orçamento.
   >
   > Serviço de calibração não acreditado pela Cgcre. Consulte a adequação aos requisitos da sua empresa.
-- **Título:** Calibração de balanças com certificado
+- **Título:** Laudo de calibração de balanças
 - **Descrição:** Consulte a adequação aos seus requisitos
 
 ### Sua empresa (`quadrado-1x1-B-sua-empresa`)
@@ -137,13 +137,13 @@ Botão: **Enviar mensagem** (abre o WhatsApp) ou **Saiba mais** (leva à página
 
 ### C · O que você recebe (`feed-4x5-C-o-que-voce-recebe`)
 - **Texto principal:**
-  > O que você recebe na calibração: resultados documentados, informações de incerteza e rastreabilidade e o certificado em PDF. Os resultados apresentados correspondem aos ensaios realizados.
+  > O que vem no laudo de calibração: resultados documentados, informações de incerteza e rastreabilidade, num certificado de calibração em PDF. Os resultados apresentados correspondem aos ensaios realizados.
   >
   > Envie uma foto da identificação da balança e solicite um orçamento.
   >
   > Serviço de calibração não acreditado pela Cgcre.
-- **Título:** O que você recebe na calibração
-- **Descrição:** Certificado em PDF
+- **Título:** O que vem no laudo de calibração
+- **Descrição:** Laudo em PDF
 
 ### Formatos verticais
 - **Anúncio (Stories/Reels):** use `stories-9x16-anuncio-*`. O texto principal pode ser o de A ou B. A seta aponta para o botão da plataforma: confira nas prévias do Gerenciador se o botão não cobre o texto.
@@ -155,7 +155,7 @@ Botão: **Enviar mensagem** (abre o WhatsApp) ou **Saiba mais** (leva à página
 ## 6. Posts do perfil
 
 ### Carrossel (5 imagens, na ordem)
-> A Balanças.com oferece calibração de balanças com emissão de certificado, para o controle de qualidade da sua empresa. Arraste para entender o serviço.
+> A Balanças.com oferece laudo de calibração de balanças (certificado de calibração em PDF), para o controle de qualidade da sua empresa. Arraste para entender o serviço.
 >
 > Para o orçamento, envie uma foto da identificação da balança e informe a cidade do atendimento. Se houver exigências do cliente, do contrato ou da auditoria, conte na conversa.
 >
@@ -166,7 +166,7 @@ Botão: **Enviar mensagem** (abre o WhatsApp) ou **Saiba mais** (leva à página
 > #calibração #balanças #controledequalidade #rioclaro
 
 ### Post do feed (A, orgânico)
-> Novo serviço na Balanças.com: calibração de balanças com emissão de certificado.
+> Novo serviço na Balanças.com: laudo de calibração de balanças.
 >
 > Comparamos as indicações da balança com padrões de referência e registramos os resultados e a incerteza de medição no certificado, em PDF.
 >
@@ -184,7 +184,7 @@ Ao trocar a capa, o Facebook publica um post. Legenda: **“Assistência técnic
 ### Lista de transmissão (só para clientes que aceitaram receber mensagens, LGPD)
 > Olá! Aqui é da Balanças.com.
 >
-> Agora oferecemos calibração de balanças com emissão de certificado, para o controle de qualidade da sua empresa.
+> Agora oferecemos laudo de calibração de balanças (certificado de calibração em PDF), para o controle de qualidade da sua empresa.
 >
 > Se tiver interesse, responda com uma foto da identificação da balança e a cidade do atendimento. Se houver alguma exigência do seu cliente, do contrato ou da auditoria, conte também.
 >
@@ -253,14 +253,14 @@ Nada de atendimento 24 horas, todas as marcas, prazos, capacidades ou atendiment
 Para o **feed**, prefira a arte quadrada (`linkedin-1200x1200`); a horizontal serve para o anúncio com link.
 
 - **Texto do post ou anúncio:**
-  > A Balanças.com oferece calibração de balanças com emissão de certificado, para o controle de qualidade de empresas de Rio Claro e região.
+  > A Balanças.com oferece laudo de calibração de balanças, para o controle de qualidade de empresas de Rio Claro e região.
   >
   > O certificado traz os resultados dos ensaios (erro de indicação, repetibilidade e excentricidade), a incerteza de medição, calculada pelo guia EURAMET cg-18, e as informações de rastreabilidade dos padrões utilizados.
   >
   > Serviço de calibração não acreditado pela Cgcre. Se o seu cliente, contrato ou setor exige calibração acreditada, ela deve ser feita por um laboratório acreditado. Envie os requisitos da sua empresa e avaliamos a adequação.
   >
   > Solicite um orçamento: (link do item 9)
-- **Título do anúncio:** Calibração de balanças para o controle de qualidade
+- **Título do anúncio:** Laudo de calibração de balanças para o controle de qualidade
 - **Botão:** Solicitar orçamento *(ou “Saiba mais”)*
 - **Público sugerido (conferir no Gerenciador):** localização Rio Claro e região; cargos ligados à qualidade, à produção e a compras; setores industriais e de logística.
 
@@ -301,23 +301,23 @@ Para o **feed**, prefira a arte quadrada (`linkedin-1200x1200`); a horizontal se
 ## 10. Google Ads
 
 ### Pesquisa
-- **Palavras-chave para testar** (correspondência de frase): “calibração de balança”, “calibração de balanças”, “certificado de calibração de balança”, “empresa de calibração de balança”, “calibração de balança rio claro”.
+- **Palavras-chave para testar** (correspondência de frase): “laudo de calibração de balança”, “laudo de calibração”, “calibração de balança”, “calibração de balanças”, “certificado de calibração de balança”, “empresa de calibração de balança”, “calibração de balança rio claro”.
 - **Palavras negativas:** comece com as óbvias (curso, apostila, vaga, emprego, como calibrar, modelo de certificado, rodoviária, caminhão). Para **rbc, acreditado e aferição**, olhe primeiro o **relatório de termos de pesquisa**: quem procura “calibração RBC” precisa de serviço acreditado (exclua se aparecer); “aferição” às vezes é usada sem precisão. Um grupo dedicado a “aferição” deve levar à página de assistência e explicar a diferença; **nunca** anuncie a verificação oficial como se fosse feita pela Balanças.com.
-- **Títulos** (até 30 caracteres): Calibração de Balanças · Certificado de Calibração · Rio Claro e Região · Solicite um Orçamento · Balanças.com · Calibração com Certificado · Certificado em PDF · Atendimento em Rio Claro · Envie os Dados da Balança · Orçamento pelo WhatsApp · Desde 2010 em Rio Claro
+- **Títulos** (até 30 caracteres): Laudo de Calibração · Laudo de Calibração de Balança · Laudo de Calibração em PDF · Calibração de Balanças · Certificado de Calibração · Rio Claro e Região · Solicite um Orçamento · Balanças.com · Certificado em PDF · Atendimento em Rio Claro · Envie os Dados da Balança · Orçamento pelo WhatsApp · Desde 2010 em Rio Claro
 - **Descrições** (até 90 caracteres):
-  1. Calibração de balanças com certificado. Consulte o atendimento em Rio Claro e região.
+  1. Laudo de calibração de balanças. Consulte o atendimento em Rio Claro e região.
   2. Envie modelo, capacidade e cidade. Solicite um orçamento para a sua empresa.
   3. Serviço não acreditado pela Cgcre. Consulte a adequação aos requisitos da sua empresa.
-  4. Resultados documentados, incerteza de medição e rastreabilidade, em certificado PDF.
+  4. Resultados das medições, incerteza e rastreabilidade no laudo (certificado em PDF).
 - Confira as combinações na pré-visualização da plataforma. “Atendimento em Rio Claro” só vale se o atendimento no local for confirmado (item 3).
 
 ### Display (tamanhos fixos)
-`display-300x250`, `336x280`, `728x90`, `300x600`, `160x600`, `320x100` e `320x50`, todos em JPG abaixo de 150 KB (tamanho certo não garante aprovação nem desempenho). Texto: “Calibração de balanças · Com certificado · Rio Claro e região · Solicite orçamento”.
+`display-300x250`, `336x280`, `728x90`, `300x600`, `160x600`, `320x100` e `320x50`, todos em JPG abaixo de 150 KB (tamanho certo não garante aprovação nem desempenho). Texto: “Laudo de calibração de balanças · Certificado em PDF · Rio Claro e região · Solicite orçamento”.
 
 ### Display responsivo
 - **Imagens:** `responsivo-paisagem-1200x628.jpg` e `responsivo-quadrado-1200x1200.jpg`, sem texto. O Google **recomenda** fotos em contexto e evitar texto e logos sobrepostos (boa prática, não regra de reprovação automática). As duas são composições ilustrativas: troque por fotos reais do atendimento assim que houver. Confira o tipo de campanha disponível na conta.
 - **Logos:** `logo-quadrado-1200x1200.png` e `logo-paisagem-1200x300.png`.
-- **Título curto:** Calibração de Balanças · **Título longo:** Calibração de balanças com certificado, em Rio Claro e região
+- **Título curto:** Laudo de Calibração · **Título longo:** Laudo de calibração de balanças, em certificado PDF, em Rio Claro e região
 - **Descrições:** as da pesquisa.
 
 ---

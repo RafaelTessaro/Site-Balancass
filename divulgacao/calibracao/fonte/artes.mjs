@@ -9,10 +9,12 @@
 import { logo, simbolo, cert, balPeso, peso, rodape, legendaCert, ICON_WA, ICON_ARROW, ICON_DOWN, RESSALVA, RESSALVA_CURTA } from './pecas.mjs';
 
 const faixa = (bx, bw, extra = '') => `<div class="band ${extra}" style="--bx:${bx};--bw:${bw}"></div>`;
-const T_PRINCIPAL = `<span>Calibração</span><span>de balanças</span><span class="g">com certificado.</span>`;
-const APOIO = 'Conheça os resultados de medição da sua balança, registrados em certificado.';
+// "Laudo de calibração" em todas as peças (pedido do dono, 19/11/2026). O documento entregue se chama
+// "Certificado de calibração": onde há espaço, as peças dizem os dois nomes juntos.
+const T_PRINCIPAL = `<span>Laudo de</span><span>calibração</span><span class="g">de balanças.</span>`;
+const APOIO = 'Conheça os resultados de medição da sua balança, registrados no certificado de calibração.';
 const PEDIDO = 'Envie uma foto da identificação da balança e informe a cidade do atendimento.';
-const ENTREGA = ['Resultados documentados', 'Incerteza e rastreabilidade', 'Certificado em PDF'];
+const ENTREGA = ['Resultados documentados', 'Incerteza e rastreabilidade', 'Laudo em PDF'];
 const lista = (itens) => `<ul class="ck" data-dentro>${itens.map((i) => `<li>${i}</li>`).join('')}</ul>`;
 const ORCAMENTO = `${ICON_WA}Solicite um orçamento`;
 
@@ -37,7 +39,7 @@ arte({
   <span class="tag" data-deco>Novo serviço</span>
   <h1 class="h hd" data-dentro>${T_PRINCIPAL}</h1>
   <p class="p sub" data-dentro>${APOIO} <strong>Rio Claro e região.</strong></p>
-  ${balPeso('right:40px; top:830px; width:540px;')}
+  ${balPeso('right:40px; top:880px; width:480px;')}
   <p class="cta" data-dentro>${ORCAMENTO}</p>
   ${rodape()}`,
 });
@@ -57,7 +59,7 @@ arte({
   <h1 class="h hd" data-dentro><span>Auditoria em</span><span class="g">preparação?</span></h1>
   <p class="p sub" data-dentro>Confira os requisitos de calibração das suas balanças.</p>
   ${peso('peso', 'right:70px; top:420px; width:240px;')}
-  <p class="p inf" data-dentro><strong>Calibração de balanças com emissão de certificado.</strong></p>
+  <p class="p inf" data-dentro><strong>Laudo de calibração de balanças, em certificado PDF.</strong></p>
   <p class="fine" data-dentro><b>Serviço de calibração não acreditado pela Cgcre.</b> Consulte a adequação aos requisitos da sua empresa.</p>
   <p class="cta cta--ink" data-dentro>${ORCAMENTO}</p>
   ${rodape()}`,
@@ -69,17 +71,17 @@ arte({
   css: `
   .lg { position:absolute; left:64px; top:60px; }
   .hd { position:absolute; left:64px; top:190px; --hs:100px; }
-  .ck { position:absolute; left:64px; top:410px; gap:.5em; }
-  .fine { position:absolute; left:64px; top:760px; width:400px; }
-  .cert-leg { right:64px; top:632px; }
+  .ck { position:absolute; left:64px; top:496px; gap:.5em; }
+  .fine { position:absolute; left:64px; top:840px; width:400px; }
+  .cert-leg { right:64px; top:712px; }
   .cta { position:absolute; left:70px; top:1124px; }
   `,
   html: `${faixa('72%', '24%')}${logo()}
-  <h1 class="h hd" data-dentro><span>O que você recebe</span><span class="g">na calibração.</span></h1>
+  <h1 class="h hd" data-dentro><span>O que vem no</span><span class="g">laudo de</span><span class="g">calibração.</span></h1>
   ${lista(ENTREGA)}
   ${legendaCert()}
-  ${cert('--c:15px; right:64px; top:756px;')}
-  <p class="fine" data-dentro>${RESSALVA_CURTA} O certificado informa essa condição.</p>
+  ${cert('--c:13px; right:70px; top:812px;')}
+  <p class="fine" data-dentro>${RESSALVA_CURTA} O laudo informa essa condição.</p>
   <p class="cta" data-dentro>${ORCAMENTO}</p>
   ${rodape()}`,
 });
@@ -156,7 +158,7 @@ arte({
   html: `${faixa('80%', '18%')}${logo('claro')}
   <h1 class="h hd" data-dentro><span>Auditoria em</span><span class="g">preparação?</span></h1>
   <p class="p sub" data-dentro>Confira os requisitos de calibração das suas balanças.</p>
-  <p class="p inf" data-dentro><strong>Calibração de balanças com emissão de certificado.</strong></p>
+  <p class="p inf" data-dentro><strong>Laudo de calibração de balanças, em certificado PDF.</strong></p>
   <p class="fine" data-dentro><b>Serviço de calibração não acreditado pela Cgcre.</b> Consulte a adequação aos requisitos da sua empresa.</p>
   ${peso('peso', 'right:96px; top:900px; width:260px;')}
   <p class="cta cta--ink" data-dentro>Solicite um orçamento${ICON_DOWN}</p>`,
@@ -227,7 +229,7 @@ arte({
   `,
   html: `${faixa('76%', '20%')}${logo('claro')}${pg(2)}
   <h2 class="h hd" data-dentro><span>O que é</span><span class="g">calibração?</span></h2>
-  <p class="p sub" data-dentro><strong>Comparamos as indicações da balança com padrões de referência.</strong> Os resultados e a incerteza de medição são registrados no certificado.</p>
+  <p class="p sub" data-dentro><strong>Comparamos as indicações da balança com padrões de referência.</strong> Os resultados e a incerteza de medição são registrados no laudo de calibração.</p>
   ${peso('peso', 'right:100px; top:520px; width:240px;')}
   ${arraste}`,
 });
@@ -240,7 +242,7 @@ arte({
   .cert-leg { right:64px; top:1176px; }
   `,
   html: `${faixa('72%', '24%')}${logo()}${pg(3)}
-  <h2 class="h hd" data-dentro><span>O que o</span><span>certificado</span><span class="g">informa?</span></h2>
+  <h2 class="h hd" data-dentro><span>O que o laudo</span><span>de calibração</span><span class="g">informa?</span></h2>
   ${lista(['Resultados dos ensaios', 'Incerteza de medição', 'Rastreabilidade'])}
   <p class="fine" data-dentro>Os resultados apresentados correspondem aos ensaios realizados.</p>
   ${legendaCert()}
@@ -299,7 +301,7 @@ arte({
   `,
   html: `${faixa('70%', '20%')}
   <h1 class="h hd" data-dentro><span>A medida certa</span><span class="g">para o seu negócio.</span></h1>
-  <p class="p sub" data-dentro>Assistência técnica, calibração de balanças e automação comercial. <strong>Rio Claro e região.</strong></p>
+  <p class="p sub" data-dentro>Assistência técnica, laudo de calibração de balanças e automação comercial. <strong>Rio Claro e região.</strong></p>
   ${balPeso('left:1090px; top:250px; width:320px;')}`,
 });
 
@@ -310,17 +312,17 @@ arte({
   nome: 'linkedin-1200x627', pasta: 'linkedin', w: 1200, h: 627, min: 38,
   css: `
   .lg { position:absolute; left:56px; top:40px; --lg:38px; }
-  .hd { position:absolute; left:56px; top:118px; --hs:108px; }
+  .hd { position:absolute; left:56px; top:114px; --hs:84px; }
   .sub { position:absolute; left:58px; top:330px; --ps:42px; }
   .cta { position:absolute; left:62px; top:400px; --cs:40px; }
   .fine { position:absolute; left:58px; top:522px; --fn:38px; }
   `,
   html: `${faixa('74%', '22%')}${logo()}
-  <h1 class="h hd" data-dentro><span>Calibração</span><span class="g">de balanças</span></h1>
-  <p class="p sub" data-dentro>Com certificado · <strong>Rio Claro e região</strong></p>
+  <h1 class="h hd" data-dentro><span>Laudo de calibração</span><span class="g">de balanças</span></h1>
+  <p class="p sub" data-dentro>Certificado em PDF · <strong>Rio Claro e região</strong></p>
   <p class="cta" data-dentro>Solicite um orçamento${ICON_ARROW}</p>
   <p class="fine" data-dentro>Serviço não acreditado pela Cgcre.</p>
-  ${balPeso('right:30px; top:160px; width:380px;')}`,
+  ${balPeso('right:30px; top:200px; width:320px;')}`,
 });
 arte({
   nome: 'linkedin-1200x1200', pasta: 'linkedin', w: 1200, h: 1200, min: 38,
@@ -332,7 +334,7 @@ arte({
   .cta { position:absolute; left:70px; top:960px; --cs:44px; }
   `,
   html: `${faixa('76%', '20%')}${logo()}
-  <h1 class="h hd" data-dentro><span>Calibração de balanças</span><span class="g">para o controle</span><span class="g">de qualidade.</span></h1>
+  <h1 class="h hd" data-dentro><span>Laudo de calibração</span><span>de balanças para o</span><span class="g">controle de qualidade.</span></h1>
   ${lista(ENTREGA)}
   ${balPeso('right:30px; top:490px; width:360px;')}
   <p class="fine" data-dentro>${RESSALVA}</p>
@@ -347,11 +349,11 @@ arte({
   nome: 'og-calibracao', pasta: 'site', w: 1200, h: 630, jpg: 86, min: 40,
   css: `
   .lg { position:absolute; left:56px; top:48px; --lg:34px; }
-  .hd { position:absolute; left:54px; top:150px; --hs:132px; }
-  .sub { position:absolute; left:58px; top:430px; --ps:40px; }
+  .hd { position:absolute; left:54px; top:132px; --hs:104px; }
+  .sub { position:absolute; left:58px; top:446px; --ps:40px; }
   `,
   html: `${faixa('72%', '22%')}${logo()}
-  <h1 class="h hd" data-dentro><span>Calibração</span><span class="g">de balanças</span></h1>
+  <h1 class="h hd" data-dentro><span>Laudo de</span><span>calibração</span><span class="g">de balanças</span></h1>
   <p class="p sub" data-dentro><strong>Balanças.com</strong> · Rio Claro e região</p>
   ${balPeso('right:40px; top:150px; width:440px;')}`,
 });
@@ -361,76 +363,76 @@ arte({
    ===================================================================== */
 const gd = (nome, w, h, min, css, html) => arte({ nome, pasta: 'google-display', w, h, jpg: 88, maxKB: 150, min, css, html });
 const lgp = (s, tom = 'escuro') => `<div class="lg" data-deco style="--lg:${s}px">${simbolo(tom)}<span class="lg__t"><b>Balanças<i>.</i>com</b></span></div>`;
-const GD_SUB = 'Com certificado · Rio Claro e região';
+const GD_SUB = 'Certificado em PDF · Rio Claro e região';
 
 gd('display-300x250', 300, 250, 12, `
   .lg { position:absolute; left:16px; top:16px; }
-  .hd { position:absolute; left:16px; top:58px; --hs:38px; }
-  .sub { position:absolute; left:16px; top:136px; width:160px; --ps:14px; line-height:1.35; }
+  .hd { position:absolute; left:16px; top:52px; --hs:31px; }
+  .sub { position:absolute; left:16px; top:146px; width:170px; --ps:13px; line-height:1.35; }
   .cta { position:absolute; left:19px; bottom:18px; --cs:14px; }
 `, `${faixa('74%', '24%')}${lgp(15)}
-  <p class="h hd" data-dentro><span>Calibração</span><span class="g">de balanças</span></p>
+  <p class="h hd" data-dentro><span>Laudo de</span><span>calibração</span><span class="g">de balanças</span></p>
   <p class="p sub" data-dentro>${GD_SUB}</p>
   ${peso('peso', 'right:20px; bottom:22px; width:56px;')}
   <p class="cta" data-dentro>Solicite orçamento</p>`);
 
 gd('display-336x280', 336, 280, 12, `
   .lg { position:absolute; left:18px; top:18px; }
-  .hd { position:absolute; left:18px; top:64px; --hs:42px; }
-  .sub { position:absolute; left:18px; top:152px; width:180px; --ps:15px; line-height:1.35; }
+  .hd { position:absolute; left:18px; top:58px; --hs:35px; }
+  .sub { position:absolute; left:18px; top:164px; width:190px; --ps:14px; line-height:1.35; }
   .cta { position:absolute; left:21px; bottom:20px; --cs:15px; }
 `, `${faixa('74%', '24%')}${lgp(16)}
-  <p class="h hd" data-dentro><span>Calibração</span><span class="g">de balanças</span></p>
+  <p class="h hd" data-dentro><span>Laudo de</span><span>calibração</span><span class="g">de balanças</span></p>
   <p class="p sub" data-dentro>${GD_SUB}</p>
   ${peso('peso', 'right:22px; bottom:24px; width:62px;')}
   <p class="cta" data-dentro>Solicite orçamento</p>`);
 
 gd('display-728x90', 728, 90, 13, `
   .lg { position:absolute; left:16px; top:29px; }
-  .hd { position:absolute; left:176px; top:17px; --hs:31px; }
-  .sub { position:absolute; left:178px; top:54px; --ps:14px; }
+  .hd { position:absolute; left:176px; top:12px; --hs:25px; }
+  .sub { position:absolute; left:178px; top:62px; --ps:13px; }
   .cta { position:absolute; right:66px; top:25px; --cs:15px; }
 `, `${faixa('95%', '9%')}${lgp(16)}
-  <p class="h hd" data-dentro><span>Calibração <span class="g" style="display:inline">de balanças</span></span></p>
+  <p class="h hd" data-dentro><span>Laudo de calibração</span><span class="g">de balanças</span></p>
   <p class="p sub" data-dentro>${GD_SUB}</p>
   <p class="cta" data-dentro>Solicite orçamento</p>`);
 
 gd('display-300x600', 300, 600, 13, `
   .lg { position:absolute; left:20px; top:22px; }
-  .hd { position:absolute; left:20px; top:76px; --hs:46px; }
-  .sub { position:absolute; left:20px; top:198px; width:200px; --ps:16px; line-height:1.4; }
+  .hd { position:absolute; left:20px; top:72px; --hs:42px; }
+  .sub { position:absolute; left:20px; top:206px; width:200px; --ps:16px; line-height:1.4; }
   .cta { position:absolute; left:23px; bottom:26px; --cs:16px; }
 `, `${faixa('77%', '21%')}${lgp(16)}
-  <p class="h hd" data-dentro><span>Calibração</span><span class="g">de balanças</span></p>
+  <p class="h hd" data-dentro><span>Laudo de</span><span>calibração</span><span class="g">de balanças</span></p>
   <p class="p sub" data-dentro>${GD_SUB}</p>
   ${balPeso('left:14px; top:330px; width:272px;')}
   <p class="cta" data-dentro>Solicite orçamento</p>`);
 
 gd('display-160x600', 160, 600, 12, `
   .lg { position:absolute; left:12px; top:18px; }
-  .hd { position:absolute; left:12px; top:70px; --hs:26px; }
-  .sub { position:absolute; left:12px; top:134px; width:104px; --ps:13px; line-height:1.4; }
-  .cta { position:absolute; left:15px; top:226px; --cs:13px; padding:.75em .9em .7em; }
+  .hd { position:absolute; left:12px; top:66px; --hs:25px; }
+  .sub { position:absolute; left:12px; top:152px; width:104px; --ps:13px; line-height:1.4; }
+  .cta { position:absolute; left:15px; top:260px; --cs:13px; padding:.75em .9em .7em; }
 `, `${faixa('76%', '30%')}${lgp(13)}
-  <p class="h hd" data-dentro><span>Calibração</span><span class="g">de balanças</span></p>
+  <p class="h hd" data-dentro><span>Laudo de</span><span>calibração</span><span class="g">de balanças</span></p>
   <p class="p sub" data-dentro>${GD_SUB}</p>
   <p class="cta" data-dentro>Orçamento${ICON_ARROW}</p>
   ${peso('peso', 'left:30px; top:330px; width:100px;')}`);
 
 gd('display-320x100', 320, 100, 12, `
   .lg { position:absolute; left:12px; top:12px; }
-  .hd { position:absolute; left:12px; top:38px; --hs:25px; }
-  .cta { position:absolute; right:12px; bottom:14px; --cs:13px; padding:.7em .9em .66em; }
+  .hd { position:absolute; left:12px; top:37px; --hs:21px; }
+  .cta { position:absolute; right:12px; bottom:12px; --cs:12px; padding:.7em .85em .66em; }
 `, `${faixa('80%', '12%')}${lgp(12)}
-  <p class="h hd" data-dentro><span>Calibração</span><span class="g">de balanças</span></p>
-  <p class="cta" data-dentro>Orçamento${ICON_ARROW}</p>`);
+  <p class="h hd" data-dentro><span>Laudo de calibração</span><span class="g">de balanças</span></p>
+  <p class="cta" data-dentro>Orçamento</p>`);
 
 gd('display-320x50', 320, 50, 11, `
   .si { position:absolute; left:10px; top:10px; width:30px; height:30px; }
-  .hd { position:absolute; left:50px; top:7px; --hs:19px; line-height:.95; }
+  .hd { position:absolute; left:50px; top:8px; --hs:17px; line-height:.97; }
   .cta { position:absolute; right:10px; top:10px; --cs:13px; padding:.6em .9em .56em; }
 `, `${simbolo('escuro', 'si')}
-  <p class="h hd" data-dentro><span>Calibração</span><span class="g">de balanças</span></p>
+  <p class="h hd" data-dentro><span>Laudo de calibração</span><span class="g">de balanças</span></p>
   <p class="cta" data-dentro>Orçamento</p>`);
 
 /* Anúncio responsivo do Google: imagens sem texto (o Google recomenda; títulos e logo vão nos
