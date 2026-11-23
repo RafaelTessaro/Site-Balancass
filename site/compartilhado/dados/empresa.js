@@ -91,7 +91,7 @@ window.EMPRESA = {
 
   "produtosProprios": [
     { "nome": "BC System", "descricao": "Sistema de gestão e PDV com emissão de NFC-e e NF-e." },
-    { "nome": "BC Fichas", "descricao": "Locação de terminais emissores de fichas para eventos.", "site": "http://bcfichas.com.br" }
+    { "nome": "BC Fichas", "descricao": "Locação de terminais emissores de fichas para eventos.", "site": "https://bcfichas.balancass.com/" }
   ],
 
   "marcas": [
