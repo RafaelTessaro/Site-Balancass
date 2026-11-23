@@ -14,6 +14,9 @@ para a  public_html  da HostGator (cPanel):
     ├── compartilhado/           ← dados (empresa.js, ajustes.js, clientes.js, produtos.js), balancas.js, fotos e logos
     ├── painel/                  ← painel de produtos e clientes (PHP), sem dados privados,
     │   └── pacotes/<id>/        ←   com as atualizações do catálogo (pacote.json + fotos + recortes)
+    ├── <pasta das assinaturas>/ ← as 10 imagens PÚBLICAS das assinaturas de e-mail + .htaccess
+    │                              (o nome e a lista vêm de painel/lib/assinaturas.php; origem:
+    │                              hospedagem/<pasta>/; sem elas, o pacote NÃO é montado)
     ├── .htaccess  robots.txt  sitemap.xml  favicon.ico
 
 O que o script faz nas páginas:
@@ -55,11 +58,14 @@ servidor, para extrair por cima da public_html sem perder nada:
   * os .htaccess dessas pastas (que bloqueiam scripts) vão sempre;
   * as atualizações do catálogo (painel/pacotes/<id>/) vão sempre: é assim
     que produtos novos e trocas chegam ao catálogo do servidor (o
-    administrador revê e aplica no painel; veja painel/LEIA-ME.md).
+    administrador revê e aplica no painel; veja painel/LEIA-ME.md);
+  * as imagens das assinaturas de e-mail (a pasta pública da raiz) vão
+    sempre, nos dois zips: as assinaturas já instaladas dependem delas.
 O zip fica ao lado da pasta de saída (padrão: atualizacao.zip na raiz do projeto).
 
 Fontes: linha-verde/ (páginas, css, js, img, 404.html), compartilhado/,
-painel/ e hospedagem/ (.htaccess, .htaccess das pastas de fotos e logos, favicon.ico).
+painel/ e hospedagem/ (.htaccess, .htaccess das pastas de fotos e logos, favicon.ico
+e a pasta das imagens das assinaturas de e-mail).
 Nada nas fontes é alterado.
 """
 import argparse
@@ -134,6 +140,12 @@ CATEGORIAS_CURTAS = {"balancas": ("Balanças", "Balanças"), "automacao": ("Auto
                      "informatica": ("Informática", "Informática e PDV")}
 ESTOQUES = {"consulte", "disponivel", "encomenda", "esgotado"}
 CONDICOES = {"novo", "seminovo"}
+# Assinaturas de e-mail: o nome da pasta pública (na raiz do site) e a lista das imagens ficam SÓ no painel,
+# em painel/lib/assinaturas.php (PASTA_ASSINATURAS, IMAGENS_ASSINATURA, SITE_OFICIAL); este script lê de lá.
+ARQ_ASSINATURAS = PAINEL / "lib" / "assinaturas.php"
+RE_PASTA_ASSINATURAS = re.compile(r"^[a-z0-9][a-z0-9-]{2,60}$")
+RE_IMAGEM_ASSINATURA = re.compile(r"^[a-z0-9][a-z0-9-]{0,60}\.png$")
+assinaturas = None   # (pasta, [imagens]) lido de painel/lib/assinaturas.php no começo da montagem
 
 erros = []
 avisos = []   # não impedem a montagem; aparecem no resumo
@@ -853,6 +865,125 @@ def conferir_pacote_no_php(site, pasta):
 
 
 # ---------------------------------------------------------------------------
+# Assinaturas de e-mail (imagens públicas na raiz do site)
+# ---------------------------------------------------------------------------
+def ler_assinaturas():
+    """(pasta, [imagens]) de painel/lib/assinaturas.php, ou None (com o erro anotado)."""
+    try:
+        src = ler(ARQ_ASSINATURAS)
+    except OSError:
+        erro("painel/lib/assinaturas.php não existe: é lá que ficam o nome da pasta pública das imagens das "
+             "assinaturas de e-mail (PASTA_ASSINATURAS) e a lista das imagens (IMAGENS_ASSINATURA)")
+        return None
+    pasta = re.search(r"^const PASTA_ASSINATURAS = '([^']*)';", src, re.M)
+    lista = re.search(r"^const IMAGENS_ASSINATURA = \[([^\]]*)\];", src, re.M)
+    site = re.search(r"^const SITE_OFICIAL = '([^']*)';", src, re.M)
+    if not pasta or not lista or not site:
+        erro("painel/lib/assinaturas.php: não achei as linhas  const PASTA_ASSINATURAS = '…';  const IMAGENS_ASSINATURA = [ … ];"
+             "  e  const SITE_OFICIAL = '…';  (este script lê o nome da pasta e a lista das imagens de lá)")
+        return None
+    pasta = pasta.group(1)
+    imagens = re.findall(r"'([^']*)'", lista.group(1))
+    if site.group(1) != DOMINIO:
+        erro(f"painel/lib/assinaturas.php: SITE_OFICIAL ({site.group(1)!r}) diferente do endereço do site ({DOMINIO!r})")
+    if not RE_PASTA_ASSINATURAS.match(pasta):
+        erro(f"painel/lib/assinaturas.php: nome de pasta inválido em PASTA_ASSINATURAS: {pasta!r}")
+        return None
+    if not imagens or len(set(imagens)) != len(imagens) or not all(RE_IMAGEM_ASSINATURA.match(i) for i in imagens):
+        erro(f"painel/lib/assinaturas.php: IMAGENS_ASSINATURA precisa ser uma lista de nomes .png sem repetição: {imagens!r}")
+        return None
+    return pasta, imagens
+
+
+def eh_png(caminho):
+    with open(caminho, "rb") as f:
+        return f.read(8) == b"\x89PNG\r\n\x1a\n"
+
+
+def copiar_assinaturas(site):
+    """hospedagem/<pasta>/ → site/<pasta>/: as imagens (bytes idênticos, sem converter) e o .htaccess.
+    Falta qualquer uma = erro: uma publicação nunca pode sair sem as imagens das assinaturas."""
+    if not assinaturas:
+        return
+    pasta, imagens = assinaturas
+    origem = HOSPEDAGEM / pasta
+    if not origem.is_dir():
+        erro(f"hospedagem/{pasta}/ não existe. É a pasta das {len(imagens)} imagens das assinaturas de e-mail "
+             f"({', '.join(imagens)}) e do .htaccess dela; sem ela o pacote não é montado (as assinaturas já instaladas "
+             "ficariam sem imagens). Recupere a pasta (ex.: git checkout -- hospedagem/) antes de montar.")
+        return
+    destino = site / pasta
+    destino.mkdir()
+    for nome in imagens + [".htaccess"]:
+        f = origem / nome
+        if not f.is_file() or f.is_symlink():
+            erro(f"falta hospedagem/{pasta}/{nome} (imagens das assinaturas de e-mail: são {len(imagens)} PNG + .htaccess; "
+                 "sem todas, o pacote não é montado)")
+            continue
+        if nome != ".htaccess" and not eh_png(f):
+            erro(f"hospedagem/{pasta}/{nome} não é PNG de verdade")
+            continue
+        shutil.copy2(f, destino / nome)   # cópia byte a byte (nada de converter ou recomprimir)
+    sobrando = sorted(f.name for f in origem.iterdir() if f.name not in imagens and f.name != ".htaccess" and not eh_lixo(f.name))
+    if sobrando:
+        erro(f"hospedagem/{pasta}/ tem arquivo(s) que não são das assinaturas: {', '.join(sobrando)} "
+             f"(a pasta é pública: só as imagens de IMAGENS_ASSINATURA, em painel/lib/assinaturas.php, e o .htaccess)")
+
+
+def sha256(caminho):
+    return hashlib.sha256(Path(caminho).read_bytes()).hexdigest()
+
+
+def conferir_assinaturas(site):
+    """A pasta das assinaturas no pacote: as imagens idênticas às de hospedagem/, o .htaccess certo,
+    e o endereço da pasta fora do robots.txt, do sitemap e das páginas (seria uma lista para os robôs)."""
+    if not assinaturas:
+        return
+    pasta, imagens = assinaturas
+    dest = site / pasta
+    for nome in imagens:
+        f, orig = dest / nome, HOSPEDAGEM / pasta / nome
+        if f.is_file() and orig.is_file() and sha256(f) != sha256(orig):
+            erro(f"{pasta}/{nome} no pacote é diferente de hospedagem/{pasta}/{nome}")
+    ht = dest / ".htaccess"
+    if ht.is_file():
+        texto = ler(ht)
+        for trecho, motivo in (('X-Robots-Tag "noindex, nofollow"', "o cabeçalho X-Robots-Tag (fora do Google)"),
+                               ("Options -Indexes", "Options -Indexes (sem lista de arquivos)"),
+                               (r'<FilesMatch "(?i)^(?!.*\.png$)">', "o bloqueio de tudo o que não é .png")):
+            if trecho not in texto:
+                erro(f"{pasta}/.htaccess: falta {motivo}")
+        if re.search(r"^\s*Rewrite", texto, re.M | re.I):
+            erro(f"{pasta}/.htaccess: não pode ter regras Rewrite (desligaria as da raiz nesta pasta)")
+    for rel in ("robots.txt", "sitemap.xml", ".htaccess"):
+        if (site / rel).is_file() and pasta in ler(site / rel):
+            erro(f"{rel} cita a pasta das assinaturas ({pasta}): o endereço não deve ficar listado")
+    if (site / ".htaccess").is_file() and re.search(r"HTTP_REFERER|hotlink", ler(site / ".htaccess"), re.I):
+        erro(".htaccess da raiz com regra de Referer (proteção contra hotlink): as imagens das assinaturas são abertas "
+             "pelos programas de e-mail de quem recebe, de qualquer endereço")
+    for f in site.rglob("*"):
+        rel = f.relative_to(site).as_posix()
+        if f.is_file() and f.suffix in (".html", ".js", ".css", ".xml", ".txt") and not rel.startswith("painel/") and pasta in ler(f):
+            erro(f"{rel} cita a pasta das assinaturas ({pasta}): só o painel pode saber o endereço")
+
+
+def conferir_assinaturas_no_zip(zip_path, nomes):
+    """As imagens das assinaturas (e o .htaccess) estão no zip, com os mesmos bytes de hospedagem/. Devolve os problemas."""
+    if not assinaturas:
+        return ["não li o nome da pasta das assinaturas (painel/lib/assinaturas.php)"]
+    pasta, imagens = assinaturas
+    problemas = []
+    with zipfile.ZipFile(zip_path) as z:
+        for nome in imagens + [".htaccess"]:
+            rel = f"{pasta}/{nome}"
+            if rel not in nomes:
+                problemas.append("faltou " + rel)
+            elif hashlib.sha256(z.read(rel)).hexdigest() != sha256(HOSPEDAGEM / pasta / nome):
+                problemas.append(rel + " diferente de hospedagem/" + rel)
+    return problemas
+
+
+# ---------------------------------------------------------------------------
 # Conferência final do pacote
 # ---------------------------------------------------------------------------
 # (?<![\w-]) evita atributos como data-bc-href="tel", que não são endereços
@@ -937,7 +1068,8 @@ def conferir(site):
                   "lib/pacotes.php", "lib/visoes-pacotes.php", "pacotes/.htaccess", "lib/lote.php",
                   "lib/categorias.php", "lib/visoes-categorias.php", "lib/ordem.php",
                   "contar.php", "lib/estatisticas.php", "lib/visoes-procurados.php",
-                  "lib/qr.php", "lib/dois-fatores.php", "lib/visoes-dois-fatores.php"):
+                  "lib/qr.php", "lib/dois-fatores.php", "lib/visoes-dois-fatores.php",
+                  "lib/assinaturas.php", "lib/visoes-assinaturas.php", "assets/assinaturas.css", "assets/assinaturas.js"):
         if not (pnl / obrig).is_file():
             erro(f"painel/{obrig} faltando no pacote")
     # "Mais procurados": o contar.php é público mesmo com a "Privacidade de diretórios" do cPanel no painel/
@@ -961,6 +1093,12 @@ def conferir(site):
             erro(f"{obrig} faltando no pacote")
 
     conferir_links_de_categoria(site)
+    conferir_assinaturas(site)
+    if assinaturas:
+        pasta, imagens = assinaturas
+        for nome in imagens + [".htaccess"]:
+            if not (site / pasta / nome).is_file():
+                erro(f"{pasta}/{nome} faltando no pacote (imagens das assinaturas de e-mail)")
 
     # Produto da capa: o data-hero-id do index.html existe no catálogo e é o mesmo do painel/config.php
     m = re.search(r'\bdata-hero-id="([a-z0-9-]+)"', ler(site / "index.html"))
@@ -992,6 +1130,9 @@ def montar(destino):
         parece_pacote = (destino / "index.html").is_file() and (destino / "compartilhado").is_dir()
         if not parece_pacote:
             sys.exit(f"{destino} existe e não parece um pacote gerado por este script; escolha outra --saida.")
+
+    global assinaturas
+    assinaturas = ler_assinaturas()   # nome da pasta pública e lista das imagens (painel/lib/assinaturas.php)
 
     destino.parent.mkdir(parents=True, exist_ok=True)
     tmp = Path(tempfile.mkdtemp(prefix=".site-montando-", dir=destino.parent))
@@ -1049,6 +1190,9 @@ def montar(destino):
         # Painel (sem a pasta privada de testes)
         copiar_arvore(PAINEL, site / "painel", fora=PAINEL_FORA)
 
+        # Imagens das assinaturas de e-mail (pasta pública na raiz; o nome vem do painel)
+        copiar_assinaturas(site)
+
         conferir(site)
         resumo_pacotes = conferir_pacotes(site)
         if erros:
@@ -1084,6 +1228,9 @@ def montar(destino):
     print("  Empresa: empresa.js em JSON ✓; ajustes.js no formato do painel ✓ ("
           + ("sem ajustes: vale empresa.js" if not resumo_ajustes else "ajustes em: " + ", ".join(resumo_ajustes)) + ")")
     print("  Ordem dos dados em todas as páginas ✓ (empresa.js → ajustes.js → clientes.js → produtos.js → balancas.js)")
+    if assinaturas:
+        print(f"  Assinaturas de e-mail: {len(assinaturas[1])} imagens + .htaccess em {assinaturas[0]}/ "
+              f"(idênticas às de hospedagem/{assinaturas[0]}/; nome lido de painel/lib/assinaturas.php) ✓")
     if resumo_pacotes:
         print("  Atualizações do catálogo (painel/pacotes/): " + "; ".join(
             f"{i} ({n} mudanças, conferido ✓; " + ("já aplicado ao catálogo do projeto)" if not pend else f"{pend} ainda não aplicadas ao projeto)")
@@ -1105,9 +1252,13 @@ def compactar(site):
         for f in sorted(site.rglob("*")):
             if f.is_file():
                 z.write(f, f.relative_to(site).as_posix())
-    tmp.replace(destino)
-    with zipfile.ZipFile(destino) as z:
+    with zipfile.ZipFile(tmp) as z:
         nomes = z.namelist()
+    problemas = conferir_assinaturas_no_zip(tmp, nomes)
+    if problemas:
+        tmp.unlink()
+        sys.exit("site.zip NÃO gerado: " + "; ".join(problemas))
+    tmp.replace(destino)
     ht = sum(1 for n in nomes if n.endswith(".htaccess"))
     print(f"  ZIP: {destino} ({destino.stat().st_size / 1024 / 1024:.1f} MB, {len(nomes)} arquivos, {ht} .htaccess)")
 
@@ -1160,6 +1311,8 @@ def compactar_atualizacao(site, incluir_clientes, incluir_ajustes=False):
         problemas.append("faltou compartilhado/dados/ajustes.js (--incluir-ajustes)")
     if not incluir_ajustes and "compartilhado/dados/ajustes.js" in nomes:
         problemas.append("compartilhado/dados/ajustes.js entrou sem --incluir-ajustes")
+    # As imagens das assinaturas de e-mail vão sempre (as assinaturas já instaladas dependem delas)
+    problemas += conferir_assinaturas_no_zip(tmp, nomes)
     if problemas:
         tmp.unlink()
         sys.exit("atualizacao.zip NÃO gerado: " + "; ".join(problemas))

@@ -11,6 +11,7 @@ site/                      ← o CONTEÚDO desta pasta vai para public_html/
 ├── css/  js/  img/
 ├── compartilhado/         (catálogo, lista de clientes, dados da empresa, fotos e logos)
 ├── painel/                (painel: produtos, logos de clientes, dados da empresa e usuários; PHP)
+├── assinatura-knjkycy9nj726exg/   (imagens das assinaturas de e-mail: PÚBLICAS; não apague nem renomeie)
 └── .htaccess  robots.txt  sitemap.xml  favicon.ico
 ```
 
@@ -21,8 +22,9 @@ site/                      ← o CONTEÚDO desta pasta vai para public_html/
 ## 1. Antes de enviar (uma vez)
 
 1. **PHP 8.3** — cPanel → **MultiPHP Manager** (em *Software*) → marque **balancass.com** → escolha **PHP 8.3** → **Aplicar**. O painel funciona do 8.1 ao 8.3. As extensões **GD** e **fileinfo** já vêm ligadas na HostGator; se o painel reclamar de fotos, confira em **Selecionar versão do PHP** → *Extensões*.
-2. **Cadeado (HTTPS)** — cPanel → **Status do SSL/TLS** → o domínio precisa estar com certificado válido (se não estiver, **Executar AutoSSL** e espere). Em 10/10/2026 o `https://balancass.com` já abria com cadeado. O `.htaccess` do site manda todo mundo para `https://balancass.com` (sem `www`), então ele **só pode subir com o certificado funcionando**.
-3. **Backup do site antigo** — cPanel → **Gerenciador de Arquivos** → `public_html` → **Selecionar tudo** → **Compactar** → baixe o `.zip` e guarde.
+2. **Proteção contra hotlink: deixe DESLIGADA** — cPanel → **Proteção contra hotlink** (*Hotlink Protection*) precisa ficar **desativada**. Ela bloqueia imagens abertas de fora do site, e as imagens das assinaturas de e-mail (`/assinatura-knjkycy9nj726exg/`) são abertas pelo e-mail de quem recebe a mensagem (Gmail, Outlook, celular).
+3. **Cadeado (HTTPS)** — cPanel → **Status do SSL/TLS** → o domínio precisa estar com certificado válido (se não estiver, **Executar AutoSSL** e espere). Em 10/10/2026 o `https://balancass.com` já abria com cadeado. O `.htaccess` do site manda todo mundo para `https://balancass.com` (sem `www`), então ele **só pode subir com o certificado funcionando**.
+4. **Backup do site antigo** — cPanel → **Gerenciador de Arquivos** → `public_html` → **Selecionar tudo** → **Compactar** → baixe o `.zip` e guarde.
 
 ## 2. Enviar o site
 
@@ -33,10 +35,11 @@ site/                      ← o CONTEÚDO desta pasta vai para public_html/
 3. Tire o site antigo da `public_html` **movendo** (em vez de apagar): crie a pasta `bkp/site-antigo-AAAA-MM` na pasta inicial da conta (fora da `public_html`), volte à `public_html`, clique em **Selecionar tudo**, desmarque com **Ctrl+clique** as pastas `cgi-bin`, `.well-known` e `sistemas` (e pastas de outros sites, se houver) → **Mover** → digite `/bkp/site-antigo-AAAA-MM` → **Mover arquivo(s)**. Assim o site antigo vira backup, sai do ar e backups grandes (`public_html.zip`, `bkp.zip`) deixam de ficar públicos. A pasta `sistemas` fica: o site novo só redireciona `/sistemas/` e `/sistemas/sistemas.html` para a página do BC System; os demais arquivos dela (inclusive `.zip`) continuam acessíveis.
 4. **Carregar** o `site.zip` para `public_html` → volte, clique com o botão direito no `site.zip` → **Extrair** → confirme `/public_html` → apague o `site.zip`.
 5. Confira que o **`index.html` ficou direto em `public_html/`** (e não em `public_html/site/`). Se ficou dentro de uma pasta, mova o conteúdo dela um nível acima.
-6. Confira que os **6 arquivos `.htaccess`** chegaram:
+6. Confira que os **7 arquivos `.htaccess`** chegaram:
    - `public_html/.htaccess` (HTTPS, endereços do site antigo, cache, segurança)
    - `public_html/painel/.htaccess` e `public_html/painel/lib/.htaccess` (protegem o painel)
    - `public_html/compartilhado/img/produtos/.htaccess`, `.../img/produtos-recorte/.htaccess` e `.../img/clientes/.htaccess` (impedem rodar programas nas pastas de fotos e de logos; o painel recria se faltar)
+   - `public_html/assinatura-knjkycy9nj726exg/.htaccess` (a pasta das imagens das assinaturas de e-mail: só deixa abrir as imagens, sem lista de arquivos e fora do Google)
 7. **Permissões** (normalmente já ficam assim): pastas **755**, arquivos **644**.
 
 ## 3. Primeiro acesso ao painel
@@ -70,6 +73,7 @@ O cPanel acrescenta algumas linhas no `painel/.htaccess`; não apague as que já
 - [ ] No painel, troque o estoque de um produto e veja o selo mudar no site (depois volte).
 - [ ] No painel, abra **Clientes**: a lista aparece sem o aviso “ainda não foi instalada” e com os mesmos logos do site.
 - [ ] No painel, abra **Empresa**: os campos mostram o que o site mostra (telefone, horário, equipe…).
+- [ ] `https://balancass.com/assinatura-knjkycy9nj726exg/plaqueta.png` mostra a placa com a logo (direto, sem pedir senha) e `https://balancass.com/assinatura-knjkycy9nj726exg/` mostra **Proibido (403)**. No painel, **Conta → Assinaturas de e-mail → Testar agora** diz **“As 10 imagens estão publicadas no site”**.
 - [ ] Botão do WhatsApp testado **num celular que não tenha o número salvo**.
 - [ ] (Recomendado) **Google Search Console** → adicionar `balancass.com` → *Sitemaps* → enviar `sitemap.xml`.
 
@@ -79,7 +83,7 @@ O cPanel acrescenta algumas linhas no `painel/.htaccess`; não apague as que já
 
 Depois que o painel começa a ser usado, **o que vale é o que está no servidor**: o catálogo (`compartilhado/dados/produtos.js`), as fotos de `compartilhado/img/produtos/` e `produtos-recorte/`, a lista de clientes (`compartilhado/dados/clientes.js`), os logos de `compartilhado/img/clientes/` e os dados da empresa mudados na área Empresa (`compartilhado/dados/ajustes.js`) são alterados pelo painel lá na HostGator. Por isso, para atualizar o site **não use o `site.zip`** (ele traria o catálogo do projeto por cima): use o **`atualizacao.zip`**.
 
-**O que é o `atualizacao.zip`:** o site completo (páginas, `css/`, `js/`, `img/`, `painel/`, `.htaccess`…) **menos** os dados que o painel altera. Ele **nunca** leva `produtos.js` nem as fotos dos produtos, então os produtos, o estoque, os destaques e as fotos que você mudou no painel **não são tocados**. A lista de clientes e os logos só vão junto quando o pacote é gerado com `--incluir-clientes`, e o `ajustes.js` (área Empresa), com `--incluir-ajustes` (veja abaixo). O `empresa.js` (os dados originais da empresa) vai sempre: o que foi mudado no painel fica no `ajustes.js` e continua valendo por cima dele. Os `.htaccess` das pastas de fotos e de logos vão sempre (são iguais aos do servidor e bloqueiam scripts).
+**O que é o `atualizacao.zip`:** o site completo (páginas, `css/`, `js/`, `img/`, `painel/`, `.htaccess`…) **menos** os dados que o painel altera. Ele **nunca** leva `produtos.js` nem as fotos dos produtos, então os produtos, o estoque, os destaques e as fotos que você mudou no painel **não são tocados**. A lista de clientes e os logos só vão junto quando o pacote é gerado com `--incluir-clientes`, e o `ajustes.js` (área Empresa), com `--incluir-ajustes` (veja abaixo). O `empresa.js` (os dados originais da empresa) vai sempre: o que foi mudado no painel fica no `ajustes.js` e continua valendo por cima dele. Os `.htaccess` das pastas de fotos e de logos vão sempre (são iguais aos do servidor e bloqueiam scripts). A pasta das imagens das **assinaturas de e-mail** (`assinatura-knjkycy9nj726exg/`) também vai sempre, nos dois zips: o script de montagem para com erro se faltar qualquer imagem dela.
 
 **E os produtos novos?** Mudanças no catálogo preparadas por quem cuida do site (produtos novos, modelos que saíram de linha trocados pelos atuais, fotos novas, produtos que saem do site) vão **dentro do painel**, na pasta `painel/pacotes/` (uma “atualização do catálogo”). Elas **não mudam o site sozinhas**: um administrador revê e aplica no painel (passo 8 abaixo).
 
@@ -114,6 +118,8 @@ python3 ferramentas/montar-site.py --atualizacao --incluir-ajustes   # raramente
    - Os números de **Mais procurados** começam do zero **no dia em que a atualização entra** (nada é contado antes). A contagem é anônima: sem cookies, sem serviço de fora e sem guardar o IP de quem visita.
    - Se o painel tem a **senha extra do cPanel** (“Privacidade de diretórios”, LEIA-ME do painel, item 6): extrair o zip **tira a senha extra** (o `painel/.htaccess` novo substitui o do servidor, com as linhas do cPanel): ligue de novo logo depois de extrair, como no passo 4 (cPanel → **Privacidade de diretórios** → `painel` → **Proteger com senha este diretório** marcado → **Salvar**; o usuário continua o mesmo). O `painel/.htaccess` novo traz um bloco `<Files "contar.php">` que deixa só esse arquivo aberto mesmo com a senha (é por ele que o site conta as visitas); o cPanel grava as linhas dele no fim do arquivo, depois do bloco. Se você mexer no `.htaccess` à mão, não apague esse bloco.
    - Confira: abra o site numa **janela anônima nova** (ela conta como um visitante qualquer; não entre no painel nela, senão ela deixa de contar), navegue um pouco e veja no painel **Produtos → Mais procurados**: os números de hoje já aparecem.
+
+10. **Atualização com as assinaturas de e-mail** (novembro de 2026): também é **normal** — `python3 ferramentas/montar-site.py --atualizacao`, sem opção a mais — e se instala com os passos 1 a 6. Ela cria a pasta `public_html/assinatura-knjkycy9nj726exg/` (as imagens das assinaturas) e, no painel, **Conta → Assinaturas de e-mail**. Depois de extrair: confira que a **Proteção contra hotlink** do cPanel está desligada (item 1), abra `https://balancass.com/assinatura-knjkycy9nj726exg/plaqueta.png` (tem que mostrar a placa com a logo) e, no painel, **Conta → Assinaturas de e-mail → Testar agora** (tem que dizer **“As 10 imagens estão publicadas no site”**). Daí em diante, **não apague nem renomeie essa pasta**: as assinaturas instaladas nos e-mails de todos dependem dela. Como cada pessoa faz a sua: `COMO-ADICIONAR-PRODUTOS.md`, item 17.
 
 O `montar-site.py` acrescenta um `?v=…` nos CSS/JS de cada pacote, para o navegador dos clientes baixar a versão nova na hora (CSS e JS ficam guardados no navegador por até um mês). Por isso, gere sempre o pacote pelo script, em vez de enviar arquivos soltos.
 

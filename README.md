@@ -13,11 +13,11 @@ A pasta **`site/`** é o pacote pronto para a HostGator: o conteúdo dela vai in
 | `balancass.com/` | Início (variação 3 · Painel) |
 | `/assistencia.html` · `/produtos.html` · `/sistema.html` · `/empresa.html` · `/contato.html` | Abas do site |
 | `/produtos.html#p=toledo-prix-7e` | Link direto de um produto (abre os detalhes) |
-| `/painel/` | **Painel com login** para adicionar, editar, esconder e excluir produtos (um ou **vários de uma vez**), mudar o estoque e trocar fotos, para cuidar das **categorias e subcategorias** do catálogo, dos **logos de clientes** (área **Clientes**: incluir, trocar, reordenar, excluir) e dos **dados da empresa** que o site mostra (área **Empresa**: contato, endereço, horário, feriados, aviso no site, Google e redes, equipe, depoimentos, marcas e o **produto da capa**), e para ver os **produtos mais procurados** e de onde vêm os contatos pelo WhatsApp. Cada pessoa com o seu usuário, como **Administrador** ou **Editor**, com **verificação em duas etapas** (Google Authenticator) opcional ou exigida pelo administrador. Entrada pelo link discreto **“Área restrita”** no rodapé (fora do Google) |
+| `/painel/` | **Painel com login** para adicionar, editar, esconder e excluir produtos (um ou **vários de uma vez**), mudar o estoque e trocar fotos, para cuidar das **categorias e subcategorias** do catálogo, dos **logos de clientes** (área **Clientes**: incluir, trocar, reordenar, excluir) e dos **dados da empresa** que o site mostra (área **Empresa**: contato, endereço, horário, feriados, aviso no site, Google e redes, equipe, depoimentos, marcas e o **produto da capa**), para ver os **produtos mais procurados** e de onde vêm os contatos pelo WhatsApp, e para cada pessoa gerar a sua **assinatura de e-mail** (Conta → Assinaturas de e-mail). Cada pessoa com o seu usuário, como **Administrador** ou **Editor**, com **verificação em duas etapas** (Google Authenticator) opcional ou exigida pelo administrador. Entrada pelo link discreto **“Área restrita”** no rodapé (fora do Google) |
 | qualquer endereço inexistente | Página 404 no estilo do site |
 
 **Publicar:** [`docs/PUBLICAR-NO-CPANEL.md`](docs/PUBLICAR-NO-CPANEL.md) (PHP 8.3, envio do `site.zip`, primeiro acesso ao painel, testes).
-**Produtos (um ou vários de uma vez), categorias, capa do site, Mais procurados, logos de clientes, usuários e dados da empresa no dia a dia:** [`docs/COMO-ADICIONAR-PRODUTOS.md`](docs/COMO-ADICIONAR-PRODUTOS.md) (pelo painel; edição manual como plano B).
+**Produtos (um ou vários de uma vez), categorias, capa do site, Mais procurados, logos de clientes, usuários, dados da empresa e assinaturas de e-mail no dia a dia:** [`docs/COMO-ADICIONAR-PRODUTOS.md`](docs/COMO-ADICIONAR-PRODUTOS.md) (pelo painel; edição manual como plano B).
 **Atualizar o site que já está no ar:** `atualizacao.zip` (guia de publicação, item 6).
 
 **Gerar o pacote de novo** (depois de mudar `linha-verde/`, `compartilhado/`, `painel/` ou `hospedagem/`):
@@ -30,7 +30,7 @@ python3 ferramentas/montar-site.py --atualizacao --incluir-clientes  # idem, lev
 python3 ferramentas/montar-site.py --atualizacao --incluir-ajustes   # idem, levando ajustes.js (raramente: o painel cria o vazio sozinho)
 ```
 
-O script usa `linha-verde/index-3.html` como `index.html`, leva só o CSS/JS que as 6 páginas usam, tira o seletor de variações da fase de escolha, troca `../compartilhado/` por `compartilhado/`, acerta canonical e `og:url`, põe `?v=…` nos CSS/JS, monta `.htaccess` (de `hospedagem/.htaccess`), `robots.txt`, `sitemap.xml`, `404.html` e `favicon.ico`, copia o painel sem dados privados e **confere tudo** (referências quebradas, restos de `../`, formato do catálogo, da lista de clientes, do `empresa.js` e do `ajustes.js`, a ordem `empresa.js` → `ajustes.js` → `clientes.js` → `produtos.js` → `balancas.js` em todas as páginas, nenhum arquivo da pasta privada no pacote). Se algo estiver errado, ele para e a `site/` anterior fica como estava.
+O script usa `linha-verde/index-3.html` como `index.html`, leva só o CSS/JS que as 6 páginas usam, tira o seletor de variações da fase de escolha, troca `../compartilhado/` por `compartilhado/`, acerta canonical e `og:url`, põe `?v=…` nos CSS/JS, monta `.htaccess` (de `hospedagem/.htaccess`), `robots.txt`, `sitemap.xml`, `404.html` e `favicon.ico`, copia o painel sem dados privados e a pasta pública das imagens das assinaturas de e-mail (nome lido de `painel/lib/assinaturas.php`; sem qualquer uma das imagens, não monta) e **confere tudo** (referências quebradas, restos de `../`, formato do catálogo, da lista de clientes, do `empresa.js` e do `ajustes.js`, a ordem `empresa.js` → `ajustes.js` → `clientes.js` → `produtos.js` → `balancas.js` em todas as páginas, nenhum arquivo da pasta privada no pacote). Se algo estiver errado, ele para e a `site/` anterior fica como estava.
 
 **Mudanças no catálogo preparadas no projeto** (produtos novos, modelos que saíram de linha trocados pelos atuais, fotos novas, produtos que saem do site) viram uma **atualização do catálogo** em `painel/pacotes/<AAAA-MM-nome>/` (`pacote.json` + `fotos/` + `recortes/`). Ela vai no `atualizacao.zip` e um administrador revê e aplica no painel (cartão “Atualização do catálogo pronta”, com uma cópia de segurança antes). No projeto, a mesma atualização é aplicada ao `compartilhado/` pela linha de comando, com as mesmas regras do painel:
 
@@ -58,10 +58,10 @@ compartilhado/
   dados/clientes.js        logos de clientes, na ordem do site (gerado pelo painel; vale no lugar da lista de empresa.js)
   js/balancas.js           funções comuns (junta empresa.js + ajustes.js, WhatsApp por produto, filtros, busca)
   img/                     logo em SVG, fotos de produtos, logos de clientes, telas do sistema
-painel/                    painel em PHP: produtos (e em lote), categorias, clientes, área Empresa (com a capa), Mais procurados, usuários e papéis (LEIA-ME.md com instalação e segurança)
+painel/                    painel em PHP: produtos (e em lote), categorias, clientes, área Empresa (com a capa), Mais procurados, assinaturas de e-mail, usuários e papéis (LEIA-ME.md com instalação e segurança)
   contar.php               recebe a contagem anônima do site (Mais procurados): sem sessão, sem cookie
   pacotes/<id>/            atualizações do catálogo (pacote.json + fotos/ + recortes/), aplicadas pelo administrador no painel
-hospedagem/                .htaccess do site e das pastas de fotos, favicon.ico
+hospedagem/                .htaccess do site e das pastas de fotos, favicon.ico e a pasta pública das imagens das assinaturas de e-mail (não renomear)
 ferramentas/
   montar-site.py           gera a pasta site/ (e o site.zip ou o atualizacao.zip); confere as atualizações do catálogo
   aplicar-pacote.php       aplica uma atualização do catálogo ao compartilhado/ do projeto (mesmas funções do painel)

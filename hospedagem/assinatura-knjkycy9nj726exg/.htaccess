@@ -1,0 +1,51 @@
+# =====================================================================
+# Imagens das assinaturas de e-mail — public_html/assinatura-knjkycy9nj726exg/
+# ---------------------------------------------------------------------
+# PÚBLICAS de propósito: quem baixa estas imagens é o programa de e-mail de
+# quem RECEBE a mensagem (Gmail, Outlook, celular…), sem login. Por isso aqui
+# não há senha, redirecionamento nem proteção contra hotlink.
+# NÃO apague, NÃO renomeie e NÃO troque os arquivos: as assinaturas já
+# instaladas apontam para https://balancass.com/assinatura-knjkycy9nj726exg/<arquivo>.
+# O nome da pasta é difícil de adivinhar, mas não é segredo: aparece no
+# código de todo e-mail enviado com a assinatura.
+# Esta pasta vem do projeto (hospedagem/assinatura-knjkycy9nj726exg/) em cada
+# site.zip e atualizacao.zip; o gerador fica no painel (Conta → Assinaturas de e-mail).
+# Tudo o que depende de módulo está dentro de <IfModule> (sem erro 500).
+# Sem RewriteEngine aqui: as regras da raiz (http/www → https://balancass.com) continuam valendo.
+# =====================================================================
+Options -Indexes
+
+# Só as imagens .png abrem. Qualquer outro arquivo (script, texto, o próprio .htaccess) é recusado
+<FilesMatch "(?i)^(?!.*\.png$)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Scripts nunca rodam nesta pasta (nem com nome disfarçado, ex.: foto.php.png)
+<FilesMatch "(?i)\.(php\d?|phtml|phar|cgi|pl|py|sh|shtml)(\.|$)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Se o PHP estiver ligado como módulo do Apache, desliga nesta pasta
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+  php_flag engine off
+</IfModule>
+
+# Fora do Google (as imagens continuam abrindo normalmente nos e-mails)
+<IfModule mod_headers.c>
+  Header always set X-Robots-Tag "noindex, nofollow"
+</IfModule>

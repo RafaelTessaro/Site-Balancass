@@ -1,7 +1,7 @@
 # Como adicionar e atualizar produtos no site
 
 O jeito principal é o **painel do site**: **`https://balancass.com/painel/`**.
-Pelo celular ou pelo computador você cadastra, edita, esconde e exclui produtos, troca o estoque e envia fotos, **sem mexer em código**. Na área **Clientes** você também coloca, troca e reordena os **logos dos clientes** (item 8), e na área **Empresa** muda telefone, horário, feriados, aviso no site, equipe e outros dados da empresa (item 10). Cada pessoa entra com o seu usuário, como **Administrador** ou **Editor** (item 9). O que você salva aparece no site na hora. Quando quem cuida do site prepara produtos novos ou trocas de modelos, eles chegam prontos no painel para você conferir e aplicar (item 12). Dá também para mudar **vários produtos de uma vez** (item 13), **trocar o produto da capa** do site (item 14), criar e renomear **categorias** (item 15) e ver os **produtos mais procurados** e de onde vêm os contatos pelo WhatsApp (item 16).
+Pelo celular ou pelo computador você cadastra, edita, esconde e exclui produtos, troca o estoque e envia fotos, **sem mexer em código**. Na área **Clientes** você também coloca, troca e reordena os **logos dos clientes** (item 8), em **Conta → Assinaturas de e-mail** cada pessoa gera a sua assinatura (item 17), e na área **Empresa** muda telefone, horário, feriados, aviso no site, equipe e outros dados da empresa (item 10). Cada pessoa entra com o seu usuário, como **Administrador** ou **Editor** (item 9). O que você salva aparece no site na hora. Quando quem cuida do site prepara produtos novos ou trocas de modelos, eles chegam prontos no painel para você conferir e aplicar (item 12). Dá também para mudar **vários produtos de uma vez** (item 13), **trocar o produto da capa** do site (item 14), criar e renomear **categorias** (item 15) e ver os **produtos mais procurados** e de onde vêm os contatos pelo WhatsApp (item 16).
 
 Editar o arquivo do catálogo à mão continua possível, mas virou **plano B** (fim desta página).
 
@@ -152,7 +152,7 @@ Na tela **Clientes** aparecem todos, na **ordem do site** (“1º no site”, �
 Cada pessoa que mexe no site tem o **seu usuário e a sua senha** (não compartilhe a sua). Há dois papéis:
 
 - **Administrador**: faz tudo. Produtos, Clientes, **Empresa** (com a **Capa do site**), **Categorias**, **Cópias de segurança**, **Usuários** e **Atividades** (o que cada um fez).
-- **Editor**: Produtos (um ou vários de uma vez, inclusive o **Desfazer** logo depois de excluir), Clientes, **Mais procurados** e a própria senha. Não vê Empresa, Categorias, Cópias, Usuários nem as atividades dos outros.
+- **Editor**: Produtos (um ou vários de uma vez, inclusive o **Desfazer** logo depois de excluir), Clientes, **Mais procurados**, a própria **assinatura de e-mail** (item 17) e a própria senha. Não vê Empresa, Categorias, Cópias, Usuários nem as atividades dos outros.
 
 **Dar acesso a alguém** (administrador): **Conta → Usuários → Novo usuário** → nome, usuário (o painel sugere) e papel → **Salvar**. Aparece uma **senha temporária**, uma vez só: toque em **Copiar mensagem** e mande pelo WhatsApp. No primeiro acesso, a pessoa cria a própria senha.
 
@@ -243,6 +243,20 @@ As **categorias** são as abas do catálogo do site (Balanças, Automação Come
 - **De onde vêm os cliques no WhatsApp:** o lugar do botão (*Botão do topo*, *Ficha do produto*, *Botão flutuante*…) e em quais páginas; e o ranking das **páginas**.
 - **Não contar os acessos deste aparelho:** liga sozinho quando alguém entra no painel naquele aparelho, para as suas visitas não parecerem interesse de clientes. Desligue no aparelho que os clientes usam (ex.: o computador do balcão).
 - **Privacidade:** a contagem é anônima, **sem cookies** e sem guardar dados de quem visita (nem o IP); robôs do Google e afins não entram. Os números começam a contar no dia em que a atualização entrou e ficam guardados 24 meses.
+
+## 17. Assinatura de e-mail
+
+Cada pessoa da equipe faz a **sua** assinatura de e-mail, com a marca da empresa, em um minuto. Vale para administradores e editores.
+
+1. Entre no painel com o **seu** usuário → **Conta** → **Assinaturas de e-mail**.
+2. O formulário já vem com o **seu nome** e, se você está na equipe do site (**Empresa → Equipe**, com o mesmo nome), o **seu cargo**. Confira e complete o e-mail, o telefone e o celular (marque **WhatsApp** nos números que têm WhatsApp).
+3. Deixe o modelo **Dois blocos** (o padrão da equipe) e toque em **Copiar assinatura**. Cole nas configurações de assinatura do seu e-mail. O passo a passo do **Gmail**, do **Outlook**, do **Thunderbird** e do **celular** está na própria página (parte **04**). Depois faça o mesmo com o modelo **Compacta**, para as respostas.
+4. Mande um e-mail para você mesmo e confira no computador e no celular: as imagens aparecem e o botão do WhatsApp abre a conversa.
+
+- **O que você digita fica guardado neste navegador, só para o seu usuário.** Se outra pessoa entrar no mesmo computador com o usuário dela, ela vê os dados dela, não os seus. Para fazer a assinatura de alguém que não tem usuário no painel, toque em **Limpar para outra pessoa**: o que você digitar para essa pessoa não fica guardado. Depois, toque em **Voltar aos meus dados** (ou abra a página de novo) e o formulário volta com o seu nome, o seu cargo e o que você já tinha digitado.
+- **As imagens** (a placa com a logo, os ícones e os botões) ficam no próprio site, na pasta **`/assinatura-knjkycy9nj726exg/`**, e vão junto em cada atualização do site. Na página, **Testar agora** (parte **03**) confere as 10 e diz **“As 10 imagens estão publicadas no site”**.
+- **Não apague nem renomeie essa pasta** (nem os arquivos dela) pelo Gerenciador de Arquivos do cPanel: as assinaturas já instaladas nos e-mails de todos passariam a chegar sem imagens. E não ligue a **Proteção contra hotlink** do cPanel, pelo mesmo motivo.
+- **O endereço é difícil de adivinhar, mas não é segredo:** quem recebe um e-mail com a assinatura pode ver esse endereço no código da mensagem. Ele também aparece no código do projeto do site: se o projeto estiver público no GitHub, qualquer pessoa pode ver o endereço lá. Por isso a pasta só tem as imagens da marca, mais nada.
 
 ---
 

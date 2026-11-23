@@ -1,10 +1,11 @@
 <?php
 /* =====================================================================
    Painel Balanças.com — telas de conta e usuários (HTML)
-   Conta (o "hub": minha conta e, para administradores, Usuários,
-   Atividades e Cópias), lista e formulário de usuários, senha
-   temporária (aparece uma vez), atividades de todos, "Crie a sua
-   senha" e "Recuperar acesso". Tudo passa por e(); sem inline.
+   Conta (o "hub": minha conta, Mais procurados, Assinaturas de e-mail e,
+   para administradores, Usuários, Atividades e Cópias), lista e
+   formulário de usuários, senha temporária (aparece uma vez), atividades
+   de todos, "Crie a sua senha" e "Recuperar acesso". Tudo passa por e();
+   sem inline.
    ===================================================================== */
 declare(strict_types=1);
 if (!defined('PAINEL')) { http_response_code(404); exit; }
@@ -73,6 +74,12 @@ function telaConta(string $erro = ''): void
       <?php if ($admin) cartaoCategorias($categorias);   /* só administradores (lib/visoes-categorias.php) */ ?>
     </div>
   </section>
+  <section class="hub" aria-labelledby="hub-ferramentas-tit">
+    <h2 class="secao-tit" id="hub-ferramentas-tit">Ferramentas</h2>
+    <div class="hub__cartoes">
+      <?php cartaoAssinaturas();   /* todos (lib/visoes-assinaturas.php) */ ?>
+    </div>
+  </section>
 <?php   if ($admin): ?>
   <section class="hub" aria-labelledby="hub-tit">
     <h2 class="secao-tit" id="hub-tit">Administração</h2>
@@ -102,7 +109,7 @@ function telaConta(string $erro = ''): void
     </div>
   </section>
 <?php   else: ?>
-  <p class="dica dica--papel"><?= icone('user') ?><span>Você é <b>Editor</b>: cuida dos produtos e dos clientes (logos). Usuários, categorias, dados da empresa (e a capa do site) e cópias de segurança ficam com os administradores do painel.</span></p>
+  <p class="dica dica--papel"><?= icone('user') ?><span>Você é <b>Editor</b>: cuida dos produtos e dos clientes (logos) e gera a sua assinatura de e-mail. Usuários, categorias, dados da empresa (e a capa do site) e cópias de segurança ficam com os administradores do painel.</span></p>
 <?php   endif; ?>
   <h2 class="secao-tit">Minha conta</h2>
   <div class="conta">
@@ -181,7 +188,7 @@ function telaUsuarios(array $lista): void
         ?>
   <div class="papeis-info">
     <p><span class="selo selo--admin">Administrador</span> Faz tudo: produtos, clientes, categorias, dados da empresa e capa do site, cópias de segurança, usuários e as atividades de todos.</p>
-    <p><span class="selo selo--editor">Editor</span> Cadastra e edita produtos (foto, estoque, destaque, ordem, excluir, um ou vários de uma vez) e os logos de clientes, e vê os Mais procurados. Não mexe em categorias, usuários, dados da empresa (nem na capa do site) nem cópias de segurança.</p>
+    <p><span class="selo selo--editor">Editor</span> Cadastra e edita produtos (foto, estoque, destaque, ordem, excluir, um ou vários de uma vez) e os logos de clientes, vê os Mais procurados e gera a própria assinatura de e-mail. Não mexe em categorias, usuários, dados da empresa (nem na capa do site) nem cópias de segurança.</p>
   </div>
   <?php quadroDoisFatoresUsuarios($lista); ?>
   <ol class="usuarios" role="list">

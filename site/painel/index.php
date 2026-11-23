@@ -21,6 +21,7 @@ require __DIR__ . '/lib/pacotes.php';
 require __DIR__ . '/lib/estatisticas.php';   // Mais procurados (contagem anônima do site; contar.php usa o mesmo)
 require __DIR__ . '/lib/lote.php';
 require __DIR__ . '/lib/categorias.php';     // depois do lote.php: usa moverProdutosPara()
+require __DIR__ . '/lib/assinaturas.php';    // assinaturas de e-mail (a pasta pública das imagens: PASTA_ASSINATURAS)
 require __DIR__ . '/lib/visoes.php';
 require __DIR__ . '/lib/visoes-usuarios.php';
 require __DIR__ . '/lib/visoes-dois-fatores.php';
@@ -28,6 +29,7 @@ require __DIR__ . '/lib/visoes-empresa.php';
 require __DIR__ . '/lib/visoes-pacotes.php';
 require __DIR__ . '/lib/visoes-procurados.php';
 require __DIR__ . '/lib/visoes-categorias.php';
+require __DIR__ . '/lib/visoes-assinaturas.php';
 
 iniciarPainel();
 
@@ -59,7 +61,9 @@ const ACOES = ['lista', 'novo', 'editar', 'salvar', 'rapido', 'mover', 'lugar', 
     'procurados', 'categorias', 'categoria-salvar', 'categoria-mover', 'categoria-excluir', 'subcategoria-salvar', 'subcategoria-mover', 'subcategoria-excluir',
     // Verificação em duas etapas (lib/dois-fatores.php)
     'verificar', 'verificar-cancelar', 'dois-fatores', 'dois-fatores-ligar', 'dois-fatores-recomecar', 'dois-fatores-reservas',
-    'dois-fatores-novas-reservas', 'dois-fatores-desligar', 'aparelhos-esquecer', 'usuario-dois-fatores', 'dois-fatores-exigir'];
+    'dois-fatores-novas-reservas', 'dois-fatores-desligar', 'aparelhos-esquecer', 'usuario-dois-fatores', 'dois-fatores-exigir',
+    // Assinaturas de e-mail (lib/assinaturas.php): todos os usuários
+    'assinaturas'];
 const SO_POST = ['salvar', 'rapido', 'mover', 'desfazer', 'lote', 'lote-desfazer', 'senha', 'sair', 'cliente-salvar', 'cliente-mover', 'cliente-desfazer', 'usuario-salvar', 'empresa-salvar',
     'pacote-aplicar', 'pacote-dispensar', 'categoria-salvar', 'categoria-mover', 'subcategoria-salvar', 'subcategoria-mover',
     'dois-fatores-ligar', 'dois-fatores-recomecar', 'dois-fatores-novas-reservas', 'dois-fatores-desligar', 'aparelhos-esquecer'];
@@ -69,7 +73,7 @@ const SO_ADMIN = ['usuarios', 'usuario-novo', 'usuario-editar', 'usuario-salvar'
     'atividades', 'copias', 'restaurar', 'empresa', 'empresa-salvar', 'pacote', 'pacote-aplicar', 'pacote-dispensar',
     'categorias', 'categoria-salvar', 'categoria-mover', 'categoria-excluir', 'subcategoria-salvar', 'subcategoria-mover', 'subcategoria-excluir',
     'usuario-dois-fatores', 'dois-fatores-exigir'];
-// "Mais procurados" (procurados) fica de fora: todos os usuários veem (só leitura)
+// "Mais procurados" (procurados) e "Assinaturas de e-mail" (assinaturas) ficam de fora: todos os usuários usam
 // Enquanto a pessoa não cria a própria senha (entrou com a senha temporária), só estas
 const SEM_SENHA_PROPRIA = ['criar-senha', 'sair'];
 // "Exigir de todos" ligado e a pessoa ainda sem a verificação em duas etapas: só estas, até configurar
@@ -364,6 +368,8 @@ try {
         'aparelhos-esquecer'          => acaoAparelhosEsquecer(),
         'usuario-dois-fatores'        => acaoUsuarioDoisFatores($post),
         'dois-fatores-exigir'         => acaoDoisFatoresExigir($post),
+        // Assinaturas de e-mail (página própria, com CSP própria): lib/assinaturas.php e lib/visoes-assinaturas.php
+        'assinaturas'                 => acaoAssinaturas(),
     };
 } catch (ErroCatalogo $e) {
     if (pedidoJson()) responderJson(['ok' => false, 'msg' => 'Não consegui ler o catálogo: ' . $e->getMessage()], 500);
@@ -388,7 +394,7 @@ function destinoSeguro($url): ?string
 {
     if (!is_string($url) || strlen($url) > 300) return null;
     // "+" é o espaço da busca (http_build_query): ?a=lugar&id=…&q=prix+3
-    if (!preg_match('/^index\.php\?a=(novo|editar|lugar|copias|conta|clientes|cliente-novo|cliente-editar|cliente-lugar|usuarios|usuario-novo|usuario-editar|atividades|empresa|pacote|procurados|categorias|dois-fatores)(&[A-Za-z0-9_=%.+\-]*)*$/', $url)) return null;
+    if (!preg_match('/^index\.php\?a=(novo|editar|lugar|copias|conta|clientes|cliente-novo|cliente-editar|cliente-lugar|usuarios|usuario-novo|usuario-editar|atividades|empresa|pacote|procurados|categorias|dois-fatores|assinaturas)(&[A-Za-z0-9_=%.+\-]*)*$/', $url)) return null;
     return $url;
 }
 
