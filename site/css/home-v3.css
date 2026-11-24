@@ -8,6 +8,7 @@
         BC System (+ "Também": informática e BC Fichas), Google + clientes
      4. Direto do catálogo (.pn-feat): atalhos por categoria + fichas limpas
      5. Letreiro das marcas (.pn-brands) e fechamento verde (.pn-ask)
+     5b. Novidade: certificado de calibração (.pn-novo no topo, faixa verde .pn-cal)
      6. Responsivo
      7. Leitura no celular: rótulos mono com no mínimo 12 px
    Textos que mudam com a tela: .pn-x só no computador/tablet; .pn-m só no celular.
@@ -601,6 +602,65 @@
 /* Botões flutuantes: escondidos também saem da ordem do Tab */
 .float { transition: transform .6s var(--ease), opacity .4s, visibility 0s; }
 .float.is-off { visibility: hidden; transition: transform .6s var(--ease), opacity .4s, visibility 0s .6s; }
+
+/* =====================================================================
+   5b. NOVIDADE: CERTIFICADO DE CALIBRAÇÃO
+   .pn-novo: o link "Novo · Certificado de calibração" no alto da capa.
+   .pn-cal: faixa verde entre o painel e o catálogo (leva a calibracao.html).
+   ===================================================================== */
+.pn-novo {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 32px; margin-block: -6px;
+  color: var(--paper); text-decoration: none;
+}
+.pn-novo__t { border-bottom: 1px solid rgba(244,244,240,.35); padding-bottom: 1px; transition: border-color .3s, color .3s; }
+.pn-novo .i { width: 14px; height: 14px; color: var(--green); transition: transform .5s var(--ease); }
+.pn-novo:hover .pn-novo__t { color: var(--volt); border-color: var(--volt); }
+.pn-novo:hover .i { transform: translateX(4px); }
+
+.pn-cal { position: relative; overflow: clip; padding-block: clamp(56px, 6vw, 96px); }
+.pn-cal::before {   /* faixa preta inclinada atrás do certificado */
+  content: ""; position: absolute; top: 0; bottom: 0; right: 8%; width: min(34%, 460px);
+  background: var(--ink); transform: skewX(var(--slash));
+}
+.pn-cal__in { position: relative; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); gap: clamp(28px, 5vw, 96px); align-items: center; }
+.pn-cal__k { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; font-size: 11px; }
+.pn-cal__t { font: 900 clamp(46px, 5.6vw, 96px)/.92 var(--f-display); text-transform: uppercase; text-wrap: balance; max-width: 11em; }
+.pn-cal__p { margin-top: 18px; max-width: 34em; font-size: clamp(16.5px, 1.25vw, 19px); line-height: 1.5; color: #052612; }
+.pn-cal__btns { margin-top: 26px; align-items: center; gap: 14px 22px; }
+.pn-cal__vis { position: relative; justify-self: center; width: min(100%, 330px); aspect-ratio: 1 / 1.05; }
+.pn-cal__doc {
+  position: absolute; inset: 0 12% 6% 4%; padding: 16px 16px 14px;
+  display: flex; flex-direction: column; gap: 9px;
+  background: var(--paper); color: var(--ink); transform: rotate(-6deg);
+  box-shadow: 0 30px 50px -24px rgba(0,0,0,.75);
+}
+.pn-cal__doc::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--green); }
+/* O certificado da faixa é um exemplo: faixa de identificação no topo */
+.pn-cal__doc-ex { margin: -16px -16px 0; padding: 7px 10px 6px; background: var(--ink); color: var(--paper); border-bottom: 4px solid var(--green);
+  font: 700 9.5px/1.2 var(--f-text); letter-spacing: .05em; text-transform: uppercase; text-align: center; }
+.pn-cal__aviso { display: block; margin-top: 10px; font-size: .88em; }
+.pn-cal__doc-top, .pn-cal__doc-n, .pn-cal__doc-ok, .pn-cal__doc-seal { font-family: var(--f-mono); letter-spacing: .04em; text-transform: uppercase; }   /* só ilustração: fora da regra de 12 px do celular */
+.pn-cal__doc-top { display: flex; justify-content: space-between; padding-bottom: 7px; border-bottom: 1px dashed #B5B5AE; font-size: 7.5px; color: var(--muted); }
+.pn-cal__doc-t { font: 900 clamp(20px, 1.8vw, 26px)/.9 var(--f-display); text-transform: uppercase; }
+.pn-cal__doc-n { font-size: 8.5px; color: var(--green-deep); }
+.pn-cal__doc-tb { display: grid; gap: 5px; margin-top: 4px; }
+.pn-cal__doc-tb i { display: block; height: 11px; background: linear-gradient(90deg, #DCDCD5 0 26%, transparent 26% 30%, #E6E6E0 30% 58%, transparent 58% 62%, #E6E6E0 62% 78%, transparent 78% 82%, #DCDCD5 82%); }
+.pn-cal__doc-tb i:first-child { height: 13px; background: var(--ink); }
+.pn-cal__doc-foot { margin-top: auto; padding-left: 16%; display: flex; justify-content: space-between; align-items: end; gap: 10px; }
+.pn-cal__doc-ok { font-size: 7px; line-height: 1.6; }
+.pn-cal__doc-seal { padding: 6px 7px 5px; border: 1.5px solid var(--green-deep); color: var(--green-deep); font-size: 6.5px; line-height: 1.3; text-align: center; }
+.pn-cal__peso { position: absolute; left: -12%; bottom: -5%; width: 25%; aspect-ratio: 120 / 172; height: auto; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 16px 12px rgba(0,0,0,.45)); }
+
+@media (max-width: 860px) {
+  .pn-cal__in { grid-template-columns: minmax(0, 1fr); }
+  .pn-cal::before { top: auto; height: 300px; right: 4%; width: 52%; }
+  .pn-cal__vis { width: min(78%, 280px); }
+  .pn-cal__peso { left: -4%; width: 23%; }
+  .pn-cal__t { font-size: clamp(42px, 11.5vw, 64px); }
+}
+@media (max-width: 520px) {
+  .pn-cal__btns .btn { width: 100%; }
+}
 
 /* =====================================================================
    6. RESPONSIVO

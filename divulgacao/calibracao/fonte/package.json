@@ -1,0 +1,14 @@
+{
+  "name": "balancas-artes-calibracao",
+  "private": true,
+  "description": "Gerador das artes da campanha de calibração da Balanças.com (HTML → PNG/JPG com conferências).",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "gerar": "node gerar.mjs",
+    "instalar-navegador": "playwright install chromium"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

@@ -333,12 +333,18 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .burger[aria-expanded="true"] .burger__l:nth-child(1) { top: 23px; transform: rotate(-45deg); }
 .burger[aria-expanded="true"] .burger__l:nth-child(2) { top: 23px; right: 12px; transform: rotate(45deg); }
 
-@media (max-width: 1240px) {
-  .nav__a { padding: 0 8px; font-size: 12px; }
-  .nav__a::after { left: 8px; right: 8px; }
+/* Sete abas no menu (com Calibração): o cabeçalho inteiro só cabe a partir de ~1440 px.
+   Abaixo disso, menu compacto; abaixo de 1300 px, o botão do WhatsApp fica só com o ícone
+   (o nome continua para o leitor de tela); até 1180 px, o menu vira o botão de abrir. */
+@media (max-width: 1439px) {
+  .nav__a { padding: 0 7px; font-size: 12px; letter-spacing: .03em; }
+  .nav__a::after { left: 7px; right: 7px; }
   .hdr__in { gap: 16px; }
 }
-@media (max-width: 1080px) {
+@media (max-width: 1300px) {
+  .hdr__wa .st { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (max-width: 1180px) {
   .nav, .hdr__wa { display: none; }
   .burger { display: block; }
 }
@@ -362,6 +368,9 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .menu__list a {
   display: flex; align-items: baseline; gap: 14px; padding: 5px 0; text-decoration: none;
   font: 900 clamp(42px, 11.5vw, 80px)/.95 var(--f-display); text-transform: uppercase;
+  /* 7 abas: em tela baixa (tablet deitado, notebook pequeno) o tamanho segue a altura, e o
+     WhatsApp do pé do menu continua à vista sem rolar */
+  font-size: max(30px, min(clamp(42px, 11.5vw, 80px), calc((100svh - 260px) / 7.6)));
 }
 .menu__list a .mono { color: var(--grey); font-size: 11px; transform: translateY(-1.6em); }
 .menu__list a:hover, .menu__list a:focus-visible, .menu__list a[aria-current] { color: var(--green); }
@@ -372,7 +381,7 @@ h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
 .menu__foot .btn--green::before { box-shadow: 0 0 0 3px var(--ink); }
 @media (max-width: 400px) { .menu__band { right: -30%; width: 30%; } }
 @media (max-height: 640px) {
-  .menu__list a { font-size: clamp(34px, 9vw, 56px); }
+  .menu__list a { font-size: max(28px, min(clamp(34px, 9vw, 56px), calc((100svh - 250px) / 8))); }
 }
 
 /* =====================================================================

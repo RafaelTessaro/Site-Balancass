@@ -1,0 +1,145 @@
+/* =====================================================================
+   Balanças.com — artes da campanha "Calibração de balanças" (revisão 2)
+   Identidade do site: preto #0A0A0A, verde #019F42 e off-white #F4F4F0;
+   volt #C6FF3D só numa etiqueta pequena. Títulos em Big Shoulders 900
+   MAIÚSCULAS; tudo o que precisa ser lido (apoio, ação, contato, ressalva)
+   em Archivo, grande; Martian Mono só em identificadores pequenos.
+   O único ângulo é o -12° (skewX).
+   Tamanhos de leitura (arte de 1080 px de largura, vista a 360 px):
+     apoio 44 px · ação 44 px · contato 38 px · ressalva 36 px
+   Cada arte é um .art com largura e altura exatas (gerar.mjs).
+   ===================================================================== */
+:root {
+  --ink: #0A0A0A; --ink-2: #131313; --ink-3: #1B1B1A;
+  --paper: #F4F4F0; --paper-2: #EAEAE4; --paper-3: #DCDCD5;
+  --green: #019F42; --green-deep: #007A35; --volt: #C6FF3D;
+  --line: #2B2B2A; --grey: #8A8A85; --muted: #55554F; --body-dark: #D6D6D0;
+  --slash: -12deg;
+  --f-display: "Big Shoulders", "Arial Narrow", sans-serif;
+  --f-text: "Archivo", Arial, sans-serif;
+  --f-mono: "Martian Mono", ui-monospace, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #333; }
+body { width: max-content; }
+.art {
+  position: relative; overflow: hidden; isolation: isolate;
+  width: var(--w); height: var(--h);
+  background: var(--ink); color: var(--paper);
+  font-family: var(--f-text); -webkit-font-smoothing: antialiased;
+}
+.art.is-paper { background: var(--paper); color: var(--ink); }
+.art.is-green { background: var(--green); color: var(--ink); }
+
+/* Faixa diagonal (a "linha verde"); --bx: posição, --bw: largura */
+.band { position: absolute; z-index: -1; top: -10%; bottom: -10%; left: var(--bx, 55%); width: var(--bw, 34%); transform: skewX(var(--slash)); background: var(--band, var(--green)); }
+.band--ink { --band: var(--ink); }
+
+/* Logo */
+.lg { display: inline-flex; align-items: center; gap: .45em; font-size: var(--lg, 40px); color: inherit; }
+.lg__i { width: 1.6em; height: 1.6em; flex: none; display: block; }
+.lg__t b { font: 900 1em/.85 var(--f-display); text-transform: uppercase; letter-spacing: .01em; }
+.lg__t b i { font-style: normal; color: var(--green); }
+.is-green .lg__t b i { color: var(--paper); }
+
+/* Logo sobre uma placa preta (para o fundo verde: o "bq" verde não some) */
+.lg--placa { padding: .32em .55em .32em .4em; background: var(--ink); color: var(--paper); }
+
+/* Legenda externa do certificado ilustrativo */
+.cert-leg { position: absolute; z-index: 3; padding: .28em .55em .3em; background: var(--ink); font: 700 38px/1.2 var(--f-text); color: var(--paper); }   /* placa própria: legível também sobre a faixa */
+.cert-leg::before { content: ""; display: inline-block; width: .9em; height: .62em; margin-right: .4em; background: var(--volt); transform: skewX(var(--slash)); }
+.is-paper .cert-leg, .is-green .cert-leg { background: var(--paper); color: var(--ink); }
+
+/* Etiqueta pequena (identificador) */
+.tag { display: inline-flex; align-items: center; padding: .42em .95em .36em; font: 500 var(--tg, 26px)/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; position: relative; isolation: isolate; color: var(--ink); white-space: nowrap; }
+.tag::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--volt); transform: skewX(var(--slash)); }
+.tag--ink { color: var(--paper); }
+.tag--ink::before { background: var(--ink); }
+
+/* Títulos (duas ou três linhas) */
+.h { font: 900 var(--hs, 110px)/.88 var(--f-display); text-transform: uppercase; letter-spacing: -.005em; }
+.h span { display: block; }
+.h .g { color: var(--green); }
+.is-green .h .g { color: var(--paper); }
+
+/* Apoio e ressalva: Archivo, para ler */
+.p { font: 400 var(--ps, 44px)/1.3 var(--f-text); color: var(--body-dark); text-wrap: pretty; }
+.p strong { color: var(--paper); font-weight: 700; }
+.is-paper .p, .is-green .p { color: #1E1E1C; }
+.is-paper .p strong, .is-green .p strong { color: var(--ink); }
+.fine { font: 400 var(--fn, 36px)/1.3 var(--f-text); color: var(--body-dark); text-wrap: pretty; }
+.fine b { font-weight: 700; color: var(--paper); }
+.is-paper .fine, .is-green .fine { color: #2A2A28; }
+.is-paper .fine b, .is-green .fine b { color: var(--ink); }
+
+/* Ação (parece o botão do site: pontas cortadas a -12°). Numa imagem estática é só a orientação:
+   o link é o botão da plataforma, a figurinha de link ou a resposta no WhatsApp. */
+.cta { display: inline-flex; align-items: center; gap: .55em; padding: .62em 1.1em .58em; position: relative; isolation: isolate;
+  font: 700 var(--cs, 44px)/1 var(--f-text); letter-spacing: .01em; color: var(--ink); white-space: nowrap; }
+.cta::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--green); transform: skewX(var(--slash)); }
+.cta svg { width: 1.05em; height: 1.05em; flex: none; }
+.cta--ink { color: var(--paper); }
+.cta--ink::before { background: var(--ink); }
+
+/* Lista curta com marcador verde inclinado */
+.ck { display: grid; gap: .45em; list-style: none; font: 600 var(--ks, 44px)/1.2 var(--f-text); }
+.ck li { display: flex; align-items: center; gap: .55em; }
+.ck li::before { content: ""; flex: none; width: 1.1em; height: .9em; transform: skewX(var(--slash));
+  background: var(--green) no-repeat center / .6em url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%230A0A0A' stroke-width='3.4' stroke-linecap='square' d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
+.is-green .ck li::before { background-color: var(--ink); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23019F42' stroke-width='3.4' stroke-linecap='square' d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
+
+/* Contato */
+.ft { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  padding: var(--ftp, 24px) var(--pad, 64px); background: var(--ink); border-top: 1px solid var(--line);
+  font: 400 var(--fs, 38px)/1.2 var(--f-text); color: var(--body-dark); }
+.ft b { color: var(--paper); font-weight: 700; }
+.ft .wa { display: inline-flex; align-items: center; gap: .45em; }
+.ft .wa svg { width: 1.1em; height: 1.1em; color: var(--green); }
+
+/* ---------------------------------------------------------------------
+   Balança com o peso-padrão no prato (visual principal)
+   --------------------------------------------------------------------- */
+/* A balança à esquerda e o peso ao lado, à direita, apoiados na mesma linha (não no prato) */
+.bp { position: absolute; z-index: 2; aspect-ratio: 100 / 49.3; }
+.bp__b { position: absolute; left: 0; bottom: 0; display: block; width: 78%; height: auto; filter: drop-shadow(0 16px 14px rgba(0,0,0,.35)); }
+.bp__p { position: absolute; right: 0; bottom: 1%; width: 19%; height: auto; aspect-ratio: 120 / 172; filter: drop-shadow(0 12px 10px rgba(0,0,0,.3)); }
+.is-paper .bp__b, .is-green .bp__b { filter: drop-shadow(0 16px 14px rgba(0,0,0,.22)); }
+.peso { position: absolute; z-index: 2; height: auto; aspect-ratio: 120 / 172; filter: drop-shadow(0 12px 10px rgba(0,0,0,.3)); }
+/* Foto do peso (recortada): mantém a proporção da foto dentro da mesma caixa do desenho */
+.peso--foto { object-fit: contain; object-position: center bottom; }
+
+/* ---------------------------------------------------------------------
+   Certificado de EXEMPLO (tudo em em: o tamanho vem de --c)
+   --------------------------------------------------------------------- */
+.cert {
+  position: absolute; z-index: 2; width: 23.75em; font-size: var(--c, 22px); overflow: hidden;
+  padding: 0 1.25em 1em; display: grid; gap: .7em;
+  background: var(--paper); color: var(--ink); transform: rotate(-6deg);
+  box-shadow: 0 1.2em 2.2em -1.2em rgba(0,0,0,.55), 0 0 0 1px rgba(10,10,10,.06);
+}
+.cert__ex { margin: 0 -1.25em; padding: .5em .8em .42em; background: var(--ink); color: var(--paper); border-bottom: .25em solid var(--green);
+  font: 700 .62em/1.2 var(--f-text); letter-spacing: .04em; text-transform: uppercase; text-align: center; }
+.cert__wm { position: absolute; left: 50%; top: 60%; transform: translate(-50%, -50%) rotate(-24deg); pointer-events: none;
+  font: 900 4.4em/1 var(--f-display); text-transform: uppercase; letter-spacing: .04em; color: rgba(1,159,66,.13); white-space: nowrap; }
+.cert__top { display: flex; justify-content: space-between; padding-bottom: .5em; border-bottom: 1px dashed #B5B5AE; font: 400 .5em/1.3 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.cert__head { display: grid; grid-template-columns: 1.9em 1fr; gap: .1em .6em; align-items: center; }
+.cert__logo { grid-row: span 2; width: 1.9em; height: 1.9em; }
+.cert__t { font: 900 1.5em/.9 var(--f-display); text-transform: uppercase; }
+.cert__n { font: 500 .56em/1.2 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--green-deep); }
+.cert__id { display: grid; gap: .25em; }
+.cert__id div { display: grid; grid-template-columns: 7.6em 1fr; gap: .5em; align-items: center; font-size: .6em; line-height: 1.35; }
+.cert__id dt { font: 400 .84em/1.6 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.cert__id dd { font-weight: 600; }
+.cert i { display: block; height: .45em; width: var(--w, 60%); background: #CFCFC8; }
+.cert__tb { width: 100%; border-collapse: collapse; font: 400 .56em/1.2 var(--f-mono); }
+.cert__tb th { padding: .55em .45em .45em; text-align: right; font-weight: 500; font-size: .84em; letter-spacing: .05em; text-transform: uppercase; background: var(--ink); color: var(--paper); }
+.cert__tb th:first-child { text-align: left; }
+.cert__tb td { padding: .7em .45em; border-bottom: 1px solid #D6D6CF; }
+.cert__tb td i { margin-left: auto; height: .75em; }
+.cert__tb td:first-child i { margin-left: 0; }
+.cert__tb tbody tr:nth-child(even) td { background: var(--paper-2); }
+.cert__foot { display: flex; justify-content: space-between; gap: .75em; align-items: end; padding-top: .2em; }
+.cert__ok { display: grid; gap: .15em; list-style: none; font: 400 .47em/1.35 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; }
+.cert__ok li { display: flex; align-items: center; gap: .7em; }
+.cert__ok li::before { content: ""; width: .95em; height: .95em; flex: none; background: var(--green); transform: skewX(var(--slash)); }
+.cert__pdf { font: 700 .5em/1.2 var(--f-text); letter-spacing: .04em; text-transform: uppercase; color: var(--green-deep); text-align: right; max-width: 9em; }

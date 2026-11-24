@@ -49,7 +49,7 @@
     addEventListener("pagereveal", function (e) { w.LV_REVELOU = true; if (e.viewTransition) d.classList.add("via-vt"); });
   })(document.documentElement, window);
 </script>
-<noscript><style>.burger{display:none}@media(max-width:1080px){.nav{display:block;position:absolute;top:100%;left:0;right:0;margin:0;background:#0A0A0A;border-bottom:1px solid #1E1E1D}.nav__list{overflow-x:auto;padding-inline:var(--gut)}.nav__list li{flex:none}main{padding-top:44px}}</style></noscript>
+<noscript><style>.burger{display:none}@media(max-width:1180px){.nav{display:block;position:absolute;top:100%;left:0;right:0;margin:0;background:#0A0A0A;border-bottom:1px solid #1E1E1D}.nav__list{overflow-x:auto;padding-inline:var(--gut)}.nav__list li{flex:none}main{padding-top:44px}}</style></noscript>
 <script type="application/ld+json">
 {
  "@context": "https://schema.org",
@@ -113,7 +113,7 @@
      "name": "Vocês fazem a aferição da balança?",
      "acceptedAnswer": {
       "@type": "Answer",
-      "text": "A aferição — o nome oficial é verificação — é feita pelo IPEM-SP, uma vez por ano e sem aviso. A gente faz a manutenção, o conserto e a regularização, e deixa a sua balança pronta para essa verificação."
+      "text": "A aferição — o nome oficial é verificação — é feita pelo IPEM-SP, uma vez por ano e sem aviso. A gente faz a manutenção, o conserto e a regularização, e deixa a sua balança pronta para essa verificação. Se a sua empresa precisa de calibração de balanças com certificado, para o controle de qualidade, também oferecemos: é outro serviço e não substitui a verificação metrológica do IPEM-SP."
      }
     },
     {
@@ -177,6 +177,13 @@
      "itemOffered": {
       "@type": "Service",
       "name": "Assistência técnica e manutenção de balanças"
+     }
+    },
+    {
+     "@type": "Offer",
+     "itemOffered": {
+      "@type": "Service",
+      "name": "Calibração de balanças com certificado"
      }
     },
     {
@@ -308,6 +315,7 @@
       <ul class="nav__list">
         <li><a class="nav__a" href="index.html" data-home><span class="st" data-t="Início">Início</span></a></li>
         <li><a class="nav__a" href="assistencia.html" aria-current="page"><span class="st" data-t="Assistência">Assistência</span></a></li>
+        <li><a class="nav__a" href="calibracao.html"><span class="st" data-t="Calibração">Calibração</span></a></li>
         <li><a class="nav__a" href="produtos.html"><span class="st" data-t="Produtos">Produtos</span></a></li>
         <li><a class="nav__a" href="sistema.html"><span class="st" data-t="BC System">BC System</span></a></li>
         <li><a class="nav__a" href="empresa.html"><span class="st" data-t="Empresa">Empresa</span></a></li>
@@ -329,10 +337,11 @@
     <ol class="menu__list">
       <li><a href="index.html" data-home><span class="mono">01</span>Início</a></li>
       <li><a href="assistencia.html" aria-current="page"><span class="mono">02</span>Assistência</a></li>
-      <li><a href="produtos.html"><span class="mono">03</span>Produtos</a></li>
-      <li><a href="sistema.html"><span class="mono">04</span>BC System</a></li>
-      <li><a href="empresa.html"><span class="mono">05</span>Empresa</a></li>
-      <li><a href="contato.html"><span class="mono">06</span>Contato</a></li>
+      <li><a href="calibracao.html"><span class="mono">03</span>Calibração</a></li>
+      <li><a href="produtos.html"><span class="mono">04</span>Produtos</a></li>
+      <li><a href="sistema.html"><span class="mono">05</span>BC System</a></li>
+      <li><a href="empresa.html"><span class="mono">06</span>Empresa</a></li>
+      <li><a href="contato.html"><span class="mono">07</span>Contato</a></li>
     </ol>
   </nav>
   <div class="menu__foot">
@@ -500,13 +509,13 @@
     <div class="faq__side">
       <p class="kicker">Perguntas frequentes</p>
       <h2 class="h2" id="faq-t" data-reveal="split">Balança e IPEM, sem letra miúda.</h2>
-      <p class="faq__more" data-reveal>Ficou alguma dúvida sobre a sua balança? Mande uma foto pelo WhatsApp. Nota fiscal e SAT estão na <a class="txt-green" href="sistema.html#fiscal">página do BC System</a>.</p>
+      <p class="faq__more" data-reveal>Ficou alguma dúvida sobre a sua balança? Mande uma foto pelo WhatsApp. Calibração de balanças está na <a class="txt-green" href="calibracao.html#faq">página de calibração</a>; nota fiscal e SAT, na <a class="txt-green" href="sistema.html#fiscal">página do BC System</a>.</p>
       <a class="btn btn--ink" data-wa="Olá! Tenho uma dúvida sobre a minha balança e o IPEM." href="https://wa.me/551930239050?text=Ol%C3%A1%21%20Tenho%20uma%20d%C3%BAvida%20sobre%20a%20minha%20balan%C3%A7a%20e%20o%20IPEM." data-reveal target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg><span class="st" data-t="Perguntar no WhatsApp">Perguntar no WhatsApp</span></a>
     </div>
     <div class="acc" data-acc>
       <div class="acc__i">
         <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-1" id="faq-1-b"><span class="acc__tag mono" aria-hidden="true">Aferição</span><span class="acc__q">Vocês fazem a aferição da balança?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
-        <div class="acc__p" id="faq-1" role="region" aria-labelledby="faq-1-b"><div class="acc__in"><p>A aferição — o nome oficial é verificação — é feita pelo <span class="nobr">IPEM-SP</span>, uma vez por ano e sem aviso. A gente faz a manutenção, o conserto e a regularização, e deixa a sua balança pronta para essa verificação.</p></div></div>
+        <div class="acc__p" id="faq-1" role="region" aria-labelledby="faq-1-b"><div class="acc__in"><p>A aferição — o nome oficial é verificação — é feita pelo <span class="nobr">IPEM-SP</span>, uma vez por ano e sem aviso. A gente faz a manutenção, o conserto e a regularização, e deixa a sua balança pronta para essa verificação.</p><p>Se a sua empresa precisa de <a class="txt-green" href="calibracao.html">calibração de balanças com certificado</a>, para o controle de qualidade, também oferecemos: é outro serviço e não substitui a verificação metrológica do <span class="nobr">IPEM-SP</span>.</p></div></div>
       </div>
       <div class="acc__i">
         <h3 class="acc__h"><button class="acc__b" type="button" aria-expanded="false" aria-controls="faq-2" id="faq-2-b"><span class="acc__tag mono" aria-hidden="true">Oficina</span><span class="acc__q">O que é uma oficina permissionária?</span><span class="acc__x" aria-hidden="true"></span></button></h3>
@@ -554,7 +563,7 @@
       </div>
       <nav class="ftr__col" aria-label="Rodapé">
         <p class="ftr__h mono">Navegação</p>
-        <ul role="list"><li><a href="index.html" data-home>Início</a></li><li><a href="assistencia.html" aria-current="page">Assistência técnica</a></li><li><a href="produtos.html">Produtos</a></li><li><a href="sistema.html">BC System</a></li><li><a href="sistema.html#fichas">BC Fichas</a></li><li><a href="empresa.html">Empresa</a></li><li><a href="contato.html">Contato</a></li><li><a href="contato.html#faq">Perguntas frequentes</a></li></ul>
+        <ul role="list"><li><a href="index.html" data-home>Início</a></li><li><a href="assistencia.html" aria-current="page">Assistência técnica</a></li><li><a href="calibracao.html">Calibração</a></li><li><a href="produtos.html">Produtos</a></li><li><a href="sistema.html">BC System</a></li><li><a href="sistema.html#fichas">BC Fichas</a></li><li><a href="empresa.html">Empresa</a></li><li><a href="contato.html">Contato</a></li><li><a href="contato.html#faq">Perguntas frequentes</a></li></ul>
       </nav>
       <div class="ftr__col">
         <p class="ftr__h mono">Contato</p>

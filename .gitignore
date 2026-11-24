@@ -9,3 +9,5 @@ painel/privado/
 site/painel/privado/
 .site-montando-*/
 __pycache__/
+# Artes: HTML intermediário do gerador (recriado por divulgacao/calibracao/fonte/gerar.mjs)
+divulgacao/*/fonte/html/
