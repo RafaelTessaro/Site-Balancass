@@ -843,10 +843,17 @@
 .ficha__item { font: 900 clamp(30px, 2.8vw, 40px)/.9 var(--f-display); text-transform: uppercase; }
 .ficha__meta { font-size: 9px; }
 .ficha__bars { height: 22px; margin-top: 6px; background: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 3px, var(--ink) 3px 4px, transparent 4px 7px, var(--ink) 7px 10px, transparent 10px 11px); }
+/* Fichas reais: a imagem que o BC Fichas manda para a impressora (geradas pelo próprio sistema).
+   Ficam retas (inclinadas, as linhas finas da ficha saem serrilhadas em tela comum) e uma não cobre o texto da outra. */
+.fichas__visual--reais { min-height: 470px; }
+.fichas__visual .ficha-real { position: absolute; width: min(66%, 310px); height: auto; background: #fff; box-shadow: 0 24px 40px -18px rgba(0,0,0,.6); }
+.fichas__visual .ficha-real:nth-child(1) { top: 0; left: 2%; }
+.fichas__visual .ficha-real:nth-child(2) { bottom: 0; right: 0; }
 @media (max-width: 900px) {
   .fichas { grid-template-columns: minmax(0, 1fr); }
   .fichas__visual { min-height: 320px; order: -1; }
   .fichas__visual::before { top: 0; bottom: 0; }
+  .fichas__visual--reais { min-height: 470px; }
 }
 @media (max-width: 560px) {
   .fichas__list { grid-template-columns: minmax(0, 1fr); }
@@ -858,6 +865,9 @@
   .ficha__top span { white-space: nowrap; }
   .fichas__visual .ficha:nth-child(1) { top: 5%; left: 0; }
   .fichas__visual .ficha:nth-child(2) { bottom: 3%; right: 0; }
+  .fichas__visual--reais { min-height: 410px; }
+  .fichas__visual .ficha-real { width: min(74%, 270px); }
+  .fichas__visual .ficha-real:nth-child(1) { left: 0; }
 }
 
 .info { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(32px, 5vw, 96px); align-items: center; }

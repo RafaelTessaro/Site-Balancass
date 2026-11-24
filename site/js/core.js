@@ -75,7 +75,7 @@
 
   function siteBCFichas() {
     var p = (E.produtosProprios || []).filter(function (x) { return /fichas/i.test(x.nome); })[0];
-    return (p && p.site) || "http://bcfichas.com.br";
+    return (p && p.site) || "https://bcfichas.balancass.com/";
   }
 
   // Valores de data-bc="chave"
