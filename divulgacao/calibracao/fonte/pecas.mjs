@@ -3,7 +3,7 @@
 // com Node e Playwright, sem depender do resto do repositório.
 //   img/balancas-icone-claro.svg  símbolo oficial para fundo escuro (anel branco, "bq" verde)
 //   img/balancas-icone.svg        símbolo oficial para fundo claro (anel cinza, "bq" verde)
-//   img/balmak-one.webp           balança de bancada (Max 15 kg) — recorte do catálogo do site
+//   img/toledo-prix-3-fit.webp    balança de bancada Toledo Prix 3 Fit (Max 15 kg) — recorte do catálogo do site
 //   img/peso-10kg.png, peso-20kg.png  fotos dos pesos enviadas pelo dono (recortar-peso.py); sem elas, o desenho
 
 import { existsSync } from 'node:fs';
@@ -44,7 +44,7 @@ export function peso(cls = 'peso', style = '', rotulo = '20 kg') {
  *  uma medição incoerente. É uma composição ilustrativa; troque por foto real do serviço quando houver.
  *  style: posição e largura do conjunto (proporção fixa, cerca de 2 por 1). */
 export const balPeso = (style = '') =>
-  `<div class="bp" style="${style}" data-obj><img class="bp__b" src="${IMG}balmak-one.webp" alt="">${peso('bp__p', '', '10 kg').replace(' data-obj', '')}</div>`;
+  `<div class="bp" style="${style}" data-obj><img class="bp__b" src="${IMG}toledo-prix-3-fit.webp" alt="">${peso('bp__p', '', '10 kg').replace(' data-obj', '')}</div>`;
 
 /** Certificado de EXEMPLO (o mesmo do site): faixa "Exemplo ilustrativo · sem valor de certificado",
  *  marca d'água, sem número, sem resultados (barras) e sem assinatura desenhada. --c: tamanho. */
@@ -67,8 +67,5 @@ export function cert(style = '') {
 export const rodape = (style = '', { site = true } = {}) =>
   `<div class="ft" style="${style}" data-dentro><span class="wa">${ICON_WA}WhatsApp <b>(19) 3023-9050</b></span>${site ? '<span><b>balancass.com</b></span>' : ''}</div>`;
 
-/** Condição de não acreditação (essencial quando a peça fala de auditoria). */
-export const RESSALVA = 'Serviço de calibração não acreditado pela Cgcre. Consulte a adequação aos requisitos da sua empresa.';
 /** Legenda externa dos certificados ilustrativos (legível na prévia do celular). */
 export const legendaCert = (style = '') => `<p class="cert-leg" style="${style}" data-dentro>Modelo ilustrativo de certificado</p>`;
-export const RESSALVA_CURTA = 'Serviço não acreditado pela Cgcre.';

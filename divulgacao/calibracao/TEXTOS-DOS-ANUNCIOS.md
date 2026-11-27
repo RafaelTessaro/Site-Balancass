@@ -9,6 +9,10 @@ A **revisão 3** segue o *Guia de revisão das artes* e a *Reavaliação das art
 - a ação ficou "Solicite um orçamento" e o pedido inicial ficou simples (foto e cidade);
 - o LinkedIn horizontal e a capa ganharam textos maiores.
 
+**Mudanças de 27/11/2026 (pedido do dono):**
+- as **artes não levam mais o aviso “Serviço de calibração não acreditado pela Cgcre”**. O aviso continua no site, no certificado e nas legendas e mensagens sugeridas abaixo (a decisão de manter ou tirar das legendas é do dono). Nenhuma arte diz ou sugere que o serviço é acreditado;
+- a balança das artes passou a ser a **Toledo Prix 3 Fit**, no lugar da Balmak One.
+
 As artes estão nas pastas ao lado. Para ver todas de uma vez, abra `ver-todas.html` no navegador.
 Destino dos anúncios: **https://balancass.com/calibracao.html** ou o WhatsApp **(19) 3023-9050**. Escreva sempre **balancass.com**, com dois "s".
 
@@ -29,7 +33,7 @@ Destino dos anúncios: **https://balancass.com/calibracao.html** ou o WhatsApp *
 | Use | Não use | Por quê |
 |---|---|---|
 | “laudo de calibração”, “laudo de calibração de balanças” (desde 19/11/2026, pedido do dono); onde houver espaço, junto com “certificado de calibração”, que é o nome do documento | “agora com certificado”, “a gente emite”, “a gente certifica” | O serviço é a calibração; o laudo é o registro dela, e o PDF entregue se chama “Certificado de calibração”. “Certifica” sugere certificação da empresa |
-| “Serviço de calibração não acreditado pela Cgcre. Consulte a adequação aos requisitos da sua empresa.” | “atende a maioria (ou diversas) das auditorias ISO 9001”, “vale para a maioria das empresas” | Não há como prometer aceitação: ela depende do cliente, do contrato, do setor e da auditoria |
+| Nas legendas e na conversa, quando o assunto for auditoria ou exigência de cliente: “Serviço de calibração não acreditado pela Cgcre. Consulte a adequação aos requisitos da sua empresa.” **As artes não levam mais esse aviso** (decisão do dono, 27/11/2026) | “atende a maioria (ou diversas) das auditorias ISO 9001”, “vale para a maioria das empresas”, qualquer menção a serviço “acreditado” | Não há como prometer aceitação: ela depende do cliente, do contrato, do setor e da auditoria. Sem o aviso na arte, vale ainda mais avisar na conversa antes do orçamento |
 | ISO 9001 como **contexto do cliente** (“auditoria em preparação?”) | etiqueta “ISO 9001” como se fosse selo da empresa | Pode parecer certificação da Balanças.com |
 | “compara as indicações da balança com padrões de referência e registra os resultados e a incerteza” | “mostra quanto a balança erra e com que segurança” | “Segurança” não explica a incerteza de medição |
 | “informações de rastreabilidade metrológica”, “padrões calibrados por laboratório acreditado” | “a rastreabilidade que o auditor pede”, “rastreável à RBC”, “RBC”/“acreditado” como selo | A exigência varia. A acreditação do laboratório que calibrou os padrões não se transfere ao prestador do serviço |
@@ -53,7 +57,7 @@ Tom: técnico, acessível e direto (“envie”, “solicite”, “consulte”,
 
 | Afirmação usada | Onde aparece | De onde vem | Situação |
 |---|---|---|---|
-| Serviço **não acreditado** pela Cgcre (fora da RBC), informado no certificado | Site, artes, textos | Sistema: `README.md` (“laboratório não acreditado, fora da RBC”; o certificado traz a “declaração de laboratório não acreditado”) | Conferir num PDF real |
+| Serviço **não acreditado** pela Cgcre (fora da RBC), informado no certificado | Site, legendas e mensagens (as artes não levam mais o aviso desde 27/11/2026) | Sistema: `README.md` (“laboratório não acreditado, fora da RBC”; o certificado traz a “declaração de laboratório não acreditado”) | Conferir num PDF real |
 | Ensaios de erro de indicação, repetibilidade e excentricidade; incerteza com fator k | Site, LinkedIn, carrossel 3 | Sistema: `README.md` (etapas 4 a 6 da calibração; “incerteza (k e νeff)”) | Conferir num PDF real |
 | Incerteza pelo guia **EURAMET cg-18** | Site, LinkedIn | Sistema: `README.md` (“feito ao vivo pelo método EURAMET cg-18”) | Conferir se o POP vigente cita o mesmo guia |
 | Padrões calibrados por **laboratório acreditado**, com os certificados enviados junto | Site | Sistema: `README.md` (“todo padrão precisa da acreditação Cgcre do laboratório que o calibrou”; envio por e-mail “junto com os certificados dos padrões usados”) | Conferir num e-mail de envio real |
@@ -67,7 +71,7 @@ Tom: técnico, acessível e direto (“envie”, “solicite”, “consulte”,
 | Prazo de entrega do certificado | — | — | Não usado em nenhuma peça (não há prazo confirmado) |
 | Nota 5,0 no Google (56 avaliações) | Site, título do Google | Dados do site (`compartilhado/dados/empresa.js`) | Conferir antes de usar em anúncio |
 
-As artes mostram uma **balança de bancada de 15 kg e, ao lado, um peso de 10 kg**, e um peso de 20 kg sozinho. Os pesos são as **fotos enviadas pelo dono** (18/11/2026; `fonte/img/peso-10kg.png` e `peso-20kg.png`), e a balança é a foto do catálogo do site: juntas, formam uma composição ilustrativa, não uma foto do serviço. **Confirme que as fotos dos pesos podem ser usadas em anúncio** (fotos próprias ou do fornecedor, com autorização). Se a empresa não calibra esse tipo de balança ou não tem esses padrões, troque a imagem. Assim que houver **fotos reais e autorizadas** da calibração, elas devem substituir a composição, a começar pelas imagens responsivas do Google.
+As artes mostram uma **balança de bancada Toledo Prix 3 Fit (15 kg) e, ao lado, um peso de 10 kg**, e um peso de 20 kg sozinho. Os pesos são as **fotos enviadas pelo dono** (18/11/2026; `fonte/img/peso-10kg.png` e `peso-20kg.png`), e a balança é a foto da Prix 3 Fit do catálogo do site (`fonte/img/toledo-prix-3-fit.webp`; até 27/11/2026 era a Balmak One): juntas, formam uma composição ilustrativa, não uma foto do serviço. **Confirme que as fotos dos pesos podem ser usadas em anúncio** (fotos próprias ou do fornecedor, com autorização). Se a empresa não calibra esse tipo de balança ou não tem esses padrões, troque a imagem. Assim que houver **fotos reais e autorizadas** da calibração, elas devem substituir a composição, a começar pelas imagens responsivas do Google.
 
 ---
 
@@ -76,21 +80,21 @@ As artes mostram uma **balança de bancada de 15 kg e, ao lado, um peso de 10 kg
 | Peça original (revisão 1) | Arquivo atual | Revisão 3 |
 |---|---|---|
 | `feed-4x5-A-lancamento` | `instagram-facebook/feed-4x5-A-principal.png` | Peso ao lado da balança; apoio novo |
-| `feed-4x5-B-auditoria` | `instagram-facebook/feed-4x5-B-auditoria.png` | “Laudo de calibração de balanças, em certificado PDF” antes da ressalva; ressalva fora da faixa; “Solicite um orçamento” |
+| `feed-4x5-B-auditoria` | `instagram-facebook/feed-4x5-B-auditoria.png` | “Laudo de calibração de balanças, em certificado PDF”; “Solicite um orçamento”; sem o aviso de não acreditação (27/11/2026) |
 | `feed-4x5-C-o-que-vem` | `instagram-facebook/feed-4x5-C-o-que-voce-recebe.png` | Legenda externa “Modelo ilustrativo de certificado”; ilustração só com “Certificado em PDF” |
 | `quadrado-1x1-A-lancamento` | `instagram-facebook/quadrado-1x1-A-principal.png` | Peso ao lado; “Rio Claro e região” |
 | `quadrado-1x1-B-auditoria` | `instagram-facebook/quadrado-1x1-B-sua-empresa.png` | Pedido: foto e cidade; “Solicite um orçamento” |
 | `stories-9x16-A-lancamento` | `instagram-facebook/9x16/stories-9x16-anuncio-principal.png` | Peso ao lado; apoio novo |
 | ↳ nova na revisão 2 | `instagram-facebook/9x16/stories-9x16-organico-link.png` | Peso ao lado; “Toque no link e solicite um orçamento” |
 | ↳ nova na revisão 2 | `instagram-facebook/9x16/status-whatsapp-9x16.png` | Peso ao lado |
-| `stories-9x16-B-auditoria` | `instagram-facebook/9x16/stories-9x16-anuncio-auditoria.png` | Linha do serviço antes da ressalva; “Solicite um orçamento” |
+| `stories-9x16-B-auditoria` | `instagram-facebook/9x16/stories-9x16-anuncio-auditoria.png` | Linha do serviço; “Solicite um orçamento”; sem o aviso de não acreditação (27/11/2026) |
 | `carrossel-1-capa` | `instagram-facebook/carrossel/carrossel-1-capa.png` | Peso ao lado; número e “Arraste” fora da faixa |
 | `carrossel-2-o-que-e` | `…/carrossel-2-o-que-e.png` | Número e “Arraste” fora da faixa |
 | `carrossel-3-o-que-vem` | `…/carrossel-3-o-que-informa.png` | Legenda externa; “Os resultados apresentados correspondem aos ensaios realizados” |
 | `carrossel-4-nao-e-afericao` | `…/carrossel-4-finalidades.png` | Logo sobre placa preta; verificação: “Avaliação dos requisitos legais aplicáveis ao instrumento” |
 | `carrossel-5-orcamento` | `…/carrossel-5-orcamento.png` | Textos fora da faixa; pedido: foto e cidade; contato logo abaixo do pedido |
 | `capa-facebook-1640x624` | `instagram-facebook/capa-facebook-1640x624.png` | Peso ao lado; apoio de 36 para 44 px |
-| `linkedin-1200x627` | `linkedin/linkedin-1200x627.png` | Título curto (2 linhas); benefício, ação e condição de 38 a 42 px; peso ao lado |
+| `linkedin-1200x627` | `linkedin/linkedin-1200x627.png` | Título curto (2 linhas); benefício e ação de 40 a 42 px; peso ao lado; sem o aviso de não acreditação (27/11/2026) |
 | `linkedin-1200x1200` | `linkedin/linkedin-1200x1200.png` | Título em 3 linhas; textos de 38 a 44 px; peso ao lado |
 | `og-calibracao.jpg` | `site/og-calibracao.jpg` | Peso ao lado (vai no `atualizacao.zip`) |
 | `display-300x250` … `display-320x50` (7) | `google-display/display-*.jpg` | 300×600: peso ao lado; 728×90: faixa na ponta, longe do título |
@@ -203,13 +207,13 @@ Segue o *Guia do banner de manutenção e calibração* (19/11/2026). As duas pe
 
 | Peça | Arquivo | Quando usar |
 |---|---|---|
-| **Apresentação curta** | `whatsapp/apresentacao-manutencao-calibracao.png` (1080×1350) | Na **primeira mensagem**. Título, os dois serviços, região, “Solicite um orçamento”, WhatsApp, site e as condições |
-| **Lâmina explicativa** | `whatsapp/lamina-manutencao-calibracao.png` (1080×2246) e `.pdf` | **Depois que a empresa mostrar interesse**, ou para quem quiser repassar à equipe da qualidade. Acrescenta “Na calibração, você recebe” (com o modelo ilustrativo de certificado) e “Como solicitar” |
+| **Apresentação curta** | `whatsapp/apresentacao-manutencao-calibracao.png` (1080×1350) | Na **primeira mensagem**. Título, os dois serviços, região, “Solicite um orçamento”, WhatsApp, site e a frase do IPEM-SP |
+| **Lâmina explicativa** | `whatsapp/lamina-manutencao-calibracao.png` (1080×2290) e `.pdf` | **Depois que a empresa mostrar interesse**, ou para quem quiser repassar à equipe da qualidade. Acrescenta “Na calibração, você recebe” (com o modelo ilustrativo de certificado) e “Como solicitar” |
 
 **O que as peças dizem sobre cada serviço** (só o que o site e o sistema confirmam):
 - **Manutenção:** diagnóstico, manutenção preventiva e corretiva; oficina autorizada pelo IPEM-SP.
 - **Laudo de calibração:** certificado de calibração em PDF, com resultados das medições, incerteza e rastreabilidade.
-- **Condições:** serviço de calibração não acreditado pela Cgcre; consulte a adequação aos requisitos da sua empresa; a calibração não substitui a verificação metrológica do IPEM-SP.
+- **No pé das peças:** “A calibração não substitui a verificação metrológica do IPEM-SP.” O aviso de não acreditação saiu das duas peças em 27/11/2026 (decisão do dono); ele está na mensagem principal, abaixo.
 
 Nada de atendimento 24 horas, todas as marcas, prazos, capacidades ou atendimento no local: nada disso está confirmado para as peças.
 
@@ -356,4 +360,4 @@ O gerador **para com erro** quando:
 
 Ele **não** mede composição, recortes nem cores, e os textos de dentro do certificado ilustrativo não têm tamanho mínimo; por isso a legenda externa. Olhe as artes também reduzidas a 360 px de largura antes de publicar.
 
-Textos e posições: `fonte/artes.mjs`. Peças (logo, balança e peso, certificado de exemplo, legenda, rodapé, ressalva): `fonte/pecas.mjs`. Estilo: `fonte/banners.css`. Cada arte também vira um HTML em `fonte/html/`, que abre no navegador.
+Textos e posições: `fonte/artes.mjs`. Peças (logo, balança e peso, certificado de exemplo, legenda, rodapé): `fonte/pecas.mjs`. Estilo: `fonte/banners.css`. Cada arte também vira um HTML em `fonte/html/`, que abre no navegador.

@@ -2,11 +2,12 @@
 // (18/11/2026). Cada arte: nome, pasta, tamanho, fundo, CSS próprio, HTML e o tamanho mínimo de letra (min).
 // Ordem de leitura em todas: serviço ou necessidade → benefício → imagem → ação → contato.
 // Regras de texto (ver ../TEXTOS-DOS-ANUNCIOS.md, item 2): nada de "maioria das auditorias",
-// "a gente certifica", "pronto para mostrar", "sem tirar do lugar"; a não acreditação aparece legível
-// sempre que a peça fala de auditoria; o certificado aparece só como exemplo, com legenda externa;
-// o peso fica AO LADO da balança (nunca no prato de uma foto com o visor zerado); nenhum texto sobre a
-// faixa verde (o gerador confere).
-import { logo, simbolo, cert, balPeso, peso, rodape, legendaCert, ICON_WA, ICON_ARROW, ICON_DOWN, RESSALVA, RESSALVA_CURTA } from './pecas.mjs';
+// "a gente certifica", "pronto para mostrar", "sem tirar do lugar", nem "acreditado"/"RBC" como selo;
+// o certificado aparece só como exemplo, com legenda externa; o peso fica AO LADO da balança (nunca no
+// prato de uma foto com o visor zerado); nenhum texto sobre a faixa verde (o gerador confere).
+// Por decisão do dono (27/11/2026), as artes não levam mais o aviso "não acreditado pela Cgcre":
+// ele continua no site, no certificado e na conversa com o cliente. A balança é a Toledo Prix 3 Fit.
+import { logo, simbolo, cert, balPeso, peso, rodape, legendaCert, ICON_WA, ICON_ARROW, ICON_DOWN } from './pecas.mjs';
 
 const faixa = (bx, bw, extra = '') => `<div class="band ${extra}" style="--bx:${bx};--bw:${bw}"></div>`;
 // "Laudo de calibração" em todas as peças (pedido do dono, 19/11/2026). O documento entregue se chama
@@ -44,23 +45,21 @@ arte({
   ${rodape()}`,
 });
 
-// B · AUDITORIA — quem prepara auditoria: o serviço, a condição de não acreditação e o pedido
+// B · AUDITORIA — quem prepara auditoria: o serviço e o pedido
 arte({
   nome: 'feed-4x5-B-auditoria', pasta: 'instagram-facebook', w: 1080, h: 1350, min: 36, classe: 'is-paper',
   css: `
   .lg { position:absolute; left:64px; top:60px; }
-  .hd { position:absolute; left:64px; top:196px; --hs:116px; }
-  .sub { position:absolute; left:64px; top:440px; width:620px; }
-  .inf { position:absolute; left:64px; top:680px; width:640px; --ps:44px; }
-  .fine { position:absolute; left:64px; top:860px; width:660px; padding-left:22px; border-left:5px solid var(--green); }
-  .cta { position:absolute; left:70px; top:1098px; }
+  .hd { position:absolute; left:64px; top:200px; --hs:124px; }
+  .sub { position:absolute; left:64px; top:470px; width:600px; --ps:48px; }
+  .inf { position:absolute; left:64px; top:720px; width:600px; --ps:48px; }
+  .cta { position:absolute; left:70px; top:1060px; }
   `,
   html: `${faixa('78%', '18%')}${logo('claro')}
   <h1 class="h hd" data-dentro><span>Auditoria em</span><span class="g">preparação?</span></h1>
   <p class="p sub" data-dentro>Confira os requisitos de calibração das suas balanças.</p>
-  ${peso('peso', 'right:70px; top:420px; width:240px;')}
+  ${peso('peso', 'right:64px; top:520px; width:300px;')}
   <p class="p inf" data-dentro><strong>Laudo de calibração de balanças, em certificado PDF.</strong></p>
-  <p class="fine" data-dentro><b>Serviço de calibração não acreditado pela Cgcre.</b> Consulte a adequação aos requisitos da sua empresa.</p>
   <p class="cta cta--ink" data-dentro>${ORCAMENTO}</p>
   ${rodape()}`,
 });
@@ -81,7 +80,7 @@ arte({
   ${lista(ENTREGA)}
   ${legendaCert()}
   ${cert('--c:13px; right:70px; top:812px;')}
-  <p class="fine" data-dentro>${RESSALVA_CURTA} O laudo informa essa condição.</p>
+  <p class="fine" data-dentro>Para o controle de qualidade da sua empresa. <b>Rio Claro e região.</b></p>
   <p class="cta" data-dentro>${ORCAMENTO}</p>
   ${rodape()}`,
 });
@@ -151,16 +150,14 @@ arte({
   .lg { position:absolute; left:72px; top:270px; --lg:42px; }
   .hd { position:absolute; left:72px; top:390px; --hs:130px; }
   .sub { position:absolute; left:72px; top:650px; width:820px; --ps:46px; }
-  .inf { position:absolute; left:72px; top:880px; width:560px; --ps:46px; }
-  .fine { position:absolute; left:72px; top:1070px; width:560px; --fn:38px; padding-left:22px; border-left:5px solid var(--green); }
+  .inf { position:absolute; left:72px; top:830px; width:700px; --ps:46px; }
   .cta { position:absolute; left:80px; top:1474px; --cs:46px; }
   `,
   html: `${faixa('80%', '18%')}${logo('claro')}
   <h1 class="h hd" data-dentro><span>Auditoria em</span><span class="g">preparação?</span></h1>
   <p class="p sub" data-dentro>Confira os requisitos de calibração das suas balanças.</p>
   <p class="p inf" data-dentro><strong>Laudo de calibração de balanças, em certificado PDF.</strong></p>
-  <p class="fine" data-dentro><b>Serviço de calibração não acreditado pela Cgcre.</b> Consulte a adequação aos requisitos da sua empresa.</p>
-  ${peso('peso', 'right:96px; top:900px; width:260px;')}
+  ${peso('peso', 'left:300px; top:1010px; width:290px;')}
   <p class="cta cta--ink" data-dentro>Solicite um orçamento${ICON_DOWN}</p>`,
 });
 // Story do perfil: o link é a figurinha de link, posta na área livre logo abaixo de "Toque no link"
@@ -285,7 +282,7 @@ arte({
   <h2 class="h hd" data-dentro><span>Solicite seu</span><span class="g">orçamento.</span></h2>
   <p class="p sub" data-dentro>${PEDIDO}</p>
   <p class="ctt" data-dentro><b>${ICON_WA}(19) 3023-9050</b><span>WhatsApp · balancass.com</span></p>
-  <p class="fine" data-dentro><b>Serviço de calibração não acreditado pela Cgcre.</b> A calibração não substitui a verificação metrológica do IPEM-SP, quando aplicável.</p>`,
+  <p class="fine" data-dentro>A calibração não substitui a verificação metrológica do <span style="white-space:nowrap">IPEM-SP</span>, quando aplicável.</p>`,
 });
 
 /* =====================================================================
@@ -306,38 +303,34 @@ arte({
 });
 
 /* =====================================================================
-   LINKEDIN — título curto, um benefício, uma ação e a condição de não acreditação
+   LINKEDIN — título curto, um benefício e uma ação
    ===================================================================== */
 arte({
   nome: 'linkedin-1200x627', pasta: 'linkedin', w: 1200, h: 627, min: 38,
   css: `
   .lg { position:absolute; left:56px; top:40px; --lg:38px; }
-  .hd { position:absolute; left:56px; top:114px; --hs:84px; }
-  .sub { position:absolute; left:58px; top:330px; --ps:42px; }
-  .cta { position:absolute; left:62px; top:400px; --cs:40px; }
-  .fine { position:absolute; left:58px; top:522px; --fn:38px; }
+  .hd { position:absolute; left:56px; top:132px; --hs:90px; }
+  .sub { position:absolute; left:58px; top:356px; --ps:42px; }
+  .cta { position:absolute; left:62px; top:448px; --cs:40px; }
   `,
   html: `${faixa('74%', '22%')}${logo()}
   <h1 class="h hd" data-dentro><span>Laudo de calibração</span><span class="g">de balanças</span></h1>
   <p class="p sub" data-dentro>Certificado em PDF · <strong>Rio Claro e região</strong></p>
   <p class="cta" data-dentro>Solicite um orçamento${ICON_ARROW}</p>
-  <p class="fine" data-dentro>Serviço não acreditado pela Cgcre.</p>
-  ${balPeso('right:30px; top:200px; width:320px;')}`,
+  ${balPeso('right:30px; top:250px; width:320px;')}`,
 });
 arte({
   nome: 'linkedin-1200x1200', pasta: 'linkedin', w: 1200, h: 1200, min: 38,
   css: `
   .lg { position:absolute; left:64px; top:60px; }
-  .hd { position:absolute; left:64px; top:170px; --hs:92px; }
-  .ck { position:absolute; left:64px; top:470px; --ks:44px; gap:.45em; }
-  .fine { position:absolute; left:64px; top:720px; width:720px; --fn:38px; }
-  .cta { position:absolute; left:70px; top:960px; --cs:44px; }
+  .hd { position:absolute; left:64px; top:190px; --hs:92px; }
+  .ck { position:absolute; left:64px; top:540px; --ks:46px; gap:.5em; }
+  .cta { position:absolute; left:70px; top:880px; --cs:44px; }
   `,
   html: `${faixa('76%', '20%')}${logo()}
   <h1 class="h hd" data-dentro><span>Laudo de calibração</span><span>de balanças para o</span><span class="g">controle de qualidade.</span></h1>
   ${lista(ENTREGA)}
-  ${balPeso('right:30px; top:490px; width:360px;')}
-  <p class="fine" data-dentro>${RESSALVA}</p>
+  ${balPeso('right:30px; top:620px; width:400px;')}
   <p class="cta" data-dentro>Solicite um orçamento${ICON_ARROW}</p>
   ${rodape()}`,
 });
@@ -453,7 +446,8 @@ arte({ nome: 'logo-paisagem-1200x300', pasta: 'google-display/responsivo', w: 12
    Duas peças: a APRESENTAÇÃO CURTA (1080×1350), para a primeira abordagem, e a LÂMINA
    EXPLICATIVA (mais longa, também em PDF), para depois do interesse. Os dois serviços aparecem
    no título e em blocos próprios; o certificado fica só com a calibração; o selo "Novo" fica só
-   no bloco da calibração. Seções que crescem com o conteúdo (o gerador confere cortes).
+   no bloco da calibração. No pé, só a frase do IPEM-SP (sem o aviso de não acreditação: decisão do
+   dono, 27/11/2026). Seções que crescem com o conteúdo (o gerador confere cortes).
    ===================================================================== */
 const IC_MANUT = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`;
 const IC_CALIB = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M6 2.5h8.5L19 7v14.5H6zM14.5 2.5V7H19"/><path fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="square" d="m9 14 2.2 2.2L16 11.5"/></svg>`;
@@ -469,20 +463,20 @@ const CONTATO = (titulo = 'Solicite um orçamento', pedido = true) => `
     <h2 data-dentro>${titulo}</h2>
     ${pedido ? '<p class="ped" data-dentro>Envie uma foto da balança e informe sua cidade.</p>' : ''}
     <div class="ctt"><p class="tel" data-dentro>${ICON_WA}(19) 3023-9050</p><p class="site" data-dentro>balancass.com</p></div>`;
-const CONDICOES = `<p class="cond" data-dentro><b>Serviço de calibração não acreditado pela Cgcre.</b> Consulte a adequação aos requisitos da sua empresa. A calibração não substitui a verificação metrológica do <span style="white-space:nowrap">IPEM-SP</span>.</p>`;
+const CONDICOES = `<p class="cond" data-dentro>A calibração não substitui a verificação metrológica do <span style="white-space:nowrap">IPEM-SP</span>.</p>`;
 const PROSP_CSS = `
   .prosp { display:flex; flex-direction:column; }
   .s { position:relative; flex-shrink:0; overflow:hidden; isolation:isolate; padding: 42px 64px; }
   .s h2 { font: 900 54px/.92 var(--f-display); text-transform: uppercase; }
   /* abertura */
-  .ab { background: var(--ink); padding-top: 44px; padding-bottom: 36px; }
+  .ab { background: var(--ink); padding-top: 54px; padding-bottom: 46px; }
   .ab .top { display:flex; align-items:center; gap: 34px; }
   .ab .lg { --lg:42px; }
   .ab .reg { width: fit-content; font: 700 36px/1.2 var(--f-text); color: var(--body-dark); }
   .ab .hd { width: fit-content; margin-top: 26px; --hs:86px; }
-  .ab .bp { right: 20px; bottom: 40px; width: 268px; }
+  .ab .bp { right: 20px; bottom: 50px; width: 268px; }
   /* os dois serviços */
-  .svs { background: var(--paper); color: var(--ink); display:grid; gap: 22px; padding-top: 34px; padding-bottom: 34px; }
+  .svs { background: var(--paper); color: var(--ink); display:grid; gap: 32px; padding-top: 44px; padding-bottom: 44px; }
   .sv { display:grid; grid-template-columns: 70px 1fr; column-gap: 22px; row-gap: 8px; align-items: center; }
   .sv__ic { position:relative; isolation:isolate; width: 66px; height: 54px; display:grid; place-items:center; color: var(--ink); }
   .sv__ic::before { content:""; position:absolute; inset:0; z-index:-1; background: var(--green); transform: skewX(var(--slash)); }
@@ -492,16 +486,15 @@ const PROSP_CSS = `
   .sv__h .tag { --tg: 22px; }
   .sv p { font: 400 42px/1.28 var(--f-text); color: #1E1E1C; }
   /* orçamento e contato (verde) */
-  .or { background: var(--green); color: var(--ink); padding-top: 30px; padding-bottom: 32px; }
+  .or { background: var(--green); color: var(--ink); padding-top: 42px; padding-bottom: 44px; }
   .or .ped { margin-top: 10px; font: 400 42px/1.3 var(--f-text); color: #052612; }
   .or .ctt { margin-top: 18px; display:flex; align-items: baseline; justify-content: space-between; gap: 24px; }
   .or .tel { display:flex; align-items:center; gap:.3em; font: 700 64px/1 var(--f-text); color: var(--ink); }
   .or .tel svg { width:.85em; height:.85em; }
   .or .site { font: 700 40px/1 var(--f-text); color: var(--ink); }
   /* condições (preto) */
-  .cd { flex: 1; background: var(--ink); display:flex; align-items:center; padding-top: 28px; padding-bottom: 28px; }
-  .cd .cond { font: 400 36px/1.3 var(--f-text); color: var(--body-dark); }
-  .cd .cond b { color: var(--paper); font-weight: 700; }
+  .cd { flex: 1; background: var(--ink); display:flex; align-items:center; padding-top: 40px; padding-bottom: 40px; }
+  .cd .cond { font: 400 38px/1.3 var(--f-text); color: var(--body-dark); }
 `;
 
 // 1 · APRESENTAÇÃO CURTA — primeira abordagem
@@ -520,7 +513,7 @@ arte({
 
 // 2 · LÂMINA EXPLICATIVA — depois do interesse (também em PDF)
 arte({
-  nome: 'lamina-manutencao-calibracao', pasta: 'whatsapp', w: 1080, h: 2278, min: 36, pdf: true, classe: 'prosp',
+  nome: 'lamina-manutencao-calibracao', pasta: 'whatsapp', w: 1080, h: 2290, min: 36, pdf: true, classe: 'prosp',
   css: PROSP_CSS + `
   .rc { background: var(--paper-2); color: var(--ink); display:grid; grid-template-columns: 1fr 340px; gap: 0 24px; align-items: start; }
   .rc h2 { grid-column: 1 / -1; }
@@ -563,7 +556,7 @@ arte({
 /* Grupos da galeria (ver-todas.html): título, nota e quais artes entram */
 const em = (p) => (a) => a.pasta === p;
 export const GRUPOS = [
-  ['Instagram e Facebook · feed (4:5) e quadrado (1:1)', 'Anúncio ou post. A versão B fala de auditoria e por isso traz a condição de não acreditação na própria arte.', (a) => a.pasta === 'instagram-facebook' && !a.nome.startsWith('capa')],
+  ['Instagram e Facebook · feed (4:5) e quadrado (1:1)', 'Anúncio ou post.', (a) => a.pasta === 'instagram-facebook' && !a.nome.startsWith('capa')],
   ['Anúncio vertical · Stories e Reels', 'Para anúncio: a seta aponta para o botão da plataforma, que é o link. Não são vídeos.', (a) => a.nome.startsWith('stories-9x16-anuncio')],
   ['Story do perfil (orgânico)', 'Ponha a figurinha de link logo abaixo de “Toque no link”.', (a) => a.nome === 'stories-9x16-organico-link'],
   ['Status do WhatsApp', 'Quem vê pode responder o status; o telefone está escrito.', (a) => a.nome === 'status-whatsapp-9x16'],
